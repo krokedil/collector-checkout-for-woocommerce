@@ -1,0 +1,7 @@
+.collector-bank-selected #order_review_heading, .collector-bank-selected #order_review {
+    float:none;
+    width:100%;
+}
+.collector-bank-selected #customer_details, .collector-bank-selected #place_order{
+    display:none;
+}
