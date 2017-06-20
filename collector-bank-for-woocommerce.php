@@ -61,6 +61,7 @@ if ( ! class_exists( 'Collector_Bank' ) ) {
 			include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/class-collector-bank-requests.php' );
 			include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/class-collector-bank-requests-initialize-checkout.php' );
 			include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/class-collector-bank-requests-update-fees.php' );
+			include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/class-collector-bank-requests-get-checkout-information.php' );
 
 			// Include the Request Helpers
 			include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/helpers/class-collector-bank-requests-cart.php' );

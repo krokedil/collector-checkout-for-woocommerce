@@ -9,8 +9,13 @@ class Collector_Bank_Ajax_Calls {
 		add_action( 'wp_ajax_get_public_token', array( $this, 'get_public_token' ) );
 		add_action( 'wp_ajax_nopriv_get_public_token', array( $this, 'get_public_token' ) );
 
+		// Update fees
 		add_action( 'wp_ajax_update_fees', array( $this, 'update_fees' ) );
 		add_action( 'wp_ajax_nopriv_update_fees', array( $this, 'update_fees' ) );
+
+		// Ajax to add order notes as a session for the customer
+		add_action( 'wp_ajax_dibs_customer_order_note', array( $this, 'add_customer_order_note' ) );
+		add_action( 'wp_ajax_nopriv_dibs_customer_order_note', array( $this, 'add_customer_order_note' ) );
 	}
 
 	public function get_public_token() {
@@ -52,6 +57,12 @@ class Collector_Bank_Ajax_Calls {
 			do_action( 'woocommerce_checkout_update_order_meta', $local_order_id, array() ); // Let plugins add their own meta data.
 		}
 		return $local_order_id;
+	}
+
+	public function dibs_add_customer_order_note() {
+		WC()->session->set( 'collector_customer_order_note', $_POST['order_note'] );
+		wp_send_json_success();
+		wp_die();
 	}
 }
 $collector_ajax_calls = new Collector_Bank_Ajax_Calls();

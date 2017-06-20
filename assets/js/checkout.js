@@ -10,19 +10,32 @@
     };
 
     function get_checkout_iframe() {
-        var data = {
-            'action': 'get_public_token'
-        };
-        jQuery.post(wc_collector_bank.ajaxurl, data, function (data) {
-            if (true === data.success) {
-                // Remove any checkout frame to prevent duplicate
-                $('#collector-checkout-iframe').remove();
-                var publicToken = data.data;
-                $('div.entry-content div.woocommerce').append('<script src="https://checkout-uat.collector.se/collector-checkout-loader.js" data-lang="sv" data-token="' + publicToken + '" >');
-            } else {
-                console.log('error');
+        var url = window.location.href;
+        if (url.indexOf('payment_successful') != -1) {
+            if ($('form #billing_first_name').val() != '') {
+
+                // Check Terms checkbox, if it exists
+                if ($("form.checkout #terms").length > 0) {
+                    $("form.checkout #terms").prop("checked", true);
+                }
+
+                $("#place_order").trigger("submit");
             }
-        });
+        } else {
+            var data = {
+                'action': 'get_public_token'
+            };
+            jQuery.post(wc_collector_bank.ajaxurl, data, function (data) {
+                if (true === data.success) {
+                    // Remove any checkout frame to prevent duplicate
+                    $('#collector-checkout-iframe').remove();
+                    var publicToken = data.data;
+                    $('div.entry-content div.woocommerce').append('<script src="https://checkout-uat.collector.se/collector-checkout-loader.js" data-lang="sv" data-token="' + publicToken + '" >');
+                } else {
+                    console.log('error');
+                }
+            });
+        }
     }
 
     $(document).ready(function () {

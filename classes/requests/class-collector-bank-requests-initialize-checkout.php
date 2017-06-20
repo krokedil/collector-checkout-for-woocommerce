@@ -33,6 +33,7 @@ class Collector_Bank_Requests_Initialize_Checkout extends Collector_Bank_Request
 			'storeId'           => '873',
 			'countryCode'       => 'SE',
 			'reference'         => $this->order_id,
+			'redirectPageUri'   => WC()->cart->get_checkout_url() . '?payment_successful=' . $this->order_id,
 			'merchantTermsUri'  => 'http://krokedil.dibs.ngrok.io/terms',
 			'notificationUri'   => 'http://krokedil.dibs.ngrok.io',
 			'cart'              => $this->cart(),
