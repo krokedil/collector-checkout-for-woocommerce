@@ -37,7 +37,7 @@
         }
     }
 
-    $(document).ready(function () {
+    $(document).on('updated_checkout', function () {
         wc_collector_bank_body_class();
         if ("collector_bank" === $("input[name='payment_method']:checked").val()) {
             // Get iframe if not fetched yet

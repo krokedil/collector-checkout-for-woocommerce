@@ -25,7 +25,8 @@ class Collector_Bank_Gateway extends WC_Payment_Gateway {
 			add_filter( 'woocommerce_checkout_get_value', array( $this, 'populate_fields' ), 10, 2 );
 			add_filter( 'woocommerce_checkout_fields', array( $this, 'set_not_required' ), 20 );
 		}
-		//add_action( 'woocommerce_before_checkout_form', array( $this, 'maybe_process_payment' ) );
+		add_filter( 'body_class', array( $this, 'add_body_class' ) );
+
 
 	}
 	public function init_form_fields() {
@@ -134,7 +135,7 @@ class Collector_Bank_Gateway extends WC_Payment_Gateway {
 	}
 	public function set_not_required( $checkout_fields ) {
 		//Set fields to not required, to prevent orders from failing
-		if ( 'dibs_easy' === WC()->session->get( 'chosen_payment_method' ) ) {
+		if ( 'collector_bank' === WC()->session->get( 'chosen_payment_method' ) ) {
 			foreach ( $checkout_fields as $fieldset_key => $fieldset ) {
 				foreach ( $fieldset as $field_key => $field ) {
 					$checkout_fields[ $fieldset_key ][ $field_key ]['required'] = false;
@@ -151,5 +152,19 @@ class Collector_Bank_Gateway extends WC_Payment_Gateway {
 			'result'   => 'success',
 			'redirect' => $this->get_return_url( $order ),
 		);
+	}
+
+	public function add_body_class( $class ) {
+		if ( is_checkout() ) {
+			error_log('in add_body_class function');
+			$available_payment_gateways = WC()->payment_gateways->get_available_payment_gateways();
+			reset( $available_payment_gateways );
+			$first_gateway = key( $available_payment_gateways );
+
+			if ( 'collector_bank' == $first_gateway ) {
+				$class[] = 'collector-bank-selected';
+			}
+		}
+		return $class;
 	}
 }
