@@ -8,7 +8,6 @@ class Collector_Bank_Requests_Get_Checkout_Information extends Collector_Bank_Re
 	public $path = '';
 
 	public function __construct( $order_id, $private_id ) {
-		error_log( 'Running get information' );
 		$collector_settings = get_option( 'woocommerce_collector_bank_settings' );
 		$store_id = $collector_settings['collector_merchant_id'];
 		$this->path = '/merchants/' . $store_id . '/checkouts/' . $private_id;

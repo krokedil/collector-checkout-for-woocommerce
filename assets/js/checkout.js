@@ -1,6 +1,6 @@
 (function ($) {
     'use strict';
-
+    var checkout_initiated = false;
     var wc_collector_bank_body_class = function wc_collector_bank_body_class() {
         if ("collector_bank" === $("input[name='payment_method']:checked").val()) {
             $("body").addClass("collector-bank-selected").removeClass("collector-bank-deselected");
@@ -13,12 +13,10 @@
         var url = window.location.href;
         if (url.indexOf('payment_successful') != -1) {
             if ($('form #billing_first_name').val() != '') {
-
                 // Check Terms checkbox, if it exists
                 if ($("form.checkout #terms").length > 0) {
                     $("form.checkout #terms").prop("checked", true);
                 }
-
                 $("#place_order").trigger("submit");
             }
         } else {
@@ -31,6 +29,7 @@
                     $('#collector-checkout-iframe').remove();
                     var publicToken = data.data;
                     $('div.entry-content div.woocommerce').append('<script src="https://checkout-uat.collector.se/collector-checkout-loader.js" data-lang="sv" data-token="' + publicToken + '" >');
+                    checkout_initiated = true;
                 } else {
                     console.log('error');
                 }
@@ -61,18 +60,20 @@
     });
 
     function update_fees() {
-        window.collector.checkout.api.suspend();
+        if( checkout_initiated == true ) {
+            window.collector.checkout.api.suspend();
 
-        var data = {
-            'action': 'update_fees'
-        };
-        jQuery.post(wc_collector_bank.ajaxurl, data, function (data) {
-            if (true === data.success) {
-                window.collector.checkout.api.resume();
-            } else {
-                console.log('error');
-            }
-        });
+            var data = {
+                'action': 'update_fees'
+            };
+            jQuery.post(wc_collector_bank.ajaxurl, data, function (data) {
+                if (true === data.success) {
+                    window.collector.checkout.api.resume();
+                } else {
+                    console.log('error');
+                }
 
+            });
+        }
     }
 }(jQuery));
