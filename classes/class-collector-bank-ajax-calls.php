@@ -15,7 +15,7 @@ class Collector_Bank_Ajax_Calls {
 
 		// Ajax to add order notes as a session for the customer
 		add_action( 'wp_ajax_dibs_customer_order_note', array( $this, 'add_customer_order_note' ) );
-		add_action( 'wp_ajax_nopriv_dibs_customer_order_note', array( $this, 'add_customer_order_note' ) );
+		add_action( 'wp_ajax_nopriv_customer_order_note', array( $this, 'add_customer_order_note' ) );
 	}
 
 	public function get_public_token() {
