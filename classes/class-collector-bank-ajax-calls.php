@@ -59,7 +59,7 @@ class Collector_Bank_Ajax_Calls {
 		return $local_order_id;
 	}
 
-	public function dibs_add_customer_order_note() {
+	public function add_customer_order_note() {
 		WC()->session->set( 'collector_customer_order_note', $_POST['order_note'] );
 		wp_send_json_success();
 		wp_die();
