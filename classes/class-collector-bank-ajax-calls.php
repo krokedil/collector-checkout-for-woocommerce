@@ -14,8 +14,12 @@ class Collector_Bank_Ajax_Calls {
 		add_action( 'wp_ajax_nopriv_update_fees', array( $this, 'update_fees' ) );
 
 		// Ajax to add order notes as a session for the customer
-		add_action( 'wp_ajax_dibs_customer_order_note', array( $this, 'add_customer_order_note' ) );
+		add_action( 'wp_ajax_customer_order_note', array( $this, 'add_customer_order_note' ) );
 		add_action( 'wp_ajax_nopriv_customer_order_note', array( $this, 'add_customer_order_note' ) );
+
+		// Get old checkout for thank you page
+		add_action( 'wp_ajax_get_checkout_thank_you', array( $this, 'get_checkout_thank_you' ) );
+		add_action( 'wp_ajax_nopriv_get_checkout_thank_you', array( $this, 'get_checkout_thank_you' ) );
 	}
 
 	public function get_public_token() {
@@ -30,6 +34,7 @@ class Collector_Bank_Ajax_Calls {
 		// Set post metas so they can be used again later
 		update_post_meta( $order_id, '_collector_public_token', $return );
 		update_post_meta( $order_id, '_collector_private_id', $decode->data->privateId );
+		WC()->session->set( 'collector_order_id', $order_id );
 
 		wp_send_json_success( $return );
 		wp_die();
@@ -63,6 +68,12 @@ class Collector_Bank_Ajax_Calls {
 		WC()->session->set( 'collector_customer_order_note', $_POST['order_note'] );
 		wp_send_json_success();
 		wp_die();
+	}
+
+	public function get_checkout_thank_you() {
+		$order_id = $_POST['order_id'];
+		$public_token = get_post_meta( $order_id, '_collector_public_token' );
+		wp_send_json_success( $public_token );
 	}
 }
 $collector_ajax_calls = new Collector_Bank_Ajax_Calls();

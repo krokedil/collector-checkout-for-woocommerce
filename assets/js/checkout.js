@@ -94,4 +94,28 @@
             );
         }
     });
+    // If customer gets to thank you page
+    $( document ).ready( function() {
+        var url = window.location.href;
+        if (url.indexOf('order-received') != -1) {
+            thankyou_page();
+        }
+    });
+
+    function thankyou_page() {
+        $.ajax(
+            wc_collector_bank.ajaxurl,
+            {
+                type: 'POST',
+                dataType: 'json',
+                data: {
+                    action  : 'get_checkout_thank_you',
+                    order_id : wc_collector_bank.order_id
+                },
+                success: function(data) {
+                    var publicToken = data.data;
+                    $('div.entry-content div.woocommerce').append('<script src="https://checkout-uat.collector.se/collector-checkout-loader.js" data-lang="sv" data-token="' + publicToken + '" >');
+                }
+            });
+    }
 }(jQuery));

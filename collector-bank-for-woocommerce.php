@@ -74,9 +74,15 @@ if ( ! class_exists( 'Collector_Bank' ) ) {
 			// Enqueue scripts
 			wp_enqueue_script( 'jquery' );
 			if ( is_checkout() ) {
+				if ( WC()->session->get( 'collector_order_id' ) ) {
+					$order_id = WC()->session->get( 'collector_order_id' );
+				} else {
+					$order_id = '';
+				}
 				wp_register_script( 'checkout', plugins_url( '/assets/js/checkout.js', __FILE__ ), array( 'jquery' ) );
 				wp_localize_script( 'checkout', 'wc_collector_bank', array(
 					'ajaxurl' => admin_url( 'admin-ajax.php' ),
+					'order_id' => $order_id,
 				) );
 				wp_enqueue_script( 'checkout' );
 			}
