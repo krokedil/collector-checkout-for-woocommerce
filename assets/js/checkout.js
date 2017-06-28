@@ -1,13 +1,6 @@
 (function ($) {
     'use strict';
     var checkout_initiated = false;
-    var wc_collector_bank_body_class = function wc_collector_bank_body_class() {
-        if ("collector_bank" === $("input[name='payment_method']:checked").val()) {
-            $("body").addClass("collector-bank-selected").removeClass("collector-bank-deselected");
-        } else {
-            $("body").removeClass("collector-bank-selected").addClass("collector-bank-deselected");
-        }
-    };
 
     function get_checkout_iframe() {
         var url = window.location.href;
@@ -17,7 +10,7 @@
                 if ($("form.checkout #terms").length > 0) {
                     $("form.checkout #terms").prop("checked", true);
                 }
-                $("#place_order").trigger("submit");
+                collector_post_form();
             }
         } else {
             var data = {
@@ -28,7 +21,7 @@
                     // Remove any checkout frame to prevent duplicate
                     $('#collector-checkout-iframe').remove();
                     var publicToken = data.data;
-                    $('div.entry-content div.woocommerce').append('<script src="https://checkout-uat.collector.se/collector-checkout-loader.js" data-lang="sv" data-token="' + publicToken + '" >');
+                    $('#collector-bank-iframe').append('<script src="https://checkout-uat.collector.se/collector-checkout-loader.js" data-lang="sv" data-token="' + publicToken + '" >');
                     checkout_initiated = true;
                 } else {
                     console.log('error');
@@ -38,25 +31,21 @@
     }
 
     $(document).on('updated_checkout', function () {
-        wc_collector_bank_body_class();
+        update_fees();
         if ("collector_bank" === $("input[name='payment_method']:checked").val()) {
-            // Get iframe if not fetched yet
-            get_checkout_iframe();
+            // Refresh the page to load collector bank template instead.
+
         }
     });
 
     $(document).on("change", "input[name='payment_method']", function (event) {
         if ("collector_bank" === event.target.value) {
-            wc_collector_bank_body_class();
-            get_checkout_iframe();
-            $("body").trigger("update_checkout");
+            // Refresh the page to load collector bank template instead.
+            //get_checkout_iframe();
+            //$("body").trigger("update_checkout");
         } else {
-            wc_collector_bank_body_class();
             $('#collector-checkout-iframe').remove();
         }
-    });
-    $(document).on("updated_checkout", function () {
-        update_fees();
     });
 
     function update_fees() {
@@ -76,24 +65,6 @@
             });
         }
     }
-    $('#order_comments').focusout(function(){
-        var text = $('#order_comments').val();
-        if( text.length > 0 ) {
-            $.ajax(
-                wc_collector_bank.ajaxurl,
-                {
-                    type: 'POST',
-                    dataType: 'json',
-                    data: {
-                        action  : 'customer_order_note',
-                        order_note : text
-                    },
-                    success: function(response) {
-                    }
-                }
-            );
-        }
-    });
     // If customer gets to thank you page
     $( document ).ready( function() {
         var url = window.location.href;
@@ -110,12 +81,88 @@
                 dataType: 'json',
                 data: {
                     action  : 'get_checkout_thank_you',
-                    order_id : wc_collector_bank.order_id
                 },
                 success: function(data) {
                     var publicToken = data.data;
                     $('div.entry-content div.woocommerce').append('<script src="https://checkout-uat.collector.se/collector-checkout-loader.js" data-lang="sv" data-token="' + publicToken + '" >');
                 }
             });
+    }
+
+    // Load the iframe on the custom template page.
+    $( document ).ready( function() {
+        if ($('#collector-bank-iframe').length) {
+            get_checkout_iframe();
+        }
+        $('#order_comments').focusout(function(){
+            var text = $('#order_comments').val();
+            if( text.length > 0 ) {
+                $.ajax(
+                    wc_collector_bank.ajaxurl,
+                    {
+                        type: 'POST',
+                        dataType: 'json',
+                        data: {
+                            action  : 'customer_order_note',
+                            order_note : text
+                        },
+                        success: function(response) {
+                        }
+                    }
+                );
+            }
+        });
+    });
+
+    function collector_post_form() {
+        var data = {
+            'action': 'get_customer_data'
+        };
+        jQuery.post(wc_collector_bank.ajaxurl, data, function (data) {
+            if (true === data.success) {
+                jQuery.ajax({
+                    type: 'POST',
+                    url: '/checkout/?wc-ajax=checkout',
+                    data: 'billing_first_name=' + data.data.customer_data.data.customer.billingAddress.firstName + '&billing_last_name=' + data.data.customer_data.data.customer.billingAddress.lastName + '&billing_country=SE&billing_address_1=' + data.data.customer_data.data.customer.billingAddress.address + '&billing_address_2=' + data.data.customer_data.data.customer.billingAddress.address2 + '&billing_postcode=' + data.data.customer_data.data.customer.billingAddress.postCode + '&billing_city=' + data.data.customer_data.data.customer.billingAddress.city + '&billing_state=&billing_phone=' + data.data.customer_data.data.customer.mobilePhoneNumber + '&billing_email=' + data.data.customer_data.data.customer.email + '&shipping_first_name=' + data.data.customer_data.data.customer.deliveryAddress.firstName + '&shipping_last_name=' + data.data.customer_data.data.customer.deliveryAddress.lastName + '&shipping_country=SE&shipping_address_1=' + data.data.customer_data.data.customer.deliveryAddress.address + '&shipping_address_2=' + data.data.customer_data.data.customer.deliveryAddress.address2 + '&shipping_postcode=' + data.data.customer_data.data.customer.deliveryAddress.postalCode + '&shipping_city=' + data.data.customer_data.data.customer.deliveryAddress.city + '&shipping_state=&order_comments=' + data.data.order_note + '&shipping_method%5B0%5D=flat_rate%3A1&payment_method=collector_bank&terms=on&terms-field=1&_wpnonce=' + data.data.nonce,
+                    dataType: 'json',
+                    success: function (result) {
+                        try {
+                            if ('success' === result.result) {
+                                if (-1 === result.redirect.indexOf('https://') || -1 === result.redirect.indexOf('http://')) {
+                                    window.location = result.redirect;
+                                } else {
+                                    window.location = decodeURI(result.redirect);
+                                }
+                            } else if ('failure' === result.result) {
+                                throw 'Result failure';
+                            } else {
+                                throw 'Invalid response';
+                            }
+                        } catch (err) {
+                            // Reload page
+                            if (true === result.reload) {
+                                window.location.reload();
+                                return;
+                            }
+                            // Trigger update in case we need a fresh nonce
+                            if (true === result.refresh) {
+                                jQuery(document.body).trigger('update_checkout');
+                            }
+                            // Add new errors
+                            if (result.messages) {
+                                console.log(result.messages);
+                            } else {
+                                console.log(wc_checkout_params.i18n_checkout_error);
+                            }
+                        }
+                    },
+                    error: function (jqXHR, textStatus, errorThrown) {
+                        wc_checkout_form.submit_error('<div class="woocommerce-error">' + errorThrown + '</div>');
+                    }
+                });
+            } else {
+                console.log('error');
+            }
+        });
     }
 }(jQuery));

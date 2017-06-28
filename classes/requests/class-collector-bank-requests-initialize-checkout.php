@@ -7,10 +7,7 @@ class Collector_Bank_Requests_Initialize_Checkout extends Collector_Bank_Request
 
 	public $path = '/checkout';
 
-	public $order_id = '';
-
-	public function __construct( $order_id ) {
-		$this->order_id = $order_id;
+	public function __construct() {
 	}
 
 	private function get_request_args() {
@@ -32,8 +29,8 @@ class Collector_Bank_Requests_Initialize_Checkout extends Collector_Bank_Request
 		$formatted_request_body = array(
 			'storeId'           => '873',
 			'countryCode'       => 'SE',
-			'reference'         => $this->order_id,
-			'redirectPageUri'   => WC()->cart->get_checkout_url() . '?payment_successful=' . $this->order_id,
+			'reference'         => '',
+			'redirectPageUri'   => WC()->cart->get_checkout_url() . '?payment_successful=1',
 			'merchantTermsUri'  => 'http://krokedil.dibs.ngrok.io/terms',
 			'notificationUri'   => 'http://krokedil.dibs.ngrok.io',
 			'cart'              => $this->cart(),

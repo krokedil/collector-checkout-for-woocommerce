@@ -3,13 +3,16 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly
 }
 
-class Collector_Bank_Requests_Update_Fees extends Collector_Bank_Requests {
+class Collector_Bank_Requests_Update_Reference extends Collector_Bank_Requests {
 	public $path = '';
 
-	public function __construct( $private_id ) {
+	public $order_id;
+
+	public function __construct( $order_id, $private_id ) {
 		$collector_settings = get_option( 'woocommerce_collector_bank_settings' );
 		$store_id = $collector_settings['collector_merchant_id'];
-		$this->path = '/merchants/' . $store_id . '/checkouts/' . $private_id . '/fees';
+		$this->order_id = $order_id;
+		$this->path = '/merchants/' . $store_id . '/checkouts/' . $private_id . '/reference';
 	}
 
 	private function get_request_args() {
@@ -28,10 +31,8 @@ class Collector_Bank_Requests_Update_Fees extends Collector_Bank_Requests {
 	}
 
 	protected function request_body() {
-		$fees = $this->fees();
 		$formatted_request_body = array(
-			'shipping'                  => $fees['shipping'],
-			'directinvoicenotification' => $fees['directinvoicenotification'],
+			'Reference'         => $this->order_id,
 		);
 		return wp_json_encode( $formatted_request_body );
 	}

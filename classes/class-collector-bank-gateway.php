@@ -18,128 +18,40 @@ class Collector_Bank_Gateway extends WC_Payment_Gateway {
 		$this->init_settings();
 
 		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
-		if ( isset( $_GET['payment_successful'] ) && WC()->session->get( 'order_awaiting_payment' ) == $_GET['payment_successful'] && is_checkout() ) {
-			add_action( 'woocommerce_before_checkout_form', array( $this, 'get_field_values' ) );
-			add_filter( 'woocommerce_checkout_get_value', array( $this, 'populate_fields' ), 10, 2 );
-			add_filter( 'woocommerce_checkout_fields', array( $this, 'set_not_required' ), 20 );
-		}
-		// Add body class on page load if Collector is the selected payment gateway.
-		add_filter( 'body_class', array( $this, 'add_body_class' ) );
-		// Function to handle the tankyou page.
+
+		// Function to handle the thankyou page.
 		add_action( 'woocommerce_thankyou_collector_bank', array( $this, 'collector_thankyou' ) );
 
+		// Override the checkout template
+		add_filter( 'woocommerce_locate_template', array( $this, 'override_template' ), 10, 3 );
 
 	}
 	public function init_form_fields() {
 		$this->form_fields = include( COLLECTOR_BANK_PLUGIN_DIR . '/includes/collector-bank-settings.php' );
 	}
 
+	public function override_template( $template, $template_name, $template_path ) {
+		if ( WC()->session->get( 'chosen_payment_method' ) === $this->id ) {
+			if ( 'checkout/form-checkout.php' === $template_name ) {
+				$template = COLLECTOR_BANK_PLUGIN_DIR . '/templates/form-checkout.php';
+			}
+		}
+		return $template;
+	}
+
 	public function maybe_process_payment() {
 		if ( isset( $_GET['payment_successful'] ) && WC()->session->get( 'order_awaiting_payment' ) == $_GET['payment_successful'] && is_checkout() ) {
 			add_filter( 'woocommerce_checkout_get_value', array( $this, 'populate_fields' ), 10, 2 );
 			add_filter( 'woocommerce_checkout_fields' ,  array( $this, 'set_not_required' ), 20 );
-
 		}
 	}
-	public function populate_fields( $value, $key ) {
-		$customer_data = $this->customer_data;
-		// Get billing information from the customer
-		$billing_first_name = $customer_data->data->customer->billingAddress->firstName;
-		$billing_last_name  = $customer_data->data->customer->billingAddress->lastName;
-		$billing_country    = $customer_data->data->customer->billingAddress->country;
-		$billing_address    = $customer_data->data->customer->billingAddress->address;
-		$billing_city       = $customer_data->data->customer->billingAddress->city;
-		$billing_postcode   = $customer_data->data->customer->billingAddress->postalCode;
 
-		// Get shipping information from the customer
-		$shipping_first_name = $customer_data->data->customer->deliveryAddress->firstName;
-		$shipping_last_name  = $customer_data->data->customer->deliveryAddress->lastName;
-		$shipping_country    = $customer_data->data->customer->deliveryAddress->country;
-		$shipping_address    = $customer_data->data->customer->deliveryAddress->address;
-		$shipping_city       = $customer_data->data->customer->deliveryAddress->city;
-		$shipping_postcode   = $customer_data->data->customer->deliveryAddress->postalCode;
-
-		// Standard information
-		$phone = $customer_data->data->customer->mobilePhoneNumber;
-		$email = $customer_data->data->customer->email;
-
-		//Populate the fields
-		switch ( $key ) {
-			case 'billing_first_name':
-				return $billing_first_name;
-				break;
-			case 'billing_last_name':
-				return $billing_last_name;
-				break;
-			case 'billing_email':
-				return $email;
-				break;
-			case 'billing_country':
-				return $billing_country;
-				break;
-			case 'billing_address_1':
-				return $billing_address;
-				break;
-			case 'billing_city':
-				return $billing_city;
-				break;
-			case 'billing_postcode':
-				return $billing_postcode;
-				break;
-			case 'billing_phone':
-				return $phone;
-				break;
-			case 'shipping_first_name':
-				return $shipping_first_name;
-				break;
-			case 'shipping_last_name':
-				return $shipping_last_name;
-				break;
-			case 'shipping_email':
-				return $email;
-				break;
-			case 'shipping_country':
-				return $shipping_country;
-				break;
-			case 'shipping_address_1':
-				return $shipping_address;
-				break;
-			case 'shipping_city':
-				return $shipping_city;
-				break;
-			case 'shipping_postcode':
-				return $shipping_postcode;
-				break;
-			case 'shipping_phone':
-				return $phone;
-				break;
-			case 'order_comments':
-				if ( WC()->session->get( 'collector_customer_order_note' ) ) {
-					return WC()->session->get( 'collector_customer_order_note' );
-				} else {
-					return '';
-				}
-				break;
-		} // End switch().
-	}
-	public function get_customer_data( $order_id ) {
+	public function get_customer_data() {
 		// Get information about order from Collector
-		$private_id    = get_post_meta( $order_id, '_collector_private_id' );
-		$customer_data = new Collector_Bank_Requests_Get_Checkout_Information( $order_id, $private_id[0] );
+		$private_id    = WC()->session->get( 'collector_private_id' );
+		$customer_data = new Collector_Bank_Requests_Get_Checkout_Information( $private_id );
 		$customer_data = $customer_data->request();
-		$customer_data = $customer_data['body'];
 		return json_decode( $customer_data );
-	}
-	public function set_not_required( $checkout_fields ) {
-		//Set fields to not required, to prevent orders from failing
-		if ( 'collector_bank' === WC()->session->get( 'chosen_payment_method' ) ) {
-			foreach ( $checkout_fields as $fieldset_key => $fieldset ) {
-				foreach ( $fieldset as $field_key => $field ) {
-					$checkout_fields[ $fieldset_key ][ $field_key ]['required'] = false;
-				}
-			}
-		}
-		return $checkout_fields;
 	}
 
 	public function process_payment( $order_id, $retry = false ) {
@@ -151,27 +63,15 @@ class Collector_Bank_Gateway extends WC_Payment_Gateway {
 		);
 	}
 
-	public function add_body_class( $class ) {
-		if ( is_checkout() ) {
-			$available_payment_gateways = WC()->payment_gateways->get_available_payment_gateways();
-			reset( $available_payment_gateways );
-			$first_gateway = key( $available_payment_gateways );
-
-			if ( 'collector_bank' == $first_gateway ) {
-				$class[] = 'collector-bank-selected';
-			}
-		}
-		return $class;
-	}
-
 	public function collector_thankyou( $order_id ) {
-			$order_id = wc_get_order( $order_id );
-			$customer_data = $this->get_customer_data( $order_id );
-			error_log( 'Customer data: ' . var_export( $customer_data ) );
-			$payment_method = $customer_data->purchase->paymentMethod;
-			error_log( 'payment_method: ' . $payment_method );
-	}
-	public function get_field_values() {
-		$this->customer_data = $this->get_customer_data( WC()->session->get( 'order_awaiting_payment' ) );
+		// Update the reference with Collector
+		$customer_data = $this->get_customer_data();
+		$private_id = WC()->session->get( 'collector_private_id' );
+		$update_reference = new Collector_Bank_Requests_Update_Reference( $order_id, $private_id );
+		$update_reference->request();
+		$payment_method = $customer_data->data->purchase->paymentMethod;
+		update_post_meta( $order_id, '_collector_payment_method', $payment_method );
+		$order = wc_get_order( $order_id );
+		$order->add_order_note( sprintf( __( 'Order made with Collector. Payment Method: %s', 'collector-bank-for-woocommerce' ), $payment_method ) );
 	}
 }

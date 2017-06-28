@@ -62,6 +62,7 @@ if ( ! class_exists( 'Collector_Bank' ) ) {
 			include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/class-collector-bank-requests-initialize-checkout.php' );
 			include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/class-collector-bank-requests-update-fees.php' );
 			include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/class-collector-bank-requests-get-checkout-information.php' );
+			include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/class-collector-bank-requests-update-reference.php' );
 
 			// Include the Request Helpers
 			include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/helpers/class-collector-bank-requests-cart.php' );
@@ -74,15 +75,9 @@ if ( ! class_exists( 'Collector_Bank' ) ) {
 			// Enqueue scripts
 			wp_enqueue_script( 'jquery' );
 			if ( is_checkout() ) {
-				if ( WC()->session->get( 'collector_order_id' ) ) {
-					$order_id = WC()->session->get( 'collector_order_id' );
-				} else {
-					$order_id = '';
-				}
 				wp_register_script( 'checkout', plugins_url( '/assets/js/checkout.js', __FILE__ ), array( 'jquery' ) );
 				wp_localize_script( 'checkout', 'wc_collector_bank', array(
 					'ajaxurl' => admin_url( 'admin-ajax.php' ),
-					'order_id' => $order_id,
 				) );
 				wp_enqueue_script( 'checkout' );
 			}
