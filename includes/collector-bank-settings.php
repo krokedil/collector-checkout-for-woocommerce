@@ -49,6 +49,13 @@ return apply_filters( 'collector_bank_settings',
 			'default'       => '',
 			'desc_tip'      => true,
 		),
+		'collector_invoice_fee' => array(
+			'title'         => __( 'Invoice fee ID', 'collector-bank-for-woocommerce' ),
+			'type'          => 'text',
+			'description'   => __( 'Enter the ID of the invoice fee', 'collector-bank-for-woocommerce' ),
+			'default'       => '',
+			'desc_tip'      => true,
+		),
 		'test_mode'         => array(
 			'title'         => __( 'Test mode', 'collector-bank-for-woocommerce' ),
 			'type'          => 'checkbox',

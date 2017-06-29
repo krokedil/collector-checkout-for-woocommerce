@@ -64,6 +64,12 @@ class Collector_Bank_Ajax_Calls {
 		$private_id = WC()->session->get( 'collector_private_id' );
 		$customer_data = new Collector_Bank_Requests_Get_Checkout_Information( $private_id );
 		$customer_data = $customer_data->request();
+
+		// Handle the payment method
+		$handle_payment_method = new Collector_Bank_Handle_Payment_Method();
+		$handle_payment_method->handle_payment_method( json_decode( $customer_data )->data->purchase->paymentMethod );
+
+		// Return the data, customer note and create a nonce.
 		$return = array();
 		$return['customer_data'] = json_decode( $customer_data );
 		$return['nonce'] = wp_create_nonce( 'woocommerce-process_checkout' );
