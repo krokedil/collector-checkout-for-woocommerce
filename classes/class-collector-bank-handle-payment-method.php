@@ -27,6 +27,8 @@ class Collector_Bank_Handle_Payment_Method {
 			case 'Campaign':
 				break;
 		}
+		// Make a session to be able to add payment_method as a order note without doing a 2nd call
+		WC()->session->set( 'collector_payment_method', $payment_method );
 	}
 
 	public function direct_invoice() {

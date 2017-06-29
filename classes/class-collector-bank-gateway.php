@@ -62,34 +62,8 @@ class Collector_Bank_Gateway extends WC_Payment_Gateway {
 	}
 
 	public function collector_thankyou( $order_id ) {
-		/*
-		// Update the reference with Collector
-		$customer_data = $this->get_customer_data();
-		$private_id = WC()->session->get( 'collector_private_id' );
-		$update_reference = new Collector_Bank_Requests_Update_Reference( $order_id, $private_id );
-		$update_reference->request();
-		$payment_method = $customer_data->data->purchase->paymentMethod;
-		update_post_meta( $order_id, '_collector_payment_method', $payment_method );
 		$order = wc_get_order( $order_id );
-		switch ( $payment_method ) {
-			case 'Direct Invoice':
-				$product_id = $this->get_option( 'collector_invoice_fee' );
-				$woocommerce->cart->add_to_cart($product_id);
-				//$product = wc_get_product( $product_id );
-				//$order->add_product( $product, 1 );
-				break;
-			case 'Account':
-				break;
-			case 'Card':
-				break;
-			case 'Bank Transfer':
-				break;
-			case 'PartPayment':
-				break;
-			case 'Campaign':
-				break;
-		}
-		$order->add_order_note( sprintf( __( 'Order made with Collector. Payment Method: %s', 'collector-bank-for-woocommerce' ), $payment_method ) );
-		*/
+		$order->payment_complete();
+		$order->add_order_note( sprintf( __( 'Order made with Collector. Payment Method: %s', 'collector-bank-for-woocommerce' ), WC()->session->get( 'collector_payment_method' ) ) );
 	}
 }
