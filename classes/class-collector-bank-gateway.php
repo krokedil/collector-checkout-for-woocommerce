@@ -65,5 +65,12 @@ class Collector_Bank_Gateway extends WC_Payment_Gateway {
 		$order = wc_get_order( $order_id );
 		$order->payment_complete();
 		$order->add_order_note( sprintf( __( 'Order made with Collector. Payment Method: %s', 'collector-bank-for-woocommerce' ), WC()->session->get( 'collector_payment_method' ) ) );
+
+		// Clear the sessions that was set to prevent any potential problems
+		WC()->session->__unset( 'collector_public_token' );
+		WC()->session->__unset( 'collector_private_id' );
+		WC()->session->__unset( 'collector_customer_order_note' );
+		WC()->session->__unset( 'collector_payment_method' );
+
 	}
 }
