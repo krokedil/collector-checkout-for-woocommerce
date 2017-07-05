@@ -5,6 +5,7 @@
     function get_checkout_iframe() {
         var url = window.location.href;
         if (url.indexOf('payment_successful') != -1) {
+            $('.entry-content').css("display", "none");
             if ($('form #billing_first_name').val() != '') {
                 // Check Terms checkbox, if it exists
                 if ($("form.checkout #terms").length > 0) {
@@ -33,6 +34,7 @@
     $(document).on('updated_checkout', function () {
         update_checkout();
         if ("collector_bank" === $("input[name='payment_method']:checked").val()) {
+            $('#place_order').remove();
             // Refresh the page to load collector bank template instead.
 
         }
