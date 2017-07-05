@@ -29,9 +29,7 @@ class Collector_Bank_Requests_Update_Cart extends Collector_Bank_Requests {
 	}
 
 	protected function request_body() {
-		$formatted_request_body = array(
-			$this->cart(),
-		);
+		$formatted_request_body = $this->cart();
 		$this->log( 'Collector update cart request body: ' . var_export( $formatted_request_body, true ) );
 		return wp_json_encode( $formatted_request_body );
 	}
