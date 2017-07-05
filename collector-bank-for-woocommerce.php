@@ -50,7 +50,6 @@ if ( ! class_exists( 'Collector_Bank' ) ) {
 		public function init() {
 			// Include the Classes
 			include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-bank-ajax-calls.php' );
-			include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-bank-handle-payment-method.php' );
 
 			// Include and add the Gateway
 			if ( class_exists( 'WC_Payment_Gateway' ) ) {
