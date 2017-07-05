@@ -65,7 +65,7 @@ class Collector_Bank_Ajax_Calls {
 		wp_send_json_success( $public_token );
 
 		WC()->session->__unset( 'collector_public_token' );
-		WC()->session->__unset( 'collector_customer_order_note' );
+		WC()->session->set( 'collector_customer_order_note', '' );
 		WC()->session->__unset( 'collector_private_id' );
 
 		wp_die();
@@ -79,11 +79,7 @@ class Collector_Bank_Ajax_Calls {
 		// Save the payment method
 		$payment_method = json_decode( $customer_data )->data->purchase->paymentMethod;
 		WC()->session->set( 'collector_payment_method', $payment_method );
-
-		// Handle the payment method
-		$handle_payment_method = new Collector_Bank_Handle_Payment_Method();
-		$handle_payment_method->handle_payment_method( WC()->session->get( 'collector_payment_method' ) );
-
+		
 		// Return the data, customer note and create a nonce.
 		$return = array();
 		$return['customer_data'] = json_decode( $customer_data );
