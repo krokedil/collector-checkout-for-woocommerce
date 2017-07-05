@@ -22,7 +22,6 @@ class Collector_Bank_Gateway extends WC_Payment_Gateway {
 
 		// Override the checkout template
 		add_filter( 'woocommerce_locate_template', array( $this, 'override_template' ), 10, 3 );
-
 	}
 	public function init_form_fields() {
 		$this->form_fields = include( COLLECTOR_BANK_PLUGIN_DIR . '/includes/collector-bank-settings.php' );
@@ -35,13 +34,6 @@ class Collector_Bank_Gateway extends WC_Payment_Gateway {
 			}
 		}
 		return $template;
-	}
-
-	public function maybe_process_payment() {
-		if ( isset( $_GET['payment_successful'] ) && WC()->session->get( 'order_awaiting_payment' ) == $_GET['payment_successful'] && is_checkout() ) {
-			add_filter( 'woocommerce_checkout_get_value', array( $this, 'populate_fields' ), 10, 2 );
-			add_filter( 'woocommerce_checkout_fields' ,  array( $this, 'set_not_required' ), 20 );
-		}
 	}
 
 	public function get_customer_data() {
@@ -64,13 +56,7 @@ class Collector_Bank_Gateway extends WC_Payment_Gateway {
 	public function collector_thankyou( $order_id ) {
 		$order = wc_get_order( $order_id );
 		$order->payment_complete();
+		update_post_meta( $order_id, '_collector_payment_method', WC()->session->get( 'collector_payment_method' ) );
 		$order->add_order_note( sprintf( __( 'Order made with Collector. Payment Method: %s', 'collector-bank-for-woocommerce' ), WC()->session->get( 'collector_payment_method' ) ) );
-
-		// Clear the sessions that was set to prevent any potential problems
-		WC()->session->__unset( 'collector_public_token' );
-		WC()->session->__unset( 'collector_private_id' );
-		WC()->session->__unset( 'collector_customer_order_note' );
-		WC()->session->__unset( 'collector_payment_method' );
-
 	}
 }

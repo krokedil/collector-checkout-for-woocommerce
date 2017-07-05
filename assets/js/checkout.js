@@ -65,6 +65,7 @@
             });
         }
     }
+
     // If customer gets to thank you page
     $( document ).ready( function() {
         var url = window.location.href;
@@ -89,7 +90,7 @@
             });
     }
 
-    // Load the iframe on the custom template page.
+    // Load the iframe on the custom template page, and save any customer order notes.
     $( document ).ready( function() {
         if ($('#collector-bank-iframe').length) {
             get_checkout_iframe();

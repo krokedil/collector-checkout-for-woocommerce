@@ -51,13 +51,21 @@ class Collector_Bank_Ajax_Calls {
 
 	public function add_customer_order_note() {
 		WC()->session->set( 'collector_customer_order_note', $_POST['order_note'] );
+
 		wp_send_json_success();
 		wp_die();
 	}
 
 	public function get_checkout_thank_you() {
 		$public_token = WC()->session->get( 'collector_public_token' );
+
 		wp_send_json_success( $public_token );
+
+		WC()->session->__unset( 'collector_public_token' );
+		WC()->session->__unset( 'collector_customer_order_note' );
+		WC()->session->__unset( 'collector_private_id' );
+
+		wp_die();
 	}
 
 	public function get_customer_data() {
@@ -65,15 +73,23 @@ class Collector_Bank_Ajax_Calls {
 		$customer_data = new Collector_Bank_Requests_Get_Checkout_Information( $private_id );
 		$customer_data = $customer_data->request();
 
+		// Save the payment method
+		$payment_method = json_decode( $customer_data )->data->purchase->paymentMethod;
+		WC()->session->set( 'collector_payment_method', $payment_method );
+
 		// Handle the payment method
 		$handle_payment_method = new Collector_Bank_Handle_Payment_Method();
-		$handle_payment_method->handle_payment_method( json_decode( $customer_data )->data->purchase->paymentMethod );
+		$handle_payment_method->handle_payment_method( WC()->session->get( 'collector_payment_method' ) );
 
 		// Return the data, customer note and create a nonce.
 		$return = array();
 		$return['customer_data'] = json_decode( $customer_data );
 		$return['nonce'] = wp_create_nonce( 'woocommerce-process_checkout' );
-		$return['order_note'] = WC()->session->get( 'collector_customer_order_note' );
+		if ( null != WC()->session->get( 'collector_customer_order_note' ) ) {
+			$return['order_note'] = WC()->session->get( 'collector_customer_order_note' );
+		} else {
+			$return['order_note'] = '';
+		}
 		wp_send_json_success( $return );
 		wp_die();
 	}
