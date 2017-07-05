@@ -10,8 +10,8 @@ class Collector_Bank_Ajax_Calls {
 		add_action( 'wp_ajax_nopriv_get_public_token', array( $this, 'get_public_token' ) );
 
 		// Update fees
-		add_action( 'wp_ajax_update_fees', array( $this, 'update_fees' ) );
-		add_action( 'wp_ajax_nopriv_update_fees', array( $this, 'update_fees' ) );
+		add_action( 'wp_ajax_update_checkout', array( $this, 'update_checkout' ) );
+		add_action( 'wp_ajax_nopriv_update_checkout', array( $this, 'update_checkout' ) );
 
 		// Ajax to add order notes as a session for the customer
 		add_action( 'wp_ajax_customer_order_note', array( $this, 'add_customer_order_note' ) );
@@ -40,10 +40,13 @@ class Collector_Bank_Ajax_Calls {
 		wp_die();
 	}
 
-	public function update_fees() {
+	public function update_checkout() {
 		$private_id = WC()->session->get( 'collector_private_id' );
 		$update_fees = new Collector_Bank_Requests_Update_Fees( $private_id[0] );
 		$update_fees->request();
+
+		$update_cart = new Collector_Bank_Requests_Update_Cart( $private_id[0] );
+		$update_cart->request();
 
 		wp_send_json_success();
 		wp_die();
