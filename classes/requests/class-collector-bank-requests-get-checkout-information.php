@@ -26,6 +26,7 @@ class Collector_Bank_Requests_Get_Checkout_Information extends Collector_Bank_Re
 		$request_url = 'https://checkout-api-uat.collector.se' . $this->path;
 		$request = wp_remote_request( $request_url, $this->get_request_args() );
 		$request = wp_remote_retrieve_body( $request );
+		$this->log( 'Collector get checkout information request response: ' . var_export( $request, true ) );
 		return $request;
 	}
 }

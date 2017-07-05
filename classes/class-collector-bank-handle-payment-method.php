@@ -33,6 +33,10 @@ class Collector_Bank_Handle_Payment_Method {
 
 	public function direct_invoice() {
 		$product_id = $this->collector_settings['collector_invoice_fee'];
-		WC()->cart->add_to_cart( $product_id );
+		$_product = wc_get_product( $product_id );
+		$price = $_product->get_regular_price();
+		WC()->cart->add_fee( __( 'Invoice Fee', 'collector-bank-for-woocommerce' ), $price, false, '' );
+		WC()->cart->calculate_totals();
+		//WC()->cart->add_to_cart( $product_id );
 	}
 }

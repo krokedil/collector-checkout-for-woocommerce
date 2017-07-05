@@ -30,7 +30,7 @@ class Collector_Bank_Ajax_Calls {
 		$init_checkout = new Collector_Bank_Requests_Initialize_Checkout();
 		$request = $init_checkout->request();
 
-		$decode = json_decode( $request['body'] );
+		$decode = json_decode( $request );
 		$return = $decode->data->publicToken;
 		// Set post metas so they can be used again later
 		WC()->session->set( 'collector_public_token', $return );
@@ -42,10 +42,10 @@ class Collector_Bank_Ajax_Calls {
 
 	public function update_checkout() {
 		$private_id = WC()->session->get( 'collector_private_id' );
-		$update_fees = new Collector_Bank_Requests_Update_Fees( $private_id[0] );
+		$update_fees = new Collector_Bank_Requests_Update_Fees( $private_id );
 		$update_fees->request();
 
-		$update_cart = new Collector_Bank_Requests_Update_Cart( $private_id[0] );
+		$update_cart = new Collector_Bank_Requests_Update_Cart( $private_id );
 		$update_cart->request();
 
 		wp_send_json_success();
@@ -93,6 +93,7 @@ class Collector_Bank_Ajax_Calls {
 		} else {
 			$return['order_note'] = '';
 		}
+		$return['shipping'] = WC()->session->get( 'collector_chosen_shipping' );
 		wp_send_json_success( $return );
 		wp_die();
 	}

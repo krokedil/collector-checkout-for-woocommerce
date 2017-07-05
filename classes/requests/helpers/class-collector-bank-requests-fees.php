@@ -25,9 +25,10 @@ class Collector_Bank_Requests_Fees {
 			foreach ( $packages as $i => $package ) {
 				foreach ( $package['rates'] as $method ) {
 					if ( $chosen_shipping === $method->id ) {
+						WC()->session->set( 'collector_chosen_shipping', $method->id );
 						if ( $method->cost > 0 ) {
 							$shipping_item = array(
-								'id' => 'Shipping',
+								'id' => $method->label,
 								'description' => $method->label,
 								'unitPrice' => $method->cost + array_sum( $method->taxes ),
 								'vat' => round( array_sum( $method->taxes ) / $method->cost, 2 ),
@@ -35,8 +36,8 @@ class Collector_Bank_Requests_Fees {
 							return $shipping_item;
 						} else {
 							$shipping_item = array(
-								'id' => 'Shipping',
-								'description' => 'Free Shipping',
+								'id' => $method->label,
+								'description' => $method->label,
 								'unitPrice' => 0,
 								'vat' => 0,
 							);

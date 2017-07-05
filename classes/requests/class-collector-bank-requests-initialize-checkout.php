@@ -23,6 +23,8 @@ class Collector_Bank_Requests_Initialize_Checkout extends Collector_Bank_Request
 	public function request() {
 		$request_url = 'https://checkout-api-uat.collector.se/checkout';
 		$request = wp_remote_request( $request_url, $this->get_request_args() );
+		$request = wp_remote_retrieve_body( $request );
+		$this->log( 'Collector init checkout request response: ' . var_export( $request, true ) );
 		return $request;
 	}
 
