@@ -18,6 +18,7 @@ class Collector_Bank_Requests_Update_Cart extends Collector_Bank_Requests {
 			'body'    => $this->request_body(),
 			'method'  => 'PUT',
 		);
+		$this->log( 'Collector update cart request args: ' . var_export( $request_args, true ) );
 		return $request_args;
 	}
 
@@ -31,6 +32,7 @@ class Collector_Bank_Requests_Update_Cart extends Collector_Bank_Requests {
 		$formatted_request_body = array(
 			$this->cart(),
 		);
+		$this->log( 'Collector update cart request body: ' . var_export( $formatted_request_body, true ) );
 		return wp_json_encode( $formatted_request_body );
 	}
 }

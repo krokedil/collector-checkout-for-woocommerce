@@ -18,6 +18,7 @@ class Collector_Bank_Requests_Update_Fees extends Collector_Bank_Requests {
 			'body'    => $this->request_body(),
 			'method'  => 'PUT',
 		);
+		$this->log( 'Collector update fees request args: ' . var_export( $request_args, true ) );
 		return $request_args;
 	}
 
@@ -33,6 +34,7 @@ class Collector_Bank_Requests_Update_Fees extends Collector_Bank_Requests {
 			'shipping'                  => $fees['shipping'],
 			'directinvoicenotification' => $fees['directinvoicenotification'],
 		);
+		$this->log( 'Collector update fees request body: ' . var_export( $formatted_request_body, true ) );
 		return wp_json_encode( $formatted_request_body );
 	}
 }

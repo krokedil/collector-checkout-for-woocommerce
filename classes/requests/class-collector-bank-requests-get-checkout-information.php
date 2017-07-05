@@ -18,6 +18,7 @@ class Collector_Bank_Requests_Get_Checkout_Information extends Collector_Bank_Re
 			'headers' => $this->request_header( '', $this->path ),
 			'method'  => 'GET',
 		);
+		$this->log( 'Collector checkout information request args: ' . var_export( $request_args, true ) );
 		return $request_args;
 	}
 

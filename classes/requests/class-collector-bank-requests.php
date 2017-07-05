@@ -4,6 +4,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 class Collector_Bank_Requests {
+
+	static $log = '';
+
 	public function __construct() {
 
 	}
@@ -26,5 +29,15 @@ class Collector_Bank_Requests {
 
 	protected function fees() {
 		return Collector_Bank_Requests_Fees::fees();
+	}
+
+	public static function log( $message ) {
+		$dibs_settings = get_option( 'woocommerce_dibs_easy_settings' );
+		if ( 'yes' === $dibs_settings['debug_mode'] ) {
+			if ( empty( self::$log ) ) {
+				self::$log = new WC_Logger();
+			}
+			self::$log->add( 'collector_bank', $message );
+		}
 	}
 }
