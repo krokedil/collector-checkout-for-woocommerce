@@ -71,6 +71,8 @@ class Collector_Bank_Gateway extends WC_Payment_Gateway {
 			$order->calculate_totals( true );
 		}
 
+		WC()->session->__unset( 'collector_customer_order_note' );
+
 		return array(
 			'result'   => 'success',
 			'redirect' => $this->get_return_url( $order ),
