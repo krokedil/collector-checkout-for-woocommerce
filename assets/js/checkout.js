@@ -51,7 +51,7 @@
     });
 
     function update_checkout() {
-        if( checkout_initiated == true ) {
+        if( checkout_initiated === true ) {
             window.collector.checkout.api.suspend();
             var data = {
                 'action': 'update_checkout'
@@ -147,7 +147,7 @@
                 }
                     jQuery.ajax({
                     type: 'POST',
-                    url: '/checkout/?wc-ajax=checkout',
+                    url: wc_checkout_params.checkout_url,
                     data: datastring,
                     dataType: 'json',
                     success: function (result) {
@@ -182,7 +182,7 @@
                         }
                     },
                     error: function (jqXHR, textStatus, errorThrown) {
-                        wc_checkout_form.submit_error('<div class="woocommerce-error">' + errorThrown + '</div>');
+                        //wc_checkout_form.submit_error('<div class="woocommerce-error">' + errorThrown + '</div>');
                     }
                 });
             } else {
