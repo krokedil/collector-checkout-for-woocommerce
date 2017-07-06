@@ -18,8 +18,6 @@ return;
 <form name="checkout" method="post" class="checkout woocommerce-checkout" action="<?php echo esc_url( wc_get_checkout_url() ); ?>" enctype="multipart/form-data">
 	<?php do_action( 'woocommerce_checkout_before_customer_details' ); ?>
 	<?php do_action( 'woocommerce_checkout_after_customer_details' ); ?>
-	<?php $form_field = WC()->checkout()->get_checkout_fields( 'order' ); ?>
-	<?php woocommerce_form_field( 'order_comments', $form_field['order_comments'] ); ?>
 	<h3 id="order_review_heading" style="float:none"><?php _e( 'Your order', 'woocommerce' ); ?></h3>
 
 	<?php do_action( 'woocommerce_checkout_before_order_review' ); ?>
@@ -27,7 +25,8 @@ return;
 	<div id="order_review" style="width:100%">
 		<?php do_action( 'woocommerce_checkout_order_review' ); ?>
 	</div>
-
+	<?php $form_field = WC()->checkout()->get_checkout_fields( 'order' ); ?>
+	<?php woocommerce_form_field( 'order_comments', $form_field['order_comments'] ); ?>
 	<?php do_action( 'woocommerce_checkout_after_order_review' ); ?>
 
 </form>
