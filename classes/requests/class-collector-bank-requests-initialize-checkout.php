@@ -34,8 +34,8 @@ class Collector_Bank_Requests_Initialize_Checkout extends Collector_Bank_Request
 			'countryCode'       => 'SE',
 			'reference'         => '',
 			'redirectPageUri'   => WC()->cart->get_checkout_url() . '?payment_successful=1',
-			'merchantTermsUri'  => 'http://krokedil.dibs.ngrok.io/terms',
-			'notificationUri'   => 'http://krokedil.dibs.ngrok.io',
+			'merchantTermsUri'  => get_site_url() . '/terms',
+			'notificationUri'   => get_site_url(),
 			'cart'              => $this->cart(),
 			'fees'              => $this->fees(),
 		);
