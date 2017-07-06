@@ -8,6 +8,7 @@ class Collector_Bank_Gateway extends WC_Payment_Gateway {
 		$this->id                 = 'collector_bank';
 		$this->method_title       = __( 'Collector Bank', 'collector-bank-for-woocommerce' );
 		$this->method_description = __( 'Collector Bank payment solution for WooCommerce', 'collector-bank-for-woocommerce' );
+		$this->description 		  = $this->get_option( 'description' );
 		$this->title = $this->get_option( 'title' );
 		$this->enabled = $this->get_option( 'enabled' );
 		// Load the form fields.

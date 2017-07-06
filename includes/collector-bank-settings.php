@@ -21,6 +21,13 @@ return apply_filters( 'collector_bank_settings',
 			'description'   => __( 'This is the title that the user sees on the checkout page for Collector Bank.', 'collector-bank-for-woocommerce' ),
 			'default'       => __( 'Collector Bank', 'collector-bank-for-woocommerce' ),
 		),
+		'description' => array(
+			'title'         => __( 'Description', 'collector-bank-for-woocommerce' ),
+			'type'          => 'text',
+			'description'   => __( 'This controls the description which the user sees during checkout.', 'krokedil-ecster-pay-for-woocommerce' ),
+			'default'       => __( 'Pay using Collector Bank.', 'collector-bank-for-woocommerce'),
+			'desc_tip'      => true,
+		),
 		'collector_shared_key'     => array(
 			'title'         => __( 'Shared Key', 'collector-bank-for-woocommerce' ),
 			'type'          => 'text',
