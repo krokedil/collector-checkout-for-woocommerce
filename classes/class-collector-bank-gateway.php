@@ -29,12 +29,14 @@ class Collector_Bank_Gateway extends WC_Payment_Gateway {
 	}
 
 	public function override_template( $template, $template_name, $template_path ) {
-		$available_payment_gateways = WC()->payment_gateways->get_available_payment_gateways();
-		reset( $available_payment_gateways );
-		$first_gateway = key( $available_payment_gateways );
-		if ( WC()->session->get( 'chosen_payment_method' ) === $this->id || $this->id === $first_gateway ) {
-			if ( 'checkout/form-checkout.php' === $template_name ) {
-				$template = COLLECTOR_BANK_PLUGIN_DIR . '/templates/form-checkout.php';
+		if ( is_checkout() ) {
+			$available_payment_gateways = WC()->payment_gateways->get_available_payment_gateways();
+			reset( $available_payment_gateways );
+			$first_gateway = key( $available_payment_gateways );
+			if ( WC()->session->get( 'chosen_payment_method' ) === $this->id || $this->id === $first_gateway ) {
+				if ( 'checkout/form-checkout.php' === $template_name ) {
+					$template = COLLECTOR_BANK_PLUGIN_DIR . '/templates/form-checkout.php';
+				}
 			}
 		}
 		return $template;
@@ -84,6 +86,7 @@ class Collector_Bank_Gateway extends WC_Payment_Gateway {
 		$order = wc_get_order( $order_id );
 		$order->payment_complete();
 		update_post_meta( $order_id, '_collector_payment_method', WC()->session->get( 'collector_payment_method' ) );
+		update_post_meta( $order_id, '_collector_payment_id', WC()->session->get( 'collector_payment_id' ) );
 		$order->add_order_note( sprintf( __( 'Order made with Collector. Payment Method: %s', 'collector-bank-for-woocommerce' ), WC()->session->get( 'collector_payment_method' ) ) );
 	}
 }

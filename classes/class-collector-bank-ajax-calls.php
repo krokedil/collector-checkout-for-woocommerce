@@ -75,9 +75,12 @@ class Collector_Bank_Ajax_Calls {
 		$customer_data = new Collector_Bank_Requests_Get_Checkout_Information( $private_id );
 		$customer_data = $customer_data->request();
 
-		// Save the payment method
-		$payment_method = json_decode( $customer_data )->data->purchase->paymentMethod;
+		// Save the payment method and payment id
+		$decoded_json = json_decode( $customer_data );
+		$payment_method = $decoded_json->data->purchase->paymentMethod;
+		$payment_id = $decoded_json->id;
 		WC()->session->set( 'collector_payment_method', $payment_method );
+		WC()->session->set( 'collector_payment_id', $payment_id );
 
 		// Return the data, customer note and create a nonce.
 		$return = array();

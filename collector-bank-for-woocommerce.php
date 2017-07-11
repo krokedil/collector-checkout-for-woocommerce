@@ -50,6 +50,7 @@ if ( ! class_exists( 'Collector_Bank' ) ) {
 		public function init() {
 			// Include the Classes
 			include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-bank-ajax-calls.php' );
+			include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-bank-post-checkout.php' );
 
 			// Include and add the Gateway
 			if ( class_exists( 'WC_Payment_Gateway' ) ) {
@@ -70,6 +71,9 @@ if ( ! class_exists( 'Collector_Bank' ) ) {
 			include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/helpers/class-collector-bank-requests-fees.php' );
 			include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/helpers/class-collector-bank-requests-header.php' );
 			include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/helpers/class-collector-bank-requests-calculate-auth.php' );
+
+			// Include the Soap Request Classes
+			include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/soap/class-collector-bank-soap-requests-activate-invoice.php' );
 		}
 
 		public function load_scripts() {
