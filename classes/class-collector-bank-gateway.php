@@ -8,15 +8,22 @@ class Collector_Bank_Gateway extends WC_Payment_Gateway {
 		$this->id                 = 'collector_bank';
 		$this->method_title       = __( 'Collector Bank', 'collector-bank-for-woocommerce' );
 		$this->method_description = __( 'Collector Bank payment solution for WooCommerce', 'collector-bank-for-woocommerce' );
-		$this->description 		  = $this->get_option( 'description' );
-		$this->title = $this->get_option( 'title' );
-		$this->enabled = $this->get_option( 'enabled' );
+		$this->description        = $this->get_option( 'description' );
+		$this->title              = $this->get_option( 'title' );
+		$this->enabled            = $this->get_option( 'enabled' );
 		// Load the form fields.
 		$this->init_form_fields();
 		// Load the settings.
 		$this->init_settings();
+		$this->supports = array(
+			'products',
+			'refunds',
+		);
 
-		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
+		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array(
+			$this,
+			'process_admin_options'
+		) );
 
 		// Function to handle the thankyou page.
 		add_action( 'woocommerce_thankyou_collector_bank', array( $this, 'collector_thankyou' ) );
@@ -24,6 +31,7 @@ class Collector_Bank_Gateway extends WC_Payment_Gateway {
 		// Override the checkout template
 		add_filter( 'woocommerce_locate_template', array( $this, 'override_template' ), 10, 3 );
 	}
+
 	public function init_form_fields() {
 		$this->form_fields = include( COLLECTOR_BANK_PLUGIN_DIR . '/includes/collector-bank-settings.php' );
 	}
@@ -39,6 +47,7 @@ class Collector_Bank_Gateway extends WC_Payment_Gateway {
 				}
 			}
 		}
+
 		return $template;
 	}
 
@@ -47,6 +56,7 @@ class Collector_Bank_Gateway extends WC_Payment_Gateway {
 		$private_id    = WC()->session->get( 'collector_private_id' );
 		$customer_data = new Collector_Bank_Requests_Get_Checkout_Information( $private_id );
 		$customer_data = $customer_data->request();
+
 		return json_decode( $customer_data );
 	}
 
@@ -55,8 +65,8 @@ class Collector_Bank_Gateway extends WC_Payment_Gateway {
 
 		if ( 'Direct Invoice' == WC()->session->get( 'collector_payment_method' ) ) {
 			$product_id = $this->get_option( 'collector_invoice_fee' );
-			$_product = wc_get_product( $product_id );
-			$price = $_product->get_regular_price();
+			$_product   = wc_get_product( $product_id );
+			$price      = $_product->get_regular_price();
 
 			$collector_fee            = new stdClass();
 			$collector_fee->id        = sanitize_title( __( 'Collector Bank Invoice Fee', 'collector-bank-for-woocommerce' ) );
@@ -88,5 +98,21 @@ class Collector_Bank_Gateway extends WC_Payment_Gateway {
 		update_post_meta( $order_id, '_collector_payment_method', WC()->session->get( 'collector_payment_method' ) );
 		update_post_meta( $order_id, '_collector_payment_id', WC()->session->get( 'collector_payment_id' ) );
 		$order->add_order_note( sprintf( __( 'Order made with Collector. Payment Method: %s', 'collector-bank-for-woocommerce' ), WC()->session->get( 'collector_payment_method' ) ) );
+	}
+
+	public function process_refund( $order_id, $amount = null, $reason = '' ) {
+		//Check if amount equals total order
+		$order = wc_get_order( $order_id );
+		if ( $amount == $order->get_total() ) {
+			$credit_order = new Collector_Bank_SOAP_Requests_Credit_Payment();
+			if ( $credit_order->request( $order_id ) === true ) {
+				return true;
+			} else {
+				return false;
+			}
+		} else {
+			$order->add_order_note( sprintf( __( 'Collector Bank currently only supports full refunds, for a partial refund use the Collector Bank Merchant Portal', 'collector-bank-for-woocommerce' ) ) );
+			return false;
+		}
 	}
 }

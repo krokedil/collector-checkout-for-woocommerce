@@ -74,6 +74,8 @@ if ( ! class_exists( 'Collector_Bank' ) ) {
 
 			// Include the Soap Request Classes
 			include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/soap/class-collector-bank-soap-requests-activate-invoice.php' );
+			include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/soap/class-collector-bank-soap-requests-cancel-invoice.php' );
+			include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/soap/class-collector-bank-soap-requests-credit-payment.php' );
 		}
 
 		public function load_scripts() {

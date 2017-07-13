@@ -78,7 +78,7 @@ class Collector_Bank_Ajax_Calls {
 		// Save the payment method and payment id
 		$decoded_json = json_decode( $customer_data );
 		$payment_method = $decoded_json->data->purchase->paymentMethod;
-		$payment_id = $decoded_json->id;
+		$payment_id = $decoded_json->data->purchase->purchaseIdentifier;
 		WC()->session->set( 'collector_payment_method', $payment_method );
 		WC()->session->set( 'collector_payment_id', $payment_id );
 

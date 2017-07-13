@@ -3,7 +3,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly
 }
 
-class Collector_Bank_SOAP_Requests_Activate_Invoice {
+class Collector_Bank_SOAP_Requests_Credit_Payment {
 
 	static $log = '';
 
@@ -29,15 +29,16 @@ class Collector_Bank_SOAP_Requests_Activate_Invoice {
 		$headers[] = new SoapHeader( 'http://schemas.ecommerce.collector.se/v30/InvoiceService', 'Password', $this->password );
 		$soap->__setSoapHeaders( $headers );
 
-		$request = $soap->ActivateInvoice( $args );
+		$request = $soap->CreditInvoice( $args );
 		$order = wc_get_order( $order_id );
-		if ( isset( $request->PaymentReference ) ) {
-			$order->add_order_note( sprintf( __( 'Order activated with Collector Bank', 'collector-bank-for-woocommerce' ) ) );
+		if ( isset( $request->CorrelationId ) || $request->CorrelationId == null ) {
+			$order->add_order_note( sprintf( __( 'Order credited with Collector Bank', 'collector-bank-for-woocommerce' ) ) );
+			return true;
 		} else {
-			$order->update_status( 'processing' );
-			$order->add_order_note( sprintf( __( 'Order failed to activate with Collector Bank', 'collector-bank-for-woocommerce' ) ) );
-			$this->log( 'Activate order headers: ' . var_export( $headers, true ) );
-			$this->log( 'Activate order args: ' . var_export( $args, true ) );
+			$order->update_status( 'completed' );
+			$order->add_order_note( sprintf( __( 'Order failed to be credited with Collector Bank', 'collector-bank-for-woocommerce' ) ) );
+			$this->log( 'Credit Payment headers: ' . var_export( $headers, true ) );
+			$this->log( 'Credit Payment args: ' . var_export( $args, true ) );
 		}
 	}
 
@@ -46,6 +47,7 @@ class Collector_Bank_SOAP_Requests_Activate_Invoice {
 			'StoreId'     => $this->store_id,
 			'CountryCode' => 'SE',
 			'InvoiceNo'   => get_post_meta( $order_id, '_collector_payment_id' )[0],
+			'CreditDate'  => time(),
 		);
 	}
 

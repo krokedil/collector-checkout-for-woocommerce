@@ -3,7 +3,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly
 }
 
-class Collector_Bank_SOAP_Requests_Activate_Invoice {
+class Collector_Bank_SOAP_Requests_Cancel_Invoice {
 
 	static $log = '';
 
@@ -29,15 +29,15 @@ class Collector_Bank_SOAP_Requests_Activate_Invoice {
 		$headers[] = new SoapHeader( 'http://schemas.ecommerce.collector.se/v30/InvoiceService', 'Password', $this->password );
 		$soap->__setSoapHeaders( $headers );
 
-		$request = $soap->ActivateInvoice( $args );
+		$request = $soap->CancelInvoice( $args );
 		$order = wc_get_order( $order_id );
-		if ( isset( $request->PaymentReference ) ) {
-			$order->add_order_note( sprintf( __( 'Order activated with Collector Bank', 'collector-bank-for-woocommerce' ) ) );
+		if ( isset( $request->CorrelationId ) || $request->CorrelationId == null ) {
+			$order->add_order_note( sprintf( __( 'Order canceled with Collector Bank', 'collector-bank-for-woocommerce' ) ) );
 		} else {
 			$order->update_status( 'processing' );
-			$order->add_order_note( sprintf( __( 'Order failed to activate with Collector Bank', 'collector-bank-for-woocommerce' ) ) );
-			$this->log( 'Activate order headers: ' . var_export( $headers, true ) );
-			$this->log( 'Activate order args: ' . var_export( $args, true ) );
+			$order->add_order_note( sprintf( __( 'Order failed to cancel with Collector Bank', 'collector-bank-for-woocommerce' ) ) );
+			$this->log( 'Cancel order headers: ' . var_export( $headers, true ) );
+			$this->log( 'Cancel order args: ' . var_export( $args, true ) );
 		}
 	}
 

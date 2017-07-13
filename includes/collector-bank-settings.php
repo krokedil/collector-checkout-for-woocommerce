@@ -69,5 +69,11 @@ return apply_filters( 'collector_bank_settings',
 			'label'         => __( 'Enable Test mode for Collector Bank', 'collector-bank-for-woocommerce' ),
 			'default'       => 'no',
 		),
+		'debug_mode'         => array(
+			'title'         => __( 'Debug', 'collector-bank-for-woocommerce' ),
+			'type'          => 'checkbox',
+			'label'         => __( 'Enable Debug mode for Collector Bank', 'collector-bank-for-woocommerce' ),
+			'default'       => 'no',
+		),
 	)
 );
