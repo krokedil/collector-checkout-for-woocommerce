@@ -5,21 +5,21 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class Collector_Bank_Requests_Fees {
 
-	static $invoice_fee_id = '';
-	static $price = '';
+	public $invoice_fee_id = '';
+	public $price = 0;
 
 	public function __construct() {
 		$collector_settings = get_option( 'woocommerce_collector_bank_settings' );
 		$invoice_fee_id = $collector_settings['collector_invoice_fee'];
 		$_product   = wc_get_product( $invoice_fee_id );
-		self::$invoice_fee_id = $invoice_fee_id;
-		self::$price = $_product->get_regular_price();
+		$this->invoice_fee_id = $invoice_fee_id;
+		$this->price = $_product->get_regular_price();
 	}
 
-	public static function fees() {
+	public function fees() {
 		$fees = array();
-		$shipping = self::get_shipping();
-		$directinvoicenotification = self::get_invoice_fee();
+		$shipping = $this->get_shipping();
+		$directinvoicenotification = $this->get_invoice_fee();
 
 		$fees['shipping'] = $shipping;
 		$fees['directinvoicenotification'] = $directinvoicenotification;
@@ -28,7 +28,7 @@ class Collector_Bank_Requests_Fees {
 
 	}
 
-	public static function get_shipping() {
+	public function get_shipping() {
 		if ( WC()->cart->needs_shipping() ) {
 			WC()->cart->calculate_shipping();
 			$packages = WC()->shipping->get_packages();
@@ -61,11 +61,11 @@ class Collector_Bank_Requests_Fees {
 		}
 	}
 
-	public static function get_invoice_fee() {
+	public function get_invoice_fee() {
 		return array(
-			'id'            => get_the_title( self::$invoice_fee_id ),
-			'description'   => get_the_title( self::$invoice_fee_id ),
-			'unitPrice'     => self::$price,
+			'id'            => get_the_title( $this->invoice_fee_id ),
+			'description'   => get_the_title( $this->invoice_fee_id ),
+			'unitPrice'     => $this->price,
 			'vat'           => 0,
 		);
 	}

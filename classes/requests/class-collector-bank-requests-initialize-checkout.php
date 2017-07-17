@@ -6,8 +6,26 @@ if ( ! defined( 'ABSPATH' ) ) {
 class Collector_Bank_Requests_Initialize_Checkout extends Collector_Bank_Requests {
 
 	public $path = '/checkout';
+	public $store_id = '';
+	public $country_code = '';
 
 	public function __construct() {
+		$collector_settings = get_option( 'woocommerce_collector_bank_settings' );
+		switch ( get_woocommerce_currency() ) {
+			case 'SEK' :
+				$country_code = 'SE';
+				$this->store_id = $collector_settings['collector_merchant_id_se'];
+				break;
+			case 'NOK' :
+				$country_code = 'NO';
+				$this->store_id = $collector_settings['collector_merchant_id_no'];
+				break;
+			default :
+				$country_code = 'SE';
+				$this->store_id = $collector_settings['collector_merchant_id_se'];
+				break;
+		}
+		$this->country_code = $country_code;
 	}
 
 	private function get_request_args() {
@@ -30,8 +48,8 @@ class Collector_Bank_Requests_Initialize_Checkout extends Collector_Bank_Request
 
 	protected function request_body() {
 		$formatted_request_body = array(
-			'storeId'           => '873',
-			'countryCode'       => 'SE',
+			'storeId'           => $this->store_id,
+			'countryCode'       => $this->country_code,
 			'reference'         => '',
 			'redirectPageUri'   => WC()->cart->get_checkout_url() . '?payment_successful=1',
 			'merchantTermsUri'  => get_site_url() . '/terms',

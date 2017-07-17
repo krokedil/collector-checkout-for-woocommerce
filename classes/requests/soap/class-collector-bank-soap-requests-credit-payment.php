@@ -12,12 +12,27 @@ class Collector_Bank_SOAP_Requests_Credit_Payment {
 	public $username = '';
 	public $password = '';
 	public $store_id = '';
+	public $country_code = '';
 
 	public function __construct() {
 		$collector_settings = get_option( 'woocommerce_collector_bank_settings' );
 		$this->username = $collector_settings['collector_username'];
 		$this->password = $collector_settings['collector_password'];
-		$this->store_id = $collector_settings['collector_merchant_id'];
+		switch ( get_woocommerce_currency() ) {
+			case 'SEK' :
+				$country_code = 'SE';
+				$this->store_id = $collector_settings['collector_merchant_id_se'];
+				break;
+			case 'NOK' :
+				$country_code = 'NO';
+				$this->store_id = $collector_settings['collector_merchant_id_no'];
+				break;
+			default :
+				$country_code = 'SE';
+				$this->store_id = $collector_settings['collector_merchant_id_se'];
+				break;
+		}
+		$this->country_code = $country_code;
 	}
 
 	public function request( $order_id ) {
@@ -45,7 +60,7 @@ class Collector_Bank_SOAP_Requests_Credit_Payment {
 	public function get_request_args( $order_id ) {
 		return array(
 			'StoreId'     => $this->store_id,
-			'CountryCode' => 'SE',
+			'CountryCode' => $this->country_code,
 			'InvoiceNo'   => get_post_meta( $order_id, '_collector_payment_id' )[0],
 			'CreditDate'  => time(),
 		);

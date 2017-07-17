@@ -8,7 +8,17 @@ class Collector_Bank_Requests_Update_Fees extends Collector_Bank_Requests {
 
 	public function __construct( $private_id ) {
 		$collector_settings = get_option( 'woocommerce_collector_bank_settings' );
-		$store_id = $collector_settings['collector_merchant_id'];
+		switch ( get_woocommerce_currency() ) {
+			case 'SEK' :
+				$store_id = $collector_settings['collector_merchant_id_se'];
+				break;
+			case 'NOK' :
+				$store_id = $collector_settings['collector_merchant_id_no'];
+				break;
+			default :
+				$store_id = $collector_settings['collector_merchant_id_se'];
+				break;
+		}
 		$this->path = '/merchants/' . $store_id . '/checkouts/' . $private_id . '/fees';
 	}
 

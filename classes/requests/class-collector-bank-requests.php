@@ -24,11 +24,13 @@ class Collector_Bank_Requests {
 	}
 
 	protected function cart() {
-		return Collector_Bank_Requests_Cart::cart();
+		$collector_bank_requests_cart = new Collector_Bank_Requests_Cart();
+		return $collector_bank_requests_cart->cart();
 	}
 
 	protected function fees() {
-		return Collector_Bank_Requests_Fees::fees();
+		$collector_bank_requests_fees = new Collector_Bank_Requests_Fees();
+		return $collector_bank_requests_fees->fees();
 	}
 
 	public static function log( $message ) {
