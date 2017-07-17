@@ -1,7 +1,3 @@
-.collector-bank-selected #order_review_heading, .collector-bank-selected #order_review {
-    float:none;
-    width:100%;
-}
-.collector-bank-selected #customer_details, .collector-bank-selected #place_order{
+.collector-bank-selected #place_order, .collector-bank-selected ul.payment_methods, .collector-bank-selected p.wc-terms-and-conditions{
     display:none;
 }

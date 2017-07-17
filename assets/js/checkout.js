@@ -19,6 +19,8 @@
             };
             jQuery.post(wc_collector_bank.ajaxurl, data, function (data) {
                 if (true === data.success) {
+                    // Add class to body
+                    $('body').addClass('collector-bank-selected');
                     // Remove any checkout frame to prevent duplicate
                     $('#collector-checkout-iframe').remove();
                     var publicToken = data.data;
@@ -34,7 +36,6 @@
     $(document).on('updated_checkout', function () {
         update_checkout();
         if ("collector_bank" === $("input[name='payment_method']:checked").val()) {
-            $('#place_order').remove();
             // Refresh the page to load collector bank template instead.
 
         }
@@ -126,24 +127,26 @@
                     '&billing_last_name=' + data.data.customer_data.data.customer.billingAddress.lastName +
                     '&billing_country=SE' +
                     '&billing_address_1=' + data.data.customer_data.data.customer.billingAddress.address +
-                    '&billing_address_2=' + data.data.customer_data.data.customer.billingAddress.address2 +
                     '&billing_postcode=' + data.data.customer_data.data.customer.billingAddress.postCode +
                     '&billing_city=' + data.data.customer_data.data.customer.billingAddress.city +
-                    '&billing_state=' +
                     '&billing_phone=' + data.data.customer_data.data.customer.mobilePhoneNumber +
                     '&billing_email=' + data.data.customer_data.data.customer.email +
                     '&shipping_first_name=' + data.data.customer_data.data.customer.deliveryAddress.firstName +
                     '&shipping_last_name=' + data.data.customer_data.data.customer.deliveryAddress.lastName +
                     '&shipping_country=SE&shipping_address_1=' + data.data.customer_data.data.customer.deliveryAddress.address +
-                    '&shipping_address_2=' + data.data.customer_data.data.customer.deliveryAddress.address2 +
                     '&shipping_postcode=' + data.data.customer_data.data.customer.deliveryAddress.postalCode +
                     '&shipping_city=' + data.data.customer_data.data.customer.deliveryAddress.city +
-                    '&shipping_state=&' +
                     'shipping_method%5B0%5D=' + data.data.shipping +
                     '&payment_method=collector_bank&terms=on' +
                     '&terms-field=1&_wpnonce=' + data.data.nonce;
                 if(data.data.order_note != 'undefined'){
-                    datastring = datastring + '&order_comments=' + data.data.order_note
+                    datastring = datastring + '&order_comments=' + data.data.order_note;
+                }
+                if(data.data.customer_data.data.customer.billingAddress.address2 !== null) {
+                    datastring = datastring + '&billing_address_2=' + data.data.customer_data.data.customer.billingAddress.address2;
+                }
+                if(data.data.customer_data.data.customer.deliveryAddress.address2 !== null) {
+                    datastring = datastring + '&shipping_address_2=' + data.data.customer_data.data.customer.deliveryAddress.address2;
                 }
                     jQuery.ajax({
                     type: 'POST',

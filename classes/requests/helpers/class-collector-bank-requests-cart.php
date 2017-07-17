@@ -27,7 +27,7 @@ class Collector_Bank_Requests_Cart {
 			'description'   => $product_name,
 			'unitPrice'     => round( ( $line_total + $line_tax ) / $quantity, 2 ), // Total price per unit including VAT
 			'quantity'      => $quantity,
-			'vat'           => round( $line_tax / $line_total, 2 ),
+			'vat'           => round( $line_tax / $line_total, 2 ) * 100,
 		);
 	}
 

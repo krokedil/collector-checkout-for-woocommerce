@@ -85,7 +85,9 @@ class Collector_Bank_Gateway extends WC_Payment_Gateway {
 		}
 
 		WC()->session->__unset( 'collector_customer_order_note' );
-
+		// Update the Collector Order with the Order ID
+		$update_reference = new Collector_Bank_Requests_Update_Reference( $order->get_order_number(), WC()->session->get( 'collector_private_id' ) );
+		$update_reference->request();
 		return array(
 			'result'   => 'success',
 			'redirect' => $this->get_return_url( $order ),

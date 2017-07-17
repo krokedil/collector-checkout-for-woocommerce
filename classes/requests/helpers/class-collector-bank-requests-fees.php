@@ -4,6 +4,18 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 class Collector_Bank_Requests_Fees {
+
+	static $invoice_fee_id = '';
+	static $price = '';
+
+	public function __construct() {
+		$collector_settings = get_option( 'woocommerce_collector_bank_settings' );
+		$invoice_fee_id = $collector_settings['collector_invoice_fee'];
+		$_product   = wc_get_product( $invoice_fee_id );
+		self::$invoice_fee_id = $invoice_fee_id;
+		self::$price = $_product->get_regular_price();
+	}
+
 	public static function fees() {
 		$fees = array();
 		$shipping = self::get_shipping();
@@ -31,7 +43,7 @@ class Collector_Bank_Requests_Fees {
 								'id' => $method->label,
 								'description' => $method->label,
 								'unitPrice' => $method->cost + array_sum( $method->taxes ),
-								'vat' => round( array_sum( $method->taxes ) / $method->cost, 2 ),
+								'vat' => round( array_sum( $method->taxes ) / $method->cost, 2 ) * 100,
 							);
 							return $shipping_item;
 						} else {
@@ -51,10 +63,10 @@ class Collector_Bank_Requests_Fees {
 
 	public static function get_invoice_fee() {
 		return array(
-			'id'            => 'Invoice Fee',
-			'description'   => 'Invoice Fee incl VAT',
-			'unitPrice'     => 19,
-			'vat'           => 25,
+			'id'            => get_the_title( self::$invoice_fee_id ),
+			'description'   => get_the_title( self::$invoice_fee_id ),
+			'unitPrice'     => self::$price,
+			'vat'           => 0,
 		);
 	}
 }
