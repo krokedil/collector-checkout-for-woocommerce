@@ -8,8 +8,10 @@ class Collector_Bank_Requests_Initialize_Checkout extends Collector_Bank_Request
 	public $path = '/checkout';
 	public $store_id = '';
 	public $country_code = '';
+	public $terms_page = '';
 
 	public function __construct() {
+		parent::__construct();
 		$collector_settings = get_option( 'woocommerce_collector_bank_settings' );
 		switch ( get_woocommerce_currency() ) {
 			case 'SEK' :
@@ -26,6 +28,7 @@ class Collector_Bank_Requests_Initialize_Checkout extends Collector_Bank_Request
 				break;
 		}
 		$this->country_code = $country_code;
+		$this->terms_page = $collector_settings['terms_page'];
 	}
 
 	private function get_request_args() {
@@ -39,7 +42,7 @@ class Collector_Bank_Requests_Initialize_Checkout extends Collector_Bank_Request
 	}
 
 	public function request() {
-		$request_url = 'https://checkout-api-uat.collector.se/checkout';
+		$request_url = $this->base_url . '/checkout';
 		$request = wp_remote_request( $request_url, $this->get_request_args() );
 		$request = wp_remote_retrieve_body( $request );
 		$this->log( 'Collector init checkout request response: ' . var_export( $request, true ) );
@@ -52,7 +55,7 @@ class Collector_Bank_Requests_Initialize_Checkout extends Collector_Bank_Request
 			'countryCode'       => $this->country_code,
 			'reference'         => '',
 			'redirectPageUri'   => WC()->cart->get_checkout_url() . '?payment_successful=1',
-			'merchantTermsUri'  => get_site_url() . '/terms',
+			'merchantTermsUri'  => $this->terms_page,
 			'notificationUri'   => get_site_url(),
 			'cart'              => $this->cart(),
 			'fees'              => $this->fees(),

@@ -7,7 +7,7 @@ class Collector_Bank_SOAP_Requests_Cancel_Invoice {
 
 	static $log = '';
 
-	public $endpoint = 'https://ecommercetest.collector.se/v3.0/InvoiceServiceV33.svc?wsdl';
+	public $endpoint = '';
 
 	public $username = '';
 	public $password = '';
@@ -33,6 +33,12 @@ class Collector_Bank_SOAP_Requests_Cancel_Invoice {
 				break;
 		}
 		$this->country_code = $country_code;
+		$test_mode = $collector_settings['test_mode'];
+		if ( 'yes' === $test_mode ) {
+			$this->endpoint = COLLECTOR_BANK_SOAP_TEST;
+		} else {
+			$this->endpoint = COLLECTOR_BANK_SOAP_LIVE;
+		}
 	}
 
 	public function request( $order_id ) {

@@ -6,9 +6,16 @@ if ( ! defined( 'ABSPATH' ) ) {
 class Collector_Bank_Requests {
 
 	static $log = '';
+	public $base_url = '';
 
 	public function __construct() {
-
+		$collector_settings = get_option( 'woocommerce_collector_bank_settings' );
+		$test_mode = $collector_settings['test_mode'];
+		if ( 'yes' === $test_mode ) {
+			$this->base_url = COLLECTOR_BANK_REST_TEST;
+		} else {
+			$this->base_url = COLLECTOR_BANK_REST_LIVE;
+		}
 	}
 
 	public function request() {
@@ -16,7 +23,8 @@ class Collector_Bank_Requests {
 	}
 
 	protected function request_header( $body, $path ) {
-		return Collector_Bank_Requests_Header::get( $body, $path );
+		$get_header = new Collector_Bank_Requests_Header( $body, $path );
+		return $get_header->get();
 	}
 
 	protected function request_body() {

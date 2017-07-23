@@ -23,8 +23,13 @@
                     $('body').addClass('collector-bank-selected');
                     // Remove any checkout frame to prevent duplicate
                     $('#collector-checkout-iframe').remove();
-                    var publicToken = data.data;
-                    $('#collector-bank-iframe').append('<script src="https://checkout-uat.collector.se/collector-checkout-loader.js" data-lang="sv" data-token="' + publicToken + '" >');
+                    var publicToken = data.data.publicToken;
+                    var testmode = data.data.test_mode;
+                    if(testmode === 'yes') {
+                        $('#collector-bank-iframe').append('<script src="https://checkout-uat.collector.se/collector-checkout-loader.js" data-lang="sv" data-token="' + publicToken + '" >');
+                    } else {
+                        $('#collector-bank-iframe').append('<script src="https://checkout.collector.se/collector-checkout-loader.js" data-lang="sv" data-token="' + publicToken + '" >');
+                    }
                     checkout_initiated = true;
                 } else {
                     console.log('error');
@@ -36,6 +41,7 @@
     $(document).on('updated_checkout', function () {
         update_checkout();
         if ("collector_bank" === $("input[name='payment_method']:checked").val()) {
+            $('#place_order').remove();
             // Refresh the page to load collector bank template instead.
 
         }
@@ -86,8 +92,13 @@
                     action  : 'get_checkout_thank_you',
                 },
                 success: function(data) {
-                    var publicToken = data.data;
-                    $('div.entry-content div.woocommerce').append('<script src="https://checkout-uat.collector.se/collector-checkout-loader.js" data-lang="sv" data-token="' + publicToken + '" >');
+                    var publicToken = data.data.publicToken;
+                    var testmode = data.data.test_mode;
+                    if(testmode === 'yes') {
+                        $('div.entry-content div.woocommerce').append('<script src="https://checkout-uat.collector.se/collector-checkout-loader.js" data-lang="sv" data-token="' + publicToken + '" >');
+                    } else {
+                        $('div.entry-content div.woocommerce').append('<script src="https://checkout.collector.se/collector-checkout-loader.js" data-lang="sv" data-token="' + publicToken + '" >');
+                    }
                 }
             });
     }

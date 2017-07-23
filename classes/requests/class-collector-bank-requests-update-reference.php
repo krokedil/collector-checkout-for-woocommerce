@@ -9,6 +9,7 @@ class Collector_Bank_Requests_Update_Reference extends Collector_Bank_Requests {
 	public $order_id;
 
 	public function __construct( $order_id, $private_id ) {
+		parent::__construct();
 		$collector_settings = get_option( 'woocommerce_collector_bank_settings' );
 		switch ( get_woocommerce_currency() ) {
 			case 'SEK' :
@@ -36,7 +37,7 @@ class Collector_Bank_Requests_Update_Reference extends Collector_Bank_Requests {
 	}
 
 	public function request() {
-		$request_url = 'https://checkout-api-uat.collector.se' . $this->path;
+		$request_url = $this->base_url . $this->path;
 		$request = wp_remote_request( $request_url, $this->get_request_args() );
 		return $request;
 	}

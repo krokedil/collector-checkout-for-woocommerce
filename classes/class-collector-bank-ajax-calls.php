@@ -31,7 +31,12 @@ class Collector_Bank_Ajax_Calls {
 		$request = $init_checkout->request();
 
 		$decode = json_decode( $request );
-		$return = $decode->data->publicToken;
+		$collector_settings = get_option( 'woocommerce_collector_bank_settings' );
+		$test_mode = $collector_settings['test_mode'];
+		$return = array(
+			'publicToken' => $decode->data->publicToken,
+			'test_mode'   => $test_mode,
+		);
 		// Set post metas so they can be used again later
 		WC()->session->set( 'collector_public_token', $return );
 		WC()->session->set( 'collector_private_id', $decode->data->privateId );

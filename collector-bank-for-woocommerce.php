@@ -51,6 +51,7 @@ if ( ! class_exists( 'Collector_Bank' ) ) {
 			// Include the Classes
 			include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-bank-ajax-calls.php' );
 			include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-bank-post-checkout.php' );
+			//include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-bank-instant-checkout.php' );
 
 			// Include and add the Gateway
 			if ( class_exists( 'WC_Payment_Gateway' ) ) {
@@ -76,6 +77,12 @@ if ( ! class_exists( 'Collector_Bank' ) ) {
 			include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/soap/class-collector-bank-soap-requests-activate-invoice.php' );
 			include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/soap/class-collector-bank-soap-requests-cancel-invoice.php' );
 			include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/soap/class-collector-bank-soap-requests-credit-payment.php' );
+
+			// Definitions
+			define( 'COLLECTOR_BANK_REST_LIVE', 'https://checkout-api.collector.se' );
+			define( 'COLLECTOR_BANK_REST_TEST', 'https://checkout-api-uat.collector.se' );
+			define( 'COLLECTOR_BANK_SOAP_LIVE', 'https://ecommerce.collector.se/v3.0/InvoiceServiceV33.svc?wsdl' );
+			define( 'COLLECTOR_BANK_SOAP_TEST', 'https://ecommercetest.collector.se/v3.0/InvoiceServiceV33.svc?wsdl' );
 		}
 
 		public function load_scripts() {

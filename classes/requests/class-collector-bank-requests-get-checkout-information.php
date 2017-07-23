@@ -8,6 +8,7 @@ class Collector_Bank_Requests_Get_Checkout_Information extends Collector_Bank_Re
 	public $path = '';
 
 	public function __construct( $private_id ) {
+		parent::__construct();
 		$collector_settings = get_option( 'woocommerce_collector_bank_settings' );
 		$store_id = $collector_settings['collector_merchant_id'];
 		$this->path = '/merchants/' . $store_id . '/checkouts/' . $private_id;
@@ -23,7 +24,7 @@ class Collector_Bank_Requests_Get_Checkout_Information extends Collector_Bank_Re
 	}
 
 	public function request() {
-		$request_url = 'https://checkout-api-uat.collector.se' . $this->path;
+		$request_url = $this->base_url . $this->path;
 		$request = wp_remote_request( $request_url, $this->get_request_args() );
 		$request = wp_remote_retrieve_body( $request );
 		$this->log( 'Collector get checkout information request response: ' . var_export( $request, true ) );
