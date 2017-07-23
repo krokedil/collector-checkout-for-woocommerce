@@ -51,7 +51,7 @@ if ( ! class_exists( 'Collector_Bank' ) ) {
 			// Include the Classes
 			include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-bank-ajax-calls.php' );
 			include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-bank-post-checkout.php' );
-			//include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-bank-instant-checkout.php' );
+			include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-bank-instant-checkout.php' );
 
 			// Include and add the Gateway
 			if ( class_exists( 'WC_Payment_Gateway' ) ) {
