@@ -138,7 +138,7 @@
                     '&billing_last_name=' + data.data.customer_data.data.customer.billingAddress.lastName +
                     '&billing_country=SE' +
                     '&billing_address_1=' + data.data.customer_data.data.customer.billingAddress.address +
-                    '&billing_postcode=' + data.data.customer_data.data.customer.billingAddress.postCode +
+                    '&billing_postcode=' + data.data.customer_data.data.customer.billingAddress.postalCode +
                     '&billing_city=' + data.data.customer_data.data.customer.billingAddress.city +
                     '&billing_phone=' + data.data.customer_data.data.customer.mobilePhoneNumber +
                     '&billing_email=' + data.data.customer_data.data.customer.email +
