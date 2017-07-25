@@ -42,7 +42,7 @@ class Collector_Bank_Requests {
 	}
 
 	public static function log( $message ) {
-		$dibs_settings = get_option( 'woocommerce_dibs_easy_settings' );
+		$dibs_settings = get_option( 'woocommerce_collector_bank_settings' );
 		if ( 'yes' === $dibs_settings['debug_mode'] ) {
 			if ( empty( self::$log ) ) {
 				self::$log = new WC_Logger();
