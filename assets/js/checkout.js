@@ -153,10 +153,10 @@
                 if(data.data.order_note != 'undefined'){
                     datastring = datastring + '&order_comments=' + data.data.order_note;
                 }
-                if(data.data.customer_data.data.customer.billingAddress.address2 !== null) {
+                if(data.data.customer_data.data.customer.billingAddress.address2 != null) {
                     datastring = datastring + '&billing_address_2=' + data.data.customer_data.data.customer.billingAddress.address2;
                 }
-                if(data.data.customer_data.data.customer.deliveryAddress.address2 !== null) {
+                if(data.data.customer_data.data.customer.deliveryAddress.address2 != null) {
                     datastring = datastring + '&shipping_address_2=' + data.data.customer_data.data.customer.deliveryAddress.address2;
                 }
                     jQuery.ajax({
