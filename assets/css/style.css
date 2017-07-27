@@ -1,3 +1,6 @@
-.collector-bank-selected #place_order, .collector-bank-selected ul.payment_methods, .collector-bank-selected p.wc-terms-and-conditions{
+.collector-bank-selected .place-order,
+.collector-bank-selected #place_order, 
+.collector-bank-selected ul.payment_methods, 
+.collector-bank-selected p.wc-terms-and-conditions {
     display:none;
 }
