@@ -101,6 +101,20 @@ if ( ! class_exists( 'Collector_Bank' ) ) {
 				plugin_dir_url( __FILE__ ) . '/assets/css/style.css'
 			);
 			wp_enqueue_style( 'collector_bank' );
+			
+			// Hide the Order overview data on thankyou page if it's a Collector Checkout purchase
+			if( is_wc_endpoint_url( 'order-received' ) ) {
+				$order_id = wc_get_order_id_by_order_key( wc_clean( $_GET['key'] ) );
+				$order = wc_get_order( $order_id );
+				if( 'collector_bank' == $order->get_payment_method() ) {
+					$custom_css = "
+	                .woocommerce-order-overview {
+			                        display: none;
+							}";
+					wp_add_inline_style( 'collector_bank', $custom_css );
+				}
+			}
+			
 		}
 		public function add_collector_bank_gateway( $methods ) {
 			$methods[] = 'Collector_Bank_Gateway';

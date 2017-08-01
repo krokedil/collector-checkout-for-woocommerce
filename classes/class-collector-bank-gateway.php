@@ -27,6 +27,7 @@ class Collector_Bank_Gateway extends WC_Payment_Gateway {
 
 		// Function to handle the thankyou page.
 		add_action( 'woocommerce_thankyou_collector_bank', array( $this, 'collector_thankyou' ) );
+		add_filter( 'woocommerce_thankyou_order_received_text', array( $this, 'collector_thankyou_order_received_text' ), 10, 2 );
 
 		// Override the checkout template
 		add_filter( 'woocommerce_locate_template', array( $this, 'override_template' ), 10, 3 );
@@ -100,6 +101,22 @@ class Collector_Bank_Gateway extends WC_Payment_Gateway {
 		update_post_meta( $order_id, '_collector_payment_method', WC()->session->get( 'collector_payment_method' ) );
 		update_post_meta( $order_id, '_collector_payment_id', WC()->session->get( 'collector_payment_id' ) );
 		$order->add_order_note( sprintf( __( 'Order made with Collector. Payment Method: %s', 'collector-bank-for-woocommerce' ), WC()->session->get( 'collector_payment_method' ) ) );
+	}
+	
+	/**
+	 * Remove thank you page order received text if Collector is the selected payment method.
+	 *
+	 * @param $text
+	 * @param $order
+	 *
+	 * @return string
+	 */
+	public function collector_thankyou_order_received_text( $text, $order ) {
+		if( 'collector_bank' == $order->get_payment_method() ) {
+			return '';
+		}
+
+		return $text;
 	}
 
 	public function process_refund( $order_id, $amount = null, $reason = '' ) {
