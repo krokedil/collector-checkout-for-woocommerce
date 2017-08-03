@@ -9,6 +9,7 @@ class Collector_Bank_Post_Checkout {
 		add_action( 'woocommerce_order_status_cancelled', array( $this, 'collector_order_cancel' ) );
 		
 		add_action( 'init', array( $this, 'check_callback' ), 20 );
+		add_filter ('woocommerce_order_number', array( $this, 'collector_order_number' ), 1000, 2 );
 	}
 
 	public function collector_order_completed( $order_id ) {
@@ -54,6 +55,20 @@ class Collector_Bank_Post_Checkout {
 			
 			die();	
 		}
+	}
+	
+	/**
+	 * Display Collector payment id after WC order number on order overwiev page
+	 **/
+	public function collector_order_number( $order_number, $order ) {
+		$current_screen = get_current_screen();
+		if( 'edit-shop_order' == $current_screen->id ) {
+			$collector_payment_id = get_post_meta( $order->id, '_collector_payment_id', true );
+			if( $collector_payment_id ) {
+				$order_number .= ' (' . $collector_payment_id . ')';
+			}
+		}
+		return $order_number;
 	}
 }
 $collector_bank_post_checkout = new Collector_Bank_Post_Checkout();
