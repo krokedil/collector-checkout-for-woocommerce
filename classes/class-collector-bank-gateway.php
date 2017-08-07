@@ -36,13 +36,29 @@ class Collector_Bank_Gateway extends WC_Payment_Gateway {
 	public function init_form_fields() {
 		$this->form_fields = include( COLLECTOR_BANK_PLUGIN_DIR . '/includes/collector-bank-settings.php' );
 	}
+	
+	/**
+	 * Check if this gateway is enabled and available in the user's country
+	 */
+	public function is_available() {
+		if ( 'yes' === $this->enabled ) {
+			if ( ! is_admin() ) {
+				// Currency check.
+				if ( ! in_array( get_woocommerce_currency(), array( 'NOK', 'SEK' ) ) ) {
+					return false;
+				}
+			}
+			return true;
+		}
+		return false;
+	}
 
 	public function override_template( $template, $template_name, $template_path ) {
 		if ( is_checkout() ) {
 			$available_payment_gateways = WC()->payment_gateways->get_available_payment_gateways();
 			reset( $available_payment_gateways );
 			$first_gateway = key( $available_payment_gateways );
-			if ( WC()->session->get( 'chosen_payment_method' ) === $this->id || $this->id === $first_gateway ) {
+			if ( ( WC()->session->get( 'chosen_payment_method' ) === $this->id || $this->id === $first_gateway ) && true === $this->is_available()) {
 				if ( 'checkout/form-checkout.php' === $template_name ) {
 					$template = COLLECTOR_BANK_PLUGIN_DIR . '/templates/form-checkout.php';
 				}
