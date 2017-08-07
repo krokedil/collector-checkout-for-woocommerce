@@ -12,7 +12,7 @@
  * Author:          Krokedil
  * Author URI:      https://woocommerce.com/
  * Developer:       Krokedil
- * Developer URI:   http://krokedil.com/
+ * Developer URI:   https://krokedil.se/
  * Text Domain:     collector-bank-for-woocommerce
  * Domain Path:     /languages
  * Copyright:       © 2009-2017 WooCommerce.
@@ -90,8 +90,15 @@ if ( ! class_exists( 'Collector_Bank' ) ) {
 			wp_enqueue_script( 'jquery' );
 			if ( is_checkout() ) {
 				wp_register_script( 'checkout', plugins_url( '/assets/js/checkout.js', __FILE__ ), array( 'jquery' ) );
+				
+				if( 'NOK' == get_woocommerce_currency() ) {
+					$locale = 'nb-NO';
+				} else {
+					$locale = 'sv';
+				}
 				wp_localize_script( 'checkout', 'wc_collector_bank', array(
 					'ajaxurl' => admin_url( 'admin-ajax.php' ),
+					'locale' => $locale,
 				) );
 				wp_enqueue_script( 'checkout' );
 			}

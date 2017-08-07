@@ -26,9 +26,9 @@
                     var publicToken = data.data.publicToken;
                     var testmode = data.data.test_mode;
                     if(testmode === 'yes') {
-                        $('#collector-bank-iframe').append('<script src="https://checkout-uat.collector.se/collector-checkout-loader.js" data-lang="sv" data-token="' + publicToken + '" >');
+                        $('#collector-bank-iframe').append('<script src="https://checkout-uat.collector.se/collector-checkout-loader.js" data-lang="' + wc_collector_bank.locale + '" data-token="' + publicToken + '" >');
                     } else {
-                        $('#collector-bank-iframe').append('<script src="https://checkout.collector.se/collector-checkout-loader.js" data-lang="sv" data-token="' + publicToken + '" >');
+                        $('#collector-bank-iframe').append('<script src="https://checkout.collector.se/collector-checkout-loader.js" data-lang="' + wc_collector_bank.locale + '" data-token="' + publicToken + '" >');
                     }
                     checkout_initiated = true;
                 } else {
@@ -95,9 +95,9 @@
                     var publicToken = data.data.publicToken;
                     var testmode = data.data.test_mode;
                     if(testmode === 'yes') {
-                        $('div.entry-content div.woocommerce').prepend('<script src="https://checkout-uat.collector.se/collector-checkout-loader.js" data-lang="sv" data-token="' + publicToken + '" >');
+                        $('div.entry-content div.woocommerce').prepend('<script src="https://checkout-uat.collector.se/collector-checkout-loader.js" data-lang="' + wc_collector_bank.locale + '" data-token="' + publicToken + '" >');
                     } else {
-                        $('div.entry-content div.woocommerce').prepend('<script src="https://checkout.collector.se/collector-checkout-loader.js" data-lang="sv" data-token="' + publicToken + '" >');
+                        $('div.entry-content div.woocommerce').prepend('<script src="https://checkout.collector.se/collector-checkout-loader.js" data-lang="' + wc_collector_bank.locale + '" data-token="' + publicToken + '" >');
                     }
                 }
             });
