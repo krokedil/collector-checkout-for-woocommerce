@@ -61,11 +61,13 @@ class Collector_Bank_Post_Checkout {
 	 * Display Collector payment id after WC order number on order overwiev page
 	 **/
 	public function collector_order_number( $order_number, $order ) {
-		$current_screen = get_current_screen();
-		if( 'edit-shop_order' == $current_screen->id ) {
-			$collector_payment_id = get_post_meta( $order->id, '_collector_payment_id', true );
-			if( $collector_payment_id ) {
-				$order_number .= ' (' . $collector_payment_id . ')';
+		if( is_admin() ) {
+			$current_screen = get_current_screen();
+			if( 'edit-shop_order' == $current_screen->id ) {
+				$collector_payment_id = get_post_meta( $order->id, '_collector_payment_id', true );
+				if( $collector_payment_id ) {
+					$order_number .= ' (' . $collector_payment_id . ')';
+				}
 			}
 		}
 		return $order_number;
