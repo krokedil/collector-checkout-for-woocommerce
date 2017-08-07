@@ -147,7 +147,8 @@
                     '&shipping_country=SE&shipping_address_1=' + data.data.customer_data.data.customer.deliveryAddress.address +
                     '&shipping_postcode=' + data.data.customer_data.data.customer.deliveryAddress.postalCode +
                     '&shipping_city=' + data.data.customer_data.data.customer.deliveryAddress.city +
-                    'shipping_method%5B0%5D=' + data.data.shipping +
+                    '&shipping_method%5B0%5D=' + data.data.shipping +
+                    '&ship_to_different_address=1' +
                     '&payment_method=collector_bank&terms=on' +
                     '&terms-field=1&_wpnonce=' + data.data.nonce;
                 if(data.data.order_note != 'undefined'){
