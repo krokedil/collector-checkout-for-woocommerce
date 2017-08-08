@@ -24,6 +24,10 @@ class Collector_Bank_Ajax_Calls {
 		// Get customer data
 		add_action( 'wp_ajax_get_customer_data', array( $this, 'get_customer_data' ) );
 		add_action( 'wp_ajax_nopriv_get_customer_data', array( $this, 'get_customer_data' ) );
+		
+		// Customer address updated
+		add_action( 'wp_ajax_customer_adress_updated', array( $this, 'customer_adress_updated' ) );
+		add_action( 'wp_ajax_nopriv_customer_adress_updated', array( $this, 'customer_adress_updated' ) );
 	}
 
 	public function get_public_token() {
@@ -54,6 +58,46 @@ class Collector_Bank_Ajax_Calls {
 		$update_cart->request();
 
 		wp_send_json_success();
+		wp_die();
+	}
+	
+	/**
+	 * Customer address updated - triggered when collectorCheckoutCustomerUpdated event is fired
+	 */
+	public function customer_adress_updated() {
+		
+		if ( ! wp_verify_nonce( $_REQUEST['nonce'], 'collector_nonce' ) ) {
+			exit( 'Nonce can not be verified.' );
+		}
+		$update_needed = 'no';
+		
+		// Get customer data from Collector
+		$private_id 	= WC()->session->get( 'collector_private_id' );
+		$customer_data 	= new Collector_Bank_Requests_Get_Checkout_Information( $private_id );
+		$customer_data 	= $customer_data->request();
+		$customer_data 	= json_decode( $customer_data );
+		$country 		= $customer_data->data->countryCode;
+		
+		if( $country ) {
+			
+			$billing_postcode = $customer_data->data->customer->billingAddress->postalCode;
+			$shipping_postcode = $customer_data->data->customer->deliveryAddress->postalCode;
+			
+			// If country is changed then we need to trigger an cart update in the Collector Checkout
+			if( WC()->customer->get_billing_country() !== $country ) {
+				$update_needed = 'yes';
+			}
+			// Set customer data in Woo			
+			WC()->customer->set_billing_country( $country );
+			WC()->customer->set_shipping_country( $country );
+			WC()->customer->set_billing_postcode( $billing_postcode );
+			WC()->customer->set_shipping_postcode( $shipping_postcode );
+			WC()->customer->save();
+			WC()->cart->calculate_totals();
+			
+		}
+		
+		wp_send_json_success( $update_needed );
 		wp_die();
 	}
 
