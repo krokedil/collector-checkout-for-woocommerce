@@ -99,6 +99,7 @@ if ( ! class_exists( 'Collector_Bank' ) ) {
 				wp_localize_script( 'checkout', 'wc_collector_bank', array(
 					'ajaxurl' => admin_url( 'admin-ajax.php' ),
 					'locale' => $locale,
+					'collector_nonce' => wp_create_nonce( 'collector_nonce' ),
 				) );
 				wp_enqueue_script( 'checkout' );
 			}
