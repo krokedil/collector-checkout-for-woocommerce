@@ -37,6 +37,29 @@
             });
         }
     }
+    
+    // Customer updated - event triggered when customer changes address in Collector iframe
+    document.addEventListener("collectorCheckoutCustomerUpdated", function(){
+	    window.collector.checkout.api.suspend();
+	    $.ajax(
+            wc_collector_bank.ajaxurl,
+            {
+                type: 'POST',
+                dataType: 'json',
+                data: {
+                    action  : 'customer_adress_updated',
+                    nonce: wc_collector_bank.collector_nonce
+                },
+                success: function(response) {
+	                console.log(response);
+	                if( 'yes' == response.data ) {
+		               jQuery(document.body).trigger('update_checkout'); 
+	                }
+                }
+            }
+        );
+		window.collector.checkout.api.resume();
+	});
 
     $(document).on('updated_checkout', function () {
         update_checkout();
@@ -136,7 +159,7 @@
             if (true === data.success) {
                 var datastring = 'billing_first_name=' + data.data.customer_data.data.customer.billingAddress.firstName +
                     '&billing_last_name=' + data.data.customer_data.data.customer.billingAddress.lastName +
-                    '&billing_country=SE' +
+                    '&billing_country=' + data.data.customer_data.data.countryCode +
                     '&billing_address_1=' + data.data.customer_data.data.customer.billingAddress.address +
                     '&billing_postcode=' + data.data.customer_data.data.customer.billingAddress.postalCode +
                     '&billing_city=' + data.data.customer_data.data.customer.billingAddress.city +
@@ -144,7 +167,8 @@
                     '&billing_email=' + data.data.customer_data.data.customer.email +
                     '&shipping_first_name=' + data.data.customer_data.data.customer.deliveryAddress.firstName +
                     '&shipping_last_name=' + data.data.customer_data.data.customer.deliveryAddress.lastName +
-                    '&shipping_country=SE&shipping_address_1=' + data.data.customer_data.data.customer.deliveryAddress.address +
+                    '&shipping_country=' + data.data.customer_data.data.countryCode +
+                    '&shipping_address_1=' + data.data.customer_data.data.customer.deliveryAddress.address +
                     '&shipping_postcode=' + data.data.customer_data.data.customer.deliveryAddress.postalCode +
                     '&shipping_city=' + data.data.customer_data.data.customer.deliveryAddress.city +
                     '&shipping_method%5B0%5D=' + data.data.shipping +
