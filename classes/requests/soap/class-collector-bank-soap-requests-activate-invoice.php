@@ -14,11 +14,14 @@ class Collector_Bank_SOAP_Requests_Activate_Invoice {
 	public $store_id = '';
 	public $country_code = '';
 
-	public function __construct() {
+	public function __construct( $order_id ) {
 		$collector_settings = get_option( 'woocommerce_collector_bank_settings' );
 		$this->username = $collector_settings['collector_username'];
 		$this->password = $collector_settings['collector_password'];
-		switch ( get_woocommerce_currency() ) {
+		$order = wc_get_order( $order_id );
+		$currency = $order->get_currency();
+
+		switch ( $currency ) {
 			case 'SEK' :
 				$country_code = 'SE';
 				$this->store_id = $collector_settings['collector_merchant_id_se'];
