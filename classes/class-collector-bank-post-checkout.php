@@ -5,11 +5,20 @@ if ( ! defined( 'ABSPATH' ) ) {
 class Collector_Bank_Post_Checkout {
 
 	public function __construct() {
-		add_action( 'woocommerce_order_status_completed', array( $this, 'collector_order_completed' ) );
-		add_action( 'woocommerce_order_status_cancelled', array( $this, 'collector_order_cancel' ) );
+		$collector_settings = get_option( 'woocommerce_collector_bank_settings' );
+		$this->manage_orders = $collector_settings['manage_collector_orders'];
+		$this->display_invoice_no = $collector_settings['display_invoice_no'];
+		
+		if ( 'yes' == $this->manage_orders ) {
+			add_action( 'woocommerce_order_status_completed', array( $this, 'collector_order_completed' ) );
+			add_action( 'woocommerce_order_status_cancelled', array( $this, 'collector_order_cancel' ) );
+		}
+		
+		if ( 'yes' == $this->manage_orders ) {
+			add_filter ('woocommerce_order_number', array( $this, 'collector_order_number' ), 1000, 2 );
+		}
 		
 		add_action( 'init', array( $this, 'check_callback' ), 20 );
-		add_filter ('woocommerce_order_number', array( $this, 'collector_order_number' ), 1000, 2 );
 	}
 
 	public function collector_order_completed( $order_id ) {
