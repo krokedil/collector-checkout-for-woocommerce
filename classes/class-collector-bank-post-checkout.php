@@ -26,7 +26,7 @@ class Collector_Bank_Post_Checkout {
 		$activate_order->request( $order_id );
 	}
 	public function collector_order_cancel( $order_id ) {
-		$cancel_order = new Collector_Bank_SOAP_Requests_Cancel_Invoice();
+		$cancel_order = new Collector_Bank_SOAP_Requests_Cancel_Invoice( $order_id );
 		$cancel_order->request( $order_id );
 	}
 	
