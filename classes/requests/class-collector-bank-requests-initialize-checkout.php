@@ -28,7 +28,7 @@ class Collector_Bank_Requests_Initialize_Checkout extends Collector_Bank_Request
 				break;
 		}
 		$this->country_code = $country_code;
-		$this->terms_page = $collector_settings['terms_page'];
+		$this->terms_page = esc_url( get_permalink( wc_get_page_id( 'terms' ) ) );
 	}
 
 	private function get_request_args() {

@@ -28,13 +28,6 @@ return apply_filters( 'collector_bank_settings',
 			'default'       => __( 'Pay using Collector Bank.', 'collector-bank-for-woocommerce' ),
 			'desc_tip'      => true,
 		),
-		'terms_page' => array(
-			'title'         => __( 'Terms page URL', 'collector-bank-for-woocommerce' ),
-			'type'          => 'text',
-			'description'   => __( 'The link to the terms page for the shop.', 'collector-bank-for-woocommerce' ),
-			'default'       => '',
-			'desc_tip'      => true,
-		),
 		'collector_shared_key'     => array(
 			'title'         => __( 'Shared Key', 'collector-bank-for-woocommerce' ),
 			'type'          => 'text',
