@@ -52,14 +52,28 @@ class Collector_Bank_SOAP_Requests_Activate_Invoice {
 		$headers[] = new SoapHeader( 'http://schemas.ecommerce.collector.se/v30/InvoiceService', 'Username', $this->username );
 		$headers[] = new SoapHeader( 'http://schemas.ecommerce.collector.se/v30/InvoiceService', 'Password', $this->password );
 		$soap->__setSoapHeaders( $headers );
-
-		$request = $soap->ActivateInvoice( $args );
+		
+		try {
+			$request = $soap->ActivateInvoice( $args );
+		}
+			catch( SoapFault $e ){
+			$request = $e->getMessage();
+		}
 		$order = wc_get_order( $order_id );
-		if ( isset( $request->PaymentReference ) ) {
-			$order->add_order_note( sprintf( __( 'Order activated with Collector Bank', 'collector-bank-for-woocommerce' ) ) );
+		$due_date = '';
+		if ( isset( $request->TotalAmount ) && $request->TotalAmount == $order->get_total() ) {
+			if( isset( $request->InvoiceUrl ) ) {
+				update_post_meta( $order_id, '_collector_invoice_url', wc_clean( $request->InvoiceUrl ) );
+				$due_date = date( get_option( 'date_format' ) . ' - ' . get_option( 'time_format' ), strtotime( $request->DueDate ) );
+				$due_date = ' ' . __( 'Invoice due date: ' . $due_date, 'collector-bank-for-woocommerce' );
+			}
+
+			$order->add_order_note( sprintf( __( 'Order activated with Collector Bank.' . $due_date, 'collector-bank-for-woocommerce' ) ) );
+			
 		} else {
 			$order->update_status( 'processing' );
-			$order->add_order_note( sprintf( __( 'Order failed to activate with Collector Bank', 'collector-bank-for-woocommerce' ) ) );
+			$order->add_order_note( sprintf( __( 'Order failed to activate with Collector Bank - ' . var_export($request, true), 'collector-bank-for-woocommerce' ) ) );
+			$this->log( 'Order failed to activate with Collector Bank. Request response: ' . var_export( $e, true ) );
 			$this->log( 'Activate order headers: ' . var_export( $headers, true ) );
 			$this->log( 'Activate order args: ' . var_export( $args, true ) );
 		}
