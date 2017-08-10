@@ -52,6 +52,23 @@ class Collector_Bank_Gateway extends WC_Payment_Gateway {
 		}
 		return false;
 	}
+	
+	/**
+	 * Get a link to the transaction on the 3rd party gateway size (if applicable).
+	 *
+	 * @param  WC_Order $order the order object.
+	 *
+	 * @return string transaction URL, or empty string.
+	 */
+	public function get_transaction_url( $order ) {
+		// Check if order is completed
+		$invoice_url = get_post_meta( $order->id, '_collector_invoice_url', true );
+		if ( $invoice_url ) {
+			$this->view_transaction_url = $invoice_url;
+		}
+		return parent::get_transaction_url( $order );
+	}
+	
 
 	public function override_template( $template, $template_name, $template_path ) {
 		if ( is_checkout() ) {
