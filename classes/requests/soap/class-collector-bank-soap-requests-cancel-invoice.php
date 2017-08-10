@@ -51,14 +51,21 @@ class Collector_Bank_SOAP_Requests_Cancel_Invoice {
 		$headers[] = new SoapHeader( 'http://schemas.ecommerce.collector.se/v30/InvoiceService', 'Username', $this->username );
 		$headers[] = new SoapHeader( 'http://schemas.ecommerce.collector.se/v30/InvoiceService', 'Password', $this->password );
 		$soap->__setSoapHeaders( $headers );
-
-		$request = $soap->CancelInvoice( $args );
+		
+		try {
+			$request = $soap->CancelInvoice( $args );
+		}
+			catch( SoapFault $e ){
+			$request = $e->getMessage();
+		}
+		
 		$order = wc_get_order( $order_id );
 		if ( isset( $request->CorrelationId ) || $request->CorrelationId == null ) {
 			$order->add_order_note( sprintf( __( 'Order canceled with Collector Bank', 'collector-bank-for-woocommerce' ) ) );
 		} else {
 			$order->update_status( 'processing' );
-			$order->add_order_note( sprintf( __( 'Order failed to cancel with Collector Bank', 'collector-bank-for-woocommerce' ) ) );
+			$order->add_order_note( sprintf( __( 'Order failed to cancel with Collector Bank - ' . $request, 'collector-bank-for-woocommerce' ) ) );
+			$this->log( 'Order failed to cancel with Collector Bank. Request response: ' . var_export( $e, true ) );
 			$this->log( 'Cancel order headers: ' . var_export( $headers, true ) );
 			$this->log( 'Cancel order args: ' . var_export( $args, true ) );
 		}

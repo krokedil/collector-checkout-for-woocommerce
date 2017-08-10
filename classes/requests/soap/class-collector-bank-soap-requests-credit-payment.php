@@ -49,15 +49,22 @@ class Collector_Bank_SOAP_Requests_Credit_Payment {
 		$headers[] = new SoapHeader( 'http://schemas.ecommerce.collector.se/v30/InvoiceService', 'Username', $this->username );
 		$headers[] = new SoapHeader( 'http://schemas.ecommerce.collector.se/v30/InvoiceService', 'Password', $this->password );
 		$soap->__setSoapHeaders( $headers );
-
-		$request = $soap->CreditInvoice( $args );
+		
+		try {
+			$request = $soap->CreditInvoice( $args );
+		}
+			catch( SoapFault $e ){
+			$request = $e->getMessage();
+		}
+		
 		$order = wc_get_order( $order_id );
 		if ( isset( $request->CorrelationId ) || $request->CorrelationId == null ) {
 			$order->add_order_note( sprintf( __( 'Order credited with Collector Bank', 'collector-bank-for-woocommerce' ) ) );
 			return true;
 		} else {
 			$order->update_status( 'completed' );
-			$order->add_order_note( sprintf( __( 'Order failed to be credited with Collector Bank', 'collector-bank-for-woocommerce' ) ) );
+			$order->add_order_note( sprintf( __( 'Order failed to be credited with Collector Bank - ' . $request, 'collector-bank-for-woocommerce' ) ) );
+			$this->log( 'Order failed to be credited with Collector Bank. Request response: ' . var_export( $e, true ) );
 			$this->log( 'Credit Payment headers: ' . var_export( $headers, true ) );
 			$this->log( 'Credit Payment args: ' . var_export( $args, true ) );
 		}
