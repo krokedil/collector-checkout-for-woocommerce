@@ -87,9 +87,10 @@ class Collector_Bank_Gateway extends WC_Payment_Gateway {
 
 	public function get_customer_data() {
 		// Get information about order from Collector
-		$private_id    = WC()->session->get( 'collector_private_id' );
-		$customer_data = new Collector_Bank_Requests_Get_Checkout_Information( $private_id );
-		$customer_data = $customer_data->request();
+		$private_id    	= WC()->session->get( 'collector_private_id' );
+		$customer_type 	= WC()->session->get( 'collector_customer_type' );
+		$customer_data 	= new Collector_Bank_Requests_Get_Checkout_Information( $private_id, $customer_type );
+		$customer_data 	= $customer_data->request();
 
 		return json_decode( $customer_data );
 	}
@@ -120,7 +121,7 @@ class Collector_Bank_Gateway extends WC_Payment_Gateway {
 
 		WC()->session->__unset( 'collector_customer_order_note' );
 		// Update the Collector Order with the Order ID
-		$update_reference = new Collector_Bank_Requests_Update_Reference( $order->get_order_number(), WC()->session->get( 'collector_private_id' ) );
+		$update_reference = new Collector_Bank_Requests_Update_Reference( $order->get_order_number(), WC()->session->get( 'collector_private_id' ), WC()->session->get( 'collector_customer_type' ) );
 		$update_reference->request();
 		return array(
 			'result'   => 'success',
@@ -131,10 +132,11 @@ class Collector_Bank_Gateway extends WC_Payment_Gateway {
 	public function collector_thankyou( $order_id ) {
 		$order = wc_get_order( $order_id );
 		
-		$private_id = WC()->session->get( 'collector_private_id' );
-		$payment_data = new Collector_Bank_Requests_Get_Checkout_Information( $private_id );
-		$payment_data = $payment_data->request();
-		$payment_data = json_decode( $payment_data );
+		$private_id 	= WC()->session->get( 'collector_private_id' );
+		$customer_type 	= WC()->session->get( 'collector_customer_type' );
+		$payment_data 	= new Collector_Bank_Requests_Get_Checkout_Information( $private_id, $customer_type );
+		$payment_data 	= $payment_data->request();
+		$payment_data 	= json_decode( $payment_data );
 		$payment_status = $payment_data->data->purchase->result;
 		
 		if('Preliminary' == $payment_status ) {
@@ -144,9 +146,9 @@ class Collector_Bank_Gateway extends WC_Payment_Gateway {
 			$order->update_status( 'on-hold' );
 		}
 		
-		
 		update_post_meta( $order_id, '_collector_payment_method', WC()->session->get( 'collector_payment_method' ) );
 		update_post_meta( $order_id, '_collector_payment_id', WC()->session->get( 'collector_payment_id' ) );
+		update_post_meta( $order_id, '_collector_customer_type', WC()->session->get( 'collector_customer_type' ) );
 		$order->add_order_note( sprintf( __( 'Order made with Collector. Payment Method: %s', 'collector-bank-for-woocommerce' ), WC()->session->get( 'collector_payment_method' ) ) );
 	}
 	

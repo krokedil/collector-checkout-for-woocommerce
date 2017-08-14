@@ -2,7 +2,8 @@
     'use strict';
     var checkout_initiated = false;
 
-    function get_checkout_iframe() {
+    function get_checkout_iframe( customer = 'b2c' ) {
+	    console.log( customer );
         var url = window.location.href;
         if (url.indexOf('payment_successful') != -1) {
             $('.entry-content').css("display", "none");
@@ -15,7 +16,8 @@
             }
         } else {
             var data = {
-                'action': 'get_public_token'
+                'action': 'get_public_token',
+                'customer_type': customer
             };
             jQuery.post(wc_collector_bank.ajaxurl, data, function (data) {
                 if (true === data.success) {
@@ -25,10 +27,11 @@
                     $('#collector-checkout-iframe').remove();
                     var publicToken = data.data.publicToken;
                     var testmode = data.data.test_mode;
+                    console.log('publicToken ' + publicToken);
                     if(testmode === 'yes') {
-                        $('#collector-bank-iframe').append('<script src="https://checkout-uat.collector.se/collector-checkout-loader.js" data-lang="' + wc_collector_bank.locale + '" data-token="' + publicToken + '" >');
+                        $('#collector-bank-iframe').append('<script src="https://checkout-uat.collector.se/collector-checkout-loader.js" data-lang="' + wc_collector_bank.locale + '" data-token="' + publicToken + '" data-variant="' + customer + '" >');
                     } else {
-                        $('#collector-bank-iframe').append('<script src="https://checkout.collector.se/collector-checkout-loader.js" data-lang="' + wc_collector_bank.locale + '" data-token="' + publicToken + '" >');
+                        $('#collector-bank-iframe').append('<script src="https://checkout.collector.se/collector-checkout-loader.js" data-lang="' + wc_collector_bank.locale + '" data-token="' + publicToken + '" data-variant="' + customer + '" >');
                     }
                     checkout_initiated = true;
                 } else {
@@ -60,6 +63,13 @@
         );
 		window.collector.checkout.api.resume();
 	});
+	
+	// Customer change B2B / B2C
+	$(document).on('click', '.collector-checkout-tabs li',function() {
+       var tab_id = $(this).attr('data-tab');
+       console.log(tab_id);
+       get_checkout_iframe( tab_id );
+    });
 
     $(document).on('updated_checkout', function () {
         update_checkout();
@@ -117,10 +127,11 @@
                 success: function(data) {
                     var publicToken = data.data.publicToken;
                     var testmode = data.data.test_mode;
+                    var customer_type = data.data.customer_type;
                     if(testmode === 'yes') {
-                        $('div.entry-content div.woocommerce').prepend('<script src="https://checkout-uat.collector.se/collector-checkout-loader.js" data-lang="' + wc_collector_bank.locale + '" data-token="' + publicToken + '" >');
+                        $('div.entry-content div.woocommerce').prepend('<script src="https://checkout-uat.collector.se/collector-checkout-loader.js" data-lang="' + wc_collector_bank.locale + '" data-token="' + publicToken + '" data-variant="' + customer_type + '" >');
                     } else {
-                        $('div.entry-content div.woocommerce').prepend('<script src="https://checkout.collector.se/collector-checkout-loader.js" data-lang="' + wc_collector_bank.locale + '" data-token="' + publicToken + '" >');
+                        $('div.entry-content div.woocommerce').prepend('<script src="https://checkout.collector.se/collector-checkout-loader.js" data-lang="' + wc_collector_bank.locale + '" data-token="' + publicToken + '" data-variant="' + customer_type + '" >');
                     }
                 }
             });
@@ -157,33 +168,67 @@
         };
         jQuery.post(wc_collector_bank.ajaxurl, data, function (data) {
             if (true === data.success) {
-                var datastring = 'billing_first_name=' + data.data.customer_data.data.customer.billingAddress.firstName +
-                    '&billing_last_name=' + data.data.customer_data.data.customer.billingAddress.lastName +
+	            if( 'BusinessCustomer' == data.data.customer_data.data.customerType ) {
+		            var datastring = 'billing_first_name=' + data.data.customer_data.data.businessCustomer.referencePerson +
+                    '&billing_last_name=' + data.data.customer_data.data.businessCustomer.organizationNumber +
+                    '&billing_company=' + data.data.customer_data.data.businessCustomer.companyName +
                     '&billing_country=' + data.data.customer_data.data.countryCode +
-                    '&billing_address_1=' + data.data.customer_data.data.customer.billingAddress.address +
-                    '&billing_postcode=' + data.data.customer_data.data.customer.billingAddress.postalCode +
-                    '&billing_city=' + data.data.customer_data.data.customer.billingAddress.city +
-                    '&billing_phone=' + data.data.customer_data.data.customer.mobilePhoneNumber +
-                    '&billing_email=' + data.data.customer_data.data.customer.email +
-                    '&shipping_first_name=' + data.data.customer_data.data.customer.deliveryAddress.firstName +
-                    '&shipping_last_name=' + data.data.customer_data.data.customer.deliveryAddress.lastName +
+                    '&billing_address_1=' + data.data.customer_data.data.businessCustomer.invoiceAddress.address +
+                    '&billing_postcode=' + data.data.customer_data.data.businessCustomer.invoiceAddress.postalCode +
+                    '&billing_city=' + data.data.customer_data.data.businessCustomer.invoiceAddress.city +
+                    '&billing_phone=' + data.data.customer_data.data.businessCustomer.mobilePhoneNumber +
+                    '&billing_email=' + data.data.customer_data.data.businessCustomer.email +
+                    '&shipping_first_name=' + data.data.customer_data.data.businessCustomer.deliveryAddress.firstName +
+                    '&shipping_last_name=' + data.data.customer_data.data.businessCustomer.deliveryAddress.lastName +
+                    '&shipping_company=' + data.data.customer_data.data.businessCustomer.companyName +
                     '&shipping_country=' + data.data.customer_data.data.countryCode +
-                    '&shipping_address_1=' + data.data.customer_data.data.customer.deliveryAddress.address +
-                    '&shipping_postcode=' + data.data.customer_data.data.customer.deliveryAddress.postalCode +
-                    '&shipping_city=' + data.data.customer_data.data.customer.deliveryAddress.city +
+                    '&shipping_address_1=' + data.data.customer_data.data.businessCustomer.deliveryAddress.address +
+                    '&shipping_postcode=' + data.data.customer_data.data.businessCustomer.deliveryAddress.postalCode +
+                    '&shipping_city=' + data.data.customer_data.data.businessCustomer.deliveryAddress.city +
                     '&shipping_method%5B0%5D=' + data.data.shipping +
                     '&ship_to_different_address=1' +
                     '&payment_method=collector_bank&terms=on' +
                     '&terms-field=1&_wpnonce=' + data.data.nonce;
+                    
+                    if(data.data.customer_data.data.businessCustomer.invoiceAddress.address2 != null) {
+	                    datastring = datastring + '&billing_address_2=' + data.data.customer_data.data.businessCustomer.invoiceAddress.address2;
+	                }
+	                if(data.data.customer_data.data.businessCustomer.deliveryAddress.address2 != null) {
+	                    datastring = datastring + '&shipping_address_2=' + data.data.customer_data.data.businessCustomer.deliveryAddress.address2;
+	                }
+	            } else {
+	                var datastring = 'billing_first_name=' + data.data.customer_data.data.customer.billingAddress.firstName +
+	                    '&billing_last_name=' + data.data.customer_data.data.customer.billingAddress.lastName +
+	                    '&billing_country=' + data.data.customer_data.data.countryCode +
+	                    '&billing_address_1=' + data.data.customer_data.data.customer.billingAddress.address +
+	                    '&billing_postcode=' + data.data.customer_data.data.customer.billingAddress.postalCode +
+	                    '&billing_city=' + data.data.customer_data.data.customer.billingAddress.city +
+	                    '&billing_phone=' + data.data.customer_data.data.customer.mobilePhoneNumber +
+	                    '&billing_email=' + data.data.customer_data.data.customer.email +
+	                    '&shipping_first_name=' + data.data.customer_data.data.customer.deliveryAddress.firstName +
+	                    '&shipping_last_name=' + data.data.customer_data.data.customer.deliveryAddress.lastName +
+	                    '&shipping_country=' + data.data.customer_data.data.countryCode +
+	                    '&shipping_address_1=' + data.data.customer_data.data.customer.deliveryAddress.address +
+	                    '&shipping_postcode=' + data.data.customer_data.data.customer.deliveryAddress.postalCode +
+	                    '&shipping_city=' + data.data.customer_data.data.customer.deliveryAddress.city +
+	                    '&shipping_method%5B0%5D=' + data.data.shipping +
+	                    '&ship_to_different_address=1' +
+	                    '&payment_method=collector_bank&terms=on' +
+	                    '&terms-field=1&_wpnonce=' + data.data.nonce;
+						
+					if(data.data.customer_data.data.customer.billingAddress.address2 != null) {
+	                    datastring = datastring + '&billing_address_2=' + data.data.customer_data.data.customer.billingAddress.address2;
+	                }
+	                if(data.data.customer_data.data.customer.deliveryAddress.address2 != null) {
+	                    datastring = datastring + '&shipping_address_2=' + data.data.customer_data.data.customer.deliveryAddress.address2;
+	                }
+					
+				}
+                    
                 if(data.data.order_note != 'undefined'){
                     datastring = datastring + '&order_comments=' + data.data.order_note;
                 }
-                if(data.data.customer_data.data.customer.billingAddress.address2 != null) {
-                    datastring = datastring + '&billing_address_2=' + data.data.customer_data.data.customer.billingAddress.address2;
-                }
-                if(data.data.customer_data.data.customer.deliveryAddress.address2 != null) {
-                    datastring = datastring + '&shipping_address_2=' + data.data.customer_data.data.customer.deliveryAddress.address2;
-                }
+                
                     jQuery.ajax({
                     type: 'POST',
                     url: wc_checkout_params.checkout_url,

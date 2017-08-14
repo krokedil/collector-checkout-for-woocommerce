@@ -31,30 +31,35 @@ class Collector_Bank_Ajax_Calls {
 	}
 
 	public function get_public_token() {
-		$init_checkout = new Collector_Bank_Requests_Initialize_Checkout();
+		$customer_type = wc_clean( $_REQUEST['customer_type'] );
+		$init_checkout = new Collector_Bank_Requests_Initialize_Checkout( $customer_type );
 		$request = $init_checkout->request();
 
 		$decode = json_decode( $request );
 		$collector_settings = get_option( 'woocommerce_collector_bank_settings' );
 		$test_mode = $collector_settings['test_mode'];
 		$return = array(
-			'publicToken' => $decode->data->publicToken,
-			'test_mode'   => $test_mode,
+			'publicToken' 	=> $decode->data->publicToken,
+			'test_mode'   	=> $test_mode,
+			'customer_type'	=> $customer_type,
 		);
+
 		// Set post metas so they can be used again later
 		WC()->session->set( 'collector_public_token', $return );
 		WC()->session->set( 'collector_private_id', $decode->data->privateId );
+		WC()->session->set( 'collector_customer_type', $customer_type );
 
 		wp_send_json_success( $return );
 		wp_die();
 	}
 
 	public function update_checkout() {
-		$private_id = WC()->session->get( 'collector_private_id' );
-		$update_fees = new Collector_Bank_Requests_Update_Fees( $private_id );
+		$private_id 	= WC()->session->get( 'collector_private_id' );
+		$customer_type 	= WC()->session->get( 'collector_customer_type' );
+		$update_fees 	= new Collector_Bank_Requests_Update_Fees( $private_id, $customer_type );
 		$update_fees->request();
 
-		$update_cart = new Collector_Bank_Requests_Update_Cart( $private_id );
+		$update_cart 	= new Collector_Bank_Requests_Update_Cart( $private_id, $customer_type );
 		$update_cart->request();
 
 		wp_send_json_success();
@@ -73,7 +78,8 @@ class Collector_Bank_Ajax_Calls {
 		
 		// Get customer data from Collector
 		$private_id 	= WC()->session->get( 'collector_private_id' );
-		$customer_data 	= new Collector_Bank_Requests_Get_Checkout_Information( $private_id );
+		$customer_type 	= WC()->session->get( 'collector_customer_type' );
+		$customer_data 	= new Collector_Bank_Requests_Get_Checkout_Information( $private_id, $customer_type );
 		$customer_data 	= $customer_data->request();
 		$customer_data 	= json_decode( $customer_data );
 		$country 		= $customer_data->data->countryCode;
@@ -120,9 +126,10 @@ class Collector_Bank_Ajax_Calls {
 	}
 
 	public function get_customer_data() {
-		$private_id = WC()->session->get( 'collector_private_id' );
-		$customer_data = new Collector_Bank_Requests_Get_Checkout_Information( $private_id );
-		$customer_data = $customer_data->request();
+		$private_id 	= WC()->session->get( 'collector_private_id' );
+		$customer_type 	= WC()->session->get( 'collector_customer_type' );
+		$customer_data 	= new Collector_Bank_Requests_Get_Checkout_Information( $private_id, $customer_type );
+		$customer_data 	= $customer_data->request();
 
 		// Save the payment method and payment id
 		$decoded_json = json_decode( $customer_data );

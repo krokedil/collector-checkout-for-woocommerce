@@ -30,7 +30,12 @@ return;
 	<?php do_action( 'woocommerce_checkout_after_order_review' ); ?>
 
 </form>
+<ul class="collector-checkout-tabs">
+	<li class="tab-link current" data-tab="b2c"><?php _e( 'Privatperson', 'woocommerce' ); ?></li>
+	<li class="tab-link" data-tab="b2b"><?php _e( 'Företag', 'woocommerce' ); ?></li>
+</ul>
 <div id="collector-bank-iframe"></div>
+
 <?php do_action( 'woocommerce_after_checkout_form', $checkout ); ?>
 
 
