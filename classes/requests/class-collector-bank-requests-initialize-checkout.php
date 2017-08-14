@@ -9,22 +9,23 @@ class Collector_Bank_Requests_Initialize_Checkout extends Collector_Bank_Request
 	public $store_id = '';
 	public $country_code = '';
 	public $terms_page = '';
+	public $customer_type = '';
 
-	public function __construct() {
+	public function __construct( $customer_type = 'b2c' ) {
 		parent::__construct();
 		$collector_settings = get_option( 'woocommerce_collector_bank_settings' );
 		switch ( get_woocommerce_currency() ) {
 			case 'SEK' :
 				$country_code = 'SE';
-				$this->store_id = $collector_settings['collector_merchant_id_se'];
+				$this->store_id = $collector_settings['collector_merchant_id_se_' . $customer_type];
 				break;
 			case 'NOK' :
 				$country_code = 'NO';
-				$this->store_id = $collector_settings['collector_merchant_id_no'];
+				$this->store_id = $collector_settings['collector_merchant_id_no_' . $customer_type];
 				break;
 			default :
 				$country_code = 'SE';
-				$this->store_id = $collector_settings['collector_merchant_id_se'];
+				$this->store_id = $collector_settings['collector_merchant_id_se_' . $customer_type];
 				break;
 		}
 		$this->country_code = $country_code;
