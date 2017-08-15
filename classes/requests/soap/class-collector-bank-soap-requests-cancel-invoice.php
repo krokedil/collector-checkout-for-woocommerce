@@ -20,18 +20,20 @@ class Collector_Bank_SOAP_Requests_Cancel_Invoice {
 		$this->password = $collector_settings['collector_password'];
 		$order = wc_get_order( $order_id );
 		$currency = $order->get_currency();
+		$customer_type = get_post_meta( $order_id, '_collector_customer_type', true );
+		
 		switch ( $currency ) {
 			case 'SEK' :
 				$country_code = 'SE';
-				$this->store_id = $collector_settings['collector_merchant_id_se'];
+				$this->store_id = $collector_settings['collector_merchant_id_se_' . $customer_type];
 				break;
 			case 'NOK' :
 				$country_code = 'NO';
-				$this->store_id = $collector_settings['collector_merchant_id_no'];
+				$this->store_id = $collector_settings['collector_merchant_id_no_' . $customer_type];
 				break;
 			default :
 				$country_code = 'SE';
-				$this->store_id = $collector_settings['collector_merchant_id_se'];
+				$this->store_id = $collector_settings['collector_merchant_id_se_' . $customer_type];
 				break;
 		}
 		$this->country_code = $country_code;

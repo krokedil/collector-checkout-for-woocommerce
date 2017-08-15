@@ -172,7 +172,7 @@ class Collector_Bank_Gateway extends WC_Payment_Gateway {
 		//Check if amount equals total order
 		$order = wc_get_order( $order_id );
 		if ( $amount == $order->get_total() ) {
-			$credit_order = new Collector_Bank_SOAP_Requests_Credit_Payment();
+			$credit_order = new Collector_Bank_SOAP_Requests_Credit_Payment( $order_id );
 			if ( $credit_order->request( $order_id ) === true ) {
 				return true;
 			} else {
