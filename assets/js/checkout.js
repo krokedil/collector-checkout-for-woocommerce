@@ -178,8 +178,8 @@
                     '&billing_city=' + data.data.customer_data.data.businessCustomer.invoiceAddress.city +
                     '&billing_phone=' + data.data.customer_data.data.businessCustomer.mobilePhoneNumber +
                     '&billing_email=' + data.data.customer_data.data.businessCustomer.email +
-                    '&shipping_first_name=' + data.data.customer_data.data.businessCustomer.deliveryAddress.firstName +
-                    '&shipping_last_name=' + data.data.customer_data.data.businessCustomer.deliveryAddress.lastName +
+                    '&shipping_first_name=' + data.data.customer_data.data.businessCustomer.referencePerson +
+                    '&shipping_last_name=' + data.data.customer_data.data.businessCustomer.organizationNumber +
                     '&shipping_company=' + data.data.customer_data.data.businessCustomer.companyName +
                     '&shipping_country=' + data.data.customer_data.data.countryCode +
                     '&shipping_address_1=' + data.data.customer_data.data.businessCustomer.deliveryAddress.address +
