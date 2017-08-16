@@ -16,7 +16,7 @@ ul.collector-checkout-tabs li {
 	border-radius: 6px 6px 0 0;
 	display: inline-block;
 	padding: 10px 15px;
-	margin-right: -8px;
+	margin: 0 -8px 0 0;
 	cursor: pointer;
 	position: relative;
 	z-index: 1000;
@@ -40,4 +40,12 @@ li.tab-link.current[data-tab="b2b"] {
 #collector-bank-iframe {
 	border: 1px solid #e2e2e2;
 	border-radius: 0 6px 6px 6px;
+	min-height: 748px;
+}
+.collector-b2b #collector-bank-iframe,
+.collector-b2c #collector-bank-iframe {
+	border-radius: 6px 6px 6px 6px;
+}
+.collector-checkout-thankyou {
+	min-height: 431px;
 }
