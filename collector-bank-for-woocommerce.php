@@ -25,7 +25,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 define( 'COLLECTOR_BANK_PLUGIN_DIR', untrailingslashit( plugin_dir_path( __FILE__ ) ) );
-define( 'COLLECTOR_BANK_VERSION', '0.1.5' );
+define( 'COLLECTOR_BANK_VERSION', '0.1.8' );
 
 if ( ! class_exists( 'Collector_Bank' ) ) {
 	class Collector_Bank {
@@ -98,9 +98,10 @@ if ( ! class_exists( 'Collector_Bank' ) ) {
 					$locale = 'sv';
 				}
 				wp_localize_script( 'checkout', 'wc_collector_bank', array(
-					'ajaxurl' => admin_url( 'admin-ajax.php' ),
-					'locale' => $locale,
-					'collector_nonce' => wp_create_nonce( 'collector_nonce' ),
+					'ajaxurl' 				=> admin_url( 'admin-ajax.php' ),
+					'locale' 				=> $locale,
+					'default_customer_type' => wc_collector_get_default_customer_type(),
+					'collector_nonce' 		=> wp_create_nonce( 'collector_nonce' ),
 				) );
 				wp_enqueue_script( 'checkout' );
 			}
@@ -139,3 +140,35 @@ if ( ! class_exists( 'Collector_Bank' ) ) {
 	}
 }
 $collector_bank = new Collector_Bank();
+
+function wc_collector_get_available_customer_types() {
+	$collector_settings = get_option( 'woocommerce_collector_bank_settings' );
+	$collector_b2c_se 	= $collector_settings['collector_merchant_id_se_b2c'];
+	$collector_b2b_se 	= $collector_settings['collector_merchant_id_se_b2b'];
+	$collector_b2c_no 	= $collector_settings['collector_merchant_id_no_b2c'];
+
+	if( $collector_b2c_se && $collector_b2b_se ) {
+		return 'collector-b2c-b2b';
+	} elseif( ( 'SEK' == get_woocommerce_currency() && $collector_b2c_se ) || ( 'NOK' == get_woocommerce_currency() && $collector_b2c_no ) ) {
+		return 'collector-b2c';
+	} elseif( $collector_b2b_se ) {
+		return 'collector-b2b';
+	}
+}
+
+function wc_collector_get_default_customer_type() {
+	$collector_settings = get_option( 'woocommerce_collector_bank_settings' );
+	$collector_b2c_se 	= $collector_settings['collector_merchant_id_se_b2c'];
+	$collector_b2b_se 	= $collector_settings['collector_merchant_id_se_b2b'];
+	$collector_b2c_no 	= $collector_settings['collector_merchant_id_no_b2c'];
+
+	if( $collector_b2c_no && 'NOK' == get_woocommerce_currency() ) {
+		return 'b2c';
+	} elseif( $collector_b2c_se && $collector_b2b_se ) {
+		return 'b2c';
+	} elseif( $collector_b2b_se && !$collector_b2c_se ) {
+		return 'b2b';
+	} else {
+		return 'b2c';
+	}
+}
