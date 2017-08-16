@@ -25,7 +25,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 define( 'COLLECTOR_BANK_PLUGIN_DIR', untrailingslashit( plugin_dir_path( __FILE__ ) ) );
-define( 'COLLECTOR_BANK_VERSION', '0.1.4' );
+define( 'COLLECTOR_BANK_VERSION', '0.1.5' );
 
 if ( ! class_exists( 'Collector_Bank' ) ) {
 	class Collector_Bank {
