@@ -28,6 +28,9 @@ class Collector_Bank_Gateway extends WC_Payment_Gateway {
 		// Function to handle the thankyou page.
 		add_action( 'woocommerce_thankyou_collector_bank', array( $this, 'collector_thankyou' ) );
 		add_filter( 'woocommerce_thankyou_order_received_text', array( $this, 'collector_thankyou_order_received_text' ), 10, 2 );
+		
+		// Body class
+		add_filter( 'body_class', array( $this, 'add_body_class' ) );
 
 		// Override the checkout template
 		add_filter( 'woocommerce_locate_template', array( $this, 'override_template' ), 10, 3 );
@@ -43,8 +46,20 @@ class Collector_Bank_Gateway extends WC_Payment_Gateway {
 	public function is_available() {
 		if ( 'yes' === $this->enabled ) {
 			if ( ! is_admin() ) {
+				$collector_settings = get_option( 'woocommerce_collector_bank_settings' );
+				$collector_b2c_se 	= $collector_settings['collector_merchant_id_se_b2c'];
+				$collector_b2b_se 	= $collector_settings['collector_merchant_id_se_b2b'];
+				$collector_b2c_no 	= $collector_settings['collector_merchant_id_no_b2c'];
+	
 				// Currency check.
 				if ( ! in_array( get_woocommerce_currency(), array( 'NOK', 'SEK' ) ) ) {
+					return false;
+				}
+				// Store ID check
+				if( 'NOK' == get_woocommerce_currency() && ! $collector_b2c_no ) {
+					return false;
+				}
+				if( 'SEK' == get_woocommerce_currency() && ( ! $collector_b2c_se && ! $collector_b2b_se  ) ) {
 					return false;
 				}
 			}
@@ -162,10 +177,24 @@ class Collector_Bank_Gateway extends WC_Payment_Gateway {
 	 */
 	public function collector_thankyou_order_received_text( $text, $order ) {
 		if( 'collector_bank' == $order->get_payment_method() ) {
-			return '';
+			return '<div class="collector-checkout-thankyou"></div>';
 		}
 
 		return $text;
+	}
+	
+	/**
+	 * Add collector-b2c/b2b body class.
+	 *
+	 * @param $class
+	 *
+	 * @return array
+	 */
+	public function add_body_class( $class ) {
+		if ( is_checkout() ) {	
+			$class[] = wc_collector_get_available_customer_types();
+		}
+		return $class;
 	}
 
 	public function process_refund( $order_id, $amount = null, $reason = '' ) {
