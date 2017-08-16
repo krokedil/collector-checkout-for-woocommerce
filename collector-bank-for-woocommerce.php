@@ -25,6 +25,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 define( 'COLLECTOR_BANK_PLUGIN_DIR', untrailingslashit( plugin_dir_path( __FILE__ ) ) );
+define( 'COLLECTOR_BANK_VERSION', '0.1.4' );
 
 if ( ! class_exists( 'Collector_Bank' ) ) {
 	class Collector_Bank {
@@ -89,7 +90,7 @@ if ( ! class_exists( 'Collector_Bank' ) ) {
 			// Enqueue scripts
 			wp_enqueue_script( 'jquery' );
 			if ( is_checkout() ) {
-				wp_register_script( 'checkout', plugins_url( '/assets/js/checkout.js', __FILE__ ), array( 'jquery' ) );
+				wp_register_script( 'checkout', plugins_url( '/assets/js/checkout.js', __FILE__ ), array( 'jquery' ), COLLECTOR_BANK_VERSION );
 				
 				if( 'NOK' == get_woocommerce_currency() ) {
 					$locale = 'nb-NO';
@@ -106,7 +107,9 @@ if ( ! class_exists( 'Collector_Bank' ) ) {
 			// Load stylesheet for the checkout page
 			wp_register_style(
 				'collector_bank',
-				plugin_dir_url( __FILE__ ) . '/assets/css/style.css'
+				plugin_dir_url( __FILE__ ) . '/assets/css/style.css',
+				array(),
+				COLLECTOR_BANK_VERSION
 			);
 			wp_enqueue_style( 'collector_bank' );
 			

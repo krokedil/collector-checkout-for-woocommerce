@@ -69,6 +69,8 @@
        var tab_id = $(this).attr('data-tab');
        console.log(tab_id);
        get_checkout_iframe( tab_id );
+       $('.collector-checkout-tabs li').removeClass('current');
+       $(this).addClass('current');
     });
 
     $(document).on('updated_checkout', function () {
