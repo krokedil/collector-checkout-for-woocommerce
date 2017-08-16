@@ -2,7 +2,7 @@
     'use strict';
     var checkout_initiated = false;
 
-    function get_checkout_iframe( customer = 'b2c' ) {
+    function get_checkout_iframe( customer = wc_collector_bank.default_customer_type ) {
 	    console.log( customer );
         var url = window.location.href;
         if (url.indexOf('payment_successful') != -1) {
@@ -131,9 +131,9 @@
                     var testmode = data.data.test_mode;
                     var customer_type = data.data.customer_type;
                     if(testmode === 'yes') {
-                        $('div.entry-content div.woocommerce').prepend('<script src="https://checkout-uat.collector.se/collector-checkout-loader.js" data-lang="' + wc_collector_bank.locale + '" data-token="' + publicToken + '" data-variant="' + customer_type + '" >');
+                        $('div.collector-checkout-thankyou').append('<script src="https://checkout-uat.collector.se/collector-checkout-loader.js" data-lang="' + wc_collector_bank.locale + '" data-token="' + publicToken + '" data-variant="' + customer_type + '" >');
                     } else {
-                        $('div.entry-content div.woocommerce').prepend('<script src="https://checkout.collector.se/collector-checkout-loader.js" data-lang="' + wc_collector_bank.locale + '" data-token="' + publicToken + '" data-variant="' + customer_type + '" >');
+                        $('div.collector-checkout-thankyou').prepend('<script src="https://checkout.collector.se/collector-checkout-loader.js" data-lang="' + wc_collector_bank.locale + '" data-token="' + publicToken + '" data-variant="' + customer_type + '" >');
                     }
                 }
             });
