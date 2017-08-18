@@ -88,16 +88,24 @@ class Collector_Bank_Gateway extends WC_Payment_Gateway {
 	public function override_template( $template, $template_name, $template_path ) {
 		if ( is_checkout() ) {
 			$available_payment_gateways = WC()->payment_gateways->get_available_payment_gateways();
-			reset( $available_payment_gateways );
-			$first_gateway = key( $available_payment_gateways );
-			if ( ( WC()->session->get( 'chosen_payment_method' ) === $this->id || $this->id === $first_gateway ) && true === $this->is_available()) {
-				if ( 'checkout/form-checkout.php' === $template_name ) {
-					$template = COLLECTOR_BANK_PLUGIN_DIR . '/templates/form-checkout.php';
+			if ( 'checkout/form-checkout.php' === $template_name ) {
+				// Collector checkout page.
+				if ( array_key_exists( 'collector_bank', $available_payment_gateways ) ) {
+					// If chosen payment method exists.
+					if ( 'collector_bank' === WC()->session->get( 'chosen_payment_method' ) ) {
+						$template = COLLECTOR_BANK_PLUGIN_DIR . '/templates/form-checkout.php';
+					}
+					// If chosen payment method does not exist and KCO is the first gateway.
+					if ( null === WC()->session->get( 'chosen_payment_method' ) ) {
+						reset( $available_gateways );
+						if ( 'collector_bank' === key( $available_payment_gateways ) ) {
+							$template = COLLECTOR_BANK_PLUGIN_DIR . '/templates/form-checkout.php';
+						}
+					}
 				}
 			}
+			return $template;
 		}
-
-		return $template;
 	}
 
 	public function get_customer_data() {
