@@ -32,6 +32,7 @@ class Collector_Bank_Ajax_Calls {
 		// Update Template Fragment
 		add_action( 'wp_ajax_update_fragment', array( $this, 'update_fragment' ) );
 		add_action( 'wp_ajax_nopriv_update_fragment', array( $this, 'update_fragment' ) );
+		add_action( 'wc_ajax_update_fragment', array( $this, 'update_fragment' ) );
 	}
 
 	public function get_public_token() {
@@ -181,7 +182,6 @@ class Collector_Bank_Ajax_Calls {
 			include( COLLECTOR_BANK_PLUGIN_DIR . '/templates/form-checkout.php' );
 		}
 		$checkout_output = ob_get_clean();
-
 		$data = array(
 			'fragments' => array(
 				'checkout' => $checkout_output,

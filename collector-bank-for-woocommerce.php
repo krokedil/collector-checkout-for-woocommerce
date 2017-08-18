@@ -102,6 +102,7 @@ if ( ! class_exists( 'Collector_Bank' ) ) {
 					'locale' 				=> $locale,
 					'default_customer_type' => wc_collector_get_default_customer_type(),
 					'collector_nonce' 		=> wp_create_nonce( 'collector_nonce' ),
+					'refresh_checkout_fragment_url'   => WC_AJAX::get_endpoint( 'update_fragment' ),
 				) );
 				wp_enqueue_script( 'checkout' );
 			}

@@ -83,7 +83,7 @@
     $(document).on( 'click', '#collector_change_payment_method', function () {
         $('form.checkout').block();
         $.ajax(
-            wc_collector_bank.ajaxurl,
+            wc_collector_bank.refresh_checkout_fragment_url,
             {
                 type: 'POST',
                 dataType: 'json',
