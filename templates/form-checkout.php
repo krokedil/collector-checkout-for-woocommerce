@@ -21,8 +21,12 @@ do_action( 'woocommerce_before_checkout_form', $checkout );
 	<?php $form_field = WC()->checkout()->get_checkout_fields( 'order' ); ?>
 	<?php woocommerce_form_field( 'order_comments', $form_field['order_comments'] ); ?>
 	<?php do_action( 'woocommerce_checkout_after_order_review' ); ?>
-
-    <a id="collector_change_payment_method" href="#"><?php  echo __( 'Other payment method', 'collector-bank-for-woocommerce' ) ?></a>
+    <?php
+    $available_payment_gateways = WC()->payment_gateways->get_available_payment_gateways();
+    if ( count( $available_payment_gateways ) > 1 ){
+    ?>
+        <a id="collector_change_payment_method" href="#"><?php  echo __( 'Other payment method', 'collector-bank-for-woocommerce' ) ?></a>
+    <?php } ?>
     <ul class="collector-checkout-tabs">
         <li class="tab-link current" data-tab="b2c"><?php _e( 'Privatperson', 'woocommerce' ); ?></li>
         <li class="tab-link" data-tab="b2b"><?php _e( 'Företag', 'woocommerce' ); ?></li>
