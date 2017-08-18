@@ -26,7 +26,7 @@ do_action( 'woocommerce_before_checkout_form', $checkout );
     $available_payment_gateways = WC()->payment_gateways->get_available_payment_gateways();
     if ( count( $available_payment_gateways ) > 1 ){
     ?>
-        <a class="button" id="collector_change_payment_method" href="#"><?php  echo __( 'Select another payment method', 'collector-bank-for-woocommerce' ) ?></a>
+        <a class="button" id="collector_change_payment_method" style="margin-bottom: 15px" href="#"><?php  echo __( 'Select another payment method', 'collector-bank-for-woocommerce' ) ?></a>
     <?php } ?>
     <ul class="collector-checkout-tabs">
         <li class="tab-link current" data-tab="b2c"><?php _e( 'Privatperson', 'woocommerce' ); ?></li>
