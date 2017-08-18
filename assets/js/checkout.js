@@ -77,19 +77,51 @@
         update_checkout();
         if ("collector_bank" === $("input[name='payment_method']:checked").val()) {
             $('#place_order').remove();
-            // Refresh the page to load collector bank template instead.
-
         }
     });
-
+    // Change from Collector
+    $(document).on( 'click', '#collector_change_payment_method', function () {
+        $('form.checkout').block();
+        $.ajax(
+            wc_collector_bank.ajaxurl,
+            {
+                type: 'POST',
+                dataType: 'json',
+                data: {
+                    action  : 'update_fragment',
+                    collector: false,
+                },
+                success: function(data) {
+                    console.log('success');
+                    console.log(data);
+                    $('form.checkout').replaceWith(data.data.fragments.checkout);
+                    $('body').removeClass('collector-bank-selected');
+                    $('form.checkout').unblock();
+                }
+            });
+    });
+    // Change to Collector
     $(document).on("change", "input[name='payment_method']", function (event) {
-        if ("collector_bank" === event.target.value) {
-            // Refresh the page to load collector bank template instead.
-            //get_checkout_iframe();
-            //$("body").trigger("update_checkout");
-        } else {
-            $('#collector-checkout-iframe').remove();
-        }
+        if ("collector_bank" === $("input[name='payment_method']:checked").val()) {
+            $('form.checkout').block();
+            $.ajax(
+                wc_collector_bank.ajaxurl,
+                {
+                    type: 'POST',
+                    dataType: 'json',
+                    data: {
+                        action: 'update_fragment',
+                        collector: true,
+                    },
+                    success: function (data) {
+                        console.log('success');
+                        console.log(data);
+                        $('form.checkout').replaceWith(data.data.fragments.checkout);
+                        get_checkout_iframe();
+                        $('form.checkout').unblock();
+                    }
+                });
+    }
     });
 
     function update_checkout() {

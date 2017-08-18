@@ -28,6 +28,10 @@ class Collector_Bank_Ajax_Calls {
 		// Customer address updated
 		add_action( 'wp_ajax_customer_adress_updated', array( $this, 'customer_adress_updated' ) );
 		add_action( 'wp_ajax_nopriv_customer_adress_updated', array( $this, 'customer_adress_updated' ) );
+
+		// Update Template Fragment
+		add_action( 'wp_ajax_update_fragment', array( $this, 'update_fragment' ) );
+		add_action( 'wp_ajax_nopriv_update_fragment', array( $this, 'update_fragment' ) );
 	}
 
 	public function get_public_token() {
@@ -149,6 +153,41 @@ class Collector_Bank_Ajax_Calls {
 		}
 		$return['shipping'] = WC()->session->get( 'collector_chosen_shipping' );
 		wp_send_json_success( $return );
+		wp_die();
+	}
+
+	public function update_fragment() {
+
+		$available_gateways = WC()->payment_gateways()->get_available_payment_gateways();
+		if ( 'false' === $_POST['collector'] ) {
+			// Set chosen payment method to first gateway that is not Klarna Checkout for WooCommerce.
+			$first_gateway = reset( $available_gateways );
+			if ( 'collector_bank' !== $first_gateway->id ) {
+				WC()->session->set( 'chosen_payment_method', $first_gateway->id );
+			} else {
+				$second_gateway = next( $available_gateways );
+				WC()->session->set( 'chosen_payment_method', $second_gateway->id );
+			}
+		} else {
+			WC()->session->set( 'chosen_payment_method', 'collector_bank' );
+		}
+		WC()->payment_gateways()->set_current_gateway( $available_gateways );
+		ob_start();
+		if ( 'collector_bank' !== WC()->session->get( 'chosen_payment_method' ) ) {
+			wc_get_template( 'checkout/form-checkout.php', array(
+				'checkout' => WC()->checkout(),
+			) );
+		} else {
+			include( COLLECTOR_BANK_PLUGIN_DIR . '/templates/form-checkout.php' );
+		}
+		$checkout_output = ob_get_clean();
+
+		$data = array(
+			'fragments' => array(
+				'checkout' => $checkout_output,
+			),
+		);
+		wp_send_json_success( $data );
 		wp_die();
 	}
 }
