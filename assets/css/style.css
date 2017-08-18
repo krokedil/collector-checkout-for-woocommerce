@@ -16,24 +16,36 @@ ul.collector-checkout-tabs li {
 	border-radius: 6px 6px 0 0;
 	display: inline-block;
 	padding: 10px 15px;
+	margin: 0 -8px 0 0;
 	cursor: pointer;
+	position: relative;
 	z-index: 1000;
 }
 
 ul.collector-checkout-tabs li.current {
 	background: #3d9cd2;
 	color: #ffffff;
+	
+	border: 1px solid #3d9cd2;
 	border-bottom: none;
 }
 li.tab-link.current[data-tab="b2c"] {
-	margin-right: -8px;
 	z-index: 1100;
+	box-shadow: 1px 0px 1px 0px rgba(0,0,0,0.2);
 }
 li.tab-link.current[data-tab="b2b"] {
-	margin-left: -8px;
 	z-index: 1100;
+	box-shadow: -1px 0px 1px 0px rgba(0,0,0,0.2);
 }
 #collector-bank-iframe {
 	border: 1px solid #e2e2e2;
 	border-radius: 0 6px 6px 6px;
+	min-height: 748px;
+}
+.collector-b2b #collector-bank-iframe,
+.collector-b2c #collector-bank-iframe {
+	border-radius: 6px 6px 6px 6px;
+}
+.collector-checkout-thankyou {
+	min-height: 431px;
 }
