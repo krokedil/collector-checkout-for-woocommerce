@@ -24,14 +24,15 @@ do_action( 'woocommerce_before_checkout_form', $checkout );
 	<?php do_action( 'woocommerce_checkout_after_order_review' ); ?>
     <?php
     $available_payment_gateways = WC()->payment_gateways->get_available_payment_gateways();
-    if ( count( $available_payment_gateways ) > 1 ){
-    ?>
+    if ( count( $available_payment_gateways ) > 1 ){ ?>
         <a class="button" id="collector_change_payment_method" href="#"><?php  echo __( 'Select another payment method', 'collector-bank-for-woocommerce' ) ?></a>
     <?php } ?>
-    <ul class="collector-checkout-tabs">
-        <li class="tab-link current" data-tab="b2c"><?php _e( 'Privatperson', 'woocommerce' ); ?></li>
-        <li class="tab-link" data-tab="b2b"><?php _e( 'Företag', 'woocommerce' ); ?></li>
-    </ul>
+    <?php if( 'collector-b2c-b2b' == wc_collector_get_available_customer_types() ) { ?>
+	<ul class="collector-checkout-tabs">
+		<li class="tab-link current" data-tab="b2c"><?php _e( 'Privatperson', 'woocommerce' ); ?></li>
+		<li class="tab-link" data-tab="b2b"><?php _e( 'Företag', 'woocommerce' ); ?></li>
+	</ul>
+	<?php } ?>
     <div id="collector-bank-iframe"></div>
 
 </form>
