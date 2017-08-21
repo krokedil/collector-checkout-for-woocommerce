@@ -156,7 +156,7 @@ function wc_collector_get_available_customer_types() {
 	$collector_b2b_se 	= $collector_settings['collector_merchant_id_se_b2b'];
 	$collector_b2c_no 	= $collector_settings['collector_merchant_id_no_b2c'];
 
-	if( $collector_b2c_se && $collector_b2b_se ) {
+	if( 'SEK' == get_woocommerce_currency() && $collector_b2c_se && $collector_b2b_se ) {
 		return 'collector-b2c-b2b';
 	} elseif( ( 'SEK' == get_woocommerce_currency() && $collector_b2c_se ) || ( 'NOK' == get_woocommerce_currency() && $collector_b2c_no ) ) {
 		return 'collector-b2c';
