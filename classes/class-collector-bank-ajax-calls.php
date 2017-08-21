@@ -82,20 +82,31 @@ class Collector_Bank_Ajax_Calls {
 		$update_needed = 'no';
 		
 		// Get customer data from Collector
-		$private_id 	= WC()->session->get( 'collector_private_id' );
-		$customer_type 	= WC()->session->get( 'collector_customer_type' );
-		$customer_data 	= new Collector_Bank_Requests_Get_Checkout_Information( $private_id, $customer_type );
-		$customer_data 	= $customer_data->request();
-		$customer_data 	= json_decode( $customer_data );
-		$country 		= $customer_data->data->countryCode;
+		$private_id 		= WC()->session->get( 'collector_private_id' );
+		$customer_type 		= WC()->session->get( 'collector_customer_type' );
+		$customer_data 		= new Collector_Bank_Requests_Get_Checkout_Information( $private_id, $customer_type );
+		$customer_data 		= $customer_data->request();
+		$customer_data 		= json_decode( $customer_data );
+		$country 			= $customer_data->data->countryCode;
+		
+		if( 'BusinessCustomer' == $customer_data->data->customerType ) {
+			$billing_postcode 	= $customer_data->data->businessCustomer->invoiceAddress->postalCode;
+			$shipping_postcode 	= $customer_data->data->businessCustomer->deliveryAddress->postalCode;
+		} else {
+			$billing_postcode 	= $customer_data->data->customer->billingAddress->postalCode;
+			$shipping_postcode 	= $customer_data->data->customer->deliveryAddress->postalCode;
+		}
+		
 		
 		if( $country ) {
 			
-			$billing_postcode = $customer_data->data->customer->billingAddress->postalCode;
-			$shipping_postcode = $customer_data->data->customer->deliveryAddress->postalCode;
-			
 			// If country is changed then we need to trigger an cart update in the Collector Checkout
 			if( WC()->customer->get_billing_country() !== $country ) {
+				$update_needed = 'yes';
+			}
+			
+			// If country is changed then we need to trigger an cart update in the Collector Checkout
+			if( WC()->customer->get_shipping_postcode() !== $shipping_postcode ) {
 				$update_needed = 'yes';
 			}
 			// Set customer data in Woo			
