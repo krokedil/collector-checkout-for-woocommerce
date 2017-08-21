@@ -37,6 +37,9 @@ li.tab-link.current[data-tab="b2b"] {
 	z-index: 1100;
 	box-shadow: -1px 0px 1px 0px rgba(0,0,0,0.2);
 }
+#collector_change_payment_method {
+	margin-bottom: 10px;
+}
 #collector-bank-iframe {
 	border: 1px solid #e2e2e2;
 	border-radius: 0 6px 6px 6px;
