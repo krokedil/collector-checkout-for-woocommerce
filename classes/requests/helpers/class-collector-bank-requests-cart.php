@@ -11,6 +11,10 @@ class Collector_Bank_Requests_Cart {
 		$items = array();
 		// Loop through cart items and make an item line for each.
 		foreach ( $wc_cart as $item ) {
+			// Don't send items with a price of 0
+			if( 0 == $item['line_total'] ) {
+				continue;
+			}
 			$item_name = wc_get_product( $item['product_id'] );
 			$item_name = $item_name->get_title();
 			$product = wc_get_product( $item['product_id'] );

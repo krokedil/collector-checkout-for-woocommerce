@@ -2,7 +2,8 @@
     'use strict';
     var checkout_initiated = false;
 
-    function get_checkout_iframe() {
+    function get_checkout_iframe( customer = wc_collector_bank.default_customer_type ) {
+	    console.log( customer );
         var url = window.location.href;
         if (url.indexOf('payment_successful') != -1) {
             $('.entry-content').css("display", "none");
@@ -15,7 +16,8 @@
             }
         } else {
             var data = {
-                'action': 'get_public_token'
+                'action': 'get_public_token',
+                'customer_type': customer
             };
             jQuery.post(wc_collector_bank.ajaxurl, data, function (data) {
                 if (true === data.success) {
@@ -25,10 +27,11 @@
                     $('#collector-checkout-iframe').remove();
                     var publicToken = data.data.publicToken;
                     var testmode = data.data.test_mode;
+                    console.log('publicToken ' + publicToken);
                     if(testmode === 'yes') {
-                        $('#collector-bank-iframe').append('<script src="https://checkout-uat.collector.se/collector-checkout-loader.js" data-lang="sv" data-token="' + publicToken + '" >');
+                        $('#collector-bank-iframe').append('<script src="https://checkout-uat.collector.se/collector-checkout-loader.js" data-lang="' + wc_collector_bank.locale + '" data-token="' + publicToken + '" data-variant="' + customer + '" >');
                     } else {
-                        $('#collector-bank-iframe').append('<script src="https://checkout.collector.se/collector-checkout-loader.js" data-lang="sv" data-token="' + publicToken + '" >');
+                        $('#collector-bank-iframe').append('<script src="https://checkout.collector.se/collector-checkout-loader.js" data-lang="' + wc_collector_bank.locale + '" data-token="' + publicToken + '" data-variant="' + customer + '" >');
                     }
                     checkout_initiated = true;
                 } else {
@@ -37,24 +40,88 @@
             });
         }
     }
+    
+    // Customer updated - event triggered when customer changes address in Collector iframe
+    document.addEventListener("collectorCheckoutCustomerUpdated", function(){
+	    window.collector.checkout.api.suspend();
+	    $.ajax(
+            wc_collector_bank.ajaxurl,
+            {
+                type: 'POST',
+                dataType: 'json',
+                data: {
+                    action  : 'customer_adress_updated',
+                    nonce: wc_collector_bank.collector_nonce
+                },
+                success: function(response) {
+	                console.log(response);
+	                if( 'yes' == response.data ) {
+		               jQuery(document.body).trigger('update_checkout'); 
+	                }
+                }
+            }
+        );
+		window.collector.checkout.api.resume();
+	});
+	
+	// Customer change B2B / B2C
+	$(document).on('click', '.collector-checkout-tabs li',function() {
+       var tab_id = $(this).attr('data-tab');
+       console.log(tab_id);
+       get_checkout_iframe( tab_id );
+       $('.collector-checkout-tabs li').removeClass('current');
+       $(this).addClass('current');
+    });
 
     $(document).on('updated_checkout', function () {
         update_checkout();
         if ("collector_bank" === $("input[name='payment_method']:checked").val()) {
             $('#place_order').remove();
-            // Refresh the page to load collector bank template instead.
-
         }
     });
-
+    // Change from Collector
+    $(document).on( 'click', '#collector_change_payment_method', function () {
+        $('form.checkout').block();
+        $.ajax(
+            wc_collector_bank.refresh_checkout_fragment_url,
+            {
+                type: 'POST',
+                dataType: 'json',
+                data: {
+                    action  : 'update_fragment',
+                    collector: false,
+                },
+                success: function(data) {
+                    console.log('success');
+                    console.log(data);
+                    $('form.checkout').replaceWith(data.data.fragments.checkout);
+                    $('body').removeClass('collector-bank-selected');
+                    $('form.checkout').unblock();
+                }
+            });
+    });
+    // Change to Collector
     $(document).on("change", "input[name='payment_method']", function (event) {
-        if ("collector_bank" === event.target.value) {
-            // Refresh the page to load collector bank template instead.
-            //get_checkout_iframe();
-            //$("body").trigger("update_checkout");
-        } else {
-            $('#collector-checkout-iframe').remove();
-        }
+        if ("collector_bank" === $("input[name='payment_method']:checked").val()) {
+            $('form.checkout').block();
+            $.ajax(
+                wc_collector_bank.ajaxurl,
+                {
+                    type: 'POST',
+                    dataType: 'json',
+                    data: {
+                        action: 'update_fragment',
+                        collector: true,
+                    },
+                    success: function (data) {
+                        console.log('success');
+                        console.log(data);
+                        $('form.checkout').replaceWith(data.data.fragments.checkout);
+                        get_checkout_iframe();
+                        $('form.checkout').unblock();
+                    }
+                });
+    }
     });
 
     function update_checkout() {
@@ -94,10 +161,11 @@
                 success: function(data) {
                     var publicToken = data.data.publicToken;
                     var testmode = data.data.test_mode;
+                    var customer_type = data.data.customer_type;
                     if(testmode === 'yes') {
-                        $('div.entry-content div.woocommerce').append('<script src="https://checkout-uat.collector.se/collector-checkout-loader.js" data-lang="sv" data-token="' + publicToken + '" >');
+                        $('div.collector-checkout-thankyou').append('<script src="https://checkout-uat.collector.se/collector-checkout-loader.js" data-lang="' + wc_collector_bank.locale + '" data-token="' + publicToken + '" data-variant="' + customer_type + '" >');
                     } else {
-                        $('div.entry-content div.woocommerce').append('<script src="https://checkout.collector.se/collector-checkout-loader.js" data-lang="sv" data-token="' + publicToken + '" >');
+                        $('div.collector-checkout-thankyou').prepend('<script src="https://checkout.collector.se/collector-checkout-loader.js" data-lang="' + wc_collector_bank.locale + '" data-token="' + publicToken + '" data-variant="' + customer_type + '" >');
                     }
                 }
             });
@@ -134,31 +202,67 @@
         };
         jQuery.post(wc_collector_bank.ajaxurl, data, function (data) {
             if (true === data.success) {
-                var datastring = 'billing_first_name=' + data.data.customer_data.data.customer.billingAddress.firstName +
-                    '&billing_last_name=' + data.data.customer_data.data.customer.billingAddress.lastName +
-                    '&billing_country=SE' +
-                    '&billing_address_1=' + data.data.customer_data.data.customer.billingAddress.address +
-                    '&billing_postcode=' + data.data.customer_data.data.customer.billingAddress.postCode +
-                    '&billing_city=' + data.data.customer_data.data.customer.billingAddress.city +
-                    '&billing_phone=' + data.data.customer_data.data.customer.mobilePhoneNumber +
-                    '&billing_email=' + data.data.customer_data.data.customer.email +
-                    '&shipping_first_name=' + data.data.customer_data.data.customer.deliveryAddress.firstName +
-                    '&shipping_last_name=' + data.data.customer_data.data.customer.deliveryAddress.lastName +
-                    '&shipping_country=SE&shipping_address_1=' + data.data.customer_data.data.customer.deliveryAddress.address +
-                    '&shipping_postcode=' + data.data.customer_data.data.customer.deliveryAddress.postalCode +
-                    '&shipping_city=' + data.data.customer_data.data.customer.deliveryAddress.city +
-                    'shipping_method%5B0%5D=' + data.data.shipping +
+	            if( 'BusinessCustomer' == data.data.customer_data.data.customerType ) {
+		            var datastring = 'billing_first_name=' + data.data.customer_data.data.businessCustomer.referencePerson +
+                    '&billing_last_name=' + data.data.customer_data.data.businessCustomer.organizationNumber +
+                    '&billing_company=' + data.data.customer_data.data.businessCustomer.companyName +
+                    '&billing_country=' + data.data.customer_data.data.countryCode +
+                    '&billing_address_1=' + data.data.customer_data.data.businessCustomer.invoiceAddress.address +
+                    '&billing_postcode=' + data.data.customer_data.data.businessCustomer.invoiceAddress.postalCode +
+                    '&billing_city=' + data.data.customer_data.data.businessCustomer.invoiceAddress.city +
+                    '&billing_phone=' + data.data.customer_data.data.businessCustomer.mobilePhoneNumber +
+                    '&billing_email=' + data.data.customer_data.data.businessCustomer.email +
+                    '&shipping_first_name=' + data.data.customer_data.data.businessCustomer.referencePerson +
+                    '&shipping_last_name=' + data.data.customer_data.data.businessCustomer.organizationNumber +
+                    '&shipping_company=' + data.data.customer_data.data.businessCustomer.companyName +
+                    '&shipping_country=' + data.data.customer_data.data.countryCode +
+                    '&shipping_address_1=' + data.data.customer_data.data.businessCustomer.deliveryAddress.address +
+                    '&shipping_postcode=' + data.data.customer_data.data.businessCustomer.deliveryAddress.postalCode +
+                    '&shipping_city=' + data.data.customer_data.data.businessCustomer.deliveryAddress.city +
+                    '&shipping_method%5B0%5D=' + data.data.shipping +
+                    '&ship_to_different_address=1' +
                     '&payment_method=collector_bank&terms=on' +
                     '&terms-field=1&_wpnonce=' + data.data.nonce;
+                    
+                    if(data.data.customer_data.data.businessCustomer.invoiceAddress.address2 != null) {
+	                    datastring = datastring + '&billing_address_2=' + data.data.customer_data.data.businessCustomer.invoiceAddress.address2;
+	                }
+	                if(data.data.customer_data.data.businessCustomer.deliveryAddress.address2 != null) {
+	                    datastring = datastring + '&shipping_address_2=' + data.data.customer_data.data.businessCustomer.deliveryAddress.address2;
+	                }
+	            } else {
+	                var datastring = 'billing_first_name=' + data.data.customer_data.data.customer.billingAddress.firstName +
+	                    '&billing_last_name=' + data.data.customer_data.data.customer.billingAddress.lastName +
+	                    '&billing_country=' + data.data.customer_data.data.countryCode +
+	                    '&billing_address_1=' + data.data.customer_data.data.customer.billingAddress.address +
+	                    '&billing_postcode=' + data.data.customer_data.data.customer.billingAddress.postalCode +
+	                    '&billing_city=' + data.data.customer_data.data.customer.billingAddress.city +
+	                    '&billing_phone=' + data.data.customer_data.data.customer.mobilePhoneNumber +
+	                    '&billing_email=' + data.data.customer_data.data.customer.email +
+	                    '&shipping_first_name=' + data.data.customer_data.data.customer.deliveryAddress.firstName +
+	                    '&shipping_last_name=' + data.data.customer_data.data.customer.deliveryAddress.lastName +
+	                    '&shipping_country=' + data.data.customer_data.data.countryCode +
+	                    '&shipping_address_1=' + data.data.customer_data.data.customer.deliveryAddress.address +
+	                    '&shipping_postcode=' + data.data.customer_data.data.customer.deliveryAddress.postalCode +
+	                    '&shipping_city=' + data.data.customer_data.data.customer.deliveryAddress.city +
+	                    '&shipping_method%5B0%5D=' + data.data.shipping +
+	                    '&ship_to_different_address=1' +
+	                    '&payment_method=collector_bank&terms=on' +
+	                    '&terms-field=1&_wpnonce=' + data.data.nonce;
+						
+					if(data.data.customer_data.data.customer.billingAddress.address2 != null) {
+	                    datastring = datastring + '&billing_address_2=' + data.data.customer_data.data.customer.billingAddress.address2;
+	                }
+	                if(data.data.customer_data.data.customer.deliveryAddress.address2 != null) {
+	                    datastring = datastring + '&shipping_address_2=' + data.data.customer_data.data.customer.deliveryAddress.address2;
+	                }
+					
+				}
+                    
                 if(data.data.order_note != 'undefined'){
                     datastring = datastring + '&order_comments=' + data.data.order_note;
                 }
-                if(data.data.customer_data.data.customer.billingAddress.address2 !== null) {
-                    datastring = datastring + '&billing_address_2=' + data.data.customer_data.data.customer.billingAddress.address2;
-                }
-                if(data.data.customer_data.data.customer.deliveryAddress.address2 !== null) {
-                    datastring = datastring + '&shipping_address_2=' + data.data.customer_data.data.customer.deliveryAddress.address2;
-                }
+                
                     jQuery.ajax({
                     type: 'POST',
                     url: wc_checkout_params.checkout_url,

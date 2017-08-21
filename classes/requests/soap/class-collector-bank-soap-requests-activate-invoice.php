@@ -13,23 +13,28 @@ class Collector_Bank_SOAP_Requests_Activate_Invoice {
 	public $password = '';
 	public $store_id = '';
 	public $country_code = '';
+	public $customer_type = '';
 
-	public function __construct() {
+	public function __construct( $order_id ) {
 		$collector_settings = get_option( 'woocommerce_collector_bank_settings' );
 		$this->username = $collector_settings['collector_username'];
 		$this->password = $collector_settings['collector_password'];
-		switch ( get_woocommerce_currency() ) {
+		$order = wc_get_order( $order_id );
+		$currency = $order->get_currency();
+		$customer_type = get_post_meta( $order_id, '_collector_customer_type', true );
+		
+		switch ( $currency ) {
 			case 'SEK' :
 				$country_code = 'SE';
-				$this->store_id = $collector_settings['collector_merchant_id_se'];
+				$this->store_id = $collector_settings['collector_merchant_id_se_' . $customer_type];
 				break;
 			case 'NOK' :
 				$country_code = 'NO';
-				$this->store_id = $collector_settings['collector_merchant_id_no'];
+				$this->store_id = $collector_settings['collector_merchant_id_no_' . $customer_type];
 				break;
 			default :
 				$country_code = 'SE';
-				$this->store_id = $collector_settings['collector_merchant_id_se'];
+				$this->store_id = $collector_settings['collector_merchant_id_se_' . $customer_type];
 				break;
 		}
 		$this->country_code = $country_code;
@@ -49,14 +54,28 @@ class Collector_Bank_SOAP_Requests_Activate_Invoice {
 		$headers[] = new SoapHeader( 'http://schemas.ecommerce.collector.se/v30/InvoiceService', 'Username', $this->username );
 		$headers[] = new SoapHeader( 'http://schemas.ecommerce.collector.se/v30/InvoiceService', 'Password', $this->password );
 		$soap->__setSoapHeaders( $headers );
-
-		$request = $soap->ActivateInvoice( $args );
+		
+		try {
+			$request = $soap->ActivateInvoice( $args );
+		}
+			catch( SoapFault $e ){
+			$request = $e->getMessage();
+		}
 		$order = wc_get_order( $order_id );
-		if ( isset( $request->PaymentReference ) ) {
-			$order->add_order_note( sprintf( __( 'Order activated with Collector Bank', 'collector-bank-for-woocommerce' ) ) );
+		$due_date = '';
+		if ( isset( $request->TotalAmount ) && $request->TotalAmount == $order->get_total() ) {
+			if( isset( $request->InvoiceUrl ) ) {
+				update_post_meta( $order_id, '_collector_invoice_url', wc_clean( $request->InvoiceUrl ) );
+				$due_date = date( get_option( 'date_format' ) . ' - ' . get_option( 'time_format' ), strtotime( $request->DueDate ) );
+				$due_date = ' ' . __( 'Invoice due date: ' . $due_date, 'collector-bank-for-woocommerce' );
+			}
+
+			$order->add_order_note( sprintf( __( 'Order activated with Collector Bank.' . $due_date, 'collector-bank-for-woocommerce' ) ) );
+			
 		} else {
 			$order->update_status( 'processing' );
-			$order->add_order_note( sprintf( __( 'Order failed to activate with Collector Bank', 'collector-bank-for-woocommerce' ) ) );
+			$order->add_order_note( sprintf( __( 'Order failed to activate with Collector Bank - ' . var_export($request, true), 'collector-bank-for-woocommerce' ) ) );
+			$this->log( 'Order failed to activate with Collector Bank. Request response: ' . var_export( $e, true ) );
 			$this->log( 'Activate order headers: ' . var_export( $headers, true ) );
 			$this->log( 'Activate order args: ' . var_export( $args, true ) );
 		}

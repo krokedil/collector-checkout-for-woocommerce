@@ -13,7 +13,6 @@ class Collector_Bank_Requests_Calculate_Auth {
 	}
 
 	public function calculate_auth( $body, $path ) {
-		error_log( $this->username );
 		return 'SharedKey ' . base64_encode( $this->username . ':' . hash( 'sha256', $body . $path . $this->shared_key ) );
 	}
 }

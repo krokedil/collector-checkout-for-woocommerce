@@ -7,10 +7,20 @@ class Collector_Bank_Requests_Get_Checkout_Information extends Collector_Bank_Re
 
 	public $path = '';
 
-	public function __construct( $private_id ) {
+	public function __construct( $private_id, $customer_type ) {
 		parent::__construct();
 		$collector_settings = get_option( 'woocommerce_collector_bank_settings' );
-		$store_id = $collector_settings['collector_merchant_id'];
+		switch ( get_woocommerce_currency() ) {
+			case 'SEK' :
+				$store_id = $collector_settings['collector_merchant_id_se_' . $customer_type];
+				break;
+			case 'NOK' :
+				$store_id = $collector_settings['collector_merchant_id_no_' . $customer_type];
+				break;
+			default :
+				$store_id = $collector_settings['collector_merchant_id_se_' . $customer_type];
+				break;
+		}
 		$this->path = '/merchants/' . $store_id . '/checkouts/' . $private_id;
 	}
 

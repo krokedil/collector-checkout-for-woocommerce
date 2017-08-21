@@ -14,22 +14,25 @@ class Collector_Bank_SOAP_Requests_Credit_Payment {
 	public $store_id = '';
 	public $country_code = '';
 
-	public function __construct() {
+	public function __construct( $order_id ) {
 		$collector_settings = get_option( 'woocommerce_collector_bank_settings' );
 		$this->username = $collector_settings['collector_username'];
 		$this->password = $collector_settings['collector_password'];
-		switch ( get_woocommerce_currency() ) {
+		$order = wc_get_order( $order_id );
+		$currency = $order->get_currency();
+		$customer_type = get_post_meta( $order_id, '_collector_customer_type', true );
+		switch ( $currency ) {
 			case 'SEK' :
 				$country_code = 'SE';
-				$this->store_id = $collector_settings['collector_merchant_id_se'];
+				$this->store_id = $collector_settings['collector_merchant_id_se_' . $customer_type];
 				break;
 			case 'NOK' :
 				$country_code = 'NO';
-				$this->store_id = $collector_settings['collector_merchant_id_no'];
+				$this->store_id = $collector_settings['collector_merchant_id_no_' . $customer_type];
 				break;
 			default :
 				$country_code = 'SE';
-				$this->store_id = $collector_settings['collector_merchant_id_se'];
+				$this->store_id = $collector_settings['collector_merchant_id_se_' . $customer_type];
 				break;
 		}
 		$this->country_code = $country_code;
@@ -49,15 +52,22 @@ class Collector_Bank_SOAP_Requests_Credit_Payment {
 		$headers[] = new SoapHeader( 'http://schemas.ecommerce.collector.se/v30/InvoiceService', 'Username', $this->username );
 		$headers[] = new SoapHeader( 'http://schemas.ecommerce.collector.se/v30/InvoiceService', 'Password', $this->password );
 		$soap->__setSoapHeaders( $headers );
-
-		$request = $soap->CreditInvoice( $args );
+		
+		try {
+			$request = $soap->CreditInvoice( $args );
+		}
+			catch( SoapFault $e ){
+			$request = $e->getMessage();
+		}
+		
 		$order = wc_get_order( $order_id );
 		if ( isset( $request->CorrelationId ) || $request->CorrelationId == null ) {
 			$order->add_order_note( sprintf( __( 'Order credited with Collector Bank', 'collector-bank-for-woocommerce' ) ) );
 			return true;
 		} else {
 			$order->update_status( 'completed' );
-			$order->add_order_note( sprintf( __( 'Order failed to be credited with Collector Bank', 'collector-bank-for-woocommerce' ) ) );
+			$order->add_order_note( sprintf( __( 'Order failed to be credited with Collector Bank - ' . $request, 'collector-bank-for-woocommerce' ) ) );
+			$this->log( 'Order failed to be credited with Collector Bank. Request response: ' . var_export( $e, true ) );
 			$this->log( 'Credit Payment headers: ' . var_export( $headers, true ) );
 			$this->log( 'Credit Payment args: ' . var_export( $args, true ) );
 		}
