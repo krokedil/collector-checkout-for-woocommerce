@@ -7,6 +7,7 @@
         var url = window.location.href;
         if (url.indexOf('payment_successful') != -1) {
             $('.entry-content').css("display", "none");
+            $('body').block();
             if ($('form #billing_first_name').val() != '') {
                 // Check Terms checkbox, if it exists
                 if ($("form.checkout #terms").length > 0) {
