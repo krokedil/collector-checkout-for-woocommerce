@@ -236,10 +236,9 @@ class Collector_Bank_Gateway extends WC_Payment_Gateway {
 	}
 	
 	/**
-	 * Remove thank you page order received text if Collector is the selected payment method.
+	 * Get localized and formatted payment method name.
 	 *
-	 * @param $text
-	 * @param $order
+	 * @param $payment_method
 	 *
 	 * @return string
 	 */
