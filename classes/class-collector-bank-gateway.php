@@ -202,7 +202,7 @@ class Collector_Bank_Gateway extends WC_Payment_Gateway {
 		update_post_meta( $order_id, '_collector_payment_method', WC()->session->get( 'collector_payment_method' ) );
 		update_post_meta( $order_id, '_collector_payment_id', WC()->session->get( 'collector_payment_id' ) );
 		update_post_meta( $order_id, '_collector_customer_type', WC()->session->get( 'collector_customer_type' ) );
-		$order->add_order_note( sprintf( __( 'Order made with Collector. Payment Method: %s', 'collector-bank-for-woocommerce' ), WC()->session->get( 'collector_payment_method' ) ) );
+		$order->add_order_note( sprintf( __( 'Order made with Collector. Payment Method: %s', 'collector-bank-for-woocommerce' ), get_collector_payment_method_name( WC()->session->get( 'collector_payment_method' ) ) ) );
 	}
 	
 	/**
@@ -233,6 +233,42 @@ class Collector_Bank_Gateway extends WC_Payment_Gateway {
 			$class[] = wc_collector_get_available_customer_types();
 		}
 		return $class;
+	}
+	
+	/**
+	 * Remove thank you page order received text if Collector is the selected payment method.
+	 *
+	 * @param $text
+	 * @param $order
+	 *
+	 * @return string
+	 */
+	public function get_collector_payment_method_name( $payment_method ) {
+		
+		switch ( $payment_method ) {
+			case 'DirectInvoice' :
+				$payment_method = __( 'Collector Faktura', 'collector-bank-for-woocommerce' );
+				break;
+			case 'Account' :
+				$payment_method = __( 'Collector Konto', 'collector-bank-for-woocommerce' );
+				break;
+			case 'PartPayment' :
+				$payment_method = __( 'Collector Delbetalning', 'collector-bank-for-woocommerce' );
+				break;
+			case 'Campaign' :
+				$payment_method = __( 'Collector Kampanj', 'collector-bank-for-woocommerce' );
+				break;
+			case 'Card' :
+				$payment_method = __( 'Collector Kortbetalning', 'collector-bank-for-woocommerce' );
+				break;
+			case 'BankTransfer' :
+				$payment_method = __( 'Collector Direktbetalning', 'collector-bank-for-woocommerce' );
+				break;
+			default :
+				break;
+		}
+
+		return $payment_method;
 	}
 
 	public function process_refund( $order_id, $amount = null, $reason = '' ) {
