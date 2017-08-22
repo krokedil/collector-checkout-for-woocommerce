@@ -123,23 +123,28 @@ class Collector_Bank_Gateway extends WC_Payment_Gateway {
 
 		if ( 'Direct Invoice' == WC()->session->get( 'collector_payment_method' ) ) {
 			$product_id = $this->get_option( 'collector_invoice_fee' );
-			$_product   = wc_get_product( $product_id );
-			$price      = $_product->get_regular_price();
-
-			$collector_fee            = new stdClass();
-			$collector_fee->id        = sanitize_title( __( 'Collector Bank Invoice Fee', 'collector-bank-for-woocommerce' ) );
-			$collector_fee->name      = __( 'Collector Bank Invoice Fee', 'collector-bank-for-woocommerce' );
-			$collector_fee->amount    = $price;
-			$collector_fee->taxable   = false;
-			$collector_fee->tax       = 0;
-			$collector_fee->tax_data  = array();
-			$collector_fee->tax_class = '';
-			$fee_id                   = $order->add_fee( $collector_fee );
-
-			if ( ! $fee_id ) {
-				$order->add_order_note( __( 'Unable to add Collector Bank Invoice Fee to the order.', 'collector-bank-for-woocommerce' ) );
+			
+			if( $product_id ) {
+				
+				$_product   				= wc_get_product( $product_id );
+				$price      				= $_product->get_regular_price();
+				$collector_fee            	= new stdClass();
+				$collector_fee->id        	= sanitize_title( __( 'Collector Bank Invoice Fee', 'collector-bank-for-woocommerce' ) );
+				$collector_fee->name      	= __( 'Collector Bank Invoice Fee', 'collector-bank-for-woocommerce' );
+				$collector_fee->amount    	= $price;
+				$collector_fee->taxable   	= false;
+				$collector_fee->tax       	= 0;
+				$collector_fee->tax_data  	= array();
+				$collector_fee->tax_class 	= '';
+				$fee_id                   	= $order->add_fee( $collector_fee );
+	
+				if ( ! $fee_id ) {
+					$order->add_order_note( __( 'Unable to add Collector Bank Invoice Fee to the order.', 'collector-bank-for-woocommerce' ) );
+				}
+				$order->calculate_totals( true );
+				
 			}
-			$order->calculate_totals( true );
+			
 		}
 
 		WC()->session->__unset( 'collector_customer_order_note' );

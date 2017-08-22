@@ -9,20 +9,25 @@ class Collector_Bank_Requests_Fees {
 	public $price = 0;
 
 	public function __construct() {
-		$collector_settings = get_option( 'woocommerce_collector_bank_settings' );
-		$invoice_fee_id = $collector_settings['collector_invoice_fee'];
-		$_product   = wc_get_product( $invoice_fee_id );
-		$this->invoice_fee_id = $invoice_fee_id;
-		$this->price = $_product->get_regular_price();
+		$collector_settings 	= get_option( 'woocommerce_collector_bank_settings' );
+		$invoice_fee_id 		= $collector_settings['collector_invoice_fee'];
+		$this->invoice_fee_id 	= $invoice_fee_id;
+		
 	}
 
 	public function fees() {
 		$fees = array();
 		$shipping = $this->get_shipping();
-		$directinvoicenotification = $this->get_invoice_fee();
-
 		$fees['shipping'] = $shipping;
-		$fees['directinvoicenotification'] = $directinvoicenotification;
+		
+		if( $this->invoice_fee_id ) {
+			$_product   = wc_get_product( $invoice_fee_id );
+			if ( is_object( $_product ) ) {
+				$directinvoicenotification 			= $this->get_invoice_fee( $_product );
+				$fees['directinvoicenotification'] 	= $directinvoicenotification;
+			}
+			
+		}
 
 		return $fees;
 
@@ -61,12 +66,26 @@ class Collector_Bank_Requests_Fees {
 		}
 	}
 
-	public function get_invoice_fee() {
+	public function get_invoice_fee( $_product ) {
+		
+		$price = wc_get_price_including_tax( $_product );
+		
+		$_tax = new WC_Tax();
+		$tmp_rates = $_tax->get_base_tax_rates( $_product->get_tax_class() );
+		$_vat = array_shift( $tmp_rates );// Get the rate 
+		//Check what kind of tax rate we have 
+		if( $_product->is_taxable() && isset($_vat['rate']) ) {
+			$vat_rate=round($_vat['rate']);
+		} else {
+			//if empty, set 0% as rate
+			$vat_rate = 0;
+		}
+				
 		return array(
-			'id'            => get_the_title( $this->invoice_fee_id ),
-			'description'   => get_the_title( $this->invoice_fee_id ),
-			'unitPrice'     => $this->price,
-			'vat'           => 0,
+			'id'            => $_product->get_title(),
+			'description'   => $_product->get_title(),
+			'unitPrice'     => $price,
+			'vat'           => $vat_rate,
 		);
 	}
 }
