@@ -107,7 +107,10 @@ if ( ! class_exists( 'Collector_Bank' ) ) {
 				) );
 				wp_enqueue_script( 'checkout' );
 			}
-			if ( is_product() ){
+			$collector_settings = get_option( 'woocommerce_collector_bank_settings' );
+			$instant_checkout = $collector_settings['collector_instant_checkout'];
+			error_log($instant_checkout);
+			if ( is_product() && 'no' !== $instant_checkout ) {
 				wp_register_script( 'instantcheckout', plugins_url( '/assets/js/instant-checkout.js', __FILE__ ), array( 'jquery' ), COLLECTOR_BANK_VERSION );
 				wp_localize_script( 'instantcheckout', 'wc_collector_bank_instant_checkout', array(
 					'ajaxurl' 				=> admin_url( 'admin-ajax.php' ),
