@@ -19,9 +19,9 @@ class Collector_Bank_Requests_Fees {
 		$fees = array();
 		$shipping = $this->get_shipping();
 		$fees['shipping'] = $shipping;
-		
+
 		if( $this->invoice_fee_id ) {
-			$_product   = wc_get_product( $invoice_fee_id );
+			$_product   = wc_get_product( $this->invoice_fee_id );
 			if ( is_object( $_product ) ) {
 				$directinvoicenotification 			= $this->get_invoice_fee( $_product );
 				$fees['directinvoicenotification'] 	= $directinvoicenotification;
