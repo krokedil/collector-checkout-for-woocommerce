@@ -25,7 +25,7 @@ class Collector_Bank_Requests_Instant_Checkout extends Collector_Bank_Requests {
 			'body'    => $this->request_body(),
 			'method'  => 'POST',
 		);
-		$this->log( 'Collector Init checkout request args: ' . var_export( $request_args, true ) );
+		$this->log( 'Collector instant checkout request args: ' . var_export( $request_args, true ) );
 		return $request_args;
 	}
 
