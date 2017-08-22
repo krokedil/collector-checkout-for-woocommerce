@@ -8,7 +8,7 @@
  * Plugin Name:     Collector Bank for WooCommerce
  * Plugin URI:      https://krokedil.se/
  * Description:     Extends WooCommerce. Provides a <a href="https://www.collector.se/" target="_blank">Collector Bank</a> checkout for WooCommerce.
- * Version:         0.1.0
+ * Version:         0.2.1
  * Author:          Krokedil
  * Author URI:      https://woocommerce.com/
  * Developer:       Krokedil
@@ -25,7 +25,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 define( 'COLLECTOR_BANK_PLUGIN_DIR', untrailingslashit( plugin_dir_path( __FILE__ ) ) );
-define( 'COLLECTOR_BANK_VERSION', '0.1.8' );
+define( 'COLLECTOR_BANK_VERSION', '0.2.1' );
 
 if ( ! class_exists( 'Collector_Bank' ) ) {
 	class Collector_Bank {
