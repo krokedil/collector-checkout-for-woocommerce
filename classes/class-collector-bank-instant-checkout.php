@@ -10,8 +10,11 @@ class Collector_Bank_Instant_Checkout {
 	}
 
 	public function collector_instant_checkout() {
-
-		echo '<br><br><script src="https://checkout-uat.collector.se/collector-instant-loader.js" data-lang="sv-SE"></script>';
+		$collector_settings = get_option( 'woocommerce_collector_bank_settings' );
+		$instant_checkout = $collector_settings['collector_instant_checkout'];
+		if ( is_product() && 'no' !== $instant_checkout ) {
+			echo '<br><br><script src="https://checkout-uat.collector.se/collector-instant-loader.js" data-lang="sv-SE"></script>';
+		}
 	}
 }
 new Collector_Bank_Instant_Checkout();
