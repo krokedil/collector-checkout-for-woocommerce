@@ -202,7 +202,7 @@ class Collector_Bank_Gateway extends WC_Payment_Gateway {
 		update_post_meta( $order_id, '_collector_payment_method', WC()->session->get( 'collector_payment_method' ) );
 		update_post_meta( $order_id, '_collector_payment_id', WC()->session->get( 'collector_payment_id' ) );
 		update_post_meta( $order_id, '_collector_customer_type', WC()->session->get( 'collector_customer_type' ) );
-		$order->add_order_note( sprintf( __( 'Order made with Collector. Payment Method: %s', 'collector-bank-for-woocommerce' ), get_collector_payment_method_name( WC()->session->get( 'collector_payment_method' ) ) ) );
+		$order->add_order_note( sprintf( __( 'Purchase via %s', 'collector-bank-for-woocommerce' ), $this->get_collector_payment_method_name( WC()->session->get( 'collector_payment_method' ) ) ) );
 	}
 	
 	/**
@@ -243,29 +243,31 @@ class Collector_Bank_Gateway extends WC_Payment_Gateway {
 	 * @return string
 	 */
 	public function get_collector_payment_method_name( $payment_method ) {
-		
+		error_log( '$payment_method ' . $payment_method );
 		switch ( $payment_method ) {
-			case 'DirectInvoice' :
-				$payment_method = __( 'Collector Faktura', 'collector-bank-for-woocommerce' );
+			
+			case 'Direct Invoice' :
+				$payment_method = __( 'Collector Invoice', 'collector-bank-for-woocommerce' );
 				break;
 			case 'Account' :
-				$payment_method = __( 'Collector Konto', 'collector-bank-for-woocommerce' );
+				$payment_method = __( 'Collector Account', 'collector-bank-for-woocommerce' );
 				break;
-			case 'PartPayment' :
-				$payment_method = __( 'Collector Delbetalning', 'collector-bank-for-woocommerce' );
+			case 'Part Payment' :
+				$payment_method = __( 'Collector Part Payment', 'collector-bank-for-woocommerce' );
 				break;
 			case 'Campaign' :
-				$payment_method = __( 'Collector Kampanj', 'collector-bank-for-woocommerce' );
+				$payment_method = __( 'Collector Campaign', 'collector-bank-for-woocommerce' );
 				break;
 			case 'Card' :
-				$payment_method = __( 'Collector Kortbetalning', 'collector-bank-for-woocommerce' );
+				$payment_method = __( 'Collector Card', 'collector-bank-for-woocommerce' );
 				break;
-			case 'BankTransfer' :
-				$payment_method = __( 'Collector Direktbetalning', 'collector-bank-for-woocommerce' );
+			case 'Bank Transfer' :
+				$payment_method = __( 'Collector Bank Transfer', 'collector-bank-for-woocommerce' );
 				break;
 			default :
 				break;
 		}
+		error_log('$payment_method2 ' . $payment_method );
 
 		return $payment_method;
 	}
