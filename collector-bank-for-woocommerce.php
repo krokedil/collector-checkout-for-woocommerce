@@ -53,7 +53,8 @@ if ( ! class_exists( 'Collector_Bank' ) ) {
 			include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-bank-ajax-calls.php' );
 			include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-bank-post-checkout.php' );
 			//include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-bank-instant-checkout.php' );
-
+			include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-bank-admin-notices.php' );
+			
 			// Include and add the Gateway
 			if ( class_exists( 'WC_Payment_Gateway' ) ) {
 				include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-bank-gateway.php' );
@@ -84,6 +85,9 @@ if ( ! class_exists( 'Collector_Bank' ) ) {
 			define( 'COLLECTOR_BANK_REST_TEST', 'https://checkout-api-uat.collector.se' );
 			define( 'COLLECTOR_BANK_SOAP_LIVE', 'https://ecommerce.collector.se/v3.0/InvoiceServiceV33.svc?wsdl' );
 			define( 'COLLECTOR_BANK_SOAP_TEST', 'https://ecommercetest.collector.se/v3.0/InvoiceServiceV33.svc?wsdl' );
+			
+			// Translations
+			load_plugin_textdomain( 'collector-bank-for-woocommerce', false, plugin_basename( dirname( __FILE__ ) ) . '/languages' );
 		}
 
 		public function load_scripts() {
