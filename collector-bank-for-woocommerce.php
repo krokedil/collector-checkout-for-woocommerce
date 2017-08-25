@@ -8,7 +8,7 @@
  * Plugin Name:     Collector Bank for WooCommerce
  * Plugin URI:      https://krokedil.se/
  * Description:     Extends WooCommerce. Provides a <a href="https://www.collector.se/" target="_blank">Collector Bank</a> checkout for WooCommerce.
- * Version:         0.1.0
+ * Version:         0.2.1
  * Author:          Krokedil
  * Author URI:      https://woocommerce.com/
  * Developer:       Krokedil
@@ -25,7 +25,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 define( 'COLLECTOR_BANK_PLUGIN_DIR', untrailingslashit( plugin_dir_path( __FILE__ ) ) );
-define( 'COLLECTOR_BANK_VERSION', '0.1.8' );
+define( 'COLLECTOR_BANK_VERSION', '0.2.1' );
 
 if ( ! class_exists( 'Collector_Bank' ) ) {
 	class Collector_Bank {
@@ -52,8 +52,9 @@ if ( ! class_exists( 'Collector_Bank' ) ) {
 			// Include the Classes
 			include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-bank-ajax-calls.php' );
 			include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-bank-post-checkout.php' );
-			//include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-bank-instant-checkout.php' );
-
+			include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-bank-instant-checkout.php' );
+			include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-bank-admin-notices.php' );
+			
 			// Include and add the Gateway
 			if ( class_exists( 'WC_Payment_Gateway' ) ) {
 				include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-bank-gateway.php' );
@@ -67,6 +68,7 @@ if ( ! class_exists( 'Collector_Bank' ) ) {
 			include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/class-collector-bank-requests-update-cart.php' );
 			include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/class-collector-bank-requests-get-checkout-information.php' );
 			include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/class-collector-bank-requests-update-reference.php' );
+			include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/class-collector-bank-requests-instant-checkout.php' );
 
 			// Include the Request Helpers
 			include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/helpers/class-collector-bank-requests-cart.php' );
@@ -84,6 +86,9 @@ if ( ! class_exists( 'Collector_Bank' ) ) {
 			define( 'COLLECTOR_BANK_REST_TEST', 'https://checkout-api-uat.collector.se' );
 			define( 'COLLECTOR_BANK_SOAP_LIVE', 'https://ecommerce.collector.se/v3.0/InvoiceServiceV33.svc?wsdl' );
 			define( 'COLLECTOR_BANK_SOAP_TEST', 'https://ecommercetest.collector.se/v3.0/InvoiceServiceV33.svc?wsdl' );
+			
+			// Translations
+			load_plugin_textdomain( 'collector-bank-for-woocommerce', false, plugin_basename( dirname( __FILE__ ) ) . '/languages' );
 		}
 
 		public function load_scripts() {
@@ -106,10 +111,19 @@ if ( ! class_exists( 'Collector_Bank' ) ) {
 				) );
 				wp_enqueue_script( 'checkout' );
 			}
+			$collector_settings = get_option( 'woocommerce_collector_bank_settings' );
+			$instant_checkout = $collector_settings['collector_instant_checkout'];
+			if ( is_product() && 'no' !== $instant_checkout ) {
+				wp_register_script( 'instantcheckout', plugins_url( '/assets/js/instant-checkout.js', __FILE__ ), array( 'jquery' ), COLLECTOR_BANK_VERSION );
+				wp_localize_script( 'instantcheckout', 'wc_collector_bank_instant_checkout', array(
+					'ajaxurl' 				=> admin_url( 'admin-ajax.php' ),
+				) );
+				wp_enqueue_script( 'instantcheckout' );
+			}
 			// Load stylesheet for the checkout page
 			wp_register_style(
 				'collector_bank',
-				plugin_dir_url( __FILE__ ) . '/assets/css/style.css',
+				plugin_dir_url( __FILE__ ) . 'assets/css/style.css',
 				array(),
 				COLLECTOR_BANK_VERSION
 			);

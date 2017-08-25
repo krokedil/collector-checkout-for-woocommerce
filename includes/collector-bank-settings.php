@@ -84,6 +84,12 @@ return apply_filters( 'collector_bank_settings',
 			'default'       => '',
 			'desc_tip'      => true,
 		),
+		'collector_instant_checkout' => array(
+			'title'         => __( 'Instant Checkout', 'collector-bank-for-woocommerce' ),
+			'type'          => 'checkbox',
+			'label'         => __( 'Enable Instant Checkout for Collector Bank', 'collector-bank-for-woocommerce' ),
+			'default'       => 'no',
+		),
 		'test_mode'         => array(
 			'title'         => __( 'Test mode', 'collector-bank-for-woocommerce' ),
 			'type'          => 'checkbox',

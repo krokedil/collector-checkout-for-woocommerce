@@ -33,6 +33,10 @@ class Collector_Bank_Ajax_Calls {
 		add_action( 'wp_ajax_update_fragment', array( $this, 'update_fragment' ) );
 		add_action( 'wp_ajax_nopriv_update_fragment', array( $this, 'update_fragment' ) );
 		add_action( 'wc_ajax_update_fragment', array( $this, 'update_fragment' ) );
+
+		// Instant Purchase
+		add_action( 'wp_ajax_instant_purchase', array( $this, 'instant_purchase' ) );
+		add_action( 'wp_ajax_nopriv_instant_purchase', array( $this, 'instant_purchase' ) );
 	}
 
 	public function get_public_token() {
@@ -82,20 +86,31 @@ class Collector_Bank_Ajax_Calls {
 		$update_needed = 'no';
 		
 		// Get customer data from Collector
-		$private_id 	= WC()->session->get( 'collector_private_id' );
-		$customer_type 	= WC()->session->get( 'collector_customer_type' );
-		$customer_data 	= new Collector_Bank_Requests_Get_Checkout_Information( $private_id, $customer_type );
-		$customer_data 	= $customer_data->request();
-		$customer_data 	= json_decode( $customer_data );
-		$country 		= $customer_data->data->countryCode;
+		$private_id 		= WC()->session->get( 'collector_private_id' );
+		$customer_type 		= WC()->session->get( 'collector_customer_type' );
+		$customer_data 		= new Collector_Bank_Requests_Get_Checkout_Information( $private_id, $customer_type );
+		$customer_data 		= $customer_data->request();
+		$customer_data 		= json_decode( $customer_data );
+		$country 			= $customer_data->data->countryCode;
+		
+		if( 'BusinessCustomer' == $customer_data->data->customerType ) {
+			$billing_postcode 	= $customer_data->data->businessCustomer->invoiceAddress->postalCode;
+			$shipping_postcode 	= $customer_data->data->businessCustomer->deliveryAddress->postalCode;
+		} else {
+			$billing_postcode 	= $customer_data->data->customer->billingAddress->postalCode;
+			$shipping_postcode 	= $customer_data->data->customer->deliveryAddress->postalCode;
+		}
+		
 		
 		if( $country ) {
 			
-			$billing_postcode = $customer_data->data->customer->billingAddress->postalCode;
-			$shipping_postcode = $customer_data->data->customer->deliveryAddress->postalCode;
-			
 			// If country is changed then we need to trigger an cart update in the Collector Checkout
 			if( WC()->customer->get_billing_country() !== $country ) {
+				$update_needed = 'yes';
+			}
+			
+			// If country is changed then we need to trigger an cart update in the Collector Checkout
+			if( WC()->customer->get_shipping_postcode() !== $shipping_postcode ) {
 				$update_needed = 'yes';
 			}
 			// Set customer data in Woo			
@@ -188,6 +203,20 @@ class Collector_Bank_Ajax_Calls {
 			),
 		);
 		wp_send_json_success( $data );
+		wp_die();
+	}
+
+	public function instant_purchase() {
+		$product_id = $_POST['product_id'];
+		$customer_token = $_POST['customer_token'];
+		WC()->cart->empty_cart();
+		WC()->cart->add_to_cart( $product_id );
+		$customer_type 	= WC()->session->get( 'collector_customer_type' );
+		$instant_checkout = new Collector_Bank_Requests_Instant_Checkout( $customer_token, $customer_type );
+		$request = $instant_checkout->request();
+		$request = json_decode( $request );
+		WC()->session->set( 'collector_private_id', $request->data->privateId );
+		wp_send_json_success( $request );
 		wp_die();
 	}
 }

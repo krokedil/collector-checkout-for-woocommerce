@@ -52,3 +52,13 @@ li.tab-link.current[data-tab="b2b"] {
 .collector-checkout-thankyou {
 	min-height: 431px;
 }
+.woocommerce-order-received.collector-b2c-b2b .woocommerce-order-details,
+.woocommerce-order-received.collector-b2c .woocommerce-order-details,
+.woocommerce-order-received.collector-b2b .woocommerce-order-details,
+.woocommerce-order-received.collector-b2c-b2b h1.entry-title,
+.woocommerce-order-received.collector-b2c h1.entry-title,
+.woocommerce-order-received.collector-b2b h1.entry-title {
+	width: 87.5%;
+	margin-left: auto;
+	margin-right: auto;
+}
