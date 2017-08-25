@@ -243,7 +243,6 @@ class Collector_Bank_Gateway extends WC_Payment_Gateway {
 	 * @return string
 	 */
 	public function get_collector_payment_method_name( $payment_method ) {
-		error_log( '$payment_method ' . $payment_method );
 		switch ( $payment_method ) {
 			
 			case 'Direct Invoice' :
@@ -267,7 +266,6 @@ class Collector_Bank_Gateway extends WC_Payment_Gateway {
 			default :
 				break;
 		}
-		error_log('$payment_method2 ' . $payment_method );
 
 		return $payment_method;
 	}

@@ -30,15 +30,7 @@ define( 'COLLECTOR_BANK_VERSION', '0.2.1' );
 if ( ! class_exists( 'Collector_Bank' ) ) {
 	class Collector_Bank {
 		public function __construct() {
-			/**
-			 * UserName: combuyit
-			 * PartnerID: 873
-			 * Shared Key: 4bxpaFU;u?So7eI@QTQR*2btWKL1wS
-			 *
-			 * Username: krokedil_test
-			 * Password: combuyit_test
-			 * StoreID: 873
-			 */
+			
 			// Initiate the gateway
 			add_action( 'plugins_loaded', array( $this, 'init' ) );
 			// Load scripts
