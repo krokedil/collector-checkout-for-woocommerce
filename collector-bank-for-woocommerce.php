@@ -52,7 +52,7 @@ if ( ! class_exists( 'Collector_Bank' ) ) {
 			// Include the Classes
 			include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-bank-ajax-calls.php' );
 			include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-bank-post-checkout.php' );
-			//include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-bank-instant-checkout.php' );
+			include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-bank-instant-checkout.php' );
 			include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-bank-admin-notices.php' );
 			
 			// Include and add the Gateway
@@ -68,6 +68,7 @@ if ( ! class_exists( 'Collector_Bank' ) ) {
 			include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/class-collector-bank-requests-update-cart.php' );
 			include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/class-collector-bank-requests-get-checkout-information.php' );
 			include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/class-collector-bank-requests-update-reference.php' );
+			include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/class-collector-bank-requests-instant-checkout.php' );
 
 			// Include the Request Helpers
 			include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/helpers/class-collector-bank-requests-cart.php' );
@@ -110,10 +111,19 @@ if ( ! class_exists( 'Collector_Bank' ) ) {
 				) );
 				wp_enqueue_script( 'checkout' );
 			}
+			$collector_settings = get_option( 'woocommerce_collector_bank_settings' );
+			$instant_checkout = $collector_settings['collector_instant_checkout'];
+			if ( is_product() && 'no' !== $instant_checkout ) {
+				wp_register_script( 'instantcheckout', plugins_url( '/assets/js/instant-checkout.js', __FILE__ ), array( 'jquery' ), COLLECTOR_BANK_VERSION );
+				wp_localize_script( 'instantcheckout', 'wc_collector_bank_instant_checkout', array(
+					'ajaxurl' 				=> admin_url( 'admin-ajax.php' ),
+				) );
+				wp_enqueue_script( 'instantcheckout' );
+			}
 			// Load stylesheet for the checkout page
 			wp_register_style(
 				'collector_bank',
-				plugin_dir_url( __FILE__ ) . '/assets/css/style.css',
+				plugin_dir_url( __FILE__ ) . 'assets/css/style.css',
 				array(),
 				COLLECTOR_BANK_VERSION
 			);

@@ -7,6 +7,25 @@
         var url = window.location.href;
         if (url.indexOf('payment_successful') != -1) {
             $('.entry-content').css("display", "none");
+            // Block the body to prevent customers from doing something
+            $('body').block({
+                message: "",
+                baseZ: 99999,
+                overlayCSS:
+                    {
+                        background: "#fff",
+                        opacity: 0.6
+                    },
+                css: {
+                    padding:        "20px",
+                    zindex:         "9999999",
+                    textAlign:      "center",
+                    color:          "#555",
+                    backgroundColor:"#fff",
+                    cursor:         "wait",
+                    lineHeight:		"24px",
+                }
+            });
             if ($('form #billing_first_name').val() != '') {
                 // Check Terms checkbox, if it exists
                 if ($("form.checkout #terms").length > 0) {
@@ -81,7 +100,24 @@
     });
     // Change from Collector
     $(document).on( 'click', '#collector_change_payment_method', function () {
-        $('form.checkout').block();
+        $('form.checkout').block({
+            message: "",
+            baseZ: 99999,
+            overlayCSS:
+                {
+                    background: "#fff",
+                    opacity: 0.6
+                },
+            css: {
+                padding:        "20px",
+                zindex:         "9999999",
+                textAlign:      "center",
+                color:          "#555",
+                backgroundColor:"#fff",
+                cursor:         "wait",
+                lineHeight:		"24px",
+            }
+        });
         $.ajax(
             wc_collector_bank.refresh_checkout_fragment_url,
             {
@@ -103,7 +139,24 @@
     // Change to Collector
     $(document).on("change", "input[name='payment_method']", function (event) {
         if ("collector_bank" === $("input[name='payment_method']:checked").val()) {
-            $('form.checkout').block();
+            $('form.checkout').block({
+                message: "",
+                baseZ: 99999,
+                overlayCSS:
+                    {
+                        background: "#fff",
+                        opacity: 0.6
+                    },
+                css: {
+                    padding:        "20px",
+                    zindex:         "9999999",
+                    textAlign:      "center",
+                    color:          "#555",
+                    backgroundColor:"#fff",
+                    cursor:         "wait",
+                    lineHeight:		"24px",
+                }
+            });
             $.ajax(
                 wc_collector_bank.ajaxurl,
                 {
