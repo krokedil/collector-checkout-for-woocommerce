@@ -38,30 +38,27 @@ class Collector_Bank_Post_Checkout {
 
 			header( "HTTP/1.1 200 Ok" );
 
-			if( isset( $_GET['token'] ) && isset( $_GET['InvoiceNo'] ) && isset( $_GET['OrderNo'] ) && isset( $_GET['InvoiceStatus'] ) ) {
-				$collector_settings = get_option( 'woocommerce_collector_bank_settings' );
-				if( $collector_settings['invoice_status_token'] == wc_clean( $_GET['token'] ) ) {
-					$collector_payment_id = wc_clean( $_GET['InvoiceNo'] );
-					$query_args = array(
-						'post_type' => wc_get_order_types(),
-						'post_status' => array_keys( wc_get_order_statuses() ),
-						'meta_key' => '_collector_payment_id',
-						'meta_value' => $collector_payment_id,
-					);
-					$orders = get_posts( $query_args );
-					$order_id = $orders[0]->ID;
-					$order = wc_get_order( $order_id );
-					
-					$order->add_order_note( sprintf( __( 'Invoice status callback from Collector. New Invoice status: %s', 'collector-bank-for-woocommerce' ), wc_clean( $_GET['InvoiceStatus'] ) ) );
-					
-					if( '1' == $_GET['InvoiceStatus'] ) {
-						$order->payment_complete( $collector_payment_id );
-					} elseif ( '5' == $_GET['InvoiceStatus'] ) {
-						$order->update_status( 'failed' );
-					}
+			if( isset( $_GET['InvoiceNo'] ) && isset( $_GET['OrderNo'] ) && isset( $_GET['InvoiceStatus'] ) ) {
+				
+				$collector_payment_id = wc_clean( $_GET['InvoiceNo'] );
+				$query_args = array(
+					'post_type' => wc_get_order_types(),
+					'post_status' => array_keys( wc_get_order_statuses() ),
+					'meta_key' => '_collector_payment_id',
+					'meta_value' => $collector_payment_id,
+				);
+				$orders = get_posts( $query_args );
+				$order_id = $orders[0]->ID;
+				$order = wc_get_order( $order_id );
+				
+				$order->add_order_note( sprintf( __( 'Invoice status callback from Collector. New Invoice status: %s', 'collector-bank-for-woocommerce' ), wc_clean( $_GET['InvoiceStatus'] ) ) );
+				
+				if( '1' == $_GET['InvoiceStatus'] ) {
+					$order->payment_complete( $collector_payment_id );
+				} elseif ( '5' == $_GET['InvoiceStatus'] ) {
+					$order->update_status( 'failed' );
 				}
 			}
-			
 			die();	
 		}
 	}

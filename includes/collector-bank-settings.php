@@ -77,13 +77,6 @@ return apply_filters( 'collector_bank_settings',
 			'default'       => '',
 			'desc_tip'      => true,
 		),
-		'invoice_status_token' => array(
-			'title'         => __( 'Anti-fraud token', 'collector-bank-for-woocommerce' ),
-			'type'          => 'text',
-			'description'   => __( 'Enter the token for Invoice status callbacks from Collector. The token is a string you choose/set yourself (select any combination of letters and numbers). This token should then also be sent to Collector.', 'collector-bank-for-woocommerce' ),
-			'default'       => '',
-			'desc_tip'      => true,
-		),
 		'collector_instant_checkout' => array(
 			'title'         => __( 'Instant Checkout', 'collector-bank-for-woocommerce' ),
 			'type'          => 'checkbox',
