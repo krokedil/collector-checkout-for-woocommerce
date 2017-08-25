@@ -31,10 +31,10 @@
                     action  : 'instant_purchase',
                     product_id : product_id,
                     customer_token : window.collector.instant.api.getCustomerToken,
-    },
+    			},
                 success: function(data) {
                     console.log(data);
-                    var publicToken = data.data.data.publicToken;
+                    var publicToken = data.data.publicToken;
                     console.log(publicToken);
                     window.collector.instant.api.setPublicToken(publicToken);
                 }

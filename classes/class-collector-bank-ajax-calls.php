@@ -214,9 +214,20 @@ class Collector_Bank_Ajax_Calls {
 		$customer_type 	= WC()->session->get( 'collector_customer_type' );
 		$instant_checkout = new Collector_Bank_Requests_Instant_Checkout( $customer_token, $customer_type );
 		$request = $instant_checkout->request();
-		$request = json_decode( $request );
-		WC()->session->set( 'collector_private_id', $request->data->privateId );
-		wp_send_json_success( $request );
+		
+		$decode = json_decode( $request );
+		$collector_settings = get_option( 'woocommerce_collector_bank_settings' );
+		$test_mode = $collector_settings['test_mode'];
+		$return = array(
+			'publicToken' 	=> $decode->data->publicToken,
+			'test_mode'   	=> $test_mode,
+			'customer_type'	=> $customer_type,
+		);
+		
+		WC()->session->set( 'collector_public_token', $return );
+		WC()->session->set( 'collector_private_id', $decode->data->privateId );
+		
+		wp_send_json_success( $return );
 		wp_die();
 	}
 }
