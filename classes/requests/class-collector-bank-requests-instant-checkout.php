@@ -33,7 +33,7 @@ class Collector_Bank_Requests_Instant_Checkout extends Collector_Bank_Requests {
 		$request_url = $this->base_url . '/instantpurchase';
 		$request = wp_remote_request( $request_url, $this->get_request_args() );
 		$request = wp_remote_retrieve_body( $request );
-		$this->log( 'Collector instant checkout response: ' . var_export( $request, true ) );
+		$this->log( 'Collector instant checkout response: ' . var_export( $request, true ) . ' (Request endpoint: ' . $request_url . ')' );
 		return $request;
 	}
 
@@ -49,7 +49,7 @@ class Collector_Bank_Requests_Instant_Checkout extends Collector_Bank_Requests {
 			'cart'              => $this->cart(),
 			'fees'              => $this->fees(),
 		);
-		$this->log( 'Collector instant checkoout request body: ' . var_export( $formatted_request_body, true ) );
+		$this->log( 'Collector instant checkout request body: ' . var_export( $formatted_request_body, true ) );
 		return wp_json_encode( $formatted_request_body );
 	}
 }

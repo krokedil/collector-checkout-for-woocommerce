@@ -46,7 +46,7 @@ class Collector_Bank_Requests_Initialize_Checkout extends Collector_Bank_Request
 		$request_url = $this->base_url . '/checkout';
 		$request = wp_remote_request( $request_url, $this->get_request_args() );
 		$request = wp_remote_retrieve_body( $request );
-		$this->log( 'Collector init checkout request response: ' . var_export( $request, true ) );
+		$this->log( 'Collector init checkout request response: ' . var_export( $request, true ) . ' (Request endpoint: ' . $request_url . ')' );
 		return $request;
 	}
 
