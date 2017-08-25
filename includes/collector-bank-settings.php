@@ -4,7 +4,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Settings for Collector Bank
+ * Settings for Collector Checkout
  */
 
 return apply_filters( 'collector_bank_settings',
@@ -12,7 +12,7 @@ return apply_filters( 'collector_bank_settings',
 		'enabled' => array(
 			'title'   => __( 'Enable/Disable', 'collector-bank-for-woocommerce' ),
 			'type'    => 'checkbox',
-			'label'   => __( 'Enable Collector Bank', 'collector-bank-for-woocommerce' ),
+			'label'   => __( 'Enable Collector Checkout', 'collector-bank-for-woocommerce' ),
 			'default' => 'no',
 		),
 		'title'   => array(
@@ -25,27 +25,27 @@ return apply_filters( 'collector_bank_settings',
 			'title'         => __( 'Description', 'collector-bank-for-woocommerce' ),
 			'type'          => 'text',
 			'description'   => __( 'This controls the description which the user sees during checkout.', 'krokedil-ecster-pay-for-woocommerce' ),
-			'default'       => __( 'Pay using Collector Bank.', 'collector-bank-for-woocommerce' ),
+			'default'       => __( 'Pay using Collector Checkout.', 'collector-bank-for-woocommerce' ),
 			'desc_tip'      => true,
 		),
 		'collector_username'  => array(
 			'title'         => __( 'Username', 'collector-bank-for-woocommerce' ),
 			'type'          => 'text',
-			'description'   => __( 'Enter your Collector Bank Username', 'collector-bank-for-woocommerce' ),
+			'description'   => __( 'Enter your Collector Checkout Username', 'collector-bank-for-woocommerce' ),
 			'default'       => '',
 			'desc_tip'      => true,
 		),
 		'collector_password'     => array(
 			'title'         => __( 'Password', 'collector-bank-for-woocommerce' ),
 			'type'          => 'text',
-			'description'   => __( 'Enter your Collector Bank Password', 'collector-bank-for-woocommerce' ),
+			'description'   => __( 'Enter your Collector Checkout Password', 'collector-bank-for-woocommerce' ),
 			'default'       => '',
 			'desc_tip'      => true,
 		),
 		'collector_shared_key'     => array(
 			'title'         => __( 'Shared Key', 'collector-bank-for-woocommerce' ),
 			'type'          => 'text',
-			'description'   => __( 'Enter your Collector Bank Shared Key', 'collector-bank-for-woocommerce' ),
+			'description'   => __( 'Enter your Collector Checkout Shared Key', 'collector-bank-for-woocommerce' ),
 			'default'       => '',
 			'desc_tip'      => true,
 		),
@@ -56,14 +56,14 @@ return apply_filters( 'collector_bank_settings',
 		'collector_merchant_id_se_b2c'     => array(
 			'title'         => __( 'Merchant ID Sweden B2C', 'collector-bank-for-woocommerce' ),
 			'type'          => 'text',
-			'description'   => __( 'Enter your Collector Bank Merchant ID for B2C purchases in Sweden', 'collector-bank-for-woocommerce' ),
+			'description'   => __( 'Enter your Collector Checkout Merchant ID for B2C purchases in Sweden', 'collector-bank-for-woocommerce' ),
 			'default'       => '',
 			'desc_tip'      => true,
 		),
 		'collector_merchant_id_se_b2b'     => array(
 			'title'         => __( 'Merchant ID Sweden B2B', 'collector-bank-for-woocommerce' ),
 			'type'          => 'text',
-			'description'   => __( 'Enter your Collector Bank Merchant ID for B2B purchases in Sweden', 'collector-bank-for-woocommerce' ),
+			'description'   => __( 'Enter your Collector Checkout Merchant ID for B2B purchases in Sweden', 'collector-bank-for-woocommerce' ),
 			'default'       => '',
 			'desc_tip'      => true,
 		),
@@ -74,7 +74,7 @@ return apply_filters( 'collector_bank_settings',
 		'collector_merchant_id_no_b2c'     => array(
 			'title'         => __( 'Merchant ID Norway B2C', 'collector-bank-for-woocommerce' ),
 			'type'          => 'text',
-			'description'   => __( 'Enter your Collector Bank Merchant ID for B2C purchases in Norway', 'collector-bank-for-woocommerce' ),
+			'description'   => __( 'Enter your Collector Checkout Merchant ID for B2C purchases in Norway', 'collector-bank-for-woocommerce' ),
 			'default'       => '',
 			'desc_tip'      => true,
 		),
@@ -118,7 +118,7 @@ return apply_filters( 'collector_bank_settings',
 		'test_mode'         => array(
 			'title'         => __( 'Test mode', 'collector-bank-for-woocommerce' ),
 			'type'          => 'checkbox',
-			'label'         => __( 'Enable Test mode for Collector Bank.', 'collector-bank-for-woocommerce' ),
+			'label'         => __( 'Enable Test mode for Collector Checkout.', 'collector-bank-for-woocommerce' ),
 			'default'       => 'no',
 		),
 		'debug_mode'       	=> array(
