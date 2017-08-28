@@ -85,15 +85,16 @@ return apply_filters( 'collector_bank_settings',
 		'collector_invoice_fee' => array(
 			'title'         => __( 'Invoice fee ID', 'collector-bank-for-woocommerce' ),
 			'type'          => 'text',
-			'description'   => __( 'Enter the ID of the invoice fee', 'collector-bank-for-woocommerce' ),
+			'description'   => sprintf( __( 'Create a hidden (simple) product that acts as the invoice fee. Enter the product <strong>ID</strong> number in this textfield. Leave blank to disable. <a href="%s" target="_blank">Read more</a>.', 'collector-bank-for-woocommerce' ), 'http://docs.krokedil.com/documentation/collector-checkout-for-woocommerce/#8' ),
 			'default'       => '',
-			'desc_tip'      => true,
+			'desc_tip'      => false,
 		),
 		'collector_instant_checkout' => array(
-			'title'         => __( 'Instant buy', 'collector-bank-for-woocommerce' ),
+			'title'         => __( 'Instant Buy', 'collector-bank-for-woocommerce' ),
 			'type'          => 'checkbox',
-			'label'         => __( 'Enable Instant buy feature for Collector Checkout', 'collector-bank-for-woocommerce' ),
+			'label'         => __( 'Enable Instant Buy feature for Collector Checkout', 'collector-bank-for-woocommerce' ),
 			'default'       => 'no',
+			'desc_tip'    => true
 		),
 		'order_management_settings_title' => array(
 			'title' => __( 'Order management settings', 'collector-bank-for-woocommerce' ),
