@@ -8,7 +8,7 @@
  * Plugin Name:     Collector Bank for WooCommerce
  * Plugin URI:      https://krokedil.se/
  * Description:     Extends WooCommerce. Provides a <a href="https://www.collector.se/" target="_blank">Collector Bank</a> checkout for WooCommerce.
- * Version:         0.2.1
+ * Version:         0.2.2
  * Author:          Krokedil
  * Author URI:      https://woocommerce.com/
  * Developer:       Krokedil
@@ -25,7 +25,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 define( 'COLLECTOR_BANK_PLUGIN_DIR', untrailingslashit( plugin_dir_path( __FILE__ ) ) );
-define( 'COLLECTOR_BANK_VERSION', '0.2.1' );
+define( 'COLLECTOR_BANK_VERSION', '0.2.2' );
 
 if ( ! class_exists( 'Collector_Bank' ) ) {
 	class Collector_Bank {
@@ -46,6 +46,7 @@ if ( ! class_exists( 'Collector_Bank' ) ) {
 			include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-bank-post-checkout.php' );
 			include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-bank-instant-checkout.php' );
 			include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-bank-admin-notices.php' );
+			include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-bank-order-emails.php' );
 			
 			// Include and add the Gateway
 			if ( class_exists( 'WC_Payment_Gateway' ) ) {
@@ -178,4 +179,39 @@ function wc_collector_get_default_customer_type() {
 	} else {
 		return 'b2c';
 	}
+}
+
+/**
+ * Get localized and formatted payment method name.
+ *
+ * @param $payment_method
+ *
+ * @return string
+ */
+function wc_collector_get_payment_method_name( $payment_method ) {
+	switch ( $payment_method ) {
+		
+		case 'Direct Invoice' :
+			$payment_method = __( 'Collector Invoice', 'collector-bank-for-woocommerce' );
+			break;
+		case 'Account' :
+			$payment_method = __( 'Collector Account', 'collector-bank-for-woocommerce' );
+			break;
+		case 'Part Payment' :
+			$payment_method = __( 'Collector Part Payment', 'collector-bank-for-woocommerce' );
+			break;
+		case 'Campaign' :
+			$payment_method = __( 'Collector Campaign', 'collector-bank-for-woocommerce' );
+			break;
+		case 'Card' :
+			$payment_method = __( 'Collector Card', 'collector-bank-for-woocommerce' );
+			break;
+		case 'Bank Transfer' :
+			$payment_method = __( 'Collector Bank Transfer', 'collector-bank-for-woocommerce' );
+			break;
+		default :
+			break;
+	}
+
+	return $payment_method;
 }
