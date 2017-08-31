@@ -129,12 +129,7 @@ class Collector_Bank_Gateway extends WC_Payment_Gateway {
 				$product   				= wc_get_product( $product_id );
 				$tax_display_mode 			= get_option('woocommerce_tax_display_shop');
 				
-				if( 'incl' == $tax_display_mode ) {
-					$price = wc_get_price_including_tax( $product );
-				}
-				else {
-					$price = wc_get_price_excluding_tax( $product );
-				}
+				$price = wc_get_price_excluding_tax( $product );
 				
 				if ( $product->is_taxable() ) {
 					$product_tax = true;
@@ -192,6 +187,10 @@ class Collector_Bank_Gateway extends WC_Payment_Gateway {
 		$payment_data 	= json_decode( $payment_data );
 		$payment_status = $payment_data->data->purchase->result;
 		
+		update_post_meta( $order_id, '_collector_payment_method', WC()->session->get( 'collector_payment_method' ) );
+		update_post_meta( $order_id, '_collector_payment_id', WC()->session->get( 'collector_payment_id' ) );
+		update_post_meta( $order_id, '_collector_customer_type', WC()->session->get( 'collector_customer_type' ) );
+		
 		if('Preliminary' == $payment_status ) {
 			$order->payment_complete( WC()->session->get( 'collector_payment_id' ) );
 		} else {
@@ -199,10 +198,7 @@ class Collector_Bank_Gateway extends WC_Payment_Gateway {
 			$order->update_status( 'on-hold' );
 		}
 		
-		update_post_meta( $order_id, '_collector_payment_method', WC()->session->get( 'collector_payment_method' ) );
-		update_post_meta( $order_id, '_collector_payment_id', WC()->session->get( 'collector_payment_id' ) );
-		update_post_meta( $order_id, '_collector_customer_type', WC()->session->get( 'collector_customer_type' ) );
-		$order->add_order_note( sprintf( __( 'Purchase via %s', 'collector-bank-for-woocommerce' ), $this->get_collector_payment_method_name( WC()->session->get( 'collector_payment_method' ) ) ) );
+		$order->add_order_note( sprintf( __( 'Purchase via %s', 'collector-bank-for-woocommerce' ), wc_collector_get_payment_method_name( WC()->session->get( 'collector_payment_method' ) ) ) );
 	}
 	
 	/**
@@ -233,41 +229,6 @@ class Collector_Bank_Gateway extends WC_Payment_Gateway {
 			$class[] = wc_collector_get_available_customer_types();
 		}
 		return $class;
-	}
-	
-	/**
-	 * Get localized and formatted payment method name.
-	 *
-	 * @param $payment_method
-	 *
-	 * @return string
-	 */
-	public function get_collector_payment_method_name( $payment_method ) {
-		switch ( $payment_method ) {
-			
-			case 'Direct Invoice' :
-				$payment_method = __( 'Collector Invoice', 'collector-bank-for-woocommerce' );
-				break;
-			case 'Account' :
-				$payment_method = __( 'Collector Account', 'collector-bank-for-woocommerce' );
-				break;
-			case 'Part Payment' :
-				$payment_method = __( 'Collector Part Payment', 'collector-bank-for-woocommerce' );
-				break;
-			case 'Campaign' :
-				$payment_method = __( 'Collector Campaign', 'collector-bank-for-woocommerce' );
-				break;
-			case 'Card' :
-				$payment_method = __( 'Collector Card', 'collector-bank-for-woocommerce' );
-				break;
-			case 'Bank Transfer' :
-				$payment_method = __( 'Collector Bank Transfer', 'collector-bank-for-woocommerce' );
-				break;
-			default :
-				break;
-		}
-
-		return $payment_method;
 	}
 
 	public function process_refund( $order_id, $amount = null, $reason = '' ) {
