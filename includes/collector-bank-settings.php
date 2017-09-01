@@ -89,16 +89,34 @@ return apply_filters( 'collector_bank_settings',
 			'default'       => '',
 			'desc_tip'      => false,
 		),
+		'instnt_buy_settings_title' => array(
+			'title' => __( 'Instant Buy settings', 'collector-bank-for-woocommerce' ),
+			'type'  => 'title',
+		),
 		'collector_instant_checkout' => array(
 			'title'         => __( 'Instant Buy', 'collector-bank-for-woocommerce' ),
 			'type'          => 'checkbox',
-			'label'         => __( 'Enable Instant Buy feature for Collector Checkout', 'collector-bank-for-woocommerce' ),
+			'label'         => __( 'Enable Instant Buy feature on single product pages', 'collector-bank-for-woocommerce' ),
 			'default'       => 'no',
-			'desc_tip'    => true
+			'desc_tip'    	=> true
+		),
+		'button_color'             => array(
+			'title'       	=> __( 'Button color', 'collector-bank-for-woocommerce' ),
+			'type'        	=> 'color',
+			'description' 	=> __( 'Instant Buy button color. Leave blank to use your theme <em>Add to cart</em> button color.', 'collector-bank-for-woocommerce' ),
+			'default'     	=> '',
+			'desc_tip'    	=> true
+		),
+		'button_color_text'        => array(
+			'title'       	=> __( 'Button text color', 'collector-bank-for-woocommerce' ),
+			'type'        	=> 'color',
+			'description' 	=> __( 'Instant Buy button text color', 'collector-bank-for-woocommerce' ),
+			'default'     	=> '',
+			'desc_tip'    	=> true
 		),
 		'order_management_settings_title' => array(
-			'title' => __( 'Order management settings', 'collector-bank-for-woocommerce' ),
-			'type'  => 'title',
+			'title' 		=> __( 'Order management settings', 'collector-bank-for-woocommerce' ),
+			'type'  		=> 'title',
 		),
 		'manage_collector_orders' => array(
 			'title'         => __( 'Manage orders', 'collector-bank-for-woocommerce' ),

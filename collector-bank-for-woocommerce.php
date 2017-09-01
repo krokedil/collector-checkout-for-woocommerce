@@ -104,6 +104,8 @@ if ( ! class_exists( 'Collector_Bank' ) ) {
 				) );
 				wp_enqueue_script( 'checkout' );
 			}
+			
+			// Load js + style for Instant Buy
 			$collector_settings = get_option( 'woocommerce_collector_bank_settings' );
 			$instant_checkout = $collector_settings['collector_instant_checkout'];
 			if ( is_product() && 'no' !== $instant_checkout ) {
@@ -112,7 +114,37 @@ if ( ! class_exists( 'Collector_Bank' ) ) {
 					'ajaxurl' 				=> admin_url( 'admin-ajax.php' ),
 				) );
 				wp_enqueue_script( 'instantcheckout' );
+				
+				// Load stylesheet for the checkout page
+				wp_register_style(
+					'instantcheckout',
+					plugin_dir_url( __FILE__ ) . 'assets/css/instant-checkout.css',
+					array(),
+					COLLECTOR_BANK_VERSION
+				);
+				wp_enqueue_style( 'instantcheckout' );
+				
+				$button_color = $collector_settings['button_color'];
+				$button_color_text = $collector_settings['button_color_text'];
+				
+				if( $button_color ) {
+					$color = get_theme_mod( 'my-custom-color' ); //E.g. #FF0000
+			        $custom_css = "
+			                button#button-instant-checkout{
+			                        background-color: {$button_color};
+			                        color: {$button_color_text};
+			                        opacity:0.9;
+			                        
+			                }
+			                button#button-instant-checkout:hover{
+			                        opacity:1.0;
+			                        
+			                }";
+			                
+			        wp_add_inline_style( 'instantcheckout', $custom_css );
+				}
 			}
+			
 			// Load stylesheet for the checkout page
 			wp_register_style(
 				'collector_bank',
