@@ -6,8 +6,8 @@ class Collector_Bank_Gateway extends WC_Payment_Gateway {
 
 	public function __construct() {
 		$this->id                 = 'collector_bank';
-		$this->method_title       = __( 'Collector Checkout', 'collector-bank-for-woocommerce' );
-		$this->method_description = __( 'Collector Checkout payment solution for WooCommerce.', 'collector-bank-for-woocommerce' );
+		$this->method_title       = __( 'Collector Checkout', 'collector-checkout-for-woocommerce' );
+		$this->method_description = __( 'Collector Checkout payment solution for WooCommerce.', 'collector-checkout-for-woocommerce' );
 		$this->description        = $this->get_option( 'description' );
 		$this->title              = $this->get_option( 'title' );
 		$this->enabled            = $this->get_option( 'enabled' );
@@ -184,7 +184,7 @@ class Collector_Bank_Gateway extends WC_Payment_Gateway {
 				$fee_id                   	= $order->add_fee( $collector_fee );
 	
 				if ( ! $fee_id ) {
-					$order->add_order_note( __( 'Unable to add Collector Bank Invoice Fee to the order.', 'collector-bank-for-woocommerce' ) );
+					$order->add_order_note( __( 'Unable to add Collector Bank Invoice Fee to the order.', 'collector-checkout-for-woocommerce' ) );
 				}
 				$order->calculate_totals( true );
 				
@@ -223,7 +223,7 @@ class Collector_Bank_Gateway extends WC_Payment_Gateway {
 			$order->update_status( 'on-hold' );
 		}
 		
-		$order->add_order_note( sprintf( __( 'Purchase via %s', 'collector-bank-for-woocommerce' ), wc_collector_get_payment_method_name( WC()->session->get( 'collector_payment_method' ) ) ) );
+		$order->add_order_note( sprintf( __( 'Purchase via %s', 'collector-checkout-for-woocommerce' ), wc_collector_get_payment_method_name( WC()->session->get( 'collector_payment_method' ) ) ) );
 	}
 	
 	/**
@@ -267,7 +267,7 @@ class Collector_Bank_Gateway extends WC_Payment_Gateway {
 				return false;
 			}
 		} else {
-			$order->add_order_note( sprintf( __( 'Collector Bank currently only supports full refunds, for a partial refund use the Collector Bank Merchant Portal', 'collector-bank-for-woocommerce' ) ) );
+			$order->add_order_note( sprintf( __( 'Collector Bank currently only supports full refunds, for a partial refund use the Collector Bank Merchant Portal', 'collector-checkout-for-woocommerce' ) ) );
 			return false;
 		}
 	}

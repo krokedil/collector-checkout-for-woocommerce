@@ -63,10 +63,10 @@ class Collector_Bank_SOAP_Requests_Cancel_Invoice {
 		
 		$order = wc_get_order( $order_id );
 		if ( isset( $request->CorrelationId ) || $request->CorrelationId == null ) {
-			$order->add_order_note( sprintf( __( 'Order canceled with Collector Bank', 'collector-bank-for-woocommerce' ) ) );
+			$order->add_order_note( sprintf( __( 'Order canceled with Collector Bank', 'collector-checkout-for-woocommerce' ) ) );
 		} else {
 			$order->update_status( 'processing' );
-			$order->add_order_note( sprintf( __( 'Order failed to cancel with Collector Bank - ' . $request, 'collector-bank-for-woocommerce' ) ) );
+			$order->add_order_note( sprintf( __( 'Order failed to cancel with Collector Bank - ' . $request, 'collector-checkout-for-woocommerce' ) ) );
 			$this->log( 'Order failed to cancel with Collector Bank. Request response: ' . var_export( $e, true ) );
 			$this->log( 'Cancel order headers: ' . var_export( $headers, true ) );
 			$this->log( 'Cancel order args: ' . var_export( $args, true ) );

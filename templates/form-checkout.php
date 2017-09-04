@@ -22,7 +22,7 @@ do_action( 'woocommerce_before_checkout_form', $checkout );
 		<?php
 		$available_payment_gateways = WC()->payment_gateways->get_available_payment_gateways();
 		if ( count( $available_payment_gateways ) > 1 ){ ?>
-            <a class="button" id="collector_change_payment_method" href="#"><?php  echo __( 'Select another payment method', 'collector-bank-for-woocommerce' ) ?></a>
+            <a class="button" id="collector_change_payment_method" href="#"><?php  echo __( 'Select another payment method', 'collector-checkout-for-woocommerce' ) ?></a>
 		<?php } ?>
 		<?php if( 'collector-b2c-b2b' == wc_collector_get_available_customer_types() ) { ?>
             <ul class="collector-checkout-tabs">

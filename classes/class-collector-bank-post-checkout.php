@@ -51,7 +51,7 @@ class Collector_Bank_Post_Checkout {
 				$order_id = $orders[0]->ID;
 				$order = wc_get_order( $order_id );
 				
-				$order->add_order_note( sprintf( __( 'Invoice status callback from Collector. New Invoice status: %s', 'collector-bank-for-woocommerce' ), wc_clean( $_GET['InvoiceStatus'] ) ) );
+				$order->add_order_note( sprintf( __( 'Invoice status callback from Collector. New Invoice status: %s', 'collector-checkout-for-woocommerce' ), wc_clean( $_GET['InvoiceStatus'] ) ) );
 				
 				if( '1' == $_GET['InvoiceStatus'] ) {
 					$order->payment_complete( $collector_payment_id );

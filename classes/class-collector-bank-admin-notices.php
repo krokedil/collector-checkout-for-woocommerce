@@ -41,7 +41,7 @@ class Collector_Bank_Admin_Notices {
 		// Terms page
 		if ( ! wc_get_page_id( 'terms' ) || wc_get_page_id( 'terms' ) < 0 ) {
 			echo '<div class="notice notice-error">';
-			echo '<p>' . __( 'You need to specify a terms page in WooCommerce Settings to be able to use Collector.', 'collector-bank-for-woocommerce' ) . '</p>';
+			echo '<p>' . __( 'You need to specify a terms page in WooCommerce Settings to be able to use Collector.', 'collector-checkout-for-woocommerce' ) . '</p>';
 			echo '</div>';
 		}
 	}

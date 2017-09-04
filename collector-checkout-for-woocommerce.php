@@ -5,7 +5,7 @@
  * @package WC_Dibs_Easy
  *
  * @wordpress-plugin
- * Plugin Name:     Collector Bank for WooCommerce
+ * Plugin Name:     Collector Checkout for WooCommerce
  * Plugin URI:      https://krokedil.se/
  * Description:     Extends WooCommerce. Provides a <a href="https://www.collector.se/" target="_blank">Collector Bank</a> checkout for WooCommerce.
  * Version:         0.2.2
@@ -13,7 +13,7 @@
  * Author URI:      https://woocommerce.com/
  * Developer:       Krokedil
  * Developer URI:   https://krokedil.se/
- * Text Domain:     collector-bank-for-woocommerce
+ * Text Domain:     collector-checkout-for-woocommerce
  * Domain Path:     /languages
  * Copyright:       © 2009-2017 WooCommerce.
  * License:         GNU General Public License v3.0
@@ -85,7 +85,7 @@ if ( ! class_exists( 'Collector_Bank' ) ) {
 			define( 'COLLECTOR_BANK_SOAP_TEST', 'https://ecommercetest.collector.se/v3.0/InvoiceServiceV33.svc?wsdl' );
 			
 			// Translations
-			load_plugin_textdomain( 'collector-bank-for-woocommerce', false, plugin_basename( dirname( __FILE__ ) ) . '/languages' );
+			load_plugin_textdomain( 'collector-checkout-for-woocommerce', false, plugin_basename( dirname( __FILE__ ) ) . '/languages' );
 		}
 
 		public function load_scripts() {
@@ -239,22 +239,22 @@ function wc_collector_get_payment_method_name( $payment_method ) {
 	switch ( $payment_method ) {
 		
 		case 'Direct Invoice' :
-			$payment_method = __( 'Collector Invoice', 'collector-bank-for-woocommerce' );
+			$payment_method = __( 'Collector Invoice', 'collector-checkout-for-woocommerce' );
 			break;
 		case 'Account' :
-			$payment_method = __( 'Collector Account', 'collector-bank-for-woocommerce' );
+			$payment_method = __( 'Collector Account', 'collector-checkout-for-woocommerce' );
 			break;
 		case 'Part Payment' :
-			$payment_method = __( 'Collector Part Payment', 'collector-bank-for-woocommerce' );
+			$payment_method = __( 'Collector Part Payment', 'collector-checkout-for-woocommerce' );
 			break;
 		case 'Campaign' :
-			$payment_method = __( 'Collector Campaign', 'collector-bank-for-woocommerce' );
+			$payment_method = __( 'Collector Campaign', 'collector-checkout-for-woocommerce' );
 			break;
 		case 'Card' :
-			$payment_method = __( 'Collector Card', 'collector-bank-for-woocommerce' );
+			$payment_method = __( 'Collector Card', 'collector-checkout-for-woocommerce' );
 			break;
 		case 'Bank Transfer' :
-			$payment_method = __( 'Collector Bank Transfer', 'collector-bank-for-woocommerce' );
+			$payment_method = __( 'Collector Bank Transfer', 'collector-checkout-for-woocommerce' );
 			break;
 		default :
 			break;
