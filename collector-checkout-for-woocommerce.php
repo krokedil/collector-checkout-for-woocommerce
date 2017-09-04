@@ -7,7 +7,7 @@
  * @wordpress-plugin
  * Plugin Name:     Collector Checkout for WooCommerce
  * Plugin URI:      https://krokedil.se/
- * Description:     Extends WooCommerce. Provides a <a href="https://www.collector.se/" target="_blank">Collector Bank</a> checkout for WooCommerce.
+ * Description:     Extends WooCommerce. Provides a <a href="https://www.collector.se/" target="_blank">Collector Checkout</a> checkout for WooCommerce.
  * Version:         0.2.2
  * Author:          Krokedil
  * Author URI:      https://woocommerce.com/

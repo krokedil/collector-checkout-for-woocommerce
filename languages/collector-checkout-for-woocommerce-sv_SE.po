@@ -1,0 +1,349 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Collector Checkout for WooCommerce\n"
+"POT-Creation-Date: 2017-09-04 11:25+0200\n"
+"PO-Revision-Date: 2017-09-04 11:40+0200\n"
+"Last-Translator: Niklas Högefjord <info@krokedil.se>\n"
+"Language-Team: Niklas Högefjord <info@krokedil.se>\n"
+"Language: sv_SE\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 1.8.11\n"
+"X-Poedit-Basepath: ..\n"
+"X-Poedit-WPHeader: collector-checkout-for-woocommerce.php\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Poedit-SourceCharset: UTF-8\n"
+"X-Poedit-KeywordsList: __;_e;_n:1,2;_x:1,2c;_ex:1,2c;_nx:4c,1,2;esc_attr__;"
+"esc_attr_e;esc_attr_x:1,2c;esc_html__;esc_html_e;esc_html_x:1,2c;_n_noop:1,2;"
+"_nx_noop:3c,1,2;__ngettext_noop:1,2\n"
+"X-Poedit-SearchPath-0: .\n"
+"X-Poedit-SearchPathExcluded-0: *.js\n"
+
+#: classes/class-collector-bank-admin-notices.php:44
+msgid ""
+"You need to specify a terms page in WooCommerce Settings to be able to use "
+"Collector."
+msgstr ""
+"Du behöver definiera en sida för köpvillkor i WooCommerce inställningar för "
+"att kunna använda Collector."
+
+#: classes/class-collector-bank-gateway.php:9
+#: classes/class-collector-bank-gateway.php:52
+#: includes/collector-bank-settings.php:22
+msgid "Collector Checkout"
+msgstr "Collector Checkout"
+
+#: classes/class-collector-bank-gateway.php:10
+msgid "Collector Checkout payment solution for WooCommerce."
+msgstr "Collector Checkout betallösning för WooCommerce."
+
+#: classes/class-collector-bank-gateway.php:186
+msgid "Unable to add Collector Bank Invoice Fee to the order."
+msgstr "Kunde inte lägga till Collector Checkout fakturaavgift till ordern."
+
+#: classes/class-collector-bank-gateway.php:221
+msgid "Order is PENDING APPROVAL by Collector. Payment ID: "
+msgstr ""
+
+#: classes/class-collector-bank-gateway.php:225
+#, php-format
+msgid "Purchase via %s"
+msgstr "Betalning via %s"
+
+#: classes/class-collector-bank-gateway.php:269
+msgid ""
+"Collector Bank currently only supports full refunds, for a partial refund "
+"use the Collector Bank Merchant Portal"
+msgstr ""
+
+#: classes/class-collector-bank-order-emails.php:33
+msgid "Collector details"
+msgstr ""
+
+#: classes/class-collector-bank-order-emails.php:35
+msgid "Collector Payment ID: "
+msgstr "Collector betal-ID: "
+
+#: classes/class-collector-bank-order-emails.php:38
+msgid "Payment type: "
+msgstr "Betalsätt: "
+
+#: classes/class-collector-bank-post-checkout.php:54
+#, php-format
+msgid "Invoice status callback from Collector. New Invoice status: %s"
+msgstr ""
+
+#: classes/requests/soap/class-collector-bank-soap-requests-activate-invoice.php:70
+msgid "Invoice due date: "
+msgstr ""
+
+#: classes/requests/soap/class-collector-bank-soap-requests-activate-invoice.php:73
+msgid "Order activated with Collector Bank."
+msgstr ""
+
+#: classes/requests/soap/class-collector-bank-soap-requests-activate-invoice.php:77
+msgid "Order failed to activate with Collector Bank - "
+msgstr ""
+
+#: classes/requests/soap/class-collector-bank-soap-requests-cancel-invoice.php:66
+msgid "Order canceled with Collector Bank"
+msgstr ""
+
+#: classes/requests/soap/class-collector-bank-soap-requests-cancel-invoice.php:69
+msgid "Order failed to cancel with Collector Bank - "
+msgstr ""
+
+#: classes/requests/soap/class-collector-bank-soap-requests-credit-payment.php:65
+msgid "Order credited with Collector Bank"
+msgstr ""
+
+#: classes/requests/soap/class-collector-bank-soap-requests-credit-payment.php:69
+msgid "Order failed to be credited with Collector Bank - "
+msgstr ""
+
+#: collector-checkout-for-woocommerce.php:242
+msgid "Collector Invoice"
+msgstr "Collector Faktura"
+
+#: collector-checkout-for-woocommerce.php:245
+msgid "Collector Account"
+msgstr "Collector Konto"
+
+#: collector-checkout-for-woocommerce.php:248
+msgid "Collector Part Payment"
+msgstr "Collector Delbetalning"
+
+#: collector-checkout-for-woocommerce.php:251
+msgid "Collector Campaign"
+msgstr "Collector Kampanj"
+
+#: collector-checkout-for-woocommerce.php:254
+msgid "Collector Card"
+msgstr "Collector Kortbetalning"
+
+#: collector-checkout-for-woocommerce.php:257
+msgid "Collector Bank Transfer"
+msgstr "Collector Direktbetalning"
+
+#: includes/collector-bank-settings.php:13
+msgid "Enable/Disable"
+msgstr "Aktivera/avaktivera"
+
+#: includes/collector-bank-settings.php:15
+msgid "Enable Collector Checkout"
+msgstr "Aktivera Collector Checkout"
+
+#: includes/collector-bank-settings.php:19
+msgid "Title"
+msgstr "Titel"
+
+#: includes/collector-bank-settings.php:21
+msgid ""
+"This is the title that the user sees on the checkout page for Collector "
+"Checkout."
+msgstr "Det här kontrollerar vilken titel kunden ser i kassan."
+
+#: includes/collector-bank-settings.php:25
+msgid "Description"
+msgstr ""
+
+#: includes/collector-bank-settings.php:27
+msgid "This controls the description which the user sees during checkout."
+msgstr ""
+
+#: includes/collector-bank-settings.php:28
+msgid "Pay using Collector Checkout."
+msgstr ""
+
+#: includes/collector-bank-settings.php:32
+msgid "Username"
+msgstr ""
+
+#: includes/collector-bank-settings.php:34
+msgid "Enter your Collector Checkout Username"
+msgstr ""
+
+#: includes/collector-bank-settings.php:39
+msgid "Password"
+msgstr ""
+
+#: includes/collector-bank-settings.php:41
+msgid "Enter your Collector Checkout Password"
+msgstr ""
+
+#: includes/collector-bank-settings.php:46
+msgid "Shared Key"
+msgstr ""
+
+#: includes/collector-bank-settings.php:48
+msgid "Enter your Collector Checkout Shared Key"
+msgstr ""
+
+#: includes/collector-bank-settings.php:53
+msgid "Sweden"
+msgstr "Sverige"
+
+#: includes/collector-bank-settings.php:57
+msgid "Merchant ID Sweden B2C"
+msgstr ""
+
+#: includes/collector-bank-settings.php:59
+msgid "Enter your Collector Checkout Merchant ID for B2C purchases in Sweden"
+msgstr ""
+
+#: includes/collector-bank-settings.php:64
+msgid "Merchant ID Sweden B2B"
+msgstr ""
+
+#: includes/collector-bank-settings.php:66
+msgid "Enter your Collector Checkout Merchant ID for B2B purchases in Sweden"
+msgstr ""
+
+#: includes/collector-bank-settings.php:71
+msgid "Norway"
+msgstr "Norge"
+
+#: includes/collector-bank-settings.php:75
+msgid "Merchant ID Norway B2C"
+msgstr ""
+
+#: includes/collector-bank-settings.php:77
+msgid "Enter your Collector Checkout Merchant ID for B2C purchases in Norway"
+msgstr ""
+
+#: includes/collector-bank-settings.php:82
+msgid "Checkout settings"
+msgstr ""
+
+#: includes/collector-bank-settings.php:86
+msgid "Invoice fee ID"
+msgstr "Fakturaavgifts-ID"
+
+#: includes/collector-bank-settings.php:88
+#, php-format
+msgid ""
+"Create a hidden (simple) product that acts as the invoice fee. Enter the "
+"product <strong>ID</strong> number in this textfield. Leave blank to "
+"disable. <a href=\"%s\" target=\"_blank\">Read more</a>."
+msgstr ""
+"Skapa en enkel (dold) produkt som agerar fakturaavgift. Ange produktens "
+"<strong>ID-nummer</strong> I det här textfältet. Lämna tomt för att "
+"avaktivera. <a href=\"%s\" target=\"_blank\">Läs mer</a>."
+
+#: includes/collector-bank-settings.php:93
+msgid "Instant Buy settings"
+msgstr ""
+
+#: includes/collector-bank-settings.php:97
+msgid "Instant Buy"
+msgstr ""
+
+#: includes/collector-bank-settings.php:99
+msgid "Enable Instant Buy feature on single product pages"
+msgstr ""
+
+#: includes/collector-bank-settings.php:104
+msgid "Button color"
+msgstr ""
+
+#: includes/collector-bank-settings.php:106
+msgid ""
+"Instant Buy button color. Leave blank to use your theme <em>Add to cart</em> "
+"button color."
+msgstr ""
+
+#: includes/collector-bank-settings.php:111
+msgid "Button text color"
+msgstr ""
+
+#: includes/collector-bank-settings.php:113
+msgid "Instant Buy button text color"
+msgstr ""
+
+#: includes/collector-bank-settings.php:118
+msgid "Order management settings"
+msgstr ""
+
+#: includes/collector-bank-settings.php:122
+msgid "Manage orders"
+msgstr ""
+
+#: includes/collector-bank-settings.php:124
+msgid ""
+"Enable WooCommerce to manage orders in Collectors backend (when order status "
+"changes to Cancelled and Completed in WooCommerce)."
+msgstr ""
+
+#: includes/collector-bank-settings.php:128
+msgid "Invoice number on order page"
+msgstr ""
+
+#: includes/collector-bank-settings.php:130
+msgid ""
+"Display Collector Invoice Number after WooCommerce Order Number on "
+"WooCommerce order page (-> WooCommerce -> Orders)."
+msgstr ""
+
+#: includes/collector-bank-settings.php:134
+msgid "Test Mode Settings"
+msgstr ""
+
+#: includes/collector-bank-settings.php:138
+msgid "Test mode"
+msgstr ""
+
+#: includes/collector-bank-settings.php:140
+msgid "Enable Test mode for Collector Checkout."
+msgstr ""
+
+#: includes/collector-bank-settings.php:144
+msgid "Debug"
+msgstr ""
+
+#: includes/collector-bank-settings.php:146
+msgid "Enable logging."
+msgstr ""
+
+#: includes/collector-bank-settings.php:147
+#, php-format
+msgid "Log Collector events, in <code>%s</code>"
+msgstr ""
+
+#: templates/form-checkout.php:12
+msgid "Your order"
+msgstr ""
+
+#: templates/form-checkout.php:25
+msgid "Select another payment method"
+msgstr ""
+
+#: templates/form-checkout.php:29
+msgid "Privatperson"
+msgstr ""
+
+#: templates/form-checkout.php:30
+msgid "Företag"
+msgstr ""
+
+#. Plugin Name of the plugin/theme
+msgid "Collector Checkout for WooCommerce"
+msgstr ""
+
+#. Plugin URI of the plugin/theme
+msgid "https://krokedil.se/"
+msgstr ""
+
+#. Description of the plugin/theme
+msgid ""
+"Extends WooCommerce. Provides a <a href=\"https://www.collector.se/\" target="
+"\"_blank\">Collector Checkout</a> checkout for WooCommerce."
+msgstr ""
+
+#. Author of the plugin/theme
+msgid "Krokedil"
+msgstr ""
+
+#. Author URI of the plugin/theme
+msgid "https://woocommerce.com/"
+msgstr ""
