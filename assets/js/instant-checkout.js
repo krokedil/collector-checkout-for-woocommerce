@@ -17,10 +17,16 @@
     });
     //Listen for even from button press
 	document.addEventListener("collectorInstantTokenRequested", function(){
+		
+		 var variation_id		= '';
+		 var quantity			= $("[name=quantity]").val()
+		
         if( $(".single_add_to_cart_button").val() === '' ){
-            var product_id = $(".variation_id").val();
+	        var product_id 		= $("[name=product_id]").val();
+            var variation_id 	= $(".variation_id").val();
+            console.log( product_id );
         } else {
-            var product_id = $(".single_add_to_cart_button").val();
+            var product_id 		= $(".single_add_to_cart_button").val();
         }
         $.ajax(
             wc_collector_bank_instant_checkout.ajaxurl,
@@ -30,6 +36,8 @@
                 data: {
                     action  : 'instant_purchase',
                     product_id : product_id,
+                    variation_id : variation_id,
+                    quantity : quantity,
                     customer_token : window.collector.instant.api.getCustomerToken,
     			},
                 success: function(data) {

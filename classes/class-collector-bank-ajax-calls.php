@@ -207,10 +207,12 @@ class Collector_Bank_Ajax_Calls {
 	}
 
 	public function instant_purchase() {
-		$product_id = $_POST['product_id'];
+		$product_id 	= $_POST['product_id'];
+		$variation_id 	= $_POST['variation_id'];
+		$quantity 		= $_POST['quantity'];
 		$customer_token = $_POST['customer_token'];
 		WC()->cart->empty_cart();
-		WC()->cart->add_to_cart( $product_id );
+		WC()->cart->add_to_cart( $product_id, $quantity, $variation_id );
 		$customer_type 	= WC()->session->get( 'collector_customer_type' );
 		$instant_checkout = new Collector_Bank_Requests_Instant_Checkout( $customer_token, $customer_type );
 		$request = $instant_checkout->request();
