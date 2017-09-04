@@ -25,6 +25,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 define( 'COLLECTOR_BANK_PLUGIN_DIR', untrailingslashit( plugin_dir_path( __FILE__ ) ) );
+define( 'COLLECTOR_BANK_PLUGIN_URL', untrailingslashit( plugin_dir_url( __FILE__ ) ) );
 define( 'COLLECTOR_BANK_VERSION', '0.2.2' );
 
 if ( ! class_exists( 'Collector_Bank' ) ) {
@@ -35,6 +36,9 @@ if ( ! class_exists( 'Collector_Bank' ) ) {
 			add_action( 'plugins_loaded', array( $this, 'init' ) );
 			// Load scripts
 			add_action( 'wp_enqueue_scripts', array( $this, 'load_scripts' ) );
+			
+			// CSS for settings page
+			add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_css' ) );
 
 			// Remove the storefront sticky checkout.
 			add_action( 'wp_enqueue_scripts', array( $this, 'jk_remove_sticky_checkout' ), 99 );
@@ -168,6 +172,17 @@ if ( ! class_exists( 'Collector_Bank' ) ) {
 			}
 			
 		}
+		
+		/**
+		 * Load Admin CSS
+		 **/
+		public function enqueue_admin_css( $hook ) {
+			if ( 'woocommerce_page_wc-settings' == $hook && 'collector_bank' == $_GET['section'] ) {
+				wp_register_style( 'collector-checkout-admin', plugin_dir_url( __FILE__ ) . 'assets/css/admin.css', false );
+				wp_enqueue_style( 'collector-checkout-admin' );
+			}
+		}
+	
 		public function add_collector_bank_gateway( $methods ) {
 			$methods[] = 'Collector_Bank_Gateway';
 

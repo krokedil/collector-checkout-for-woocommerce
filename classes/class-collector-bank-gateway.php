@@ -41,6 +41,31 @@ class Collector_Bank_Gateway extends WC_Payment_Gateway {
 	}
 	
 	/**
+	 * Admin Panel Options
+	 * - Options for bits like 'title' and availability on a country-by-country basis
+	 *
+	 * @since 1.0.0
+	 */
+	public function admin_options() {
+		$image_url = COLLECTOR_BANK_PLUGIN_URL . '/assets/images/collector_bank_logo_blackgrey.png';
+		?>
+		<p><img src="<?php echo $image_url;?>" width="280px"/></p>
+		<h3><?php _e( 'Collector Checkout', 'woocommerce-gateway-dibs-account' ); ?></h3>
+		<div class="collector-settings">
+			<div class="collector-settings-content">
+				<table class="form-table">
+					<?php
+					$this->generate_settings_html();
+					?>
+				</table>
+			</div>	
+			<div class="collector-settings-sidebar">
+				<h4>Hej!</h4><p>Här skulle vi kunna placera ett par block med info och länkar till dokumentation och support.</p>
+			</div>
+		</div>
+		<?php
+	}
+	/**
 	 * Check if this gateway is enabled and available in the user's country
 	 */
 	public function is_available() {
