@@ -71,9 +71,10 @@ class Collector_Bank_SOAP_Requests_Activate_Invoice {
 			}
 
 			$order->add_order_note( sprintf( __( 'Order activated with Collector Bank.' . $due_date, 'collector-checkout-for-woocommerce' ) ) );
+			update_post_meta( $order_id, '_collector_order_activated', time() );
 			
 		} else {
-			$order->update_status( 'processing' );
+			$order->update_status( $order->get_status() );
 			$order->add_order_note( sprintf( __( 'Order failed to activate with Collector Bank - ' . var_export($request, true), 'collector-checkout-for-woocommerce' ) ) );
 			$this->log( 'Order failed to activate with Collector Bank. Request response: ' . var_export( $e, true ) );
 			$this->log( 'Activate order headers: ' . var_export( $headers, true ) );
