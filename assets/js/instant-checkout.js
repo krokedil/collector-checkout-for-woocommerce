@@ -29,7 +29,7 @@
             var product_id 		= $(".single_add_to_cart_button").val();
         }
         $.ajax(
-            wc_collector_bank_instant_checkout.ajaxurl,
+            wc_collector_checkout_instant_checkout.ajaxurl,
             {
                 type: 'POST',
                 dataType: 'json',

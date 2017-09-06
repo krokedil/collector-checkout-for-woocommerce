@@ -3,7 +3,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly
 }
 
-class Collector_Bank_Requests_Cart {
+class Collector_Checkout_Requests_Cart {
 	public static function cart() {
 		// Get cart contents
 		$wc_cart = WC()->cart->cart_contents;

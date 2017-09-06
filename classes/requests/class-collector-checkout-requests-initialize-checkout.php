@@ -3,7 +3,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly
 }
 
-class Collector_Bank_Requests_Initialize_Checkout extends Collector_Bank_Requests {
+class Collector_Checkout_Requests_Initialize_Checkout extends Collector_Checkout_Requests {
 
 	public $path = '/checkout';
 	public $store_id = '';
@@ -13,7 +13,7 @@ class Collector_Bank_Requests_Initialize_Checkout extends Collector_Bank_Request
 
 	public function __construct( $customer_type = 'b2c' ) {
 		parent::__construct();
-		$collector_settings = get_option( 'woocommerce_collector_bank_settings' );
+		$collector_settings = get_option( 'woocommerce_collector_checkout_settings' );
 		switch ( get_woocommerce_currency() ) {
 			case 'SEK' :
 				$country_code = 'SE';

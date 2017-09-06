@@ -6,19 +6,19 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Returns error messages depending on
  *
- * @class    Collector_Bank_Admin_Notices
+ * @class    Collector_Checkout_Admin_Notices
  * @version  1.0
- * @package  Collector_Bank/Classes
+ * @package  Collector_Checkout/Classes
  * @category Class
  * @author   Krokedil
  */
-class Collector_Bank_Admin_Notices {
+class Collector_Checkout_Admin_Notices {
 
 	/**
-	 * Collector_Bank_Admin_Notices constructor.
+	 * Collector_Checkout_Admin_Notices constructor.
 	 */
 	public function __construct() {
-		$collector_settings = get_option( 'woocommerce_collector_bank_settings' );
+		$collector_settings = get_option( 'woocommerce_collector_checkout_settings' );
 		$this->enabled           = $collector_settings['enabled'];
 		add_action( 'admin_init', array( $this, 'check_settings' ) );
 	}
@@ -47,4 +47,4 @@ class Collector_Bank_Admin_Notices {
 	}
 }
 
-$collector_bank_admin_notices = new Collector_Bank_Admin_Notices;
+$collector_checkout_admin_notices = new Collector_Checkout_Admin_Notices;

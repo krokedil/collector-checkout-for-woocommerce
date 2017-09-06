@@ -3,13 +3,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly
 }
 
-class Collector_Bank_Requests_Fees {
+class Collector_Checkout_Requests_Fees {
 
 	public $invoice_fee_id = '';
 	public $price = 0;
 
 	public function __construct() {
-		$collector_settings 	= get_option( 'woocommerce_collector_bank_settings' );
+		$collector_settings 	= get_option( 'woocommerce_collector_checkout_settings' );
 		$invoice_fee_id 		= $collector_settings['collector_invoice_fee'];
 		$this->invoice_fee_id 	= $invoice_fee_id;
 		

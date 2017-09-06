@@ -2,10 +2,10 @@
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly
 }
-class Collector_Bank_Gateway extends WC_Payment_Gateway {
+class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 
 	public function __construct() {
-		$this->id                 = 'collector_bank';
+		$this->id                 = 'collector_checkout';
 		$this->method_title       = __( 'Collector Checkout', 'collector-checkout-for-woocommerce' );
 		$this->method_description = __( 'Collector Checkout payment solution for WooCommerce.', 'collector-checkout-for-woocommerce' );
 		$this->description        = $this->get_option( 'description' );
@@ -26,7 +26,7 @@ class Collector_Bank_Gateway extends WC_Payment_Gateway {
 		) );
 
 		// Function to handle the thankyou page.
-		add_action( 'woocommerce_thankyou_collector_bank', array( $this, 'collector_thankyou' ) );
+		add_action( 'woocommerce_thankyou_collector_checkout', array( $this, 'collector_thankyou' ) );
 		add_filter( 'woocommerce_thankyou_order_received_text', array( $this, 'collector_thankyou_order_received_text' ), 10, 2 );
 		
 		// Body class
@@ -37,7 +37,7 @@ class Collector_Bank_Gateway extends WC_Payment_Gateway {
 	}
 
 	public function init_form_fields() {
-		$this->form_fields = include( COLLECTOR_BANK_PLUGIN_DIR . '/includes/collector-bank-settings.php' );
+		$this->form_fields = include( COLLECTOR_BANK_PLUGIN_DIR . '/includes/collector-checkout-settings.php' );
 	}
 	
 	/**
@@ -74,7 +74,7 @@ class Collector_Bank_Gateway extends WC_Payment_Gateway {
 	public function is_available() {
 		if ( 'yes' === $this->enabled ) {
 			if ( ! is_admin() ) {
-				$collector_settings = get_option( 'woocommerce_collector_bank_settings' );
+				$collector_settings = get_option( 'woocommerce_collector_checkout_settings' );
 				$collector_b2c_se 	= $collector_settings['collector_merchant_id_se_b2c'];
 				$collector_b2b_se 	= $collector_settings['collector_merchant_id_se_b2b'];
 				$collector_b2c_no 	= $collector_settings['collector_merchant_id_no_b2c'];
@@ -118,15 +118,15 @@ class Collector_Bank_Gateway extends WC_Payment_Gateway {
 			$available_payment_gateways = WC()->payment_gateways->get_available_payment_gateways();
 			if ( 'checkout/form-checkout.php' === $template_name ) {
 				// Collector checkout page.
-				if ( array_key_exists( 'collector_bank', $available_payment_gateways ) ) {
+				if ( array_key_exists( 'collector_checkout', $available_payment_gateways ) ) {
 					// If chosen payment method exists.
-					if ( 'collector_bank' === WC()->session->get( 'chosen_payment_method' ) ) {
+					if ( 'collector_checkout' === WC()->session->get( 'chosen_payment_method' ) ) {
 						$template = COLLECTOR_BANK_PLUGIN_DIR . '/templates/form-checkout.php';
 					}
 					// If chosen payment method does not exist and KCO is the first gateway.
 					if ( null === WC()->session->get( 'chosen_payment_method' ) ) {
 						reset( $available_gateways );
-						if ( 'collector_bank' === key( $available_payment_gateways ) ) {
+						if ( 'collector_checkout' === key( $available_payment_gateways ) ) {
 							$template = COLLECTOR_BANK_PLUGIN_DIR . '/templates/form-checkout.php';
 						}
 					}
@@ -140,7 +140,7 @@ class Collector_Bank_Gateway extends WC_Payment_Gateway {
 		// Get information about order from Collector
 		$private_id    	= WC()->session->get( 'collector_private_id' );
 		$customer_type 	= WC()->session->get( 'collector_customer_type' );
-		$customer_data 	= new Collector_Bank_Requests_Get_Checkout_Information( $private_id, $customer_type );
+		$customer_data 	= new Collector_Checkout_Requests_Get_Checkout_Information( $private_id, $customer_type );
 		$customer_data 	= $customer_data->request();
 
 		return json_decode( $customer_data );
@@ -197,7 +197,7 @@ class Collector_Bank_Gateway extends WC_Payment_Gateway {
 
 		WC()->session->__unset( 'collector_customer_order_note' );
 		// Update the Collector Order with the Order ID
-		$update_reference = new Collector_Bank_Requests_Update_Reference( $order->get_order_number(), WC()->session->get( 'collector_private_id' ), WC()->session->get( 'collector_customer_type' ) );
+		$update_reference = new Collector_Checkout_Requests_Update_Reference( $order->get_order_number(), WC()->session->get( 'collector_private_id' ), WC()->session->get( 'collector_customer_type' ) );
 		$update_reference->request();
 		return array(
 			'result'   => 'success',
@@ -210,7 +210,7 @@ class Collector_Bank_Gateway extends WC_Payment_Gateway {
 		
 		$private_id 	= WC()->session->get( 'collector_private_id' );
 		$customer_type 	= WC()->session->get( 'collector_customer_type' );
-		$payment_data 	= new Collector_Bank_Requests_Get_Checkout_Information( $private_id, $customer_type );
+		$payment_data 	= new Collector_Checkout_Requests_Get_Checkout_Information( $private_id, $customer_type );
 		$payment_data 	= $payment_data->request();
 		$payment_data 	= json_decode( $payment_data );
 		$payment_status = $payment_data->data->purchase->result;
@@ -238,7 +238,7 @@ class Collector_Bank_Gateway extends WC_Payment_Gateway {
 	 * @return string
 	 */
 	public function collector_thankyou_order_received_text( $text, $order ) {
-		if( 'collector_bank' == $order->get_payment_method() ) {
+		if( 'collector_checkout' == $order->get_payment_method() ) {
 			return '<div class="collector-checkout-thankyou"></div>';
 		}
 
@@ -263,7 +263,7 @@ class Collector_Bank_Gateway extends WC_Payment_Gateway {
 		//Check if amount equals total order
 		$order = wc_get_order( $order_id );
 		if ( $amount == $order->get_total() ) {
-			$credit_order = new Collector_Bank_SOAP_Requests_Credit_Payment( $order_id );
+			$credit_order = new Collector_Checkout_SOAP_Requests_Credit_Payment( $order_id );
 			if ( $credit_order->request( $order_id ) === true ) {
 				return true;
 			} else {

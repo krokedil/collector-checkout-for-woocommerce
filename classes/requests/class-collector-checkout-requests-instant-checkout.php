@@ -3,7 +3,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly
 }
 
-class Collector_Bank_Requests_Instant_Checkout extends Collector_Bank_Requests {
+class Collector_Checkout_Requests_Instant_Checkout extends Collector_Checkout_Requests {
 
 	public $path = '/instantpurchase';
 	public $store_id = '';
@@ -13,7 +13,7 @@ class Collector_Bank_Requests_Instant_Checkout extends Collector_Bank_Requests {
 
 	public function __construct( $customer_token, $customer_type = 'b2c' ) {
 		parent::__construct();
-		$collector_settings = get_option( 'woocommerce_collector_bank_settings' );
+		$collector_settings = get_option( 'woocommerce_collector_checkout_settings' );
 		$this->store_id = $collector_settings['collector_merchant_id_se_' . $customer_type];
 		$this->terms_page = esc_url( get_permalink( wc_get_page_id( 'terms' ) ) );
 		$this->customer_token = $customer_token;

@@ -7,7 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Settings for Collector Checkout
  */
 
-return apply_filters( 'collector_bank_settings',
+return apply_filters( 'collector_checkout_settings',
 	array(
 		'enabled' => array(
 			'title'   => __( 'Enable/Disable', 'collector-checkout-for-woocommerce' ),
@@ -144,7 +144,7 @@ return apply_filters( 'collector_bank_settings',
 			'title'         => __( 'Debug', 'collector-checkout-for-woocommerce' ),
 			'type'          => 'checkbox',
 			'label'       	=> __( 'Enable logging.', 'collector-checkout-for-woocommerce' ),
-			'description' 	=> sprintf( __( 'Log Collector events, in <code>%s</code>', 'collector-checkout-for-woocommerce' ), wc_get_log_file_path( 'collector_bank' ) ),
+			'description' 	=> sprintf( __( 'Log Collector events, in <code>%s</code>', 'collector-checkout-for-woocommerce' ), wc_get_log_file_path( 'collector_checkout' ) ),
 			'default'       => 'no',
 		),
 	)

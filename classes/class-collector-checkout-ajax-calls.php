@@ -3,7 +3,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly
 }
 
-class Collector_Bank_Ajax_Calls {
+class Collector_Checkout_Ajax_Calls {
 	public function __construct() {
 		// Get public token and set some meta data
 		add_action( 'wp_ajax_get_public_token', array( $this, 'get_public_token' ) );
@@ -41,11 +41,11 @@ class Collector_Bank_Ajax_Calls {
 
 	public function get_public_token() {
 		$customer_type = wc_clean( $_REQUEST['customer_type'] );
-		$init_checkout = new Collector_Bank_Requests_Initialize_Checkout( $customer_type );
+		$init_checkout = new Collector_Checkout_Requests_Initialize_Checkout( $customer_type );
 		$request = $init_checkout->request();
 
 		$decode = json_decode( $request );
-		$collector_settings = get_option( 'woocommerce_collector_bank_settings' );
+		$collector_settings = get_option( 'woocommerce_collector_checkout_settings' );
 		$test_mode = $collector_settings['test_mode'];
 		$return = array(
 			'publicToken' 	=> $decode->data->publicToken,
@@ -65,10 +65,10 @@ class Collector_Bank_Ajax_Calls {
 	public function update_checkout() {
 		$private_id 	= WC()->session->get( 'collector_private_id' );
 		$customer_type 	= WC()->session->get( 'collector_customer_type' );
-		$update_fees 	= new Collector_Bank_Requests_Update_Fees( $private_id, $customer_type );
+		$update_fees 	= new Collector_Checkout_Requests_Update_Fees( $private_id, $customer_type );
 		$update_fees->request();
 
-		$update_cart 	= new Collector_Bank_Requests_Update_Cart( $private_id, $customer_type );
+		$update_cart 	= new Collector_Checkout_Requests_Update_Cart( $private_id, $customer_type );
 		$update_cart->request();
 
 		wp_send_json_success();
@@ -88,7 +88,7 @@ class Collector_Bank_Ajax_Calls {
 		// Get customer data from Collector
 		$private_id 		= WC()->session->get( 'collector_private_id' );
 		$customer_type 		= WC()->session->get( 'collector_customer_type' );
-		$customer_data 		= new Collector_Bank_Requests_Get_Checkout_Information( $private_id, $customer_type );
+		$customer_data 		= new Collector_Checkout_Requests_Get_Checkout_Information( $private_id, $customer_type );
 		$customer_data 		= $customer_data->request();
 		$customer_data 		= json_decode( $customer_data );
 		$country 			= $customer_data->data->countryCode;
@@ -148,7 +148,7 @@ class Collector_Bank_Ajax_Calls {
 	public function get_customer_data() {
 		$private_id 	= WC()->session->get( 'collector_private_id' );
 		$customer_type 	= WC()->session->get( 'collector_customer_type' );
-		$customer_data 	= new Collector_Bank_Requests_Get_Checkout_Information( $private_id, $customer_type );
+		$customer_data 	= new Collector_Checkout_Requests_Get_Checkout_Information( $private_id, $customer_type );
 		$customer_data 	= $customer_data->request();
 
 		// Save the payment method and payment id
@@ -178,18 +178,18 @@ class Collector_Bank_Ajax_Calls {
 		if ( 'false' === $_POST['collector'] ) {
 			// Set chosen payment method to first gateway that is not Klarna Checkout for WooCommerce.
 			$first_gateway = reset( $available_gateways );
-			if ( 'collector_bank' !== $first_gateway->id ) {
+			if ( 'collector_checkout' !== $first_gateway->id ) {
 				WC()->session->set( 'chosen_payment_method', $first_gateway->id );
 			} else {
 				$second_gateway = next( $available_gateways );
 				WC()->session->set( 'chosen_payment_method', $second_gateway->id );
 			}
 		} else {
-			WC()->session->set( 'chosen_payment_method', 'collector_bank' );
+			WC()->session->set( 'chosen_payment_method', 'collector_checkout' );
 		}
 		WC()->payment_gateways()->set_current_gateway( $available_gateways );
 		ob_start();
-		if ( 'collector_bank' !== WC()->session->get( 'chosen_payment_method' ) ) {
+		if ( 'collector_checkout' !== WC()->session->get( 'chosen_payment_method' ) ) {
 			wc_get_template( 'checkout/form-checkout.php', array(
 				'checkout' => WC()->checkout(),
 			) );
@@ -214,11 +214,11 @@ class Collector_Bank_Ajax_Calls {
 		WC()->cart->empty_cart();
 		WC()->cart->add_to_cart( $product_id, $quantity, $variation_id );
 		$customer_type 	= WC()->session->get( 'collector_customer_type' );
-		$instant_checkout = new Collector_Bank_Requests_Instant_Checkout( $customer_token, $customer_type );
+		$instant_checkout = new Collector_Checkout_Requests_Instant_Checkout( $customer_token, $customer_type );
 		$request = $instant_checkout->request();
 		
 		$decode = json_decode( $request );
-		$collector_settings = get_option( 'woocommerce_collector_bank_settings' );
+		$collector_settings = get_option( 'woocommerce_collector_checkout_settings' );
 		$test_mode = $collector_settings['test_mode'];
 		$return = array(
 			'publicToken' 	=> $decode->data->publicToken,
@@ -233,4 +233,4 @@ class Collector_Bank_Ajax_Calls {
 		wp_die();
 	}
 }
-$collector_ajax_calls = new Collector_Bank_Ajax_Calls();
+$collector_ajax_calls = new Collector_Checkout_Ajax_Calls();
