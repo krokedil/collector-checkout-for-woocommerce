@@ -43,14 +43,14 @@
                     // Add class to body
                     $('body').addClass('collector-checkout-selected');
                     // Remove any checkout frame to prevent duplicate
-                    $('#collector-checkout-iframe').remove();
+                    //$('#collector-checkout-iframe').remove();
                     var publicToken = data.data.publicToken;
                     var testmode = data.data.test_mode;
                     console.log('publicToken ' + publicToken);
                     if(testmode === 'yes') {
-                        $('#collector-checkout-iframe').append('<script src="https://checkout-uat.collector.se/collector-checkout-loader.js" data-lang="' + wc_collector_checkout.locale + '" data-token="' + publicToken + '" data-variant="' + customer + '" >');
+                        $('#collector-bank-iframe').append('<script src="https://checkout-uat.collector.se/collector-checkout-loader.js" data-lang="' + wc_collector_checkout.locale + '" data-token="' + publicToken + '" data-variant="' + customer + '" >');
                     } else {
-                        $('#collector-checkout-iframe').append('<script src="https://checkout.collector.se/collector-checkout-loader.js" data-lang="' + wc_collector_checkout.locale + '" data-token="' + publicToken + '" data-variant="' + customer + '" >');
+                        $('#collector-bank-iframe').append('<script src="https://checkout.collector.se/collector-checkout-loader.js" data-lang="' + wc_collector_checkout.locale + '" data-token="' + publicToken + '" data-variant="' + customer + '" >');
                     }
                     checkout_initiated = true;
                 } else {
@@ -173,8 +173,9 @@
                         get_checkout_iframe();
                         $('form.checkout').unblock();
                     }
-                });
-    }
+            	}
+            );
+    	}
     });
 
     function update_checkout() {
@@ -226,7 +227,7 @@
 
     // Load the iframe on the custom template page, and save any customer order notes.
     $( document ).ready( function() {
-        if ($('#collector-checkout-iframe').length) {
+        if ($('#collector-bank-iframe').length) {
             get_checkout_iframe();
         }
         $('#order_comments').focusout(function(){

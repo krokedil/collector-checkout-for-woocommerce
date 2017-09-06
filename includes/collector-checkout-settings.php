@@ -21,6 +21,7 @@ return apply_filters( 'collector_checkout_settings',
 			'description'   => __( 'This is the title that the user sees on the checkout page for Collector Checkout.', 'collector-checkout-for-woocommerce' ),
 			'default'       => __( 'Collector Checkout', 'collector-checkout-for-woocommerce' ),
 		),
+		/*
 		'description' => array(
 			'title'         => __( 'Description', 'collector-checkout-for-woocommerce' ),
 			'type'          => 'text',
@@ -28,6 +29,7 @@ return apply_filters( 'collector_checkout_settings',
 			'default'       => __( 'Pay using Collector Checkout.', 'collector-checkout-for-woocommerce' ),
 			'desc_tip'      => true,
 		),
+		*/
 		'collector_username'  => array(
 			'title'         => __( 'Username', 'collector-checkout-for-woocommerce' ),
 			'type'          => 'text',
