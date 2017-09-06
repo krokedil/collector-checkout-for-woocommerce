@@ -59,7 +59,11 @@ class Collector_Bank_Gateway extends WC_Payment_Gateway {
 				</table>
 			</div>	
 			<div class="collector-settings-sidebar">
-				<h4>Hej!</h4><p>Här skulle vi kunna placera ett par block med info och länkar till dokumentation och support.</p>
+				<h4>Kom igång</h4><p><ul>
+					<li><a href="http://docs.krokedil.com/documentation/collector-checkout-for-woocommerce/" target="_blank">Dokumentation</a></li>
+					<li><a href="#">Pluginsida</a></li>
+				</ul></p>
+				<h4>Support</h4><p>Har du frågor kring ditt konto eller kring specifika köp är du välkommen att <a href="https://www.collector.se/kundservice/" target="_blank">kontakta Collector</a>. Har du tekniska frågor eller funderingar kring konfigurationen av modulen så kan du <a href="https://krokedil.se/support/" target="_blank">kontakta Krokedil</a>.</p>
 			</div>
 		</div>
 		<?php
