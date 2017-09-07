@@ -100,11 +100,19 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 					$locale = 'sv';
 				}
 				wp_localize_script( 'checkout', 'wc_collector_checkout', array(
-					'ajaxurl' 				=> admin_url( 'admin-ajax.php' ),
-					'locale' 				=> $locale,
-					'default_customer_type' => wc_collector_get_default_customer_type(),
-					'collector_nonce' 		=> wp_create_nonce( 'collector_nonce' ),
-					'refresh_checkout_fragment_url'   => WC_AJAX::get_endpoint( 'update_fragment' ),
+					'ajaxurl' 						=> admin_url( 'admin-ajax.php' ),
+					'locale' 						=> $locale,
+					'default_customer_type' 		=> wc_collector_get_default_customer_type(),
+					'collector_nonce' 				=> wp_create_nonce( 'collector_nonce' ),
+					'refresh_checkout_fragment_url'	=> WC_AJAX::get_endpoint( 'update_fragment' ),
+					'get_public_token_url'   		=> WC_AJAX::get_endpoint( 'get_public_token' ),
+					'add_customer_order_note_url'   => WC_AJAX::get_endpoint( 'add_customer_order_note' ),
+					'get_checkout_thank_you_url'   	=> WC_AJAX::get_endpoint( 'get_checkout_thank_you' ),
+					'get_customer_data_url'   		=> WC_AJAX::get_endpoint( 'get_customer_data' ),
+					'customer_adress_updated_url'   => WC_AJAX::get_endpoint( 'customer_adress_updated' ),
+					'update_checkout_url'   		=> WC_AJAX::get_endpoint( 'update_checkout' ),
+					
+					
 				) );
 				wp_enqueue_script( 'checkout' );
 			}
@@ -116,6 +124,7 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 				wp_register_script( 'instantcheckout', plugins_url( '/assets/js/instant-checkout.js', __FILE__ ), array( 'jquery' ), COLLECTOR_BANK_VERSION );
 				wp_localize_script( 'instantcheckout', 'wc_collector_checkout_instant_checkout', array(
 					'ajaxurl' 				=> admin_url( 'admin-ajax.php' ),
+					'instant_purchase_url'	=> WC_AJAX::get_endpoint( 'instant_purchase' ),
 				) );
 				wp_enqueue_script( 'instantcheckout' );
 				

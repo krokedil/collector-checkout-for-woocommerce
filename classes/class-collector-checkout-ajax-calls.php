@@ -3,43 +3,40 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly
 }
 
-class Collector_Checkout_Ajax_Calls {
-	public function __construct() {
-		// Get public token and set some meta data
-		add_action( 'wp_ajax_get_public_token', array( $this, 'get_public_token' ) );
-		add_action( 'wp_ajax_nopriv_get_public_token', array( $this, 'get_public_token' ) );
-
-		// Update fees
-		add_action( 'wp_ajax_update_checkout', array( $this, 'update_checkout' ) );
-		add_action( 'wp_ajax_nopriv_update_checkout', array( $this, 'update_checkout' ) );
-
-		// Ajax to add order notes as a session for the customer
-		add_action( 'wp_ajax_customer_order_note', array( $this, 'add_customer_order_note' ) );
-		add_action( 'wp_ajax_nopriv_customer_order_note', array( $this, 'add_customer_order_note' ) );
-
-		// Get old checkout for thank you page
-		add_action( 'wp_ajax_get_checkout_thank_you', array( $this, 'get_checkout_thank_you' ) );
-		add_action( 'wp_ajax_nopriv_get_checkout_thank_you', array( $this, 'get_checkout_thank_you' ) );
-
-		// Get customer data
-		add_action( 'wp_ajax_get_customer_data', array( $this, 'get_customer_data' ) );
-		add_action( 'wp_ajax_nopriv_get_customer_data', array( $this, 'get_customer_data' ) );
-		
-		// Customer address updated
-		add_action( 'wp_ajax_customer_adress_updated', array( $this, 'customer_adress_updated' ) );
-		add_action( 'wp_ajax_nopriv_customer_adress_updated', array( $this, 'customer_adress_updated' ) );
-
-		// Update Template Fragment
-		add_action( 'wp_ajax_update_fragment', array( $this, 'update_fragment' ) );
-		add_action( 'wp_ajax_nopriv_update_fragment', array( $this, 'update_fragment' ) );
-		add_action( 'wc_ajax_update_fragment', array( $this, 'update_fragment' ) );
-
-		// Instant Purchase
-		add_action( 'wp_ajax_instant_purchase', array( $this, 'instant_purchase' ) );
-		add_action( 'wp_ajax_nopriv_instant_purchase', array( $this, 'instant_purchase' ) );
+class Collector_Checkout_Ajax_Calls extends WC_AJAX {
+	
+	/**
+	 * Hook in ajax handlers.
+	 */
+	public static function init() {
+		self::add_ajax_events();
+	}
+	/**
+	 * Hook in methods - uses WordPress ajax handlers (admin-ajax).
+	 */
+	public static function add_ajax_events() {
+		$ajax_events = array(
+			'get_public_token' => true,
+			'update_checkout' => true,
+			'add_customer_order_note' => true,
+			'get_checkout_thank_you' => true,
+			'get_customer_data' => true,
+			'customer_adress_updated' => true,
+			'update_fragment' => true,
+			'instant_purchase' => true,
+		);
+		foreach ( $ajax_events as $ajax_event => $nopriv ) {
+			add_action( 'wp_ajax_woocommerce_' . $ajax_event, array( __CLASS__, $ajax_event ) );
+			if ( $nopriv ) {
+				add_action( 'wp_ajax_nopriv_woocommerce_' . $ajax_event, array( __CLASS__, $ajax_event ) );
+				// WC AJAX can be used for frontend ajax requests.
+				add_action( 'wc_ajax_' . $ajax_event, array( __CLASS__, $ajax_event ) );
+			}
+		}
 	}
 
-	public function get_public_token() {
+
+	public static function get_public_token() {
 		$customer_type = wc_clean( $_REQUEST['customer_type'] );
 		$init_checkout = new Collector_Checkout_Requests_Initialize_Checkout( $customer_type );
 		$request = $init_checkout->request();
@@ -57,12 +54,12 @@ class Collector_Checkout_Ajax_Calls {
 		WC()->session->set( 'collector_public_token', $return );
 		WC()->session->set( 'collector_private_id', $decode->data->privateId );
 		WC()->session->set( 'collector_customer_type', $customer_type );
-
+		
 		wp_send_json_success( $return );
 		wp_die();
 	}
 
-	public function update_checkout() {
+	public static function update_checkout() {
 		$private_id 	= WC()->session->get( 'collector_private_id' );
 		$customer_type 	= WC()->session->get( 'collector_customer_type' );
 		$update_fees 	= new Collector_Checkout_Requests_Update_Fees( $private_id, $customer_type );
@@ -78,7 +75,7 @@ class Collector_Checkout_Ajax_Calls {
 	/**
 	 * Customer address updated - triggered when collectorCheckoutCustomerUpdated event is fired
 	 */
-	public function customer_adress_updated() {
+	public static function customer_adress_updated() {
 		
 		if ( ! wp_verify_nonce( $_REQUEST['nonce'], 'collector_nonce' ) ) {
 			exit( 'Nonce can not be verified.' );
@@ -127,14 +124,14 @@ class Collector_Checkout_Ajax_Calls {
 		wp_die();
 	}
 
-	public function add_customer_order_note() {
+	public static function add_customer_order_note() {
 		WC()->session->set( 'collector_customer_order_note', $_POST['order_note'] );
 
 		wp_send_json_success();
 		wp_die();
 	}
 
-	public function get_checkout_thank_you() {
+	public static function get_checkout_thank_you() {
 		$public_token = WC()->session->get( 'collector_public_token' );
 
 		wp_send_json_success( $public_token );
@@ -145,7 +142,7 @@ class Collector_Checkout_Ajax_Calls {
 		wp_die();
 	}
 
-	public function get_customer_data() {
+	public static function get_customer_data() {
 		$private_id 	= WC()->session->get( 'collector_private_id' );
 		$customer_type 	= WC()->session->get( 'collector_customer_type' );
 		$customer_data 	= new Collector_Checkout_Requests_Get_Checkout_Information( $private_id, $customer_type );
@@ -172,8 +169,7 @@ class Collector_Checkout_Ajax_Calls {
 		wp_die();
 	}
 
-	public function update_fragment() {
-
+	public static function update_fragment() {
 		$available_gateways = WC()->payment_gateways()->get_available_payment_gateways();
 		if ( 'false' === $_POST['collector'] ) {
 			// Set chosen payment method to first gateway that is not Klarna Checkout for WooCommerce.
@@ -190,9 +186,11 @@ class Collector_Checkout_Ajax_Calls {
 		WC()->payment_gateways()->set_current_gateway( $available_gateways );
 		ob_start();
 		if ( 'collector_checkout' !== WC()->session->get( 'chosen_payment_method' ) ) {
+			
 			wc_get_template( 'checkout/form-checkout.php', array(
 				'checkout' => WC()->checkout(),
 			) );
+			
 		} else {
 			include( COLLECTOR_BANK_PLUGIN_DIR . '/templates/form-checkout.php' );
 		}
@@ -206,7 +204,7 @@ class Collector_Checkout_Ajax_Calls {
 		wp_die();
 	}
 
-	public function instant_purchase() {
+	public static function instant_purchase() {
 		$product_id 	= $_POST['product_id'];
 		$variation_id 	= $_POST['variation_id'];
 		$quantity 		= $_POST['quantity'];
@@ -233,4 +231,4 @@ class Collector_Checkout_Ajax_Calls {
 		wp_die();
 	}
 }
-$collector_ajax_calls = new Collector_Checkout_Ajax_Calls();
+Collector_Checkout_Ajax_Calls::init();

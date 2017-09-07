@@ -38,7 +38,7 @@
                 'action': 'get_public_token',
                 'customer_type': customer
             };
-            jQuery.post(wc_collector_checkout.ajaxurl, data, function (data) {
+            jQuery.post(wc_collector_checkout.get_public_token_url, data, function (data) {
                 if (true === data.success) {
                     // Add class to body
                     $('body').addClass('collector-checkout-selected');
@@ -46,6 +46,7 @@
                     //$('#collector-checkout-iframe').remove();
                     var publicToken = data.data.publicToken;
                     var testmode = data.data.test_mode;
+                    console.log('data ' + data.data);
                     console.log('publicToken ' + publicToken);
                     if(testmode === 'yes') {
                         $('#collector-bank-iframe').append('<script src="https://checkout-uat.collector.se/collector-checkout-loader.js" data-lang="' + wc_collector_checkout.locale + '" data-token="' + publicToken + '" data-variant="' + customer + '" >');
@@ -64,7 +65,7 @@
     document.addEventListener("collectorCheckoutCustomerUpdated", function(){
 	    window.collector.checkout.api.suspend();
 	    $.ajax(
-            wc_collector_checkout.ajaxurl,
+            wc_collector_checkout.customer_adress_updated_url,
             {
                 type: 'POST',
                 dataType: 'json',
@@ -100,6 +101,7 @@
     });
     // Change from Collector
     $(document).on( 'click', '#collector_change_payment_method', function () {
+	    $( '.woocommerce-info, .checkout_coupon' ).remove();
         $('form.checkout').block({
             message: "",
             baseZ: 99999,
@@ -125,7 +127,7 @@
                 dataType: 'json',
                 data: {
                     action  : 'update_fragment',
-                    collector: false,
+                    collector: false
                 },
                 success: function(data) {
                     console.log('success');
@@ -157,8 +159,9 @@
                     lineHeight:		"24px",
                 }
             });
+            $( '.woocommerce-info, .checkout_coupon' ).remove();
             $.ajax(
-                wc_collector_checkout.ajaxurl,
+                wc_collector_checkout.refresh_checkout_fragment_url,
                 {
                     type: 'POST',
                     dataType: 'json',
@@ -184,7 +187,7 @@
             var data = {
                 'action': 'update_checkout'
             };
-            jQuery.post(wc_collector_checkout.ajaxurl, data, function (data) {
+            jQuery.post(wc_collector_checkout.update_checkout_url, data, function (data) {
                 if (true === data.success) {
                     window.collector.checkout.api.resume();
                 } else {
@@ -205,7 +208,7 @@
 
     function thankyou_page() {
         $.ajax(
-            wc_collector_checkout.ajaxurl,
+            wc_collector_checkout.get_checkout_thank_you_url,
             {
                 type: 'POST',
                 dataType: 'json',
@@ -234,7 +237,7 @@
             var text = $('#order_comments').val();
             if( text.length > 0 ) {
                 $.ajax(
-                    wc_collector_checkout.ajaxurl,
+                    wc_collector_checkout.add_customer_order_note_url,
                     {
                         type: 'POST',
                         dataType: 'json',
@@ -254,7 +257,7 @@
         var data = {
             'action': 'get_customer_data'
         };
-        jQuery.post(wc_collector_checkout.ajaxurl, data, function (data) {
+        jQuery.post(wc_collector_checkout.get_customer_data_url, data, function (data) {
             if (true === data.success) {
 	            if( 'BusinessCustomer' == data.data.customer_data.data.customerType ) {
 		            var datastring = 'billing_first_name=' + data.data.customer_data.data.businessCustomer.referencePerson +
