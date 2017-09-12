@@ -2,10 +2,10 @@
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly
 }
-class Collector_Bank_Post_Checkout {
+class Collector_Checkout_Post_Checkout {
 
 	public function __construct() {
-		$collector_settings = get_option( 'woocommerce_collector_bank_settings' );
+		$collector_settings = get_option( 'woocommerce_collector_checkout_settings' );
 		$this->manage_orders = $collector_settings['manage_collector_orders'];
 		$this->display_invoice_no = $collector_settings['display_invoice_no'];
 		
@@ -27,7 +27,7 @@ class Collector_Bank_Post_Checkout {
 			$order->add_order_note( __( 'Could not activate Collector reservation, Collector reservation is already activated.', 'collector-checkout-for-woocommerce' ) );
 			return;
 		}
-		$activate_order = new Collector_Bank_SOAP_Requests_Activate_Invoice( $order_id );
+		$activate_order = new Collector_Checkout_SOAP_Requests_Activate_Invoice( $order_id );
 		$activate_order->request( $order_id );
 	}
 	
@@ -37,7 +37,7 @@ class Collector_Bank_Post_Checkout {
 			$order->add_order_note( __( 'Could not cancel Collector reservation, Collector reservation is already cancelled.', 'collector-checkout-for-woocommerce' ) );
 			return;
 		}
-		$cancel_order = new Collector_Bank_SOAP_Requests_Cancel_Invoice( $order_id );
+		$cancel_order = new Collector_Checkout_SOAP_Requests_Cancel_Invoice( $order_id );
 		$cancel_order->request( $order_id );
 	}
 	
@@ -90,4 +90,4 @@ class Collector_Bank_Post_Checkout {
 		return $order_number;
 	}
 }
-$collector_bank_post_checkout = new Collector_Bank_Post_Checkout();
+$collector_checkout_post_checkout = new Collector_Checkout_Post_Checkout();

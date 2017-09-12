@@ -3,14 +3,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly
 }
 
-class Collector_Bank_Requests_Update_Reference extends Collector_Bank_Requests {
+class Collector_Checkout_Requests_Update_Fees extends Collector_Checkout_Requests {
 	public $path = '';
 
-	public $order_id;
-
-	public function __construct( $order_id, $private_id, $customer_type ) {
+	public function __construct( $private_id, $customer_type ) {
 		parent::__construct();
-		$collector_settings = get_option( 'woocommerce_collector_bank_settings' );
+		$collector_settings = get_option( 'woocommerce_collector_checkout_settings' );
 		switch ( get_woocommerce_currency() ) {
 			case 'SEK' :
 				$store_id = $collector_settings['collector_merchant_id_se_' . $customer_type];
@@ -22,8 +20,7 @@ class Collector_Bank_Requests_Update_Reference extends Collector_Bank_Requests {
 				$store_id = $collector_settings['collector_merchant_id_se_' . $customer_type];
 				break;
 		}
-		$this->order_id = $order_id;
-		$this->path = '/merchants/' . $store_id . '/checkouts/' . $private_id . '/reference';
+		$this->path = '/merchants/' . $store_id . '/checkouts/' . $private_id . '/fees';
 	}
 
 	private function get_request_args() {
@@ -32,7 +29,7 @@ class Collector_Bank_Requests_Update_Reference extends Collector_Bank_Requests {
 			'body'    => $this->request_body(),
 			'method'  => 'PUT',
 		);
-		$this->log( 'Collector update reference request args: ' . var_export( $request_args, true ) );
+		$this->log( 'Collector update fees request args: ' . var_export( $request_args, true ) );
 		return $request_args;
 	}
 
@@ -43,10 +40,12 @@ class Collector_Bank_Requests_Update_Reference extends Collector_Bank_Requests {
 	}
 
 	protected function request_body() {
+		$fees = $this->fees();
 		$formatted_request_body = array(
-			'Reference'         => $this->order_id,
+			'shipping'                  => $fees['shipping'],
+			'directinvoicenotification' => $fees['directinvoicenotification'],
 		);
-		$this->log( 'Collector update reference request body: ' . var_export( $formatted_request_body, true ) );
+		$this->log( 'Collector update fees request body: ' . var_export( $formatted_request_body, true ) );
 		return wp_json_encode( $formatted_request_body );
 	}
 }

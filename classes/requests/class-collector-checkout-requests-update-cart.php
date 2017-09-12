@@ -3,12 +3,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly
 }
 
-class Collector_Bank_Requests_Update_Cart extends Collector_Bank_Requests {
+class Collector_Checkout_Requests_Update_Cart extends Collector_Checkout_Requests {
 	public $path = '';
 
 	public function __construct( $private_id, $customer_type ) {
 		parent::__construct();
-		$collector_settings = get_option( 'woocommerce_collector_bank_settings' );
+		$collector_settings = get_option( 'woocommerce_collector_checkout_settings' );
 		switch ( get_woocommerce_currency() ) {
 			case 'SEK' :
 				$store_id = $collector_settings['collector_merchant_id_se_' . $customer_type];

@@ -3,7 +3,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly
 }
 
-class Collector_Bank_SOAP_Requests_Activate_Invoice {
+class Collector_Checkout_SOAP_Requests_Cancel_Invoice {
 
 	static $log = '';
 
@@ -13,10 +13,9 @@ class Collector_Bank_SOAP_Requests_Activate_Invoice {
 	public $password = '';
 	public $store_id = '';
 	public $country_code = '';
-	public $customer_type = '';
 
 	public function __construct( $order_id ) {
-		$collector_settings = get_option( 'woocommerce_collector_bank_settings' );
+		$collector_settings = get_option( 'woocommerce_collector_checkout_settings' );
 		$this->username = $collector_settings['collector_username'];
 		$this->password = $collector_settings['collector_password'];
 		$order = wc_get_order( $order_id );
@@ -56,29 +55,22 @@ class Collector_Bank_SOAP_Requests_Activate_Invoice {
 		$soap->__setSoapHeaders( $headers );
 		
 		try {
-			$request = $soap->ActivateInvoice( $args );
+			$request = $soap->CancelInvoice( $args );
 		}
 			catch( SoapFault $e ){
 			$request = $e->getMessage();
 		}
+		
 		$order = wc_get_order( $order_id );
-		$due_date = '';
-		if ( isset( $request->TotalAmount ) && $request->TotalAmount == $order->get_total() ) {
-			if( isset( $request->InvoiceUrl ) ) {
-				update_post_meta( $order_id, '_collector_invoice_url', wc_clean( $request->InvoiceUrl ) );
-				$due_date = date( get_option( 'date_format' ) . ' - ' . get_option( 'time_format' ), strtotime( $request->DueDate ) );
-				$due_date = ' ' . __( 'Invoice due date: ' . $due_date, 'collector-checkout-for-woocommerce' );
-			}
-
-			$order->add_order_note( sprintf( __( 'Order activated with Collector Bank.' . $due_date, 'collector-checkout-for-woocommerce' ) ) );
-			update_post_meta( $order_id, '_collector_order_activated', time() );
-			
+		if ( isset( $request->CorrelationId ) || $request->CorrelationId == null ) {
+			$order->add_order_note( sprintf( __( 'Order canceled with Collector Bank', 'collector-checkout-for-woocommerce' ) ) );
+			update_post_meta( $order_id, '_collector_order_cancelled', time() );
 		} else {
 			$order->update_status( $order->get_status() );
-			$order->add_order_note( sprintf( __( 'Order failed to activate with Collector Bank - ' . var_export($request, true), 'collector-checkout-for-woocommerce' ) ) );
-			$this->log( 'Order failed to activate with Collector Bank. Request response: ' . var_export( $e, true ) );
-			$this->log( 'Activate order headers: ' . var_export( $headers, true ) );
-			$this->log( 'Activate order args: ' . var_export( $args, true ) );
+			$order->add_order_note( sprintf( __( 'Order failed to cancel with Collector Bank - ' . $request, 'collector-checkout-for-woocommerce' ) ) );
+			$this->log( 'Order failed to cancel with Collector Bank. Request response: ' . var_export( $e, true ) );
+			$this->log( 'Cancel order headers: ' . var_export( $headers, true ) );
+			$this->log( 'Cancel order args: ' . var_export( $args, true ) );
 		}
 	}
 
@@ -91,12 +83,12 @@ class Collector_Bank_SOAP_Requests_Activate_Invoice {
 	}
 
 	public static function log( $message ) {
-		$collector_settings = get_option( 'woocommerce_collector_bank_settings' );
+		$collector_settings = get_option( 'woocommerce_collector_checkout_settings' );
 		if ( 'yes' === $collector_settings['debug_mode'] ) {
 			if ( empty( self::$log ) ) {
 				self::$log = new WC_Logger();
 			}
-			self::$log->add( 'collector_bank', $message );
+			self::$log->add( 'collector_checkout', $message );
 		}
 	}
 }

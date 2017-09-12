@@ -1,7 +1,7 @@
-.collector-bank-selected .place-order,
-.collector-bank-selected #place_order, 
-.collector-bank-selected ul.payment_methods, 
-.collector-bank-selected p.wc-terms-and-conditions {
+.collector-checkout-selected .place-order,
+.collector-checkout-selected #place_order, 
+.collector-checkout-selected ul.payment_methods, 
+.collector-checkout-selected p.wc-terms-and-conditions {
     display:none;
 }
 /* Tabs */
@@ -72,13 +72,13 @@ li.tab-link.current[data-tab="b2b"] {
 	z-index: 1100;
 	box-shadow: -1px 0px 1px 0px rgba(0,0,0,0.2);
 }
-#collector-bank-iframe {
+#collector-checkout-iframe {
 	border: 1px solid #e2e2e2;
 	border-radius: 0 6px 6px 6px;
 	min-height: 748px;
 }
-.collector-b2b #collector-bank-iframe,
-.collector-b2c #collector-bank-iframe {
+.collector-b2b #collector-checkout-iframe,
+.collector-b2c #collector-checkout-iframe {
 	border-radius: 6px 6px 6px 6px;
 }
 */
