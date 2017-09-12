@@ -132,8 +132,8 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 					}
 				}
 			}
-			return $template;
 		}
+		return $template;
 	}
 
 	public function get_customer_data() {
