@@ -46,12 +46,12 @@
                     //$('#collector-checkout-iframe').remove();
                     var publicToken = data.data.publicToken;
                     var testmode = data.data.test_mode;
-                    console.log('data ' + data.data);
-                    console.log('publicToken ' + publicToken);
+                    console.log('checkout initiated ' + JSON.stringify(data.data));
+                   
                     if(testmode === 'yes') {
-                        $('#collector-bank-iframe').append('<script src="https://checkout-uat.collector.se/collector-checkout-loader.js" data-lang="' + wc_collector_checkout.locale + '" data-token="' + publicToken + '" data-variant="' + customer + '" >');
+                    	$('#collector-bank-iframe').append('<script src="https://checkout-uat.collector.se/collector-checkout-loader.js" data-lang="' + wc_collector_checkout.locale + '" data-token="' + publicToken + '" data-variant="' + customer + '" >');
                     } else {
-                        $('#collector-bank-iframe').append('<script src="https://checkout.collector.se/collector-checkout-loader.js" data-lang="' + wc_collector_checkout.locale + '" data-token="' + publicToken + '" data-variant="' + customer + '" >');
+                    	$('#collector-bank-iframe').append('<script src="https://checkout.collector.se/collector-checkout-loader.js" data-lang="' + wc_collector_checkout.locale + '" data-token="' + publicToken + '" data-variant="' + customer + '" >');
                     }
                     checkout_initiated = true;
                 } else {
@@ -74,7 +74,7 @@
                     nonce: wc_collector_checkout.collector_nonce
                 },
                 success: function(response) {
-	                console.log(response);
+	                console.log('customer_adress_updated ' + response);
 	                if( 'yes' == response.data ) {
 		               jQuery(document.body).trigger('update_checkout'); 
 	                }
@@ -170,8 +170,9 @@
                         collector: true,
                     },
                     success: function (data) {
-                        console.log('success');
-                        console.log(data);
+                   
+                        console.log('update_fragment ' + data);
+                      
                         $('form.checkout').replaceWith(data.data.fragments.checkout);
                         get_checkout_iframe();
                         $('form.checkout').unblock();
