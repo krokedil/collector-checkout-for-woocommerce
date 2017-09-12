@@ -170,6 +170,11 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 	}
 
 	public static function update_fragment() {
+		
+		WC()->cart->calculate_shipping();
+		WC()->cart->calculate_fees();
+		WC()->cart->calculate_totals();
+		
 		$available_gateways = WC()->payment_gateways()->get_available_payment_gateways();
 		if ( 'false' === $_POST['collector'] ) {
 			// Set chosen payment method to first gateway that is not Klarna Checkout for WooCommerce.
