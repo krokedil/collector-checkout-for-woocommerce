@@ -92,14 +92,21 @@
        $('.collector-checkout-tabs li').removeClass('current');
        $(this).addClass('current');
     });
-
+	
+	// Suspend Collector Checkout during WooCommerce checkout update
+    $(document).on('update_checkout', function () {
+        if ("collector_checkout" === $("input[name='payment_method']:checked").val() && checkout_initiated === true) {
+            window.collector.checkout.api.suspend();
+        }
+    });
+    
     $(document).on('updated_checkout', function () {
-        update_checkout();
         if ("collector_checkout" === $("input[name='payment_method']:checked").val()) {
+	        update_checkout();
             $('#place_order').remove();
         }
     });
-    // Change from Collector
+    // Change from Collector Checkout payment method
     $(document).on( 'click', '#collector_change_payment_method', function () {
 	    $( '.woocommerce-info, .checkout_coupon' ).remove();
         $('form.checkout').block({
@@ -138,7 +145,7 @@
                 }
             });
     });
-    // Change to Collector
+    // Change to Collector Checkout payment method
     $(document).on("change", "input[name='payment_method']", function (event) {
         if ("collector_checkout" === $("input[name='payment_method']:checked").val()) {
             $('form.checkout').block({
@@ -184,7 +191,7 @@
 
     function update_checkout() {
         if( checkout_initiated === true ) {
-            window.collector.checkout.api.suspend();
+            //window.collector.checkout.api.suspend();
             var data = {
                 'action': 'update_checkout'
             };
