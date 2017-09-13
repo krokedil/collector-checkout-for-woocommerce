@@ -125,7 +125,7 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 					}
 					// If chosen payment method does not exist and KCO is the first gateway.
 					if ( null === WC()->session->get( 'chosen_payment_method' ) ) {
-						reset( $available_gateways );
+						reset( $available_payment_gateways );
 						if ( 'collector_checkout' === key( $available_payment_gateways ) ) {
 							$template = COLLECTOR_BANK_PLUGIN_DIR . '/templates/form-checkout.php';
 						}
