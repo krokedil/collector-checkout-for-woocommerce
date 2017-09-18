@@ -24,6 +24,7 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 			'customer_adress_updated' => true,
 			'update_fragment' => true,
 			'instant_purchase' => true,
+			'update_instant_checkout' => true,
 		);
 		foreach ( $ajax_events as $ajax_event => $nopriv ) {
 			add_action( 'wp_ajax_woocommerce_' . $ajax_event, array( __CLASS__, $ajax_event ) );
@@ -233,6 +234,26 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 		WC()->session->set( 'collector_private_id', $decode->data->privateId );
 		
 		wp_send_json_success( $return );
+		wp_die();
+	}
+	
+	public static function update_instant_checkout() {
+		$product_id 	= $_POST['product_id'];
+		$variation_id 	= $_POST['variation_id'];
+		$quantity 		= $_POST['quantity'];
+		$customer_token = $_POST['customer_token'];
+		WC()->cart->empty_cart();
+		WC()->cart->add_to_cart( $product_id, $quantity, $variation_id );
+		
+		$private_id 	= WC()->session->get( 'collector_private_id' );
+		$customer_type 	= WC()->session->get( 'collector_customer_type' );
+		$update_fees 	= new Collector_Checkout_Requests_Update_Fees( $private_id, $customer_type );
+		$update_fees->request();
+
+		$update_cart 	= new Collector_Checkout_Requests_Update_Cart( $private_id, $customer_type );
+		$update_cart->request();
+
+		wp_send_json_success();
 		wp_die();
 	}
 }

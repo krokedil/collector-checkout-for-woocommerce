@@ -125,6 +125,7 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 				wp_localize_script( 'instantcheckout', 'wc_collector_checkout_instant_checkout', array(
 					'ajaxurl' 				=> admin_url( 'admin-ajax.php' ),
 					'instant_purchase_url'	=> WC_AJAX::get_endpoint( 'instant_purchase' ),
+					'update_instant_checkout_url'   => WC_AJAX::get_endpoint( 'update_instant_checkout' ),
 				) );
 				wp_enqueue_script( 'instantcheckout' );
 				
