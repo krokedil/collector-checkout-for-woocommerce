@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Collector Checkout for WooCommerce\n"
 "POT-Creation-Date: 2017-09-04 11:25+0200\n"
-"PO-Revision-Date: 2017-09-04 11:40+0200\n"
+"PO-Revision-Date: 2017-09-18 09:06+0200\n"
 "Last-Translator: Niklas Högefjord <info@krokedil.se>\n"
 "Language-Team: Niklas Högefjord <info@krokedil.se>\n"
 "Language: sv_SE\n"
@@ -316,7 +316,7 @@ msgstr ""
 
 #: templates/form-checkout.php:25
 msgid "Select another payment method"
-msgstr ""
+msgstr "Välj ett annat betalsätt"
 
 #: templates/form-checkout.php:29
 msgid "Privatperson"
