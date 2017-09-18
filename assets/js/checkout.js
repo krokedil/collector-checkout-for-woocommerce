@@ -139,9 +139,9 @@
                 success: function(data) {
                     console.log('success');
                     console.log(data);
-                    $('form.checkout').replaceWith(data.data.fragments.checkout);
+                 
                     $('body').removeClass('collector-checkout-selected');
-                    $('form.checkout').unblock();
+                    window.location.href = data.data.redirect;
                 }
             });
     });
@@ -177,12 +177,8 @@
                         collector: true,
                     },
                     success: function (data) {
-                   
-                        console.log('update_fragment ' + data);
-                      
-                        $('form.checkout').replaceWith(data.data.fragments.checkout);
-                        get_checkout_iframe();
-                        $('form.checkout').unblock();
+                        console.log(data);
+                        window.location.href = data.data.redirect;
                     }
             	}
             );

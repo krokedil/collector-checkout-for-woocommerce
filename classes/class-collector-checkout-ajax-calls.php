@@ -190,6 +190,7 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 			WC()->session->set( 'chosen_payment_method', 'collector_checkout' );
 		}
 		WC()->payment_gateways()->set_current_gateway( $available_gateways );
+		/*
 		ob_start();
 		if ( 'collector_checkout' !== WC()->session->get( 'chosen_payment_method' ) ) {
 			
@@ -201,11 +202,18 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 			include( COLLECTOR_BANK_PLUGIN_DIR . '/templates/form-checkout.php' );
 		}
 		$checkout_output = ob_get_clean();
+		*/
+		$redirect = wc_get_checkout_url();
+		$data = array(
+			'redirect' => $redirect,
+		);
+		/*
 		$data = array(
 			'fragments' => array(
 				'checkout' => $checkout_output,
 			),
 		);
+		*/
 		wp_send_json_success( $data );
 		wp_die();
 	}
