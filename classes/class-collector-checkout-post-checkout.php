@@ -22,23 +22,27 @@ class Collector_Checkout_Post_Checkout {
 	}
 
 	public function collector_order_completed( $order_id ) {
-		if ( get_post_meta( $order_id, '_collector_order_activated', true ) ) {
-			$order = wc_get_order( $order_id );
-			$order->add_order_note( __( 'Could not activate Collector reservation, Collector reservation is already activated.', 'collector-checkout-for-woocommerce' ) );
-			return;
+		$order = wc_get_order( $order_id );
+		if ( 'collector_checkout' === $order->get_payment_method() ) {
+			if ( get_post_meta( $order_id, '_collector_order_activated', true ) ) {
+				$order->add_order_note( __( 'Could not activate Collector reservation, Collector reservation is already activated.', 'collector-checkout-for-woocommerce' ) );
+				return;
+			}
+			$activate_order = new Collector_Checkout_SOAP_Requests_Activate_Invoice( $order_id );
+			$activate_order->request( $order_id );
 		}
-		$activate_order = new Collector_Checkout_SOAP_Requests_Activate_Invoice( $order_id );
-		$activate_order->request( $order_id );
 	}
 	
 	public function collector_order_cancel( $order_id ) {
-		if ( get_post_meta( $order_id, '_collector_order_cancelled', true ) ) {
-			$order = wc_get_order( $order_id );
-			$order->add_order_note( __( 'Could not cancel Collector reservation, Collector reservation is already cancelled.', 'collector-checkout-for-woocommerce' ) );
-			return;
+		$order = wc_get_order( $order_id );
+		if ( 'collector_checkout' === $order->get_payment_method() ) {
+			if ( get_post_meta( $order_id, '_collector_order_cancelled', true ) ) {
+				$order->add_order_note( __( 'Could not cancel Collector reservation, Collector reservation is already cancelled.', 'collector-checkout-for-woocommerce' ) );
+				return;
+			}
+			$cancel_order = new Collector_Checkout_SOAP_Requests_Cancel_Invoice( $order_id );
+			$cancel_order->request( $order_id );
 		}
-		$cancel_order = new Collector_Checkout_SOAP_Requests_Cancel_Invoice( $order_id );
-		$cancel_order->request( $order_id );
 	}
 	
 	/**
