@@ -42,8 +42,9 @@
                 if (true === data.success) {
                     // Add class to body
                     $('body').addClass('collector-checkout-selected');
-                    // Remove any checkout frame to prevent duplicate
-                    //$('#collector-checkout-iframe').remove();
+                    // Empty any checkout content to prevent duplicate
+                    $('#collector-bank-iframe').empty();
+                    
                     var publicToken = data.data.publicToken;
                     var testmode = data.data.test_mode;
                     console.log('checkout initiated ' + JSON.stringify(data.data));
