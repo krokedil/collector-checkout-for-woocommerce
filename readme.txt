@@ -40,5 +40,9 @@ For help setting up and configuring Collector Checkout for WooCommerce please re
 
 == CHANGELOG ==
 
+= 2017.10.03  	- version 0.3.1 =
+* Tweak			- Added check to only run order management on Collector orders.
+* Fix			- Fixed so checkout wouldn't be duplicated when switching between B2B & B2C.
+
 = 2017.09.11  	- version 0.3.0 =
 * First release on wordpress.org.
