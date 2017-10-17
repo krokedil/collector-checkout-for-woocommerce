@@ -97,9 +97,15 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 				} else {
 					$locale = 'sv';
 				}
+				if( is_wc_endpoint_url( 'order-received' ) ) {
+					$is_thank_you_page = true;
+				} else {
+					$is_thank_you_page = false;
+				}
 				wp_localize_script( 'checkout', 'wc_collector_checkout', array(
 					'ajaxurl' 						=> admin_url( 'admin-ajax.php' ),
 					'locale' 						=> $locale,
+					'is_thank_you_page'             => $is_thank_you_page,
 					'default_customer_type' 		=> wc_collector_get_default_customer_type(),
 					'collector_nonce' 				=> wp_create_nonce( 'collector_nonce' ),
 					'refresh_checkout_fragment_url'	=> WC_AJAX::get_endpoint( 'update_fragment' ),

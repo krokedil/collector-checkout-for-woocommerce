@@ -205,8 +205,7 @@
 
     // If customer gets to thank you page
     $( document ).ready( function() {
-        var url = window.location.href;
-        if (url.indexOf('order-received') != -1) {
+        if (wc_collector_checkout.is_thank_you_page === '1') {
             thankyou_page();
         }
     });
