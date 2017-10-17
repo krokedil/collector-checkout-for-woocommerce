@@ -39,6 +39,10 @@ For help setting up and configuring Collector Checkout for WooCommerce please re
 
 
 == CHANGELOG ==
+= 2017.10.17  	- version 0.3.2 =
+* Fix			- Fixed how we detect if we are on thank you page.
+* Fix			- Removed default value from JS for IE compatability.
+
 
 = 2017.10.03  	- version 0.3.1 =
 * Tweak			- Added check to only run order management on Collector orders.
