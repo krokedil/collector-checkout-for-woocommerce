@@ -2,7 +2,7 @@
     'use strict';
     var checkout_initiated = false;
 
-    function get_checkout_iframe( customer = wc_collector_checkout.default_customer_type ) {
+    function get_checkout_iframe( customer ) {
 	    console.log( customer );
         var url = window.location.href;
         if (url.indexOf('payment_successful') != -1) {
@@ -235,7 +235,7 @@
     // Load the iframe on the custom template page, and save any customer order notes.
     $( document ).ready( function() {
         if ($('#collector-bank-iframe').length) {
-            get_checkout_iframe();
+                get_checkout_iframe( wc_collector_checkout.default_customer_type );
         }
         $('#order_comments').focusout(function(){
             var text = $('#order_comments').val();
