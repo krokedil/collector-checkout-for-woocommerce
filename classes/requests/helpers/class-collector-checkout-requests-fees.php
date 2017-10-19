@@ -47,7 +47,7 @@ class Collector_Checkout_Requests_Fees {
 							$shipping_item = array(
 								'id' => $method->label,
 								'description' => $method->label,
-								'unitPrice' => $method->cost + array_sum( $method->taxes ),
+								'unitPrice' => round( $method->cost + array_sum( $method->taxes ), 2 ),
 								'vat' => round( array_sum( $method->taxes ) / $method->cost, 2 ) * 100,
 							);
 							return $shipping_item;
