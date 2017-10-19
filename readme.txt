@@ -39,6 +39,9 @@ For help setting up and configuring Collector Checkout for WooCommerce please re
 
 
 == CHANGELOG ==
+= 2017.10.xx  	- version 0.3.3 =
+* Fix			- Round shipping cost to only send it to Collector with 2 decimals.
+
 = 2017.10.17  	- version 0.3.2 =
 * Fix			- Fixed how we detect if we are on thank you page.
 * Fix			- Removed default value from JS for IE compatability.
