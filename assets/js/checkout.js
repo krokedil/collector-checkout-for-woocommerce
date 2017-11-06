@@ -56,6 +56,7 @@
                     }
                     checkout_initiated = true;
                 } else {
+                    $('.entry-content .woocommerce').prepend('<ul class="woocommerce-error"><li>' + data.data + '</li></ul>');
                     console.log('error');
                 }
             });
