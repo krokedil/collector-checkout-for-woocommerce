@@ -15,9 +15,13 @@ class Collector_Checkout_Requests_Cart {
 			if( 0 == $item['line_total'] ) {
 				continue;
 			}
+			if ( $item['variation_id'] ) {
+				$product = wc_get_product( $item['variation_id'] );
+			} else {
+				$product = wc_get_product( $item['product_id'] );
+			}
 			$item_name = wc_get_product( $item['product_id'] );
 			$item_name = $item_name->get_title();
-			$product = wc_get_product( $item['product_id'] );
 			$item_line = self::create_item( self::get_sku( $product ), $item_name, $item['line_total'], $item['quantity'], $item['line_tax'] );
 			array_push( $items, $item_line );
 		}
