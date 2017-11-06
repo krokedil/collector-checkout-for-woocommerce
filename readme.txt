@@ -2,11 +2,11 @@
 Contributors: collectorbank, krokedil, NiklasHogefjord
 Tags: ecommerce, e-commerce, woocommerce, collector, checkout
 Requires at least: 4.7
-Tested up to: 4.8.1
+Tested up to: 4.8.3
 Requires PHP: 5.6
 Stable tag: trunk
 Requires WooCommerce at least: 3.0
-Tested WooCommerce up to: 3.1.2
+Tested WooCommerce up to: 3.2.3
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -39,9 +39,9 @@ For help setting up and configuring Collector Checkout for WooCommerce please re
 
 
 == CHANGELOG ==
-= 2017.11.xx  	- version 0.3.3 =
+= 2017.11.06  	- version 0.3.3 =
 * Fix			- Round shipping cost to only send it to Collector with 2 decimals.
-* Fix           - Added support for anonymous card purchases
+* Fix           - Added support for anonymous card purchases.
 * Fix           - Added collector body class on page load if collector is the default gateway.
 * Fix           - Fixed variable product SKU being incorrect.
 * Fix           - Added error message on checkout page if get public token fails.
