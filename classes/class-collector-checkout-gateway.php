@@ -255,7 +255,13 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 	public function add_body_class( $class ) {
 		if ( is_checkout() ) {	
 			$class[] = wc_collector_get_available_customer_types();
-			$class[] = 'collector-checkout-selected';
+
+			$available_payment_gateways = WC()->payment_gateways->get_available_payment_gateways();
+			reset( $available_payment_gateways );
+			$first_gateway = key( $available_payment_gateways );
+			if ( 'collector_checkout' == $first_gateway ) {
+				$class[] = 'collector-checkout-selected';
+			}
 		}
 		return $class;
 	}
