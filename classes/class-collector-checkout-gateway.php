@@ -219,7 +219,7 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 		update_post_meta( $order_id, '_collector_payment_id', WC()->session->get( 'collector_payment_id' ) );
 		update_post_meta( $order_id, '_collector_customer_type', WC()->session->get( 'collector_customer_type' ) );
 		
-		if('Preliminary' == $payment_status ) {
+		if( 'Preliminary' == $payment_status ) {
 			$order->payment_complete( WC()->session->get( 'collector_payment_id' ) );
 		} else {
 			$order->add_order_note( __( 'Order is PENDING APPROVAL by Collector. Payment ID: ', 'woocommerce-gateway-klarna' ) . WC()->session->get( 'collector_payment_id' ) );

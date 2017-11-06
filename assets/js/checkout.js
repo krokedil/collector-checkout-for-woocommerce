@@ -292,32 +292,57 @@
 	                    datastring = datastring + '&shipping_address_2=' + data.data.customer_data.data.businessCustomer.deliveryAddress.address2;
 	                }
 	            } else {
-	                var datastring = 'billing_first_name=' + data.data.customer_data.data.customer.billingAddress.firstName +
-	                    '&billing_last_name=' + data.data.customer_data.data.customer.billingAddress.lastName +
-	                    '&billing_country=' + data.data.customer_data.data.countryCode +
-	                    '&billing_address_1=' + data.data.customer_data.data.customer.billingAddress.address +
-	                    '&billing_postcode=' + data.data.customer_data.data.customer.billingAddress.postalCode +
-	                    '&billing_city=' + data.data.customer_data.data.customer.billingAddress.city +
-	                    '&billing_phone=' + data.data.customer_data.data.customer.mobilePhoneNumber +
-	                    '&billing_email=' + data.data.customer_data.data.customer.email +
-	                    '&shipping_first_name=' + data.data.customer_data.data.customer.deliveryAddress.firstName +
-	                    '&shipping_last_name=' + data.data.customer_data.data.customer.deliveryAddress.lastName +
-	                    '&shipping_country=' + data.data.customer_data.data.countryCode +
-	                    '&shipping_address_1=' + data.data.customer_data.data.customer.deliveryAddress.address +
-	                    '&shipping_postcode=' + data.data.customer_data.data.customer.deliveryAddress.postalCode +
-	                    '&shipping_city=' + data.data.customer_data.data.customer.deliveryAddress.city +
-	                    '&shipping_method%5B0%5D=' + data.data.shipping +
-	                    '&ship_to_different_address=1' +
-	                    '&payment_method=collector_checkout&terms=on' +
-	                    '&terms-field=1&_wpnonce=' + data.data.nonce;
-						
-					if(data.data.customer_data.data.customer.billingAddress.address2 != null) {
-	                    datastring = datastring + '&billing_address_2=' + data.data.customer_data.data.customer.billingAddress.address2;
-	                }
-	                if(data.data.customer_data.data.customer.deliveryAddress.address2 != null) {
-	                    datastring = datastring + '&shipping_address_2=' + data.data.customer_data.data.customer.deliveryAddress.address2;
-	                }
-					
+	                if( data.data.customer_data.data.customer.hasOwnProperty('billingAddress') ) {
+                        var datastring = 'billing_first_name=' + data.data.customer_data.data.customer.billingAddress.firstName +
+                            '&billing_last_name=' + data.data.customer_data.data.customer.billingAddress.lastName +
+                            '&billing_country=' + data.data.customer_data.data.countryCode +
+                            '&billing_address_1=' + data.data.customer_data.data.customer.billingAddress.address +
+                            '&billing_postcode=' + data.data.customer_data.data.customer.billingAddress.postalCode +
+                            '&billing_city=' + data.data.customer_data.data.customer.billingAddress.city +
+                            '&billing_phone=' + data.data.customer_data.data.customer.mobilePhoneNumber +
+                            '&billing_email=' + data.data.customer_data.data.customer.email +
+                            '&shipping_first_name=' + data.data.customer_data.data.customer.deliveryAddress.firstName +
+                            '&shipping_last_name=' + data.data.customer_data.data.customer.deliveryAddress.lastName +
+                            '&shipping_country=' + data.data.customer_data.data.countryCode +
+                            '&shipping_address_1=' + data.data.customer_data.data.customer.deliveryAddress.address +
+                            '&shipping_postcode=' + data.data.customer_data.data.customer.deliveryAddress.postalCode +
+                            '&shipping_city=' + data.data.customer_data.data.customer.deliveryAddress.city +
+                            '&shipping_method%5B0%5D=' + data.data.shipping +
+                            '&ship_to_different_address=1' +
+                            '&payment_method=collector_checkout&terms=on' +
+                            '&terms-field=1&_wpnonce=' + data.data.nonce;
+
+                        if (data.data.customer_data.data.customer.billingAddress.address2 != null) {
+                            datastring = datastring + '&billing_address_2=' + data.data.customer_data.data.customer.billingAddress.address2;
+                        }
+                        if (data.data.customer_data.data.customer.deliveryAddress.address2 != null) {
+                            datastring = datastring + '&shipping_address_2=' + data.data.customer_data.data.customer.deliveryAddress.address2;
+                        }
+                    } else {
+                        var datastring = 'billing_first_name=' + data.data.customer_data.data.customer.deliveryAddress.firstName +
+                            '&billing_last_name=' + data.data.customer_data.data.customer.deliveryAddress.lastName +
+                            '&billing_country=' + data.data.customer_data.data.countryCode +
+                            '&billing_address_1=' + data.data.customer_data.data.customer.deliveryAddress.address +
+                            '&billing_postcode=' + data.data.customer_data.data.customer.deliveryAddress.postalCode +
+                            '&billing_city=' + data.data.customer_data.data.customer.deliveryAddress.city +
+                            '&billing_phone=' + data.data.customer_data.data.customer.mobilePhoneNumber +
+                            '&billing_email=' + data.data.customer_data.data.customer.email +
+                            '&shipping_first_name=' + data.data.customer_data.data.customer.deliveryAddress.firstName +
+                            '&shipping_last_name=' + data.data.customer_data.data.customer.deliveryAddress.lastName +
+                            '&shipping_country=' + data.data.customer_data.data.countryCode +
+                            '&shipping_address_1=' + data.data.customer_data.data.customer.deliveryAddress.address +
+                            '&shipping_postcode=' + data.data.customer_data.data.customer.deliveryAddress.postalCode +
+                            '&shipping_city=' + data.data.customer_data.data.customer.deliveryAddress.city +
+                            '&shipping_method%5B0%5D=' + data.data.shipping +
+                            '&ship_to_different_address=1' +
+                            '&payment_method=collector_checkout&terms=on' +
+                            '&terms-field=1&_wpnonce=' + data.data.nonce;
+
+                        if (data.data.customer_data.data.customer.deliveryAddress.address2 != null) {
+                            datastring = datastring + '&billing_address_2=' + data.data.customer_data.data.customer.deliveryAddress.address2;
+                            datastring = datastring + '&shipping_address_2=' + data.data.customer_data.data.customer.deliveryAddress.address2;
+                        }
+                    }
 				}
                     
                 if(data.data.order_note != 'undefined'){

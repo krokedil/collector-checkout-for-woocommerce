@@ -67,24 +67,24 @@ class Collector_Checkout_Requests_Fees {
 	}
 
 	public function get_invoice_fee( $_product ) {
-		
+
 		$price = wc_get_price_including_tax( $_product );
-		
+
 		$_tax = new WC_Tax();
 		$tmp_rates = $_tax->get_base_tax_rates( $_product->get_tax_class() );
-		$_vat = array_shift( $tmp_rates );// Get the rate 
-		//Check what kind of tax rate we have 
-		if( $_product->is_taxable() && isset($_vat['rate']) ) {
-			$vat_rate=round($_vat['rate']);
+		$_vat = array_shift( $tmp_rates );// Get the rate.
+		//Check what kind of tax rate we have.
+		if ( $_product->is_taxable() && isset( $_vat['rate'] ) ) {
+			$vat_rate = round( $_vat['rate'] );
 		} else {
 			//if empty, set 0% as rate
 			$vat_rate = 0;
 		}
-				
+
 		return array(
 			'id'            => $_product->get_title(),
 			'description'   => $_product->get_title(),
-			'unitPrice'     => $price,
+			'unitPrice'     => round( $price, 2 ),
 			'vat'           => $vat_rate,
 		);
 	}
