@@ -99,13 +99,16 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 				}
 				if( is_wc_endpoint_url( 'order-received' ) ) {
 					$is_thank_you_page = true;
+					$order_id = wc_get_order_id_by_order_key(sanitize_text_field($_GET['key']));
 				} else {
 					$is_thank_you_page = false;
+					$order_id = '';
 				}
 				wp_localize_script( 'checkout', 'wc_collector_checkout', array(
 					'ajaxurl' 						=> admin_url( 'admin-ajax.php' ),
 					'locale' 						=> $locale,
 					'is_thank_you_page'             => $is_thank_you_page,
+					'order_id'             			=> $order_id,
 					'default_customer_type' 		=> wc_collector_get_default_customer_type(),
 					'collector_nonce' 				=> wp_create_nonce( 'collector_nonce' ),
 					'refresh_checkout_fragment_url'	=> WC_AJAX::get_endpoint( 'update_fragment' ),

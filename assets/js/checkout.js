@@ -219,6 +219,7 @@
                 dataType: 'json',
                 data: {
                     action  : 'get_checkout_thank_you',
+                    order_id : wc_collector_checkout.order_id
                 },
                 success: function(data) {
                     var publicToken = data.data.publicToken;

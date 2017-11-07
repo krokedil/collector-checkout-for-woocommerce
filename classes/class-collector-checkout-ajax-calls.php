@@ -138,13 +138,13 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 	}
 
 	public static function get_checkout_thank_you() {
-		$public_token = WC()->session->get( 'collector_public_token' );
-
-		wp_send_json_success( $public_token );
-
+		$order_id = '';
+		$order_id = sanitize_text_field($_POST['order_id']);
+		$public_token = get_post_meta( $order_id, '_collector_public_token', true );
+		
 		WC()->session->__unset( 'collector_public_token' );
 		WC()->session->__unset( 'collector_private_id' );
-
+		wp_send_json_success( $public_token );
 		wp_die();
 	}
 

@@ -208,25 +208,31 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 	public function collector_thankyou( $order_id ) {
 		$order = wc_get_order( $order_id );
 		
-		$private_id 	= WC()->session->get( 'collector_private_id' );
-		$customer_type 	= WC()->session->get( 'collector_customer_type' );
-		$payment_data 	= new Collector_Checkout_Requests_Get_Checkout_Information( $private_id, $customer_type );
-		$payment_data 	= $payment_data->request();
-		$payment_data 	= json_decode( $payment_data );
-		$payment_status = $payment_data->data->purchase->result;
-		
-		update_post_meta( $order_id, '_collector_payment_method', WC()->session->get( 'collector_payment_method' ) );
-		update_post_meta( $order_id, '_collector_payment_id', WC()->session->get( 'collector_payment_id' ) );
-		update_post_meta( $order_id, '_collector_customer_type', WC()->session->get( 'collector_customer_type' ) );
-		
-		if( 'Preliminary' == $payment_status ) {
-			$order->payment_complete( WC()->session->get( 'collector_payment_id' ) );
+		if( WC()->session->get( 'collector_private_id' ) ) {
+			$private_id 	= WC()->session->get( 'collector_private_id' );
+			$customer_type 	= WC()->session->get( 'collector_customer_type' );
+			$payment_data 	= new Collector_Checkout_Requests_Get_Checkout_Information( $private_id, $customer_type );
+			$payment_data 	= $payment_data->request();
+			$payment_data 	= json_decode( $payment_data );
+			$payment_status = $payment_data->data->purchase->result;
+			
+			update_post_meta( $order_id, '_collector_payment_method', WC()->session->get( 'collector_payment_method' ) );
+			update_post_meta( $order_id, '_collector_payment_id', WC()->session->get( 'collector_payment_id' ) );
+			update_post_meta( $order_id, '_collector_customer_type', WC()->session->get( 'collector_customer_type' ) );
+			update_post_meta( $order_id, '_collector_public_token', WC()->session->get( 'collector_public_token' ) );
+			
+			if( 'Preliminary' == $payment_status ) {
+				$order->payment_complete( WC()->session->get( 'collector_payment_id' ) );
+			} else {
+				$order->add_order_note( __( 'Order is PENDING APPROVAL by Collector. Payment ID: ', 'woocommerce-gateway-klarna' ) . WC()->session->get( 'collector_payment_id' ) );
+				$order->update_status( 'on-hold' );
+			}
+			
+			$order->add_order_note( sprintf( __( 'Purchase via %s', 'collector-checkout-for-woocommerce' ), wc_collector_get_payment_method_name( WC()->session->get( 'collector_payment_method' ) ) ) );
 		} else {
-			$order->add_order_note( __( 'Order is PENDING APPROVAL by Collector. Payment ID: ', 'woocommerce-gateway-klarna' ) . WC()->session->get( 'collector_payment_id' ) );
-			$order->update_status( 'on-hold' );
+			// @todo - add logging here.
 		}
 		
-		$order->add_order_note( sprintf( __( 'Purchase via %s', 'collector-checkout-for-woocommerce' ), wc_collector_get_payment_method_name( WC()->session->get( 'collector_payment_method' ) ) ) );
 	}
 	
 	/**
@@ -240,6 +246,7 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 	public function collector_thankyou_order_received_text( $text, $order ) {
 		if( 'collector_checkout' == $order->get_payment_method() ) {
 			return '<div class="collector-checkout-thankyou"></div>';
+			
 		}
 
 		return $text;
