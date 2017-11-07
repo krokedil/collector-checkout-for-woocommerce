@@ -39,6 +39,10 @@ For help setting up and configuring Collector Checkout for WooCommerce please re
 
 
 == CHANGELOG ==
+= 2017.11.07  	- version 0.3.4 =
+* Fix			- Prevent order status to be changed to On hold if thankyou page is reloaded and Collector sessions aren't deleted properly.
+* Tweak			- Store public token in order to be used when displaying Collector Checkout iframe on thankyou page.
+
 = 2017.11.06  	- version 0.3.3 =
 * Fix			- Round shipping cost to only send it to Collector with 2 decimals.
 * Fix           - Added support for anonymous card purchases.

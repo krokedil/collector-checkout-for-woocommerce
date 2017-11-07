@@ -8,7 +8,7 @@
  * Plugin Name:     Collector Checkout for WooCommerce
  * Plugin URI:      https://krokedil.se/
  * Description:     Extends WooCommerce. Provides a <a href="https://www.collector.se/" target="_blank">Collector Checkout</a> checkout for WooCommerce.
- * Version:         0.3.3
+ * Version:         0.3.4
  * Author:          Krokedil
  * Author URI:      https://krokedil.se/
  * Text Domain:     collector-checkout-for-woocommerce
@@ -24,7 +24,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 define( 'COLLECTOR_BANK_PLUGIN_DIR', untrailingslashit( plugin_dir_path( __FILE__ ) ) );
 define( 'COLLECTOR_BANK_PLUGIN_URL', untrailingslashit( plugin_dir_url( __FILE__ ) ) );
-define( 'COLLECTOR_BANK_VERSION', '0.3.3' );
+define( 'COLLECTOR_BANK_VERSION', '0.3.4' );
 
 if ( ! class_exists( 'Collector_Checkout' ) ) {
 	class Collector_Checkout {
@@ -208,7 +208,7 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 
 		public function jk_remove_sticky_checkout() {
 			wp_dequeue_script( 'storefront-sticky-payment' );
-		}
+		}	
 	}
 }
 $collector_checkout = new Collector_Checkout();
