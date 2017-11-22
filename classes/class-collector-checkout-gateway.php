@@ -34,6 +34,10 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 
 		// Override the checkout template
 		add_filter( 'woocommerce_locate_template', array( $this, 'override_template' ), 10, 3 );
+
+		// Set fields to not required.
+		add_filter( 'woocommerce_checkout_fields' ,  array( $this, 'collector_set_not_required' ), 20 );
+
 	}
 
 	public function init_form_fields() {
@@ -136,7 +140,7 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 		return $template;
 	}
 
-	public function get_customer_data() {
+	/*public function get_customer_data() {
 		// Get information about order from Collector
 		$private_id    	= WC()->session->get( 'collector_private_id' );
 		$customer_type 	= WC()->session->get( 'collector_customer_type' );
@@ -144,7 +148,7 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 		$customer_data 	= $customer_data->request();
 
 		return json_decode( $customer_data );
-	}
+	}*/
 
 	public function process_payment( $order_id, $retry = false ) {
 		$order = wc_get_order( $order_id );
@@ -308,4 +312,16 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 			return false;
 		}
 	}
+
+	public function collector_set_not_required( $checkout_fields ) {
+		//Set fields to not required, to prevent orders from failing
+		if ( 'collector_checkout' === WC()->session->get( 'chosen_payment_method' ) ) {
+			foreach ( $checkout_fields as $fieldset_key => $fieldset ) {
+				foreach ( $fieldset as $field_key => $field ) {
+					$checkout_fields[ $fieldset_key ][ $field_key ]['required'] = false;
+				}
+			}
+		}
+		return $checkout_fields;
+    }
 }

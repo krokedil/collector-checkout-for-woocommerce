@@ -65,9 +65,12 @@ class Collector_Checkout_Post_Checkout {
 				$orders = get_posts( $query_args );
 				$order_id = $orders[0]->ID;
 				$order = wc_get_order( $order_id );
-				
-				$order->add_order_note( sprintf( __( 'Invoice status callback from Collector. New Invoice status: %s', 'collector-checkout-for-woocommerce' ), wc_clean( $_GET['InvoiceStatus'] ) ) );
-				
+
+				if( is_object( $order ) ) {
+					$order->add_order_note( sprintf( __( 'Invoice status callback from Collector. New Invoice status: %s', 'collector-checkout-for-woocommerce' ), wc_clean( $_GET['InvoiceStatus'] ) ) );
+				} else {
+					Collector_Checkout_Requests::log();
+				}
 				if( '1' == $_GET['InvoiceStatus'] ) {
 					$order->payment_complete( $collector_payment_id );
 				} elseif ( '5' == $_GET['InvoiceStatus'] ) {
