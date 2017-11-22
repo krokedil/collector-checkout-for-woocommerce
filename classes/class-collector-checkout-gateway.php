@@ -34,6 +34,10 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 
 		// Override the checkout template
 		add_filter( 'woocommerce_locate_template', array( $this, 'override_template' ), 10, 3 );
+
+		// Set fields to not required.
+		add_filter( 'woocommerce_checkout_fields' ,  array( $this, 'collector_set_not_required' ), 20 );
+
 	}
 
 	public function init_form_fields() {
@@ -227,6 +231,20 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 		}
 		
 		$order->add_order_note( sprintf( __( 'Purchase via %s', 'collector-checkout-for-woocommerce' ), wc_collector_get_payment_method_name( WC()->session->get( 'collector_payment_method' ) ) ) );
+
+        // Check if there where any empty fields, if so send mail.
+        if ( WC()->session->get( 'collector_empty_fields' ) ) {
+            $email = get_option( 'admin_email' );
+            $subject = __( 'Order data was missing from Collector', 'collector-checkout-for-woocommerce' );
+            $message = '<p>' . __( 'The following fields had missing data from Collector, please verify the order with Collector.', 'collector-checkout-for-woocommerce' );
+            foreach ( WC()->session->get( 'collector_empty_fields' ) as $field ) {
+                $message = $message . '<br>' . $field;
+            }
+            $message = $message . '<br><a href="' . get_edit_post_link( $order_id ) . '">' . __( 'Link to the order', 'collector-checkout-for-woocommerce' ) . '</a></p>';
+
+            wp_mail( $email, $subject, $message );
+            WC()->session->__unset( 'collector_empty_fields' );
+        }
 	}
 	
 	/**
@@ -281,4 +299,16 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 			return false;
 		}
 	}
+
+	public function collector_set_not_required( $checkout_fields ) {
+		//Set fields to not required, to prevent orders from failing
+		if ( 'collector_checkout' === WC()->session->get( 'chosen_payment_method' ) ) {
+			foreach ( $checkout_fields as $fieldset_key => $fieldset ) {
+				foreach ( $fieldset as $field_key => $field ) {
+					$checkout_fields[ $fieldset_key ][ $field_key ]['required'] = false;
+				}
+			}
+		}
+		return $checkout_fields;
+    }
 }
