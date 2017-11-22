@@ -136,7 +136,7 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 		return $template;
 	}
 
-	public function get_customer_data() {
+	/*public function get_customer_data() {
 		// Get information about order from Collector
 		$private_id    	= WC()->session->get( 'collector_private_id' );
 		$customer_type 	= WC()->session->get( 'collector_customer_type' );
@@ -144,7 +144,7 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 		$customer_data 	= $customer_data->request();
 
 		return json_decode( $customer_data );
-	}
+	}*/
 
 	public function process_payment( $order_id, $retry = false ) {
 		$order = wc_get_order( $order_id );
