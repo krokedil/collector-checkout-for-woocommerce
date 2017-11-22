@@ -229,6 +229,20 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 			}
 			
 			$order->add_order_note( sprintf( __( 'Purchase via %s', 'collector-checkout-for-woocommerce' ), wc_collector_get_payment_method_name( WC()->session->get( 'collector_payment_method' ) ) ) );
+			
+			// Check if there where any empty fields, if so send mail.
+	        if ( WC()->session->get( 'collector_empty_fields' ) ) {
+	            $email = get_option( 'admin_email' );
+	            $subject = __( 'Order data was missing from Collector', 'collector-checkout-for-woocommerce' );
+	            $message = '<p>' . __( 'The following fields had missing data from Collector, please verify the order with Collector.', 'collector-checkout-for-woocommerce' );
+	            foreach ( WC()->session->get( 'collector_empty_fields' ) as $field ) {
+	                $message = $message . '<br>' . $field;
+	            }
+	            $message = $message . '<br><a href="' . get_edit_post_link( $order_id ) . '">' . __( 'Link to the order', 'collector-checkout-for-woocommerce' ) . '</a></p>';
+	            wp_mail( $email, $subject, $message );
+	            WC()->session->__unset( 'collector_empty_fields' );
+	        }
+        
 		} else {
 			// @todo - add logging here.
 		}
