@@ -164,6 +164,8 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 		// Return the data, customer note and create a nonce.
 		$return = array();
 		$return['customer_data'] = json_decode( $customer_data );
+		// Run return through helper function.
+		$return['customer_data'] = self::verify_customer_data( $return );
 		$return['nonce'] = wp_create_nonce( 'woocommerce-process_checkout' );
 		if ( null != WC()->session->get( 'collector_customer_order_note' ) ) {
 			$return['order_note'] = WC()->session->get( 'collector_customer_order_note' );
@@ -171,6 +173,7 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 			$return['order_note'] = '';
 		}
 		$return['shipping'] = WC()->session->get( 'collector_chosen_shipping' );
+
 		wp_send_json_success( $return );
 		wp_die();
 	}
@@ -268,6 +271,77 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 
 		wp_send_json_success();
 		wp_die();
+	}
+
+	public static function verify_customer_data( $customer_data ) {
+		$base_country = WC()->countries->get_base_country();
+
+		if ( 'SE' === $base_country ) {
+			$fallback_postcode = 11111;
+		} else if ( 'NO' === $base_country ) {
+			$fallback_postcode = 1111;
+		}
+		if ( 'PrivateCustomer' === $customer_data['customer_data']->data->customerType ) {
+			$delivery_address = array(
+				'firstName'  => isset( $customer_data['customer_data']->data->customer->deliveryAddress->firstName ) ? $customer_data['customer_data']->data->customer->deliveryAddress->firstName : '',
+				'lastName'   => isset( $customer_data['customer_data']->data->customer->deliveryAddress->lastName ) ? $customer_data['customer_data']->data->customer->deliveryAddress->lastName : '',
+				'address'    => isset( $customer_data['customer_data']->data->customer->deliveryAddress->address ) ? $customer_data['customer_data']->data->customer->deliveryAddress->address : '',
+				'address2'   => isset( $customer_data['customer_data']->data->customer->deliveryAddress->address2 ) ? $customer_data['customer_data']->data->customer->deliveryAddress->address2 : '',
+				'postalCode' => isset( $customer_data['customer_data']->data->customer->deliveryAddress->postalCode ) ? $customer_data['customer_data']->data->customer->deliveryAddress->postalCode : $fallback_postcode,
+				'city'       => isset( $customer_data['customer_data']->data->customer->deliveryAddress->city ) ? $customer_data['customer_data']->data->customer->deliveryAddress->city : '',
+			);
+			$billing_address  = array(
+				'firstName'  => isset( $customer_data['customer_data']->data->customer->billingAddress->firstName ) ? $customer_data['customer_data']->data->customer->billingAddress->firstName : isset( $customer_data['customer_data']->data->customer->deliveryAddress->firstName ) ? $customer_data['customer_data']->data->customer->deliveryAddress->firstName : '',
+				'lastName'   => isset( $customer_data['customer_data']->data->customer->billingAddress->lastName ) ? $customer_data['customer_data']->data->customer->billingAddress->lastName : isset( $customer_data['customer_data']->data->customer->deliveryAddress->lastName ) ? $customer_data['customer_data']->data->customer->deliveryAddress->lastName : '',
+				'address'    => isset( $customer_data['customer_data']->data->customer->billingAddress->address ) ? $customer_data['customer_data']->data->customer->billingAddress->address : isset( $customer_data['customer_data']->data->customer->deliveryAddress->address ) ? $customer_data['customer_data']->data->customer->deliveryAddress->address : '',
+				'address2'   => isset( $customer_data['customer_data']->data->customer->billingAddress->address2 ) ? $customer_data['customer_data']->data->customer->billingAddress->address2 : isset( $customer_data['customer_data']->data->customer->deliveryAddress->address2 ) ? $customer_data['customer_data']->data->customer->deliveryAddress->address2 : '',
+				'postalCode' => isset( $customer_data['customer_data']->data->customer->billingAddress->postalCode ) ? $customer_data['customer_data']->data->customer->billingAddress->postalCode : isset( $customer_data['customer_data']->data->customer->deliveryAddress->postalCode ) ? $customer_data['customer_data']->data->customer->deliveryAddress->postalCode : $fallback_postcode,
+				'city'       => isset( $customer_data['customer_data']->data->customer->billingAddress->city ) ? $customer_data['customer_data']->data->customer->billingAddress->city : isset( $customer_data['customer_data']->data->customer->deliveryAddress->city ) ? $customer_data['customer_data']->data->customer->deliveryAddress->city : '',
+			);
+			$customer = array(
+				'billingAddress'    =>  $billing_address,
+				'deliveryAddress'   =>  $delivery_address,
+				'mobilePhoneNumber' =>  isset( $customer_data['customer_data']->data->customer->mobilePhoneNumber ) ? $customer_data['customer_data']->data->customer->mobilePhoneNumber : '',
+				'email'             =>  isset( $customer_data['customer_data']->data->customer->email ) ? $customer_data['customer_data']->data->customer->email : '',
+			);
+
+			$data = array(
+				'customer'      => $customer,
+				'customerType'  => 'PrivateCustomer',
+				'countryCode'   => isset( $customer_data['customer_data']->data->countryCode ) ? $customer_data['customer_data']->data->countryCode : $base_country,
+			);
+		} else if ( 'BusinessCustomer' === $customer_data['customer_data']->data->customerType ) {
+			$invoice_address = array (
+				'address'    => isset( $customer_data['customer_data']->data->businessCustomer->invoiceAddress->address ) ? $customer_data['customer_data']->data->businessCustomer->invoiceAddress->address : '',
+				'address2'   => isset( $customer_data['customer_data']->data->businessCustomer->invoiceAddress->address2 ) ? $customer_data['customer_data']->data->businessCustomer->invoiceAddress->address2 : '',
+				'postalCode' => isset( $customer_data['customer_data']->data->businessCustomer->invoiceAddress->postalCode ) ? $customer_data['customer_data']->data->businessCustomer->invoiceAddress->postalCode : $fallback_postcode,
+				'city'       => isset( $customer_data['customer_data']->data->businessCustomer->invoiceAddress->city ) ? $customer_data['customer_data']->data->businessCustomer->invoiceAddress->city : '',
+			);
+			$delivery_address  = array(
+				'address'    => isset( $customer_data['customer_data']->data->businessCustomer->deliveryAddress->address ) ? $customer_data['customer_data']->data->businessCustomer->deliveryAddress->address : '',
+				'address2'   => isset( $customer_data['customer_data']->data->businessCustomer->deliveryAddress->address2 ) ? $customer_data['customer_data']->data->businessCustomer->deliveryAddress->address2 : '',
+				'postalCode' => isset( $customer_data['customer_data']->data->businessCustomer->deliveryAddress->postalCode ) ? $customer_data['customer_data']->data->businessCustomer->deliveryAddress->postalCode : $fallback_postcode,
+				'city'       => isset( $customer_data['customer_data']->data->businessCustomer->deliveryAddress->city ) ? $customer_data['customer_data']->data->businessCustomer->deliveryAddress->city : '',
+			);
+			$business_customer = array(
+				'invoiceAddress'    =>  $invoice_address,
+				'deliveryAddress'   =>  $delivery_address,
+				'referencePerson'   =>  isset( $customer_data['customer_data']->data->businessCustomer->referencePerson ) ? $customer_data['customer_data']->data->businessCustomer->referencePerson : '',
+				'organizationNumber'=>  isset( $customer_data['customer_data']->data->businessCustomer->organizationNumber ) ? $customer_data['customer_data']->data->businessCustomer->organizationNumber : '',
+				'companyName'       =>  isset( $customer_data['customer_data']->data->businessCustomer->companyName ) ? $customer_data['customer_data']->data->customer->businessCustomer->companyName : '',
+				'mobilePhoneNumber' =>  isset( $customer_data['customer_data']->data->businessCustomer->mobilePhoneNumber ) ? $customer_data['customer_data']->data->businessCustomer->mobilePhoneNumber : '',
+				'email'             =>  isset( $customer_data['customer_data']->data->businessCustomer->email ) ? $customer_data['customer_data']->data->businessCustomer->email : '',
+			);
+			$data = array(
+				'businessCustomer'  =>  $business_customer,
+				'customerType'      =>  'BusinessCustomer',
+				'countryCode'       =>  isset( $customer_data['customer_data']->data->countryCode ) ? $customer_data['customer_data']->data->countryCode : $base_country,
+			);
+		}
+		$customer_data = array(
+			'data' => $data,
+		);
+		return $customer_data;
 	}
 }
 Collector_Checkout_Ajax_Calls::init();
