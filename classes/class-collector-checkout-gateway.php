@@ -38,6 +38,8 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 		// Set fields to not required.
 		add_filter( 'woocommerce_checkout_fields' ,  array( $this, 'collector_set_not_required' ), 20 );
 
+		// Add org nr after address on company order.
+		add_action( 'woocommerce_admin_order_data_after_billing_address', array( $this, 'add_org_nr_to_order' ) );
 	}
 
 	public function init_form_fields() {
@@ -246,7 +248,12 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 	            wp_mail( $email, $subject, $message );
 	            WC()->session->__unset( 'collector_empty_fields' );
 	        }
-        
+	        // Check if there is a org nr set, if so add post meta
+            if ( WC()->session->get( 'collector_org_nr' ) ) {
+	            $org_nr = WC()->session->get( 'collector_org_nr' );
+	            update_post_meta( $order_id, '_collector_org_nr', $org_nr );
+	            WC()->session->__unset( 'collector_org_nr' );
+            }
 		} else {
 			// @todo - add logging here.
 		}
@@ -323,5 +330,14 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 			}
 		}
 		return $checkout_fields;
+    }
+
+    public function add_org_nr_to_order( $order ) {
+	    if ( 'collector_checkout' === $order->get_payment_method() ) {
+		    $order_id = $order->get_order_number();
+		    if ( get_post_meta( $order_id, '_collector_org_nr' ) ) {
+			    echo '<p><strong>' . __( 'Org Nr', 'collector-checkout-for-woocommerce' ) . ':</strong> ' . get_post_meta( $order_id, '_collector_org_nr', true ) . '</p>';
+		    }
+	    }
     }
 }
