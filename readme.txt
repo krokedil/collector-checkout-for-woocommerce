@@ -2,11 +2,11 @@
 Contributors: collectorbank, krokedil, NiklasHogefjord
 Tags: ecommerce, e-commerce, woocommerce, collector, checkout
 Requires at least: 4.7
-Tested up to: 4.8.3
+Tested up to: 4.9
 Requires PHP: 5.6
 Stable tag: trunk
 Requires WooCommerce at least: 3.0
-Tested WooCommerce up to: 3.2.3
+Tested WooCommerce up to: 3.2.4
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -39,6 +39,13 @@ For help setting up and configuring Collector Checkout for WooCommerce please re
 
 
 == CHANGELOG ==
+= 2017.11.23  	- version 0.4.0 =
+* Tweak			- Improved handling of returned customer data to avoid issues when submitting form/creating order in WooCommerce.
+* Tweak			- Send email to admin if customer address is missing from returned address data from Collector.
+* Tweak			- Store org no as a separate post meta field and display it in WooCommerce order overview.
+* Fix			- Improved check if Collector is the selected gateway (for correct body class).
+
+
 = 2017.11.07  	- version 0.3.4 =
 * Fix			- Prevent order status to be changed to On hold if thankyou page is reloaded and Collector sessions aren't deleted properly.
 * Tweak			- Store public token in order to be used when displaying Collector Checkout iframe on thankyou page.
