@@ -45,7 +45,7 @@ class Collector_Checkout_Requests_Cart {
 	}
 
 	public static function get_sku( $product, $product_id ) {
-		if ( get_post_meta( $product_id, '_sku', true ) !== '' /*$product->get_sku()*/ ) {
+		if ( get_post_meta( $product_id, '_sku', true ) !== '' ) {
 			$part_number = $product->get_sku();
 		} else {
 			$part_number = $product->get_id();
