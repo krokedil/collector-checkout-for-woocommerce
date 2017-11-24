@@ -17,14 +17,19 @@ class Collector_Checkout_Requests_Cart {
 			}
 			if ( $item['variation_id'] ) {
 				$product = wc_get_product( $item['variation_id'] );
+				$product_id = $item['variation_id'];
 			} else {
 				$product = wc_get_product( $item['product_id'] );
+				$product_id = $item['product_id'];
 			}
 			$item_name = wc_get_product( $item['product_id'] );
 			$item_name = $item_name->get_title();
-			$item_line = self::create_item( self::get_sku( $product ), $item_name, $item['line_total'], $item['quantity'], $item['line_tax'] );
+			$item_line = self::create_item( self::get_sku( $product, $product_id ), $item_name, $item['line_total'], $item['quantity'], $item['line_tax'] );
 			array_push( $items, $item_line );
 		}
+		// Testing stuff
+
+		// Testing end
 		$return['items'] = $items;
 		return $return;
 	}
@@ -39,8 +44,8 @@ class Collector_Checkout_Requests_Cart {
 		);
 	}
 
-	public static function get_sku( $product ) {
-		if ( $product->get_sku() ) {
+	public static function get_sku( $product, $product_id ) {
+		if ( get_post_meta( $product_id, '_sku', true ) !== '' /*$product->get_sku()*/ ) {
 			$part_number = $product->get_sku();
 		} else {
 			$part_number = $product->get_id();
