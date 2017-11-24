@@ -39,6 +39,9 @@ For help setting up and configuring Collector Checkout for WooCommerce please re
 
 
 == CHANGELOG ==
+= 2017.11.24  	- version 0.4.1 =
+* Fix			- Send product variant ID as SKU if no SKU is set in WooCommerce. WC function get_sku() returns main product SKU if on one exists in variant. This causes error in Collector Checkout.
+
 = 2017.11.23  	- version 0.4.0 =
 * Tweak			- Improved handling of returned customer data to avoid issues when submitting form/creating order in WooCommerce.
 * Tweak			- Send email to admin if customer address is missing from returned address data from Collector.
