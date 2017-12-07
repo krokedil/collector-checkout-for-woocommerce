@@ -25,6 +25,7 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 			'update_fragment' => true,
 			'instant_purchase' => true,
 			'update_instant_checkout' => true,
+			'checkout_error' => true,
 		);
 		foreach ( $ajax_events as $ajax_event => $nopriv ) {
 			add_action( 'wp_ajax_woocommerce_' . $ajax_event, array( __CLASS__, $ajax_event ) );
@@ -356,6 +357,49 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 			WC()->session->set( 'collector_empty_fields', $empty_fields );
 		}
 		return $customer_information;
+	}
+
+	public static function checkout_error() {
+		$customer_type = WC()->session->get( 'collector_customer_type' );
+		$private_id = WC()->session->get( 'collector_private_id' );
+
+		$create_order = new Collector_Create_Local_Order_Fallback;
+
+		//Create the order.
+		$order = $create_order->create_order();
+
+		//Add items to order.
+		$create_order->add_items_to_local_order( $order );
+
+		//Add fees to order.
+		$create_order->add_order_fees( $order );
+		
+		//Add shipping to order.
+		$create_order->add_order_shipping( $order );
+
+		//Add tax rows to order.
+		$create_order->add_order_tax_rows( $order );
+
+		//Add coupons to order.
+		$create_order->add_order_coupons( $order );
+
+		//Add customer to order.
+		$create_order->add_customer_data_to_local_order( $order, $customer_type, $private_id );
+		
+		//Add payment method
+		$create_order->add_order_payment_method( $order );
+
+		//Calculate order totals
+		$create_order->calculate_order_totals( $order );
+
+		//Add order note
+		$order->add_order_note( __( 'This order was made as a fallback due to an error in the checkout, please verify the order with Collector.', 'collector-checkout-for-woocommerce' ) );
+
+		$redirect_url = $order->get_checkout_order_received_url();
+		$return = array( 'redirect_url'	=>	$redirect_url );
+		error_log( var_export( $return, true ) );
+		wp_send_json_success( $return );
+		wp_die();
 	}
 }
 Collector_Checkout_Ajax_Calls::init();

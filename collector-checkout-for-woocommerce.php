@@ -49,6 +49,7 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 			include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-instant-checkout.php' );
 			include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-admin-notices.php' );
 			include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-order-emails.php' );
+			include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-create-order-fallback.php' );
 			
 			// Include and add the Gateway
 			if ( class_exists( 'WC_Payment_Gateway' ) ) {
@@ -118,8 +119,7 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 					'get_customer_data_url'   		=> WC_AJAX::get_endpoint( 'get_customer_data' ),
 					'customer_adress_updated_url'   => WC_AJAX::get_endpoint( 'customer_adress_updated' ),
 					'update_checkout_url'   		=> WC_AJAX::get_endpoint( 'update_checkout' ),
-					
-					
+					'checkout_error'				=> WC_AJAX::get_endpoint( 'checkout_error' ),
 				) );
 				wp_enqueue_script( 'checkout' );
 			}
