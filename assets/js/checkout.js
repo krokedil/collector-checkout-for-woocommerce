@@ -5,6 +5,7 @@
     function get_checkout_iframe( customer ) {
 	    console.log( customer );
         var url = window.location.href;
+        console.log( url.indexOf('payment_successful') );
         if (url.indexOf('payment_successful') != -1) {
             $('.entry-content').css("display", "none");
             // Block the body to prevent customers from doing something
@@ -31,6 +32,7 @@
                 if ($("form.checkout #terms").length > 0) {
                     $("form.checkout #terms").prop("checked", true);
                 }
+                console.log( 'post form' );
                 collector_post_form();
             }
         } else {
@@ -48,7 +50,7 @@
                     var publicToken = data.data.publicToken;
                     var testmode = data.data.test_mode;
                     console.log('checkout initiated ' + JSON.stringify(data.data));
-                   
+                    
                     if(testmode === 'yes') {
                     	$('#collector-bank-iframe').append('<script src="https://checkout-uat.collector.se/collector-checkout-loader.js" data-lang="' + wc_collector_checkout.locale + '" data-token="' + publicToken + '" data-variant="' + customer + '" >');
                     } else {
@@ -66,25 +68,28 @@
     
     // Customer updated - event triggered when customer changes address in Collector iframe
     document.addEventListener("collectorCheckoutCustomerUpdated", function(){
-	    window.collector.checkout.api.suspend();
-	    $.ajax(
-            wc_collector_checkout.customer_adress_updated_url,
-            {
-                type: 'POST',
-                dataType: 'json',
-                data: {
-                    action  : 'customer_adress_updated',
-                    nonce: wc_collector_checkout.collector_nonce
-                },
-                success: function(response) {
-	                console.log('customer_adress_updated ' + response);
-	                if( 'yes' == response.data ) {
-		               jQuery(document.body).trigger('update_checkout'); 
-	                }
+        var url = window.location.href;
+        if (url.indexOf('order-received') > -1) {
+            window.collector.checkout.api.suspend();
+            $.ajax(
+                wc_collector_checkout.customer_adress_updated_url,
+                {
+                    type: 'POST',
+                    dataType: 'json',
+                    data: {
+                        action  : 'customer_adress_updated',
+                        nonce: wc_collector_checkout.collector_nonce
+                    },
+                    success: function(response) {
+                        console.log('customer_adress_updated ' + response);
+                        if( 'yes' == response.data ) {
+                        jQuery(document.body).trigger('update_checkout'); 
+                        }
+                    }
                 }
-            }
-        );
-		window.collector.checkout.api.resume();
+            );
+            window.collector.checkout.api.resume();
+        }
 	});
 	
 	// Customer change B2B / B2C
@@ -185,7 +190,7 @@
                     }
             	}
             );
-    	}
+        }
     });
 
     function update_checkout() {
@@ -332,6 +337,7 @@
                             } else {
                                 console.log(wc_checkout_params.i18n_checkout_error);
                             }
+                            checkout_error();
                         }
                     },
                     error: function (jqXHR, textStatus, errorThrown) {
@@ -343,4 +349,22 @@
             }
         });
     }
+
+    // When WooCommerce checkout submission fails
+function checkout_error() {
+    console.log('checkout error');
+		if ("collector_checkout" === $("input[name='payment_method']:checked").val()) {
+            var data = {
+                'action': 'checkout_error'
+            };
+            console.log('test');
+            jQuery.post(wc_collector_checkout.checkout_error, data, function (data) {
+                if (true === data.success) {
+                    console.log('Collector checkout error');
+                    console.log(data.data.redirect_url);
+                    window.location.href = data.data.redirect_url;
+                }
+            });
+    }
+}
 }(jQuery));
