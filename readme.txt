@@ -2,11 +2,11 @@
 Contributors: collectorbank, krokedil, NiklasHogefjord
 Tags: ecommerce, e-commerce, woocommerce, collector, checkout
 Requires at least: 4.7
-Tested up to: 4.9
+Tested up to: 4.9.1
 Requires PHP: 5.6
 Stable tag: trunk
 Requires WooCommerce at least: 3.0
-Tested WooCommerce up to: 3.2.4
+Tested WooCommerce up to: 3.2.5
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -39,6 +39,10 @@ For help setting up and configuring Collector Checkout for WooCommerce please re
 
 
 == CHANGELOG ==
+= 2017.12.07  	- version 0.5.0 =
+* Tweak         - Adds support for create order fallback on failed checkout form submissions.
+* Fix           - Change notificationUri to use get_home_url() to support callbacks for WP installed in a subfolder.
+
 = 2017.11.24  	- version 0.4.1 =
 * Fix			- Send product variant ID as SKU if no SKU is set in WooCommerce. WC function get_sku() returns main product SKU if on one exists in variant. This causes error in Collector Checkout.
 
