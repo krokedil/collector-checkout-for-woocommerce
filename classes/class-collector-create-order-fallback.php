@@ -97,7 +97,6 @@ class Collector_Create_Local_Order_Fallback {
 			$formated_customer_data = new Collector_Checkout_Ajax_Calls;
 			$formated_customer_data = $formated_customer_data::verify_customer_data( $customer_data );
 
-			error_log( 'formated customer data: ' . var_export( $formated_customer_data, true ) );
 
 			update_post_meta( $order_id, '_billing_first_name', $formated_customer_data['billingFirstName'] );
 			update_post_meta( $order_id, '_billing_last_name', $formated_customer_data['billingLastName'] );

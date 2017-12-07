@@ -397,7 +397,6 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 
 		$redirect_url = $order->get_checkout_order_received_url();
 		$return = array( 'redirect_url'	=>	$redirect_url );
-		error_log( var_export( $return, true ) );
 		wp_send_json_success( $return );
 		wp_die();
 	}
