@@ -27,9 +27,10 @@ class Collector_Checkout_Requests_Cart {
 			$item_line = self::create_item( self::get_sku( $product, $product_id ), $item_name, $item['line_total'], $item['quantity'], $item['line_tax'] );
 			array_push( $items, $item_line );
 		}
-		// Testing stuff
 
-		// Testing end
+		// Check if we need to make any id/sku's unique (required by Collector)
+		$items = self::maybe_make_ids_unique( $items );
+		
 		$return['items'] = $items;
 		return $return;
 	}
@@ -51,5 +52,28 @@ class Collector_Checkout_Requests_Cart {
 			$part_number = $product->get_id();
 		}
 		return substr( $part_number, 0, 32 );
+	}
+
+	public static function maybe_make_ids_unique( $items ) {
+		$ids = array();
+		foreach( $items as $item ) {
+			$ids[] = $item['id'];
+		}
+		// List all ids as 'id_name' => number_of_apperances_in_array
+		$ids = array_count_values( $ids );
+
+		foreach( $ids as $id_name => $appearances ) {
+			if( $appearances > 1 ) {
+				$i = 0;
+				// Loop trough all ids that appeare more than 1 time
+				foreach( $items as $key => $item ) {
+					if( $id_name == $item['id'] ) {
+						$items[$key]['id'] = $item['id'] . '_' . $i;
+						$i++;
+					}
+				}
+			}
+		}
+		return $items;
 	}
 }
