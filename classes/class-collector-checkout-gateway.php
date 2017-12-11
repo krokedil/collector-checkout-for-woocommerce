@@ -159,44 +159,45 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 			$product_id = $this->get_option( 'collector_invoice_fee' );
 			
 			if( $product_id ) {
+
+				$product = wc_get_product( $product_id );
 				
-				$product   				= wc_get_product( $product_id );
-				$tax_display_mode 			= get_option('woocommerce_tax_display_shop');
-				
-				$price = wc_get_price_excluding_tax( $product );
-				
-				if ( $product->is_taxable() ) {
-					$product_tax = true;
-				} else {
-					$product_tax = false;
+				if ( is_object( $product ) ) {
+					$tax_display_mode 	= get_option('woocommerce_tax_display_shop');
+					$price 				= wc_get_price_excluding_tax( $product );
+					
+					if ( $product->is_taxable() ) {
+						$product_tax = true;
+					} else {
+						$product_tax = false;
+					}
+					
+					$_tax = new WC_Tax();
+					$tmp_rates = $_tax->get_base_tax_rates( $product->get_tax_class() );
+					$_vat = array_shift( $tmp_rates );// Get the rate 
+					//Check what kind of tax rate we have 
+					if( $product->is_taxable() && isset($_vat['rate']) ) {
+						$vat_rate=round($_vat['rate']);
+					} else {
+						//if empty, set 0% as rate
+						$vat_rate = 0;
+					}
+					
+					$collector_fee            	= new stdClass();
+					$collector_fee->id        	= sanitize_title( $product->get_title() );
+					$collector_fee->name      	= $product->get_title();
+					$collector_fee->amount    	= $price;
+					$collector_fee->taxable   	= $product_tax;
+					$collector_fee->tax       	= $vat_rate;
+					$collector_fee->tax_data  	= array();
+					$collector_fee->tax_class 	= $product->get_tax_class();
+					$fee_id                   	= $order->add_fee( $collector_fee );
+		
+					if ( ! $fee_id ) {
+						$order->add_order_note( __( 'Unable to add Collector Bank Invoice Fee to the order.', 'collector-checkout-for-woocommerce' ) );
+					}
+					$order->calculate_totals( true );
 				}
-				
-				$_tax = new WC_Tax();
-				$tmp_rates = $_tax->get_base_tax_rates( $product->get_tax_class() );
-				$_vat = array_shift( $tmp_rates );// Get the rate 
-				//Check what kind of tax rate we have 
-				if( $product->is_taxable() && isset($_vat['rate']) ) {
-					$vat_rate=round($_vat['rate']);
-				} else {
-					//if empty, set 0% as rate
-					$vat_rate = 0;
-				}
-				
-				$collector_fee            	= new stdClass();
-				$collector_fee->id        	= sanitize_title( $product->get_title() );
-				$collector_fee->name      	= $product->get_title();
-				$collector_fee->amount    	= $price;
-				$collector_fee->taxable   	= $product_tax;
-				$collector_fee->tax       	= $vat_rate;
-				$collector_fee->tax_data  	= array();
-				$collector_fee->tax_class 	= $product->get_tax_class();
-				$fee_id                   	= $order->add_fee( $collector_fee );
-	
-				if ( ! $fee_id ) {
-					$order->add_order_note( __( 'Unable to add Collector Bank Invoice Fee to the order.', 'collector-checkout-for-woocommerce' ) );
-				}
-				$order->calculate_totals( true );
-				
 			}
 			
 		}
