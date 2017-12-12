@@ -39,6 +39,10 @@ For help setting up and configuring Collector Checkout for WooCommerce please re
 
 
 == CHANGELOG ==
+= 2017.12.12  	- version 0.5.1 =
+* Tweak         - Add function for making all product id/sku’s unique before sending cart data to Collector.
+* Fix           - Don’t try to add invoice fee to WC order if no invoice fee product exist (caused 500 error when finalizing order in WC).
+
 = 2017.12.07  	- version 0.5.0 =
 * Tweak         - Adds support for create order fallback on failed checkout form submissions.
 * Fix           - Change notificationUri to use get_home_url() to support callbacks for WP installed in a subfolder.
