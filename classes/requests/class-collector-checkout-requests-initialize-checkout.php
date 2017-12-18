@@ -57,7 +57,7 @@ class Collector_Checkout_Requests_Initialize_Checkout extends Collector_Checkout
 			'reference'         => '',
 			'redirectPageUri'   => WC()->cart->get_checkout_url() . '?payment_successful=1',
 			'merchantTermsUri'  => $this->terms_page,
-			'notificationUri'   => get_home_url(),
+			'notificationUri'   => add_query_arg( array( 'notification-callback' =>'1', 'private-id' =>'{checkout.id}', 'public-token' =>'{checkout.publictoken}'), get_home_url() . '/wc-api/Collector_Checkout_Gateway/' ),
 			'cart'              => $this->cart(),
 			'fees'              => $this->fees(),
 		);

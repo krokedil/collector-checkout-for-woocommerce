@@ -40,6 +40,21 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 
 		// Add org nr after address on company order.
 		add_action( 'woocommerce_admin_order_data_after_billing_address', array( $this, 'add_org_nr_to_order' ) );
+
+		// Notification listener.
+		add_action( 'woocommerce_api_collector_checkout_gateway', array( $this, 'notification_listener' ) );
+	}
+
+	public function notification_listener() {
+		
+		if( isset( $_GET['private-id'] ) && isset( $_GET['public-token'] ) ) {
+			$private_id 	= $_GET['private-id'];
+			$public_token 	= $_GET['public-token'];
+			wp_schedule_single_event( time() + 60, 'collector_check_for_order', array( $private_id, $public_token ) );
+			error_log('sheduled');
+			header( 'HTTP/1.1 200 OK' );
+		}
+		
 	}
 
 	public function init_form_fields() {
@@ -214,7 +229,7 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 
 	public function collector_thankyou( $order_id ) {
 		$order = wc_get_order( $order_id );
-		
+		error_log('collector_public_token' . var_export(WC()->session->get( 'collector_public_token' ), true));
 		if( WC()->session->get( 'collector_private_id' ) ) {
 			$private_id 	= WC()->session->get( 'collector_private_id' );
 			$customer_type 	= WC()->session->get( 'collector_customer_type' );
@@ -227,6 +242,7 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 			update_post_meta( $order_id, '_collector_payment_id', WC()->session->get( 'collector_payment_id' ) );
 			update_post_meta( $order_id, '_collector_customer_type', WC()->session->get( 'collector_customer_type' ) );
 			update_post_meta( $order_id, '_collector_public_token', WC()->session->get( 'collector_public_token' ) );
+			update_post_meta( $order_id, '_collector_private_id', WC()->session->get( 'collector_private_id' ) );
 			
 			if( 'Preliminary' == $payment_status ) {
 				$order->payment_complete( WC()->session->get( 'collector_payment_id' ) );

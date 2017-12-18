@@ -50,6 +50,7 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 			include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-admin-notices.php' );
 			include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-order-emails.php' );
 			include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-create-order-fallback.php' );
+			include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-api-callbacks.php' );
 			
 			// Include and add the Gateway
 			if ( class_exists( 'WC_Payment_Gateway' ) ) {

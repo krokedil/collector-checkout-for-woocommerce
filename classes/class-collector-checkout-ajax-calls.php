@@ -43,6 +43,7 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 		$init_checkout = new Collector_Checkout_Requests_Initialize_Checkout( $customer_type );
 		$request = $init_checkout->request();
 		$decode = json_decode( $request );
+		
 		if ( null !== $decode->data ) {
 			$collector_settings = get_option( 'woocommerce_collector_checkout_settings' );
 			$test_mode          = $collector_settings['test_mode'];
@@ -53,7 +54,7 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 			);
 
 			// Set post metas so they can be used again later
-			WC()->session->set( 'collector_public_token', $return );
+			WC()->session->set( 'collector_public_token', $decode->data->publicToken );
 			WC()->session->set( 'collector_private_id', $decode->data->privateId );
 			WC()->session->set( 'collector_customer_type', $customer_type );
 
@@ -139,13 +140,21 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 	}
 
 	public static function get_checkout_thank_you() {
-		$order_id = '';
-		$order_id = sanitize_text_field($_POST['order_id']);
-		$public_token = get_post_meta( $order_id, '_collector_public_token', true );
+		$order_id 			= '';
+		$order_id 			= sanitize_text_field($_POST['order_id']);
+		$public_token 		= get_post_meta( $order_id, '_collector_public_token', true );
+		$collector_settings = get_option( 'woocommerce_collector_checkout_settings' );
+		$test_mode 			= $collector_settings['test_mode'];
+		$customer_type		= get_post_meta( $order_id, '_collector_customer_type', true );
+		$return = array(
+			'publicToken' 	=> $public_token,
+			'test_mode'   	=> $test_mode,
+			'customer_type'	=> $customer_type,
+		);
 		
 		WC()->session->__unset( 'collector_public_token' );
 		WC()->session->__unset( 'collector_private_id' );
-		wp_send_json_success( $public_token );
+		wp_send_json_success( $return );
 		wp_die();
 	}
 
@@ -247,7 +256,7 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 			'customer_type'	=> $customer_type,
 		);
 		
-		WC()->session->set( 'collector_public_token', $return );
+		WC()->session->set( 'collector_public_token', $decode->data->publicToken );
 		WC()->session->set( 'collector_private_id', $decode->data->privateId );
 		
 		wp_send_json_success( $return );
