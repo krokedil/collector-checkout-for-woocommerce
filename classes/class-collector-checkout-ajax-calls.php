@@ -39,31 +39,47 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 
 
 	public static function get_public_token() {
-		$customer_type = wc_clean( $_REQUEST['customer_type'] );
-		$init_checkout = new Collector_Checkout_Requests_Initialize_Checkout( $customer_type );
-		$request = $init_checkout->request();
-		$decode = json_decode( $request );
+		$customer_type 		= wc_clean( $_REQUEST['customer_type'] );
+		$public_token 		= WC()->session->get( 'collector_public_token' );
+		$collector_settings = get_option( 'woocommerce_collector_checkout_settings' );
+		$test_mode          = $collector_settings['test_mode'];
 		
-		if ( null !== $decode->data ) {
-			$collector_settings = get_option( 'woocommerce_collector_checkout_settings' );
-			$test_mode          = $collector_settings['test_mode'];
+		// Use current token if one is stored in session previously and we still have the same customer type
+		if( !empty( $public_token ) &&  $customer_type == WC()->session->get( 'collector_customer_type' ) ) {	
 			$return             = array(
-				'publicToken'   => $decode->data->publicToken,
+				'publicToken'   => WC()->session->get( 'collector_public_token' ),
 				'test_mode'     => $test_mode,
 				'customer_type' => $customer_type,
 			);
-
-			// Set post metas so they can be used again later
-			WC()->session->set( 'collector_public_token', $decode->data->publicToken );
-			WC()->session->set( 'collector_private_id', $decode->data->privateId );
-			WC()->session->set( 'collector_customer_type', $customer_type );
-
 			wp_send_json_success( $return );
 			wp_die();
+
 		} else {
-			$return[] = $decode->error->message;
-			wp_send_json_error( $return );
-			wp_die();
+
+			// Get a new public token from Collector
+			$init_checkout 	= new Collector_Checkout_Requests_Initialize_Checkout( $customer_type );
+			$request = $init_checkout->request();
+			$decode = json_decode( $request );
+			
+			if ( null !== $decode->data ) {
+				$return             = array(
+					'publicToken'   => $decode->data->publicToken,
+					'test_mode'     => $test_mode,
+					'customer_type' => $customer_type,
+				);
+
+				// Set post metas so they can be used again later
+				WC()->session->set( 'collector_public_token', $decode->data->publicToken );
+				WC()->session->set( 'collector_private_id', $decode->data->privateId );
+				WC()->session->set( 'collector_customer_type', $customer_type );
+
+				wp_send_json_success( $return );
+				wp_die();
+			} else {
+				$return[] = $decode->error->message;
+				wp_send_json_error( $return );
+				wp_die();
+			}
 		}
 	}
 
