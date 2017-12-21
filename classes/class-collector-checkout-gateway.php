@@ -50,8 +50,8 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 		if( isset( $_GET['private-id'] ) && isset( $_GET['public-token'] ) ) {
 			$private_id 	= $_GET['private-id'];
 			$public_token 	= $_GET['public-token'];
-			wp_schedule_single_event( time() + 60, 'collector_check_for_order', array( $private_id, $public_token ) );
-			error_log('sheduled');
+			wp_schedule_single_event( time() + 30, 'collector_check_for_order', array( $private_id, $public_token ) );
+			
 			header( 'HTTP/1.1 200 OK' );
 		}
 		
@@ -229,7 +229,7 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 
 	public function collector_thankyou( $order_id ) {
 		$order = wc_get_order( $order_id );
-		error_log('collector_public_token' . var_export(WC()->session->get( 'collector_public_token' ), true));
+		
 		if( WC()->session->get( 'collector_private_id' ) ) {
 			$private_id 	= WC()->session->get( 'collector_private_id' );
 			$customer_type 	= WC()->session->get( 'collector_customer_type' );
