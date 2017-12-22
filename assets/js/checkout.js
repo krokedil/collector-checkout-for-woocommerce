@@ -346,6 +346,7 @@
                 });
             } else {
                 console.log('error');
+                window.location.href = data.data.redirect_url;
             }
         });
     }

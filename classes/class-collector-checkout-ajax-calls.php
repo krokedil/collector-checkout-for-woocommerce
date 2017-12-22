@@ -174,34 +174,47 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 		wp_die();
 	}
 
+	/**
+	 * Get customer data from Collector when payment success url is triggered.
+	 */
 	public static function get_customer_data() {
 		$private_id 	= WC()->session->get( 'collector_private_id' );
 		$customer_type 	= WC()->session->get( 'collector_customer_type' );
 		$customer_data 	= new Collector_Checkout_Requests_Get_Checkout_Information( $private_id, $customer_type );
 		$customer_data 	= $customer_data->request();
+		$decoded_json 	= json_decode( $customer_data );
 
-		// Save the payment method and payment id
-		$decoded_json = json_decode( $customer_data );
-		$payment_method = $decoded_json->data->purchase->paymentMethod;
-		$payment_id = $decoded_json->data->purchase->purchaseIdentifier;
-		WC()->session->set( 'collector_payment_method', $payment_method );
-		WC()->session->set( 'collector_payment_id', $payment_id );
+		if( 'PurchaseCompleted' == $decoded_json->data->status ) {
+			// Save the payment method and payment id
+			$payment_method = $decoded_json->data->purchase->paymentMethod;
+			$payment_id = $decoded_json->data->purchase->purchaseIdentifier;
+			WC()->session->set( 'collector_payment_method', $payment_method );
+			WC()->session->set( 'collector_payment_id', $payment_id );
 
-		// Return the data, customer note and create a nonce.
-		$return = array();
-		$return['customer_data'] = json_decode( $customer_data );
-		// Run return through helper function.
-		$return['customer_data'] = self::verify_customer_data( $return );
-		$return['nonce'] = wp_create_nonce( 'woocommerce-process_checkout' );
-		if ( null != WC()->session->get( 'collector_customer_order_note' ) ) {
-			$return['order_note'] = WC()->session->get( 'collector_customer_order_note' );
+			// Return the data, customer note and create a nonce.
+			$return = array();
+			$return['customer_data'] = json_decode( $customer_data );
+			// Run return through helper function.
+			$return['customer_data'] = self::verify_customer_data( $return );
+			$return['nonce'] = wp_create_nonce( 'woocommerce-process_checkout' );
+			if ( null != WC()->session->get( 'collector_customer_order_note' ) ) {
+				$return['order_note'] = WC()->session->get( 'collector_customer_order_note' );
+			} else {
+				$return['order_note'] = '';
+			}
+			$return['shipping'] = WC()->session->get( 'collector_chosen_shipping' );
+
+			wp_send_json_success( $return );
+			wp_die();
 		} else {
-			$return['order_note'] = '';
+			// We didn't get a status PurchaseCompleted from Collector so we redirect the customer back to checkout page and display the iframe again
+			$return = array();
+			$url = add_query_arg( array( 'purchase-status' =>'not-completed' ), wc_get_checkout_url() );
+			$return['redirect_url'] = $url;
+			Collector_Checkout::log('Payment complete triggered for private id ' . $private_id . ' but status is not PurchaseCompleted in Collectors system. Current status: ' . var_export($decoded_json->data->status, true));
+			wp_send_json_error( $return );
+			wp_die();
 		}
-		$return['shipping'] = WC()->session->get( 'collector_chosen_shipping' );
-
-		wp_send_json_success( $return );
-		wp_die();
 	}
 
 	public static function update_fragment() {
