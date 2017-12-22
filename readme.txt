@@ -6,7 +6,7 @@ Tested up to: 4.9.1
 Requires PHP: 5.6
 Stable tag: trunk
 Requires WooCommerce at least: 3.0
-Tested WooCommerce up to: 3.2.5
+Tested WooCommerce up to: 3.2.6
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -39,6 +39,13 @@ For help setting up and configuring Collector Checkout for WooCommerce please re
 
 
 == CHANGELOG ==
+= 2017.12.22  	- version 0.6.0 =
+
+* Tweak			- Backup order creation on notificationUri server callback from Collector (scheduled 30 seconds after purchase) if error occur in frontend.
+* Tweak			- Only create new Collector public token when needed.
+* Tweak			- If payment complete url is triggered and order don't have status PurchaseCompleted in Collectors system - redirect customer to checkout again.
+* Fix			- Swap storing of billing and shipping addresses for B2B orders.
+
 = 2017.12.12  	- version 0.5.1 =
 * Tweak         - Add function for making all product id/sku’s unique before sending cart data to Collector.
 * Fix           - Don’t try to add invoice fee to WC order if no invoice fee product exist (caused 500 error when finalizing order in WC).
