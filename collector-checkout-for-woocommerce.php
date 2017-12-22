@@ -28,6 +28,9 @@ define( 'COLLECTOR_BANK_VERSION', '0.5.1' );
 
 if ( ! class_exists( 'Collector_Checkout' ) ) {
 	class Collector_Checkout {
+
+		public static $log = '';
+		
 		public function __construct() {
 			
 			// Initiate the gateway
@@ -189,6 +192,16 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 				}
 			}
 			
+		}
+
+		public static function log( $message ) {
+			$dibs_settings = get_option( 'woocommerce_collector_checkout_settings' );
+			if ( 'yes' === $dibs_settings['debug_mode'] ) {
+				if ( empty( self::$log ) ) {
+					self::$log = new WC_Logger();
+				}
+				self::$log->add( 'collector_checkout', $message );
+			}
 		}
 		
 		/**
