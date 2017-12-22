@@ -45,12 +45,16 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 		add_action( 'woocommerce_api_collector_checkout_gateway', array( $this, 'notification_listener' ) );
 	}
 
+	/**
+	 * Schedule order status check on notificationUri callback from Collector
+	 */
 	public function notification_listener() {
 		
 		if( isset( $_GET['private-id'] ) && isset( $_GET['public-token'] ) ) {
 			$private_id 	= $_GET['private-id'];
 			$public_token 	= $_GET['public-token'];
-			wp_schedule_single_event( time() + 30, 'collector_check_for_order', array( $private_id, $public_token ) );
+			$customer_type 	= $_GET['customer-type'];
+			wp_schedule_single_event( time() + 30, 'collector_check_for_order', array( $private_id, $public_token, $customer_type ) );
 			
 			header( 'HTTP/1.1 200 OK' );
 		}

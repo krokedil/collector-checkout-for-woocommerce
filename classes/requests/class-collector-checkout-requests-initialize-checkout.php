@@ -28,6 +28,7 @@ class Collector_Checkout_Requests_Initialize_Checkout extends Collector_Checkout
 				$this->store_id = $collector_settings['collector_merchant_id_se_' . $customer_type];
 				break;
 		}
+		$this->customer_type = $customer_type;
 		$this->country_code = $country_code;
 		$this->terms_page = esc_url( get_permalink( wc_get_page_id( 'terms' ) ) );
 	}
@@ -57,7 +58,7 @@ class Collector_Checkout_Requests_Initialize_Checkout extends Collector_Checkout
 			'reference'         => '',
 			'redirectPageUri'   => add_query_arg( array( 'payment_successful' =>'1', 'public-token' =>'{checkout.publictoken}'), wc_get_checkout_url() ),
 			'merchantTermsUri'  => $this->terms_page,
-			'notificationUri'   => add_query_arg( array( 'notification-callback' =>'1', 'private-id' =>'{checkout.id}', 'public-token' =>'{checkout.publictoken}'), get_home_url() . '/wc-api/Collector_Checkout_Gateway/' ),
+			'notificationUri'   => add_query_arg( array( 'notification-callback' =>'1', 'private-id' =>'{checkout.id}', 'public-token' =>'{checkout.publictoken}', 'customer-type' => $this->customer_type ), get_home_url() . '/wc-api/Collector_Checkout_Gateway/' ),
 			'cart'              => $this->cart(),
 			'fees'              => $this->fees(),
 		);
