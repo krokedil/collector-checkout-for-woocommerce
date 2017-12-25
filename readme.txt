@@ -39,8 +39,10 @@ For help setting up and configuring Collector Checkout for WooCommerce please re
 
 
 == CHANGELOG ==
-= 2017.12.22  	- version 0.6.0 =
+= 2017.12.26  	- version 0.6.1 =
+* Fix			- Moved check if class WC_Payment_Gateway exists before including files. Avoid errors during update process. 
 
+= 2017.12.22  	- version 0.6.0 =
 * Tweak			- Backup order creation on notificationUri server callback from Collector (scheduled 30 seconds after purchase) if error occur in frontend.
 * Tweak			- Only create new Collector public token when needed.
 * Tweak			- If payment complete url is triggered and order don't have status PurchaseCompleted in Collectors system - redirect customer to checkout again.
