@@ -46,6 +46,11 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 		}
 
 		public function init() {
+			
+			if ( ! class_exists( 'WC_Payment_Gateway' ) ) {
+				return;
+			}
+			
 			// Include the Classes
 			include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-ajax-calls.php' );
 			include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-post-checkout.php' );
@@ -56,10 +61,8 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 			include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-api-callbacks.php' );
 			
 			// Include and add the Gateway
-			if ( class_exists( 'WC_Payment_Gateway' ) ) {
-				include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-gateway.php' );
-				add_filter( 'woocommerce_payment_gateways', array( $this, 'add_collector_checkout_gateway' ) );
-			}
+			include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-gateway.php' );
+			add_filter( 'woocommerce_payment_gateways', array( $this, 'add_collector_checkout_gateway' ) );
 
 			// Include the Request Classes
 			include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/class-collector-checkout-requests.php' );
