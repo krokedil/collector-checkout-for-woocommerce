@@ -241,21 +241,23 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 			$payment_data 	= $payment_data->request();
 			$payment_data 	= json_decode( $payment_data );
 			$payment_status = $payment_data->data->purchase->result;
+			$payment_method = $payment_data->data->purchase->paymentMethod;
+			$payment_id 	= $payment_data->data->purchase->purchaseIdentifier;
 			
-			update_post_meta( $order_id, '_collector_payment_method', WC()->session->get( 'collector_payment_method' ) );
-			update_post_meta( $order_id, '_collector_payment_id', WC()->session->get( 'collector_payment_id' ) );
+			update_post_meta( $order_id, '_collector_payment_method', $payment_method );
+			update_post_meta( $order_id, '_collector_payment_id', $payment_id );
 			update_post_meta( $order_id, '_collector_customer_type', WC()->session->get( 'collector_customer_type' ) );
 			update_post_meta( $order_id, '_collector_public_token', WC()->session->get( 'collector_public_token' ) );
 			update_post_meta( $order_id, '_collector_private_id', WC()->session->get( 'collector_private_id' ) );
 			
 			if( 'Preliminary' == $payment_status ) {
-				$order->payment_complete( WC()->session->get( 'collector_payment_id' ) );
+				$order->payment_complete( $payment_id );
 			} else {
-				$order->add_order_note( __( 'Order is PENDING APPROVAL by Collector. Payment ID: ', 'woocommerce-gateway-klarna' ) . WC()->session->get( 'collector_payment_id' ) );
+				$order->add_order_note( __( 'Order is PENDING APPROVAL by Collector. Payment ID: ', 'woocommerce-gateway-klarna' ) . $payment_id );
 				$order->update_status( 'on-hold' );
 			}
 			
-			$order->add_order_note( sprintf( __( 'Purchase via %s', 'collector-checkout-for-woocommerce' ), wc_collector_get_payment_method_name( WC()->session->get( 'collector_payment_method' ) ) ) );
+			$order->add_order_note( sprintf( __( 'Purchase via %s', 'collector-checkout-for-woocommerce' ), wc_collector_get_payment_method_name( $payment_method ) ) );
 			
 			// Check if there where any empty fields, if so send mail.
 	        if ( WC()->session->get( 'collector_empty_fields' ) ) {
