@@ -90,7 +90,12 @@ class Collector_Api_Callbacks {
 		$this->process_customer_data( $collector_order );
 
 		// Process order.
-		$this->process_order( $collector_order, $private_id, $public_token, $customer_type );
+		$order = $this->process_order( $collector_order, $private_id, $public_token, $customer_type );
+		
+		// Send order number to Collector
+		if( is_object( $order ) ) {
+			$this->update_order_reference_in_collector( $order, $customer_type, $private_id );
+		}
 	}
 
 	/**
@@ -340,6 +345,16 @@ class Collector_Api_Callbacks {
 			$order->update_status( 'on-hold' );
 		}
 		return $order;
-	}    
+	}
+	
+	/**
+	 * Update the Collector Order with the WooCommerce Order number
+	 *
+	 */
+	public function update_order_reference_in_collector( $order, $customer_type, $private_id ) {
+		$update_reference = new Collector_Checkout_Requests_Update_Reference( $order->get_order_number(), $private_id, $customer_type );
+		$update_reference->request();
+		Collector_Checkout::log('$order->get_order_number() ' . $order->get_order_number());
+	}  
 }
 Collector_Api_Callbacks::get_instance();
