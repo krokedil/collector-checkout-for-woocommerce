@@ -75,49 +75,55 @@ class Collector_Create_Local_Order_Fallback {
     }
     
     public function add_order_coupons( $order ) {
-			foreach ( WC()->cart->get_coupons() as $code => $coupon ) {
-				if ( ! $order->add_coupon( $code, WC()->cart->get_coupon_discount_amount( $code ) ) ) {
-					throw new Exception( __( 'Error: Unable to create order. Please try again.', 'woocommerce' ) );
-				}
+		foreach ( WC()->cart->get_coupons() as $code => $coupon ) {
+			if ( ! $order->add_coupon( $code, WC()->cart->get_coupon_discount_amount( $code ) ) ) {
+				throw new Exception( __( 'Error: Unable to create order. Please try again.', 'woocommerce' ) );
 			}
 		}
+	}
 
-		public function add_order_payment_method( $order ) {
-			$available_gateways = WC()->payment_gateways->payment_gateways();
-			$payment_method     = $available_gateways['collector_checkout'];
-			$order->set_payment_method( $payment_method );
-		}
+	public function add_order_payment_method( $order ) {
+		$available_gateways = WC()->payment_gateways->payment_gateways();
+		$payment_method     = $available_gateways['collector_checkout'];
+		$order->set_payment_method( $payment_method );
+	}
 
-		public function add_customer_data_to_local_order( $order, $customer_type, $private_id ) {
-			$order_id = $order->get_id();
+	public function add_customer_data_to_local_order( $order, $customer_type, $private_id ) {
+		$order_id = $order->get_id();
 
-			$customer_data_request 	= new Collector_Checkout_Requests_Get_Checkout_Information( $private_id, $customer_type );
-			$customer_data = array();
-			$customer_data['customer_data'] = json_decode( $customer_data_request->request() );
-			$formated_customer_data = new Collector_Checkout_Ajax_Calls;
-			$formated_customer_data = $formated_customer_data::verify_customer_data( $customer_data );
+		$customer_data_request 	= new Collector_Checkout_Requests_Get_Checkout_Information( $private_id, $customer_type );
+		$customer_data = array();
+		$customer_data['customer_data'] = json_decode( $customer_data_request->request() );
+		$formated_customer_data = new Collector_Checkout_Ajax_Calls;
+		$formated_customer_data = $formated_customer_data::verify_customer_data( $customer_data );
 
 
-			update_post_meta( $order_id, '_billing_first_name', $formated_customer_data['billingFirstName'] );
-			update_post_meta( $order_id, '_billing_last_name', $formated_customer_data['billingLastName'] );
-			update_post_meta( $order_id, '_billing_address_1', $formated_customer_data['billingAddress'] );
-			update_post_meta( $order_id, '_billing_address_2', $formated_customer_data['billingAddress2'] );				
-			update_post_meta( $order_id, '_billing_city', $formated_customer_data['billingCity'] );
-			update_post_meta( $order_id, '_billing_postcode', $formated_customer_data['billingPostalCode'] );
-			update_post_meta( $order_id, '_billing_country', $formated_customer_data['countryCode'] );
-			update_post_meta( $order_id, '_billing_phone', $formated_customer_data['phone'] );
-			update_post_meta( $order_id, '_billing_email', $formated_customer_data['email'] );
-			update_post_meta( $order_id, '_shipping_first_name', $formated_customer_data['shippingFirstName'] );
-			update_post_meta( $order_id, '_shipping_last_name', $formated_customer_data['shippingLastName'] );
-			update_post_meta( $order_id, '_shipping_address_1', $formated_customer_data['shippingAddress'] );
-			update_post_meta( $order_id, '_shipping_address_2', $formated_customer_data['shippingAddress2'] );				
-			update_post_meta( $order_id, '_shipping_city', $formated_customer_data['shippingCity'] );
-			update_post_meta( $order_id, '_shipping_postcode', $formated_customer_data['shippingPostalCode'] );
-			update_post_meta( $order_id, '_shipping_country', $formated_customer_data['countryCode'] );
-		}
+		update_post_meta( $order_id, '_billing_first_name', $formated_customer_data['billingFirstName'] );
+		update_post_meta( $order_id, '_billing_last_name', $formated_customer_data['billingLastName'] );
+		update_post_meta( $order_id, '_billing_address_1', $formated_customer_data['billingAddress'] );
+		update_post_meta( $order_id, '_billing_address_2', $formated_customer_data['billingAddress2'] );				
+		update_post_meta( $order_id, '_billing_city', $formated_customer_data['billingCity'] );
+		update_post_meta( $order_id, '_billing_postcode', $formated_customer_data['billingPostalCode'] );
+		update_post_meta( $order_id, '_billing_country', $formated_customer_data['countryCode'] );
+		update_post_meta( $order_id, '_billing_phone', $formated_customer_data['phone'] );
+		update_post_meta( $order_id, '_billing_email', $formated_customer_data['email'] );
+		update_post_meta( $order_id, '_shipping_first_name', $formated_customer_data['shippingFirstName'] );
+		update_post_meta( $order_id, '_shipping_last_name', $formated_customer_data['shippingLastName'] );
+		update_post_meta( $order_id, '_shipping_address_1', $formated_customer_data['shippingAddress'] );
+		update_post_meta( $order_id, '_shipping_address_2', $formated_customer_data['shippingAddress2'] );				
+		update_post_meta( $order_id, '_shipping_city', $formated_customer_data['shippingCity'] );
+		update_post_meta( $order_id, '_shipping_postcode', $formated_customer_data['shippingPostalCode'] );
+		update_post_meta( $order_id, '_shipping_country', $formated_customer_data['countryCode'] );
+	}
 
-		public function calculate_order_totals( $order ) {
-			$order->calculate_totals();
-			$order->save();
-		}
+	public function calculate_order_totals( $order ) {
+		$order->calculate_totals();
+		$order->save();
+	}
+	
+	// Update the Collector Order with the Order ID
+	public function update_order_reference_in_collector( $order, $customer_type, $private_id ) {
+		$update_reference = new Collector_Checkout_Requests_Update_Reference( $order->get_order_number(), $private_id, $customer_type );
+		$update_reference->request();
+	}
 }

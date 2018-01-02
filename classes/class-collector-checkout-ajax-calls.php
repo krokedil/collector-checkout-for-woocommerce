@@ -429,6 +429,9 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 
 		//Calculate order totals
 		$create_order->calculate_order_totals( $order );
+		
+		// Update the Collector Order with the Order ID
+		$create_order->update_order_reference_in_collector( $order, $customer_type, $private_id );
 
 		//Add order note
 		$order->add_order_note( __( 'This order was made as a fallback due to an error in the checkout, please verify the order with Collector.', 'collector-checkout-for-woocommerce' ) );
