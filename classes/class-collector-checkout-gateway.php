@@ -40,6 +40,9 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 
 		// Add org nr after address on company order.
 		add_action( 'woocommerce_admin_order_data_after_billing_address', array( $this, 'add_org_nr_to_order' ) );
+		
+		// Change the title when processing the WooCommerce order in checkout
+		add_filter( 'the_title', array( $this, 'confirm_page_title' ) );
 
 		// Notification listener.
 		add_action( 'woocommerce_api_collector_checkout_gateway', array( $this, 'notification_listener' ) );
@@ -363,4 +366,18 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 		    }
 	    }
     }
+    
+    /**
+	 * Filter Checkout page title in confirmation page.
+	 *
+	 * @param $title
+	 *
+	 * @return string
+	 */
+	public function confirm_page_title( $title ) {
+		if ( ! is_admin() && is_main_query() && in_the_loop() && is_page() && is_checkout() && isset( $_GET['payment_successful'] ) && 1 == $_GET['payment_successful'] ) {
+			$title = __( 'Please wait while we process your order.', 'collector-checkout-for-woocommerce' );
+		}
+		return $title;
+	}
 }
