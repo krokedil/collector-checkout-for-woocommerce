@@ -45,7 +45,7 @@ class Collector_Checkout_Requests_Fees {
 						WC()->session->set( 'collector_chosen_shipping', $method->id );
 						if ( $method->cost > 0 ) {
 							$shipping_item = array(
-								'id' => 'shipping|' . $method->id,
+								'id' => 'shipping|' . substr( $method->id, 0, 50 ),
 								'description' => $method->label,
 								'unitPrice' => round( $method->cost + array_sum( $method->taxes ), 2 ),
 								'vat' => round( array_sum( $method->taxes ) / $method->cost, 2 ) * 100,
