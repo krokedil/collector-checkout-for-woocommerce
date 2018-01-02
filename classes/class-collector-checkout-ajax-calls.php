@@ -404,7 +404,8 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 		$create_order = new Collector_Create_Local_Order_Fallback;
 
 		//Create the order.
-		$order = $create_order->create_order();
+		$order 		= $create_order->create_order();
+		$order_id 	= $order->get_id();
 
 		//Add items to order.
 		$create_order->add_items_to_local_order( $order );
@@ -426,6 +427,17 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 		
 		//Add payment method
 		$create_order->add_order_payment_method( $order );
+		
+		// Make sure to run Sequential Order numbers if plugin exsists
+		// @Todo - Se i we can run action woocommerce_checkout_update_order_meta in this process 
+		// so Sequential order numbers and other plugins can do their stuff themselves
+		if ( class_exists( 'WC_Seq_Order_Number_Pro' ) ) {
+			$sequential = new WC_Seq_Order_Number_Pro;
+			$sequential->set_sequential_order_number( $order_id );
+		} elseif ( class_exists( 'WC_Seq_Order_Number' ) ) {
+			$sequential = new WC_Seq_Order_Number;
+			$sequential->set_sequential_order_number( $order_id, get_post( $order_id ) );
+		}
 
 		//Calculate order totals
 		$create_order->calculate_order_totals( $order );
