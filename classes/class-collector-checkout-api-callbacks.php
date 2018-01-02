@@ -243,7 +243,7 @@ class Collector_Api_Callbacks {
 		$available_gateways = WC()->payment_gateways->payment_gateways();
         $payment_method = $available_gateways[ 'collector_checkout' ];
 		$order->set_payment_method( $payment_method );
-		$order->add_order_note( __( 'Order created via Collecteor Checkout API callback', 'collector-checkout-for-woocommerce' ) );
+		$order->add_order_note( __( 'Order created via Collector Checkout API callback', 'collector-checkout-for-woocommerce' ) );
 
 		foreach ( $collector_order->data->order->items as $cart_item ) {
 			if ( strpos($cart_item->id, 'shipping|') !== false ) {
@@ -270,7 +270,7 @@ class Collector_Api_Callbacks {
 				
 				$product 				= wc_get_product( $id );
 				
-				if( $product ) {
+				if ( is_object( $product ) ) {
 					$tax_display_mode 	= get_option('woocommerce_tax_display_shop');
 					$price 				= wc_get_price_excluding_tax( $product );
 					
