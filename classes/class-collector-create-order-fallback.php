@@ -114,6 +114,8 @@ class Collector_Create_Local_Order_Fallback {
 		update_post_meta( $order_id, '_shipping_city', $formated_customer_data['shippingCity'] );
 		update_post_meta( $order_id, '_shipping_postcode', $formated_customer_data['shippingPostalCode'] );
 		update_post_meta( $order_id, '_shipping_country', $formated_customer_data['countryCode'] );
+		
+		$order->set_customer_id( apply_filters( 'woocommerce_checkout_customer_id', get_current_user_id() ) );
 	}
 
 	public function calculate_order_totals( $order ) {
