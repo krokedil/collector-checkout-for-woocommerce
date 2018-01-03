@@ -90,7 +90,12 @@ class Collector_Api_Callbacks {
 		$this->process_customer_data( $collector_order );
 
 		// Process order.
-		$this->process_order( $collector_order, $private_id, $public_token, $customer_type );
+		$order = $this->process_order( $collector_order, $private_id, $public_token, $customer_type );
+		
+		// Send order number to Collector
+		if( is_object( $order ) ) {
+			$this->update_order_reference_in_collector( $order, $customer_type, $private_id );
+		}
 	}
 
 	/**
@@ -243,7 +248,7 @@ class Collector_Api_Callbacks {
 		$available_gateways = WC()->payment_gateways->payment_gateways();
         $payment_method = $available_gateways[ 'collector_checkout' ];
 		$order->set_payment_method( $payment_method );
-		$order->add_order_note( __( 'Order created via Collecteor Checkout API callback', 'collector-checkout-for-woocommerce' ) );
+		$order->add_order_note( __( 'Order created via Collector Checkout API callback', 'collector-checkout-for-woocommerce' ) );
 
 		foreach ( $collector_order->data->order->items as $cart_item ) {
 			if ( strpos($cart_item->id, 'shipping|') !== false ) {
@@ -270,7 +275,7 @@ class Collector_Api_Callbacks {
 				
 				$product 				= wc_get_product( $id );
 				
-				if( $product ) {
+				if ( is_object( $product ) ) {
 					$tax_display_mode 	= get_option('woocommerce_tax_display_shop');
 					$price 				= wc_get_price_excluding_tax( $product );
 					
@@ -340,6 +345,16 @@ class Collector_Api_Callbacks {
 			$order->update_status( 'on-hold' );
 		}
 		return $order;
-	}    
+	}
+	
+	/**
+	 * Update the Collector Order with the WooCommerce Order number
+	 *
+	 */
+	public function update_order_reference_in_collector( $order, $customer_type, $private_id ) {
+		$update_reference = new Collector_Checkout_Requests_Update_Reference( $order->get_order_number(), $private_id, $customer_type );
+		$update_reference->request();
+		Collector_Checkout::log('$order->get_order_number() ' . $order->get_order_number());
+	}  
 }
 Collector_Api_Callbacks::get_instance();

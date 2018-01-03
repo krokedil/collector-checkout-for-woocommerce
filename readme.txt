@@ -39,6 +39,14 @@ For help setting up and configuring Collector Checkout for WooCommerce please re
 
 
 == CHANGELOG ==
+= 2018.01.03  	- version 0.6.2 =
+* Fix			- Update order reference (WC order number) in Collector for orders created on fallback order creation.
+* Tweak			- Support for Sequential order numbers & Sequential order numbers Pro in fallback order creation.
+* Tweak			- Change page title (from Checkout to Please wait while we process your order) when processing WC order in checkout.
+* Tweak			- Use returned purchase data for payment_id and payment_method instead of stored session data during WC order process.
+* Fix			- Add user id to WC order on fallback order creation.
+* Fix			- Limit fee id to max 50 characters when sending cart data to Collector.
+
 = 2017.12.26  	- version 0.6.1 =
 * Fix			- Moved check if class WC_Payment_Gateway exists before including files. Avoid errors during update process. 
 

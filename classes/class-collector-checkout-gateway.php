@@ -40,6 +40,9 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 
 		// Add org nr after address on company order.
 		add_action( 'woocommerce_admin_order_data_after_billing_address', array( $this, 'add_org_nr_to_order' ) );
+		
+		// Change the title when processing the WooCommerce order in checkout
+		add_filter( 'the_title', array( $this, 'confirm_page_title' ) );
 
 		// Notification listener.
 		add_action( 'woocommerce_api_collector_checkout_gateway', array( $this, 'notification_listener' ) );
@@ -241,21 +244,23 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 			$payment_data 	= $payment_data->request();
 			$payment_data 	= json_decode( $payment_data );
 			$payment_status = $payment_data->data->purchase->result;
+			$payment_method = $payment_data->data->purchase->paymentMethod;
+			$payment_id 	= $payment_data->data->purchase->purchaseIdentifier;
 			
-			update_post_meta( $order_id, '_collector_payment_method', WC()->session->get( 'collector_payment_method' ) );
-			update_post_meta( $order_id, '_collector_payment_id', WC()->session->get( 'collector_payment_id' ) );
+			update_post_meta( $order_id, '_collector_payment_method', $payment_method );
+			update_post_meta( $order_id, '_collector_payment_id', $payment_id );
 			update_post_meta( $order_id, '_collector_customer_type', WC()->session->get( 'collector_customer_type' ) );
 			update_post_meta( $order_id, '_collector_public_token', WC()->session->get( 'collector_public_token' ) );
 			update_post_meta( $order_id, '_collector_private_id', WC()->session->get( 'collector_private_id' ) );
 			
 			if( 'Preliminary' == $payment_status ) {
-				$order->payment_complete( WC()->session->get( 'collector_payment_id' ) );
+				$order->payment_complete( $payment_id );
 			} else {
-				$order->add_order_note( __( 'Order is PENDING APPROVAL by Collector. Payment ID: ', 'woocommerce-gateway-klarna' ) . WC()->session->get( 'collector_payment_id' ) );
+				$order->add_order_note( __( 'Order is PENDING APPROVAL by Collector. Payment ID: ', 'woocommerce-gateway-klarna' ) . $payment_id );
 				$order->update_status( 'on-hold' );
 			}
 			
-			$order->add_order_note( sprintf( __( 'Purchase via %s', 'collector-checkout-for-woocommerce' ), wc_collector_get_payment_method_name( WC()->session->get( 'collector_payment_method' ) ) ) );
+			$order->add_order_note( sprintf( __( 'Purchase via %s', 'collector-checkout-for-woocommerce' ), wc_collector_get_payment_method_name( $payment_method ) ) );
 			
 			// Check if there where any empty fields, if so send mail.
 	        if ( WC()->session->get( 'collector_empty_fields' ) ) {
@@ -361,4 +366,18 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 		    }
 	    }
     }
+    
+    /**
+	 * Filter Checkout page title in confirmation page.
+	 *
+	 * @param $title
+	 *
+	 * @return string
+	 */
+	public function confirm_page_title( $title ) {
+		if ( ! is_admin() && is_main_query() && in_the_loop() && is_page() && is_checkout() && isset( $_GET['payment_successful'] ) && 1 == $_GET['payment_successful'] ) {
+			$title = __( 'Please wait while we process your order.', 'collector-checkout-for-woocommerce' );
+		}
+		return $title;
+	}
 }
