@@ -27,6 +27,7 @@ class Collector_Checkout_Requests_Get_Checkout_Information extends Collector_Che
 	private function get_request_args() {
 		$request_args = array(
 			'headers' => $this->request_header( '', $this->path ),
+			'timeout' => 10,
 			'method'  => 'GET',
 		);
 		$this->log( 'Collector get checkout information request args (to ' . $this->path . '): ' . var_export( $request_args, true ) );
