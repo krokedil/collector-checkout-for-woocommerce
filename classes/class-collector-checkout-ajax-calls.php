@@ -168,8 +168,8 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 			'customer_type'	=> $customer_type,
 		);
 		
-		WC()->session->__unset( 'collector_public_token' );
-		WC()->session->__unset( 'collector_private_id' );
+		//WC()->session->__unset( 'collector_public_token' );
+		//WC()->session->__unset( 'collector_private_id' );
 		wp_send_json_success( $return );
 		wp_die();
 	}
