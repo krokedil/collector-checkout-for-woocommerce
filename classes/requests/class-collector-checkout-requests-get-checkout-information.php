@@ -29,7 +29,7 @@ class Collector_Checkout_Requests_Get_Checkout_Information extends Collector_Che
 			'headers' => $this->request_header( '', $this->path ),
 			'method'  => 'GET',
 		);
-		$this->log( 'Collector checkout information request args: ' . var_export( $request_args, true ) );
+		$this->log( 'Collector get checkout information request args (to ' . $this->path . '): ' . var_export( $request_args, true ) );
 		return $request_args;
 	}
 
