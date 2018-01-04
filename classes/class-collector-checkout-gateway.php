@@ -280,7 +280,7 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 	            update_post_meta( $order_id, '_collector_org_nr', $org_nr );
 	            WC()->session->__unset( 'collector_org_nr' );
             }
-            
+            // Unset Collector token and id
 			WC()->session->__unset( 'collector_public_token' );
 			WC()->session->__unset( 'collector_private_id' );
 		} else {
