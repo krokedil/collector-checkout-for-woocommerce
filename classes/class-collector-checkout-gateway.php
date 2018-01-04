@@ -295,7 +295,7 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 	 * @return string
 	 */
 	public function collector_thankyou_order_received_text( $text, $order ) {
-		if( 'collector_checkout' == $order->get_payment_method() ) {
+		if( is_object( $order ) && 'collector_checkout' == $order->get_payment_method() ) {
 			return '<div class="collector-checkout-thankyou"></div>';
 			
 		}

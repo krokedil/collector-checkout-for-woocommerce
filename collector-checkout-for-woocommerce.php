@@ -107,7 +107,11 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 				}
 				if( is_wc_endpoint_url( 'order-received' ) ) {
 					$is_thank_you_page = true;
-					$order_id = wc_get_order_id_by_order_key(sanitize_text_field($_GET['key']));
+					if( isset( $_GET['key'] ) ) {
+						$order_id = wc_get_order_id_by_order_key(sanitize_text_field($_GET['key']));
+					} else {
+						$order_id = '';
+					}
 				} else {
 					$is_thank_you_page = false;
 					$order_id = '';
@@ -184,14 +188,16 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 			
 			// Hide the Order overview data on thankyou page if it's a Collector Checkout purchase
 			if( is_wc_endpoint_url( 'order-received' ) ) {
-				$order_id = wc_get_order_id_by_order_key( wc_clean( $_GET['key'] ) );
-				$order = wc_get_order( $order_id );
-				if( 'collector_checkout' == $order->get_payment_method() ) {
-					$custom_css = "
-	                .woocommerce-order-overview {
-			                        display: none;
-							}";
-					wp_add_inline_style( 'collector_checkout', $custom_css );
+				if( isset( $_GET['key'] ) ) {
+					$order_id = wc_get_order_id_by_order_key( wc_clean( $_GET['key'] ) );
+					$order = wc_get_order( $order_id );
+					if( 'collector_checkout' == $order->get_payment_method() ) {
+						$custom_css = "
+		                .woocommerce-order-overview {
+				                        display: none;
+								}";
+						wp_add_inline_style( 'collector_checkout', $custom_css );
+					}
 				}
 			}
 			
