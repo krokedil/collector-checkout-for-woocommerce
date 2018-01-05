@@ -39,6 +39,15 @@ For help setting up and configuring Collector Checkout for WooCommerce please re
 
 
 == CHANGELOG ==
+= 2018.01.05  	- version 0.6.3 =
+* Fix 			- Fallback order creation improvements. Send customer to order received page when redirectPageUri is hit, even if we can’t confirm the order in Collectors system. If then, display a simplified thank you page.
+* Fix 			- Logging improvement
+* Fix 			- Remove errors when accessing the order received page without order being created.
+* Fix 			- Unset Collector sessions correctly on order received page.
+* Tweak 		- Increased timeout to 10 seconds when communicating with Collector.
+* Tweak 		- Improved logging in anti fraud callback.
+* Tweak 		- CSS update to set WC customer details section width the same as Collector iframe in order received page.
+
 = 2018.01.03  	- version 0.6.2 =
 * Fix			- Update order reference (WC order number) in Collector for orders created on fallback order creation.
 * Tweak			- Support for Sequential order numbers & Sequential order numbers Pro in fallback order creation.
