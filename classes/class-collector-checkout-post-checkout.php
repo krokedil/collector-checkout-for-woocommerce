@@ -54,7 +54,7 @@ class Collector_Checkout_Post_Checkout {
 			header( "HTTP/1.1 200 Ok" );
 
 			if( isset( $_GET['InvoiceNo'] ) && isset( $_GET['OrderNo'] ) && isset( $_GET['InvoiceStatus'] ) ) {
-				
+				Collector_Checkout::log( 'Collector Invoice Status Change callback hit' );
 				$collector_payment_id = wc_clean( $_GET['InvoiceNo'] );
 				$query_args = array(
 					'post_type' => wc_get_order_types(),
@@ -67,14 +67,16 @@ class Collector_Checkout_Post_Checkout {
 				$order = wc_get_order( $order_id );
 
 				if( is_object( $order ) ) {
+					// Add order note about the callback
 					$order->add_order_note( sprintf( __( 'Invoice status callback from Collector. New Invoice status: %s', 'collector-checkout-for-woocommerce' ), wc_clean( $_GET['InvoiceStatus'] ) ) );
+					// Set orderstatus
+					if( '1' == $_GET['InvoiceStatus'] ) {
+						$order->payment_complete( $collector_payment_id );
+					} elseif ( '5' == $_GET['InvoiceStatus'] ) {
+						$order->update_status( 'failed' );
+					}
 				} else {
-					Collector_Checkout_Requests::log();
-				}
-				if( '1' == $_GET['InvoiceStatus'] ) {
-					$order->payment_complete( $collector_payment_id );
-				} elseif ( '5' == $_GET['InvoiceStatus'] ) {
-					$order->update_status( 'failed' );
+					Collector_Checkout::log( 'Invoice status callback from Collector but we could not find the corresponding order in WC. Collector InvoiceNo: ' . wc_clean( $_GET['InvoiceNo'] ) . '. InvoiceStatus: ' . wc_clean( $_GET['InvoiceStatus'] ) . '. OrderNo: ' . wc_clean( $_GET['OrderNo'] ) );
 				}
 			}
 			die();	

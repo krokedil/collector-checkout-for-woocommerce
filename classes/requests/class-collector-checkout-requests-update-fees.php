@@ -26,6 +26,7 @@ class Collector_Checkout_Requests_Update_Fees extends Collector_Checkout_Request
 	private function get_request_args() {
 		$request_args = array(
 			'headers' => $this->request_header( $this->request_body(), $this->path ),
+			'timeout' => 10,
 			'body'    => $this->request_body(),
 			'method'  => 'PUT',
 		);

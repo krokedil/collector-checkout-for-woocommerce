@@ -36,6 +36,7 @@ class Collector_Checkout_Requests_Initialize_Checkout extends Collector_Checkout
 	private function get_request_args() {
 		$request_args = array(
 			'headers' => $this->request_header( $this->request_body(), $this->path ),
+			'timeout' => 10,
 			'body'    => $this->request_body(),
 			'method'  => 'POST',
 		);

@@ -72,7 +72,7 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 				WC()->session->set( 'collector_public_token', $decode->data->publicToken );
 				WC()->session->set( 'collector_private_id', $decode->data->privateId );
 				WC()->session->set( 'collector_customer_type', $customer_type );
-
+				
 				wp_send_json_success( $return );
 				wp_die();
 			} else {
@@ -158,18 +158,30 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 	public static function get_checkout_thank_you() {
 		$order_id 			= '';
 		$order_id 			= sanitize_text_field($_POST['order_id']);
-		$public_token 		= get_post_meta( $order_id, '_collector_public_token', true );
+		$purchase_status 	= sanitize_text_field($_POST['purchase_status']);
 		$collector_settings = get_option( 'woocommerce_collector_checkout_settings' );
 		$test_mode 			= $collector_settings['test_mode'];
-		$customer_type		= get_post_meta( $order_id, '_collector_customer_type', true );
+		
+		// If something went wrong in get_customer_data() - display a "thank you page light"
+		if( 'not-completed' == $purchase_status ) {
+			$public_token 		= sanitize_text_field($_POST['public_token']);
+			if( WC()->session->get( 'collector_customer_type' ) ) {
+				$customer_type 	= WC()->session->get( 'collector_customer_type' );
+			} else {
+				$customer_type	= 'b2c';
+			}
+			
+		} else {
+			$public_token 		= get_post_meta( $order_id, '_collector_public_token', true );
+			$customer_type		= get_post_meta( $order_id, '_collector_customer_type', true );	
+		}
+		
 		$return = array(
 			'publicToken' 	=> $public_token,
 			'test_mode'   	=> $test_mode,
 			'customer_type'	=> $customer_type,
 		);
 		
-		WC()->session->__unset( 'collector_public_token' );
-		WC()->session->__unset( 'collector_private_id' );
 		wp_send_json_success( $return );
 		wp_die();
 	}
@@ -183,7 +195,7 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 		$customer_data 	= new Collector_Checkout_Requests_Get_Checkout_Information( $private_id, $customer_type );
 		$customer_data 	= $customer_data->request();
 		$decoded_json 	= json_decode( $customer_data );
-
+		
 		if( 'PurchaseCompleted' == $decoded_json->data->status ) {
 			// Save the payment method and payment id
 			$payment_method = $decoded_json->data->purchase->paymentMethod;
@@ -207,9 +219,9 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 			wp_send_json_success( $return );
 			wp_die();
 		} else {
-			// We didn't get a status PurchaseCompleted from Collector so we redirect the customer back to checkout page and display the iframe again
+			// We didn't get a status PurchaseCompleted from Collector (but the Collector redirectPageUri has been triggered) so we redirect the customer to thank you page
 			$return = array();
-			$url = add_query_arg( array( 'purchase-status' =>'not-completed' ), wc_get_checkout_url() );
+			$url = add_query_arg( array( 'purchase-status' =>'not-completed', 'public-token' => sanitize_text_field($_POST['public_token']) ), wc_get_endpoint_url('order-received', '', get_permalink(wc_get_page_id('checkout'))) );
 			$return['redirect_url'] = $url;
 			Collector_Checkout::log('Payment complete triggered for private id ' . $private_id . ' but status is not PurchaseCompleted in Collectors system. Current status: ' . var_export($decoded_json->data->status, true));
 			wp_send_json_error( $return );

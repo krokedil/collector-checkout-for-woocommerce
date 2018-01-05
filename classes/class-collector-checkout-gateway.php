@@ -280,6 +280,9 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 	            update_post_meta( $order_id, '_collector_org_nr', $org_nr );
 	            WC()->session->__unset( 'collector_org_nr' );
             }
+            // Unset Collector token and id
+			WC()->session->__unset( 'collector_public_token' );
+			WC()->session->__unset( 'collector_private_id' );
 		} else {
 			// @todo - add logging here.
 		}
@@ -295,9 +298,16 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 	 * @return string
 	 */
 	public function collector_thankyou_order_received_text( $text, $order ) {
-		if( 'collector_checkout' == $order->get_payment_method() ) {
+		if( is_object( $order ) && 'collector_checkout' == $order->get_payment_method() ) {
 			return '<div class="collector-checkout-thankyou"></div>';
 			
+		}
+		if( isset( $_GET['purchase-status'] ) && 'not-completed' == $_GET['purchase-status'] ) {
+			// Unset Collector token and id
+			WC()->session->__unset( 'collector_public_token' );
+			WC()->session->__unset( 'collector_private_id' );
+			WC()->cart->empty_cart();
+			return '<div class="collector-checkout-thankyou"></div>';
 		}
 
 		return $text;

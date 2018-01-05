@@ -92,6 +92,9 @@ li.tab-link.current[data-tab="b2b"] {
 .woocommerce-order-received.collector-b2c-b2b .woocommerce-order-details,
 .woocommerce-order-received.collector-b2c .woocommerce-order-details,
 .woocommerce-order-received.collector-b2b .woocommerce-order-details,
+.woocommerce-order-received.collector-b2c-b2b .woocommerce-customer-details,
+.woocommerce-order-received.collector-b2c .woocommerce-customer-details,
+.woocommerce-order-received.collector-b2b .woocommerce-customer-details,
 .woocommerce-order-received.collector-b2c-b2b h1.entry-title,
 .woocommerce-order-received.collector-b2c h1.entry-title,
 .woocommerce-order-received.collector-b2b h1.entry-title {

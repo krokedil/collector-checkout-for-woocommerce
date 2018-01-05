@@ -105,18 +105,35 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 				} else {
 					$locale = 'sv';
 				}
+				if( isset( $_GET['public-token'] ) ) {
+					$public_token = sanitize_text_field($_GET['public-token']);
+				} else {
+					$public_token = '';
+				}
 				if( is_wc_endpoint_url( 'order-received' ) ) {
 					$is_thank_you_page = true;
-					$order_id = wc_get_order_id_by_order_key(sanitize_text_field($_GET['key']));
+					if( isset( $_GET['key'] ) ) {
+						$order_id = wc_get_order_id_by_order_key(sanitize_text_field($_GET['key']));
+					} else {
+						$order_id = '';
+					}
+					if( isset( $_GET['purchase-status'] ) ) {
+						$purchase_status = sanitize_text_field( $_GET['purchase-status'] );
+					} else {
+						$purchase_status = '';
+					}
 				} else {
 					$is_thank_you_page = false;
 					$order_id = '';
+					$purchase_status = '';
 				}
 				wp_localize_script( 'checkout', 'wc_collector_checkout', array(
 					'ajaxurl' 						=> admin_url( 'admin-ajax.php' ),
 					'locale' 						=> $locale,
 					'is_thank_you_page'             => $is_thank_you_page,
 					'order_id'             			=> $order_id,
+					'public_token'             		=> $public_token,
+					'purchase_status'             	=> $purchase_status,
 					'default_customer_type' 		=> wc_collector_get_default_customer_type(),
 					'collector_nonce' 				=> wp_create_nonce( 'collector_nonce' ),
 					'refresh_checkout_fragment_url'	=> WC_AJAX::get_endpoint( 'update_fragment' ),
@@ -184,14 +201,16 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 			
 			// Hide the Order overview data on thankyou page if it's a Collector Checkout purchase
 			if( is_wc_endpoint_url( 'order-received' ) ) {
-				$order_id = wc_get_order_id_by_order_key( wc_clean( $_GET['key'] ) );
-				$order = wc_get_order( $order_id );
-				if( 'collector_checkout' == $order->get_payment_method() ) {
-					$custom_css = "
-	                .woocommerce-order-overview {
-			                        display: none;
-							}";
-					wp_add_inline_style( 'collector_checkout', $custom_css );
+				if( isset( $_GET['key'] ) ) {
+					$order_id = wc_get_order_id_by_order_key( wc_clean( $_GET['key'] ) );
+					$order = wc_get_order( $order_id );
+					if( 'collector_checkout' == $order->get_payment_method() ) {
+						$custom_css = "
+		                .woocommerce-order-overview {
+				                        display: none;
+								}";
+						wp_add_inline_style( 'collector_checkout', $custom_css );
+					}
 				}
 			}
 			
