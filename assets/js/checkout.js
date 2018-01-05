@@ -225,7 +225,9 @@
                 dataType: 'json',
                 data: {
                     action  : 'get_checkout_thank_you',
-                    order_id : wc_collector_checkout.order_id
+                    order_id : wc_collector_checkout.order_id,
+                    purchase_status : wc_collector_checkout.purchase_status,
+                    public_token: wc_collector_checkout.public_token
                 },
                 success: function(data) {
                     var publicToken = data.data.publicToken;
@@ -267,7 +269,8 @@
 
     function collector_post_form() {
         var data = {
-            'action': 'get_customer_data'
+            'action': 'get_customer_data',
+            'public_token': wc_collector_checkout.public_token
         };
         jQuery.post(wc_collector_checkout.get_customer_data_url, data, function (data) {
             if (true === data.success) {

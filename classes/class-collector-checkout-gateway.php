@@ -302,6 +302,13 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 			return '<div class="collector-checkout-thankyou"></div>';
 			
 		}
+		if( isset( $_GET['purchase-status'] ) && 'not-completed' == $_GET['purchase-status'] ) {
+			// Unset Collector token and id
+			WC()->session->__unset( 'collector_public_token' );
+			WC()->session->__unset( 'collector_private_id' );
+			WC()->cart->empty_cart();
+			return '<div class="collector-checkout-thankyou"></div>';
+		}
 
 		return $text;
 	}

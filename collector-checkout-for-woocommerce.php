@@ -105,6 +105,11 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 				} else {
 					$locale = 'sv';
 				}
+				if( isset( $_GET['public-token'] ) ) {
+					$public_token = sanitize_text_field($_GET['public-token']);
+				} else {
+					$public_token = '';
+				}
 				if( is_wc_endpoint_url( 'order-received' ) ) {
 					$is_thank_you_page = true;
 					if( isset( $_GET['key'] ) ) {
@@ -112,15 +117,23 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 					} else {
 						$order_id = '';
 					}
+					if( isset( $_GET['purchase-status'] ) ) {
+						$purchase_status = sanitize_text_field( $_GET['purchase-status'] );
+					} else {
+						$purchase_status = '';
+					}
 				} else {
 					$is_thank_you_page = false;
 					$order_id = '';
+					$purchase_status = '';
 				}
 				wp_localize_script( 'checkout', 'wc_collector_checkout', array(
 					'ajaxurl' 						=> admin_url( 'admin-ajax.php' ),
 					'locale' 						=> $locale,
 					'is_thank_you_page'             => $is_thank_you_page,
 					'order_id'             			=> $order_id,
+					'public_token'             		=> $public_token,
+					'purchase_status'             	=> $purchase_status,
 					'default_customer_type' 		=> wc_collector_get_default_customer_type(),
 					'collector_nonce' 				=> wp_create_nonce( 'collector_nonce' ),
 					'refresh_checkout_fragment_url'	=> WC_AJAX::get_endpoint( 'update_fragment' ),
