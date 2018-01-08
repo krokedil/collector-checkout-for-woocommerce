@@ -238,7 +238,10 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 		$order = wc_get_order( $order_id );
 		
 		if( WC()->session->get( 'collector_private_id' ) ) {
+			
 			$private_id 	= WC()->session->get( 'collector_private_id' );
+			Collector_Checkout::log('collector_thankyou page hit for private_id ' . $private_id );
+			
 			$customer_type 	= WC()->session->get( 'collector_customer_type' );
 			$payment_data 	= new Collector_Checkout_Requests_Get_Checkout_Information( $private_id, $customer_type );
 			$payment_data 	= $payment_data->request();
@@ -285,6 +288,7 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 			WC()->session->__unset( 'collector_private_id' );
 		} else {
 			// @todo - add logging here.
+			Collector_Checkout::log('collector_thankyou page hit but collector_private_id session not existing.');
 		}
 		
 	}

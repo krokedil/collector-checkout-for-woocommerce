@@ -30,7 +30,7 @@ class Collector_Checkout_Requests_Get_Checkout_Information extends Collector_Che
 			'timeout' => 10,
 			'method'  => 'GET',
 		);
-		$this->log( 'Collector get checkout information request args (to ' . $this->path . '): ' . var_export( $request_args, true ) );
+		$this->log( 'Collector get checkout information request args (to ' . $this->path . '): ' . json_encode( $request_args ) );
 		return $request_args;
 	}
 
@@ -38,7 +38,7 @@ class Collector_Checkout_Requests_Get_Checkout_Information extends Collector_Che
 		$request_url = $this->base_url . $this->path;
 		$request = wp_remote_request( $request_url, $this->get_request_args() );
 		$request = wp_remote_retrieve_body( $request );
-		$this->log( 'Collector get checkout information request response: ' . var_export( $request, true ) );
+		$this->log( 'Collector get checkout information request response: ' . json_encode( $request ) );
 		return $request;
 	}
 }

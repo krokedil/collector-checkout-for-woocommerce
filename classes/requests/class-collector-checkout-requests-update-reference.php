@@ -33,7 +33,7 @@ class Collector_Checkout_Requests_Update_Reference extends Collector_Checkout_Re
 			'body'    => $this->request_body(),
 			'method'  => 'PUT',
 		);
-		$this->log( 'Collector update reference request args (to ' . $this->path . '): ' . var_export( $request_args, true ) );
+		$this->log( 'Collector update reference request args (to ' . $this->path . '): ' . json_encode( $request_args ) );
 		return $request_args;
 	}
 

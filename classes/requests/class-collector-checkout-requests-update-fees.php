@@ -30,7 +30,7 @@ class Collector_Checkout_Requests_Update_Fees extends Collector_Checkout_Request
 			'body'    => $this->request_body(),
 			'method'  => 'PUT',
 		);
-		$this->log( 'Collector update fees request args: ' . var_export( $request_args, true ) );
+		$this->log( 'Collector update fees request args (to ' . $this->path . '): ' . json_encode( $request_args ) );
 		return $request_args;
 	}
 
@@ -46,7 +46,6 @@ class Collector_Checkout_Requests_Update_Fees extends Collector_Checkout_Request
 			'shipping'                  => $fees['shipping'],
 			'directinvoicenotification' => $fees['directinvoicenotification'],
 		);
-		$this->log( 'Collector update fees request body: ' . var_export( $formatted_request_body, true ) );
 		return wp_json_encode( $formatted_request_body );
 	}
 }

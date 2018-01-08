@@ -30,7 +30,7 @@ class Collector_Checkout_Requests_Update_Cart extends Collector_Checkout_Request
 			'body'    => $this->request_body(),
 			'method'  => 'PUT',
 		);
-		$this->log( 'Collector update cart request args: ' . var_export( $request_args, true ) );
+		$this->log( 'Collector update cart request args (to ' . $this->path . '): ' . json_encode( $request_args ) );
 		return $request_args;
 	}
 
@@ -42,7 +42,6 @@ class Collector_Checkout_Requests_Update_Cart extends Collector_Checkout_Request
 
 	protected function request_body() {
 		$formatted_request_body = $this->cart();
-		$this->log( 'Collector update cart request body: ' . var_export( $formatted_request_body, true ) );
 		return wp_json_encode( $formatted_request_body );
 	}
 }
