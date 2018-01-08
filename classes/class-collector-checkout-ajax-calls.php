@@ -215,7 +215,7 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 				$return['order_note'] = '';
 			}
 			$return['shipping'] = WC()->session->get( 'collector_chosen_shipping' );
-
+			Collector_Checkout::log('Payment complete triggered for private id ' . $private_id . '. Starting WooCommerce checkout form processing...');
 			wp_send_json_success( $return );
 			wp_die();
 		} else {

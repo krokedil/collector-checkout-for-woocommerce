@@ -33,7 +33,7 @@ class Collector_Checkout_Requests_Update_Reference extends Collector_Checkout_Re
 			'body'    => $this->request_body(),
 			'method'  => 'PUT',
 		);
-		$this->log( 'Collector update reference request args: ' . var_export( $request_args, true ) );
+		$this->log( 'Collector update reference request args (to ' . $this->path . '): ' . var_export( $request_args, true ) );
 		return $request_args;
 	}
 
@@ -47,7 +47,6 @@ class Collector_Checkout_Requests_Update_Reference extends Collector_Checkout_Re
 		$formatted_request_body = array(
 			'Reference'         => $this->order_id,
 		);
-		$this->log( 'Collector update reference request body: ' . var_export( $formatted_request_body, true ) );
 		return wp_json_encode( $formatted_request_body );
 	}
 }

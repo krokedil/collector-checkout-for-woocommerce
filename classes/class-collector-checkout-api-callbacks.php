@@ -66,9 +66,11 @@ class Collector_Api_Callbacks {
 				Collector_Checkout::log('API-callback hit. Private id ' . $private_id . '. already exist in order ID ' . $order_id_match);
 	        } else {
 				// No order, why?
+				Collector_Checkout::log('API-callback hit. Private id ' . $private_id . '. already exist in order ID ' . $order_id_match . '. But we could not instanciate an order objec' );
 	        }
 	    } else {
 			// No order found - create a new
+			Collector_Checkout::log('API-callback hit. We could NOT find Private id ' . $private_id . '. Starting backup order creation...' );
 			$this->backup_order_creation( $private_id, $public_token, $customer_type );
 		}
 	    
