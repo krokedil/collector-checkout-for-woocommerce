@@ -311,6 +311,7 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 			WC()->session->__unset( 'collector_public_token' );
 			WC()->session->__unset( 'collector_private_id' );
 			WC()->cart->empty_cart();
+			Collector_Checkout::log('Rendering simplified thankyou page (only display Collector thank you iframe).' );
 			return '<div class="collector-checkout-thankyou"></div>';
 		}
 

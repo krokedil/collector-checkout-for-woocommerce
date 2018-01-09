@@ -66,7 +66,7 @@ class Collector_Api_Callbacks {
 				Collector_Checkout::log('API-callback hit. Private id ' . $private_id . '. already exist in order ID ' . $order_id_match);
 	        } else {
 				// No order, why?
-				Collector_Checkout::log('API-callback hit. Private id ' . $private_id . '. already exist in order ID ' . $order_id_match . '. But we could not instanciate an order objec' );
+				Collector_Checkout::log('API-callback hit. Private id ' . $private_id . '. already exist in order ID ' . $order_id_match . '. But we could not instantiate an order object' );
 	        }
 	    } else {
 			// No order found - create a new
@@ -217,8 +217,15 @@ class Collector_Api_Callbacks {
 		
 		
 		$order = wc_create_order( array('status'=>'pending'));
+		
+		if( is_wp_error( $order ) ) {
+			Collector_Checkout::log('Backup order creation. Error - could not create order. ' . var_export( $order->get_error_message(), true ) );
+		} else {
+			Collector_Checkout::log('Backup order creation - order ID - ' . $order->get_id() . ' - created.' );
+		}
+		
 		$order_id = $order->get_id();
-
+		
 		$order->set_billing_first_name( sanitize_text_field( $billing_first_name ) );
 		$order->set_billing_last_name( sanitize_text_field( $billing_last_name ) );
 		$order->set_billing_country( sanitize_text_field( $billing_country ) );
@@ -356,7 +363,7 @@ class Collector_Api_Callbacks {
 	public function update_order_reference_in_collector( $order, $customer_type, $private_id ) {
 		$update_reference = new Collector_Checkout_Requests_Update_Reference( $order->get_order_number(), $private_id, $customer_type );
 		$update_reference->request();
-		Collector_Checkout::log('$order->get_order_number() ' . $order->get_order_number());
+		Collector_Checkout::log('Update Collector order reference in backup order creation - ' . $order->get_order_number());
 	}  
 }
 Collector_Api_Callbacks::get_instance();
