@@ -89,9 +89,15 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 			<div class="collector-settings-sidebar">
 				<h4>Kom igång</h4><p><ul>
 					<li><a href="http://docs.krokedil.com/documentation/collector-checkout-for-woocommerce/" target="_blank">Dokumentation</a></li>
-					<li><a href="#">Pluginsida</a></li>
+					<li><a href="https://wordpress.org/plugins/collector-checkout-for-woocommerce" target="_blank">Pluginsida</a></li>
 				</ul></p>
 				<h4>Support</h4><p>Har du frågor kring ditt konto eller kring specifika köp är du välkommen att <a href="https://www.collector.se/kundservice/" target="_blank">kontakta Collector</a>. Har du tekniska frågor eller funderingar kring konfigurationen av modulen så kan du <a href="https://krokedil.se/support/" target="_blank">kontakta Krokedil</a>.</p>
+				<h4>Logotypes</h4><p>Du hittar våra logotypes genom att klicka på länken <a href="https://checkout-documentation.collector.se/#branding-resources" target="_blank">här</a>.</p>
+				<h4>Köpvillkorstexter</h4><p>Text som avser Collector Banks köpvillkor hittas nedan.
+					<ul>
+						<li><a href="https://merchant.collectorbank.se/integration/b2c/agreement-texts/collector-checkout/" target="_blank">B2C</a></li>
+						<li><a href="https://merchant.collectorbank.se/integration/b2b/agreement-texts/collector-checkout/" target="_blank">B2B</a></li>
+					</ul></p>
 			</div>
 		</div>
 		<?php
