@@ -257,7 +257,7 @@ class Collector_Api_Callbacks {
 		$available_gateways = WC()->payment_gateways->payment_gateways();
         $payment_method = $available_gateways[ 'collector_checkout' ];
 		$order->set_payment_method( $payment_method );
-		$order->add_order_note( __( 'Order created via Collector Checkout API callback', 'collector-checkout-for-woocommerce' ) );
+		$order->add_order_note( __( 'Order created via Collector Checkout API callback. Please verify the order in Collectors system.', 'collector-checkout-for-woocommerce' ) );
 
 		foreach ( $collector_order->data->order->items as $cart_item ) {
 			if ( strpos($cart_item->id, 'shipping|') !== false ) {
