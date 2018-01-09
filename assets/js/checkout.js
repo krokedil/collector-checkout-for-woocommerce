@@ -69,7 +69,8 @@
     // Customer updated - event triggered when customer changes address in Collector iframe
     document.addEventListener("collectorCheckoutCustomerUpdated", function(){
         var url = window.location.href;
-        if (url.indexOf('order-received') > -1) {
+        // Check that this only happens in checkout page. Don't do it on thank you page
+        if ( wc_collector_checkout.is_thank_you_page === false ) {
             window.collector.checkout.api.suspend();
             $.ajax(
                 wc_collector_checkout.customer_adress_updated_url,
@@ -213,6 +214,7 @@
     // If customer gets to thank you page
     $( document ).ready( function() {
         if (wc_collector_checkout.is_thank_you_page === '1') {
+	        console.log('Thankyou page');
             thankyou_page();
         }
     });
