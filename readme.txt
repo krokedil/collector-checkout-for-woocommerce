@@ -39,6 +39,11 @@ For help setting up and configuring Collector Checkout for WooCommerce please re
 
 
 == CHANGELOG ==
+= 2018.01.09  	- version 0.6.4 =
+* Tweak			- Logging improvements.
+* Tweak			- Settings page content updates (links to Collector terms and logotypes).
+* Fix			- Prevent customer_adress_updated function from being executed on thankyou page (to avoid an unnecessary  request to Collector).
+
 = 2018.01.05  	- version 0.6.3 =
 * Fix 			- Fallback order creation improvements. Send customer to order received page when redirectPageUri is hit, even if we can’t confirm the order in Collectors system. If then, display a simplified thank you page.
 * Fix 			- Logging improvement
