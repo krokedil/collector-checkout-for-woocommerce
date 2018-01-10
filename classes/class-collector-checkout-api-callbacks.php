@@ -70,7 +70,7 @@ class Collector_Api_Callbacks {
 	        }
 	    } else {
 			// No order found - create a new
-			Collector_Checkout::log('API-callback hit. We could NOT find Private id ' . $private_id . '. Starting backup order creation...' );
+			Collector_Checkout::log('API-callback hit. We could NOT find Private id ' . $private_id . '(with public token ' . $public_token . ' & customer type ' . $customer_type . '). Starting backup order creation...' );
 			$this->backup_order_creation( $private_id, $public_token, $customer_type );
 		}
 	    
@@ -88,9 +88,6 @@ class Collector_Api_Callbacks {
 		$response 			= $response->request();
 		$collector_order 	= json_decode( $response );
 
-		// Process customer data.
-		$this->process_customer_data( $collector_order );
-
 		// Process order.
 		$order = $this->process_order( $collector_order, $private_id, $public_token, $customer_type );
 		
@@ -100,69 +97,6 @@ class Collector_Api_Callbacks {
 		}
 	}
 
-	/**
-	 * Processes customer data on backup order creation.
-	 *
-	 * @param Klarna_Checkout_Order $collector_order Klarna order.
-	 *
-	 * @throws Exception WC_Data_Exception.
-	 */
-	private function process_customer_data( $collector_order ) {
-
-		$shipping_first_name    = isset( $collector_order->data->customer->deliveryAddress->firstName ) ? $collector_order->data->customer->deliveryAddress->firstName : '.';
-		$shipping_last_name     = isset( $collector_order->data->customer->deliveryAddress->lastName ) ? $collector_order->data->customer->deliveryAddress->lastName : '.';
-		$shipping_address       = isset( $collector_order->data->customer->deliveryAddress->address ) ? $collector_order->data->customer->deliveryAddress->address : '.';
-		$shipping_address2      = isset( $collector_order->data->customer->deliveryAddress->address2 ) ? $collector_order->data->customer->deliveryAddress->address2 : '';
-		$shipping_postal_code   = isset( $collector_order->data->customer->deliveryAddress->postalCode ) ? $collector_order->data->customer->deliveryAddress->postalCode : '';
-		$shipping_city          = isset( $collector_order->data->customer->deliveryAddress->city ) ? $collector_order->data->customer->deliveryAddress->city : '.';
-		$shipping_country       = isset( $collector_order->countryCode ) ? $collector_order->countryCode : WC()->countries->get_base_country();
-
-		$billing_first_name     = isset( $collector_order->data->customer->billingAddress->firstName ) ? $collector_order->data->customer->billingAddress->firstName : isset( $collector_order->data->customer->deliveryAddress->firstName ) ? $collector_order->data->customer->deliveryAddress->firstName : '.';
-		$billing_last_name      = isset( $collector_order->data->customer->billingAddress->lastName ) ? $collector_order->data->customer->billingAddress->lastName : isset( $collector_order->data->customer->deliveryAddress->lastName ) ? $collector_order->data->customer->deliveryAddress->lastName : '.';
-		$billing_address        = isset( $collector_order->data->customer->billingAddress->address ) ? $collector_order->data->customer->billingAddress->address : isset( $collector_order->data->customer->deliveryAddress->address ) ? $collector_order->data->customer->deliveryAddress->address : '.';
-		$billing_address2       = isset( $collector_order->data->customer->billingAddress->address2 ) ? $collector_order->data->customer->billingAddress->address2 : isset( $collector_order->data->customer->deliveryAddress->address2 ) ? $collector_order->data->customer->deliveryAddress->address2 : '';
-		$billing_postal_code    = isset( $collector_order->data->customer->billingAddress->postalCode ) ? $collector_order->data->customer->billingAddress->postalCode : isset( $collector_order->data->customer->deliveryAddress->postalCode ) ? $collector_order->data->customer->deliveryAddress->postalCode : '';
-		$billing_city           = isset( $collector_order->data->customer->billingAddress->city ) ? $collector_order->data->customer->billingAddress->city : isset( $collector_order->data->customer->deliveryAddress->city ) ? $collector_order->data->customer->deliveryAddress->city : '.';
-		$billing_country       	= isset( $collector_order->countryCode ) ? $collector_order->countryCode : WC()->countries->get_base_country();
-
-		$phone                  = isset( $collector_order->data->customer->mobilePhoneNumber ) ? $collector_order->data->customer->mobilePhoneNumber : '.';
-		$email                  = isset( $collector_order->data->customer->email ) ? $collector_order->data->customer->email : 'test@example.com';
-		
-		$user = get_user_by( 'email', $email );
-		
-		WC()->customer = new WC_Customer();
-		if( $user ) {
-			WC()->customer->set_id( $user->ID );
-		}
-
-		// First name.
-		WC()->customer->set_billing_first_name( sanitize_text_field( $billing_first_name ) );
-		WC()->customer->set_shipping_first_name( sanitize_text_field( $shipping_first_name ) );
-		// Last name.
-		WC()->customer->set_billing_last_name( sanitize_text_field( $billing_last_name ) );
-		WC()->customer->set_shipping_last_name( sanitize_text_field( $shipping_last_name ) );
-		// Country.
-		WC()->customer->set_billing_country( sanitize_text_field( $billing_country ) );
-		WC()->customer->set_shipping_country( sanitize_text_field( $shipping_country ) );
-		// Street address 1.
-		WC()->customer->set_billing_address_1( sanitize_text_field( $billing_address ) );
-		WC()->customer->set_shipping_address_1( sanitize_text_field(  $shipping_address) );
-		// Street address 2.
-		WC()->customer->set_billing_address_2( sanitize_text_field( $billing_address2 ) );
-		WC()->customer->set_shipping_address_2( sanitize_text_field( $shipping_address2 ) );
-		// City.
-		WC()->customer->set_billing_city( sanitize_text_field( $billing_city ) );
-		WC()->customer->set_shipping_city( sanitize_text_field( $shipping_city ) );
-		// Postcode.
-		WC()->customer->set_billing_postcode( sanitize_text_field( $billing_postal_code ) );
-		WC()->customer->set_shipping_postcode( sanitize_text_field( $shipping_postal_code ) );
-		// Phone.
-		WC()->customer->set_billing_phone( sanitize_text_field( $phone ) );
-		// Email.
-		WC()->customer->set_billing_email( sanitize_text_field( $email ) );
-		WC()->customer->set_email( sanitize_text_field( $email ) );
-		WC()->customer->save();
-	}
 
 	/**
 	 * Processes WooCommerce order on backup order creation.
