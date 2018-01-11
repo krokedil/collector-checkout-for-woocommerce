@@ -266,18 +266,22 @@ function wc_collector_get_available_customer_types() {
 
 function wc_collector_get_default_customer_type() {
 	$collector_settings = get_option( 'woocommerce_collector_checkout_settings' );
-	$collector_b2c_se 	= $collector_settings['collector_merchant_id_se_b2c'];
-	$collector_b2b_se 	= $collector_settings['collector_merchant_id_se_b2b'];
-	$collector_b2c_no 	= $collector_settings['collector_merchant_id_no_b2c'];
-
-	if( $collector_b2c_no && 'NOK' == get_woocommerce_currency() ) {
-		return 'b2c';
-	} elseif( $collector_b2c_se && $collector_b2b_se ) {
-		return 'b2c';
-	} elseif( $collector_b2b_se && !$collector_b2c_se ) {
-		return 'b2b';
+	if( '' !== $collector_settings['collector_default_customer'] || 'NOK' == get_woocommerce_currency() ) {
+		return $collector_settings['collector_default_customer'];
 	} else {
-		return 'b2c';
+		$collector_b2c_se 	= $collector_settings['collector_merchant_id_se_b2c'];
+		$collector_b2b_se 	= $collector_settings['collector_merchant_id_se_b2b'];
+		$collector_b2c_no 	= $collector_settings['collector_merchant_id_no_b2c'];
+
+		if( $collector_b2c_no && 'NOK' == get_woocommerce_currency() ) {
+			return 'b2c';
+		} elseif( $collector_b2c_se && $collector_b2b_se ) {
+			return 'b2c';
+		} elseif( $collector_b2b_se && !$collector_b2c_se ) {
+			return 'b2b';
+		} else {
+			return 'b2c';
+		}
 	}
 }
 

@@ -101,7 +101,11 @@
        $('.collector-checkout-tabs li').removeClass('current');
        $(this).addClass('current');
     });
-	
+    // Set the correct checked radio button
+	$( document ).ready(function() {
+        $('.collector-checkout-tabs li').removeClass('current');
+        $('li[data-tab="' + wc_collector_checkout.default_customer_type + '"]').addClass('current');
+    });
 	// Suspend Collector Checkout during WooCommerce checkout update
     $(document).on('update_checkout', function () {
         if ("collector_checkout" === $("input[name='payment_method']:checked").val() && checkout_initiated === true) {
