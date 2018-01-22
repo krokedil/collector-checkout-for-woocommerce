@@ -91,19 +91,19 @@ return apply_filters( 'collector_checkout_settings',
 			'default'       => '',
 			'desc_tip'      => false,
 		),
-		'instnt_buy_settings_title' => array(
-			'title' => __( 'Instant Buy settings', 'collector-checkout-for-woocommerce' ),
-			'type'  => 'title',
-		),
 		'collector_default_customer'   	=> array(
 			'title'         => __( 'Default customer', 'collector-checkout-for-woocommerce' ),
 			'type'          => 'select',
-			'description' 	=> __( 'Sets the default customer for Collector Checkout', 'collector-checkout-for-woocommerce' ),
+			'description' 	=> __( 'Sets the default customer/checkout type for Collector Checkout (if offering both B2B & B2C)', 'collector-checkout-for-woocommerce' ),
 			'options' => array(
 				'b2c'   => __( 'B2C', 'collector-checkout-for-woocommerce' ),
 				'b2b'   => __( 'B2B', 'collector-checkout-for-woocommerce' ),
 			),
 			'default'       => 'b2c',
+		),
+		'instnt_buy_settings_title' => array(
+			'title' => __( 'Instant Buy settings', 'collector-checkout-for-woocommerce' ),
+			'type'  => 'title',
 		),
 		'collector_instant_checkout' => array(
 			'title'         => __( 'Instant Buy', 'collector-checkout-for-woocommerce' ),
