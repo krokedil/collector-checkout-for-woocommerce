@@ -297,7 +297,7 @@ function wc_collector_get_payment_method_name( $payment_method ) {
 		case 'Account' :
 			$payment_method = __( 'Collector Account', 'collector-checkout-for-woocommerce' );
 			break;
-		case 'Part Payment' :
+		case 'PartPayment' :
 			$payment_method = __( 'Collector Part Payment', 'collector-checkout-for-woocommerce' );
 			break;
 		case 'Campaign' :
