@@ -95,6 +95,16 @@ return apply_filters( 'collector_checkout_settings',
 			'title' => __( 'Instant Buy settings', 'collector-checkout-for-woocommerce' ),
 			'type'  => 'title',
 		),
+		'collector_default_customer'   	=> array(
+			'title'         => __( 'Default customer', 'collector-checkout-for-woocommerce' ),
+			'type'          => 'select',
+			'description' 	=> __( 'Sets the default customer for Collector Checkout', 'collector-checkout-for-woocommerce' ),
+			'options' => array(
+				'b2c'   => __( 'B2C', 'collector-checkout-for-woocommerce' ),
+				'b2b'   => __( 'B2B', 'collector-checkout-for-woocommerce' ),
+			),
+			'default'       => 'b2c',
+		),
 		'collector_instant_checkout' => array(
 			'title'         => __( 'Instant Buy', 'collector-checkout-for-woocommerce' ),
 			'type'          => 'checkbox',
