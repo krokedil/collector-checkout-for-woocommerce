@@ -43,7 +43,7 @@ class Collector_Api_Callbacks {
 	        'order' => 'DESC',
 	        'return' => 'ids',
 	        'payment_method' => 'collector_checkout',
-	        'date_created' => '>' . ( time() - 3600 )
+	        'date_created' => '>' . ( time() - MONTH_IN_SECONDS )
 	    ) );
 	    $orders = $query->get_orders();
 		$order_id_match = '';
