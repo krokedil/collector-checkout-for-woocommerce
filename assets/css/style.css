@@ -21,6 +21,7 @@ ul.collector-checkout-tabs li {
 	margin-right: 8px;
 	padding-left: 30px;
 	font-weight: bold;
+	box-sizing: content-box;
 }
 ul.collector-checkout-tabs li:before {
 	border-radius: 50%;
@@ -45,6 +46,7 @@ ul.collector-checkout-tabs li.current:after {
     content: ' ';
     border: 6px solid #000000;
     border-radius: 50%;
+    box-sizing: content-box;
 }
 
 /*
