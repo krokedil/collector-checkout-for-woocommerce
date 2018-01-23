@@ -39,6 +39,16 @@ For help setting up and configuring Collector Checkout for WooCommerce please re
 
 
 == CHANGELOG ==
+= 2018.01.23  	- version 0.7.0 =
+* Feature		- Added settings to be able to set default customer type (B2B/B2C).
+* Feature		- Added support for B2B Part payment ”Signing” order status.
+* Tweak			- Simplified backup order creation.
+* Tweak			- Backup order creation schedule changed from 30 seconds to 2 minutes (after the notificationUri server callback).
+* Tweak			- Query orders 1 month back when checking if backup order creation is needed (on API callback).
+* Fix			- Changed spelling of Collector PartPayment status name (for translation purposes).
+* Fix			- CSS change to display B2B/B2C radio button switcher correct.
+
+
 = 2018.01.09  	- version 0.6.4 =
 * Tweak			- Logging improvements.
 * Tweak			- Settings page content updates (links to Collector terms and logotypes).
