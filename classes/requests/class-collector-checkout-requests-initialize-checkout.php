@@ -48,9 +48,15 @@ class Collector_Checkout_Requests_Initialize_Checkout extends Collector_Checkout
 	public function request() {
 		$request_url = $this->base_url . '/checkout';
 		$request = wp_remote_request( $request_url, $this->get_request_args() );
-		$request = wp_remote_retrieve_body( $request );
-		$this->log( 'Collector init checkout request response: ' . var_export( $request, true ) . ' (Request endpoint: ' . $request_url . ')' );
-		return $request;
+		if ( is_wp_error( $request ) ) {
+			$this->log( 'Collector init checkout request response ERROR: ' . json_encode( $request->get_error_message() ) . ' (Request endpoint: ' . $request_url . ')' );
+			$response = new WP_Error( 'initialize_checkout_error', __( 'Could not connect to Collector. Please try again by reloading the page.', 'collector-checkout-for-woocommerce' ) );
+		} else {
+			$this->log( 'Collector init checkout request response: ' . json_encode( $response ) . ' (Request endpoint: ' . $request_url . ')' );
+			$response = wp_remote_retrieve_body( $request );
+		}
+		
+		return $response;
 	}
 
 	protected function request_body() {
