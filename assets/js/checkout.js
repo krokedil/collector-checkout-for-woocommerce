@@ -58,7 +58,7 @@
                     }
                     checkout_initiated = true;
                 } else {
-                    $('.entry-content .woocommerce').prepend('<ul class="woocommerce-error"><li>' + data.data + '</li></ul>');
+                    $('#collector-bank-iframe').append('<ul class="woocommerce-error"><li>' + data.data + '</li></ul>');
                     console.log('error');
                     console.log(data.data);
                 }
