@@ -260,6 +260,12 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 			update_post_meta( $order_id, '_collector_payment_method', $payment_method );
 			update_post_meta( $order_id, '_collector_payment_id', $payment_id );
 			
+			// Tie this order to a user if we have one.
+			if ( email_exists( $payment_data->data->customer->email ) ) {
+				$user    = get_user_by( 'email', $payment_data->data->customer->email );
+				$user_id = $user->ID;
+				update_post_meta( $order_id, '_customer_user', $user_id );
+			}
 			
 			if( 'Preliminary' == $payment_status ) {
 				$order->payment_complete( $payment_id );
