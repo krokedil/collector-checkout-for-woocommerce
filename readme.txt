@@ -39,6 +39,12 @@ For help setting up and configuring Collector Checkout for WooCommerce please re
 
 
 == CHANGELOG ==
+= 2018.01.30  	- version 0.7.1 =
+* Feature		- Automatically tie customer account to order if it exist in WC.
+* Tweak			- Improved error logging for initialize checkout request.
+* Tweak			- Display error message in checkout page when initialize checkout connection fails.
+* Tweak			- Save Collector order meta data (private ID, customer type & public token) earlier.
+
 = 2018.01.23  	- version 0.7.0 =
 * Feature		- Added settings to be able to set default customer type (B2B/B2C).
 * Feature		- Added support for B2B Part payment ”Signing” order status.
@@ -47,7 +53,6 @@ For help setting up and configuring Collector Checkout for WooCommerce please re
 * Tweak			- Query orders 1 month back when checking if backup order creation is needed (on API callback).
 * Fix			- Changed spelling of Collector PartPayment status name (for translation purposes).
 * Fix			- CSS change to display B2B/B2C radio button switcher correct.
-
 
 = 2018.01.09  	- version 0.6.4 =
 * Tweak			- Logging improvements.
