@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Collector Checkout for WooCommerce\n"
-"POT-Creation-Date: 2018-01-02 23:50+0100\n"
-"PO-Revision-Date: 2018-01-03 07:56+0100\n"
+"POT-Creation-Date: 2018-01-30 23:35+0100\n"
+"PO-Revision-Date: 2018-01-30 23:35+0100\n"
 "Last-Translator: Niklas Högefjord <info@krokedil.se>\n"
 "Language-Team: Niklas Högefjord <info@krokedil.se>\n"
 "Language: sv_SE\n"
@@ -28,24 +28,34 @@ msgstr ""
 "Du behöver definiera en sida för köpvillkor i WooCommerce inställningar för "
 "att kunna använda Collector."
 
-#: classes/class-collector-checkout-ajax-calls.php:449
+#: classes/class-collector-checkout-ajax-calls.php:65
+msgid "Could not connect to Collector."
+msgstr "Kunde inte ansluta till Collector."
+
+#: classes/class-collector-checkout-ajax-calls.php:65
+msgid "Try again"
+msgstr "Försök igen"
+
+#: classes/class-collector-checkout-ajax-calls.php:467
 msgid ""
 "This order was made as a fallback due to an error in the checkout, please "
 "verify the order with Collector."
 msgstr ""
 
-#: classes/class-collector-checkout-api-callbacks.php:251
-msgid "Order created via Collector Checkout API callback"
+#: classes/class-collector-checkout-api-callbacks.php:194
+msgid ""
+"Order created via Collector Checkout API callback. Please verify the order "
+"in Collectors system."
 msgstr ""
 
-#: classes/class-collector-checkout-api-callbacks.php:336
-#: classes/class-collector-checkout-gateway.php:263
+#: classes/class-collector-checkout-api-callbacks.php:279
+#: classes/class-collector-checkout-gateway.php:280
 #, php-format
 msgid "Purchase via %s"
 msgstr "Betalning via %s"
 
-#: classes/class-collector-checkout-api-callbacks.php:344
-#: classes/class-collector-checkout-gateway.php:259
+#: classes/class-collector-checkout-api-callbacks.php:287
+#: classes/class-collector-checkout-gateway.php:276
 msgid "Order is PENDING APPROVAL by Collector. Payment ID: "
 msgstr ""
 
@@ -59,35 +69,39 @@ msgstr "Collector Checkout"
 msgid "Collector Checkout payment solution for WooCommerce."
 msgstr "Collector Checkout betallösning för WooCommerce."
 
-#: classes/class-collector-checkout-gateway.php:219
+#: classes/class-collector-checkout-gateway.php:225
 msgid "Unable to add Collector Bank Invoice Fee to the order."
 msgstr "Kunde inte lägga till Collector Checkout fakturaavgift till ordern."
 
-#: classes/class-collector-checkout-gateway.php:268
+#: classes/class-collector-checkout-gateway.php:273
+msgid "Order is waiting for electronic signing by customer. Payment ID: "
+msgstr ""
+
+#: classes/class-collector-checkout-gateway.php:285
 msgid "Order data was missing from Collector"
 msgstr ""
 
-#: classes/class-collector-checkout-gateway.php:269
+#: classes/class-collector-checkout-gateway.php:286
 msgid ""
 "The following fields had missing data from Collector, please verify the "
 "order with Collector."
 msgstr ""
 
-#: classes/class-collector-checkout-gateway.php:273
+#: classes/class-collector-checkout-gateway.php:290
 msgid "Link to the order"
 msgstr ""
 
-#: classes/class-collector-checkout-gateway.php:344
+#: classes/class-collector-checkout-gateway.php:373
 msgid ""
 "Collector Bank currently only supports full refunds, for a partial refund "
 "use the Collector Bank Merchant Portal"
 msgstr ""
 
-#: classes/class-collector-checkout-gateway.php:365
+#: classes/class-collector-checkout-gateway.php:394
 msgid "Org Nr"
 msgstr ""
 
-#: classes/class-collector-checkout-gateway.php:379
+#: classes/class-collector-checkout-gateway.php:408
 msgid "Please wait while we process your order."
 msgstr "Vänligen vänta medan vi bearbetar din order."
 
@@ -115,24 +129,27 @@ msgid ""
 "cancelled."
 msgstr ""
 
-#: classes/class-collector-checkout-post-checkout.php:70
+#: classes/class-collector-checkout-post-checkout.php:71
 #, php-format
 msgid "Invoice status callback from Collector. New Invoice status: %s"
 msgstr ""
 
-#: classes/class-collector-create-order-fallback.php:29
-#: classes/class-collector-create-order-fallback.php:72
+#: classes/class-collector-create-order-fallback.php:30
+#: classes/class-collector-create-order-fallback.php:75
 #, php-format
 msgid "Error %d: Unable to create order. Please try again."
 msgstr ""
 
-#: classes/class-collector-create-order-fallback.php:40
-#: classes/class-collector-create-order-fallback.php:80
+#: classes/class-collector-create-order-fallback.php:42
 msgid "Error: Unable to create order. Please try again."
 msgstr ""
 
-#: classes/class-collector-create-order-fallback.php:60
+#: classes/class-collector-create-order-fallback.php:62
 msgid "Error: Unable to add shipping item. Please try again."
+msgstr ""
+
+#: classes/class-collector-create-order-fallback.php:84
+msgid "Error: Unable to add coupons. Please try again."
 msgstr ""
 
 #: classes/requests/soap/class-collector-checkout-soap-requests-activate-invoice.php:70
@@ -163,27 +180,27 @@ msgstr ""
 msgid "Order failed to be credited with Collector Bank - "
 msgstr ""
 
-#: collector-checkout-for-woocommerce.php:276
+#: collector-checkout-for-woocommerce.php:324
 msgid "Collector Invoice"
 msgstr "Collector Faktura"
 
-#: collector-checkout-for-woocommerce.php:279
+#: collector-checkout-for-woocommerce.php:327
 msgid "Collector Account"
 msgstr "Collector Konto"
 
-#: collector-checkout-for-woocommerce.php:282
+#: collector-checkout-for-woocommerce.php:330
 msgid "Collector Part Payment"
 msgstr "Collector Delbetalning"
 
-#: collector-checkout-for-woocommerce.php:285
+#: collector-checkout-for-woocommerce.php:333
 msgid "Collector Campaign"
 msgstr "Collector Kampanj"
 
-#: collector-checkout-for-woocommerce.php:288
+#: collector-checkout-for-woocommerce.php:336
 msgid "Collector Card"
 msgstr "Collector Kortbetalning"
 
-#: collector-checkout-for-woocommerce.php:291
+#: collector-checkout-for-woocommerce.php:339
 msgid "Collector Bank Transfer"
 msgstr "Collector Direktbetalning"
 
@@ -281,80 +298,98 @@ msgstr ""
 "avaktivera. <a href=\"%s\" target=\"_blank\">Läs mer</a>."
 
 #: includes/collector-checkout-settings.php:95
-msgid "Instant Buy settings"
+msgid "Default customer"
+msgstr ""
+
+#: includes/collector-checkout-settings.php:97
+msgid ""
+"Sets the default customer/checkout type for Collector Checkout (if offering "
+"both B2B & B2C)"
 msgstr ""
 
 #: includes/collector-checkout-settings.php:99
+msgid "B2C"
+msgstr ""
+
+#: includes/collector-checkout-settings.php:100
+msgid "B2B"
+msgstr ""
+
+#: includes/collector-checkout-settings.php:105
+msgid "Instant Buy settings"
+msgstr ""
+
+#: includes/collector-checkout-settings.php:109
 msgid "Instant Buy"
 msgstr ""
 
-#: includes/collector-checkout-settings.php:101
+#: includes/collector-checkout-settings.php:111
 msgid "Enable Instant Buy feature on single product pages"
 msgstr ""
 
-#: includes/collector-checkout-settings.php:106
+#: includes/collector-checkout-settings.php:116
 msgid "Button color"
 msgstr ""
 
-#: includes/collector-checkout-settings.php:108
+#: includes/collector-checkout-settings.php:118
 msgid ""
 "Instant Buy button color. Leave blank to use your theme <em>Add to cart</em> "
 "button color."
 msgstr ""
 
-#: includes/collector-checkout-settings.php:113
+#: includes/collector-checkout-settings.php:123
 msgid "Button text color"
 msgstr ""
 
-#: includes/collector-checkout-settings.php:115
+#: includes/collector-checkout-settings.php:125
 msgid "Instant Buy button text color"
 msgstr ""
 
-#: includes/collector-checkout-settings.php:120
+#: includes/collector-checkout-settings.php:130
 msgid "Order management settings"
 msgstr ""
 
-#: includes/collector-checkout-settings.php:124
+#: includes/collector-checkout-settings.php:134
 msgid "Manage orders"
 msgstr ""
 
-#: includes/collector-checkout-settings.php:126
+#: includes/collector-checkout-settings.php:136
 msgid ""
 "Enable WooCommerce to manage orders in Collectors backend (when order status "
 "changes to Cancelled and Completed in WooCommerce)."
 msgstr ""
 
-#: includes/collector-checkout-settings.php:130
+#: includes/collector-checkout-settings.php:140
 msgid "Invoice number on order page"
 msgstr ""
 
-#: includes/collector-checkout-settings.php:132
+#: includes/collector-checkout-settings.php:142
 msgid ""
 "Display Collector Invoice Number after WooCommerce Order Number on "
 "WooCommerce order page (-> WooCommerce -> Orders)."
 msgstr ""
 
-#: includes/collector-checkout-settings.php:136
+#: includes/collector-checkout-settings.php:146
 msgid "Test Mode Settings"
 msgstr ""
 
-#: includes/collector-checkout-settings.php:140
+#: includes/collector-checkout-settings.php:150
 msgid "Test mode"
 msgstr ""
 
-#: includes/collector-checkout-settings.php:142
+#: includes/collector-checkout-settings.php:152
 msgid "Enable Test mode for Collector Checkout."
 msgstr ""
 
-#: includes/collector-checkout-settings.php:146
+#: includes/collector-checkout-settings.php:156
 msgid "Debug"
 msgstr ""
 
-#: includes/collector-checkout-settings.php:148
+#: includes/collector-checkout-settings.php:158
 msgid "Enable logging."
 msgstr ""
 
-#: includes/collector-checkout-settings.php:149
+#: includes/collector-checkout-settings.php:159
 #, php-format
 msgid "Log Collector events, in <code>%s</code>"
 msgstr ""
