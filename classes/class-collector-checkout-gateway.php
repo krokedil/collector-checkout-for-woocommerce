@@ -43,9 +43,6 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 		
 		// Change the title when processing the WooCommerce order in checkout
 		add_filter( 'the_title', array( $this, 'confirm_page_title' ) );
-		
-		// Save Collector data (private id) in WC order
-		add_action( 'woocommerce_checkout_update_order_meta', array( $this, 'save_collector_order_data' ), 10, 2 );
 
 		// Notification listener.
 		add_action( 'woocommerce_api_collector_checkout_gateway', array( $this, 'notification_listener' ) );
@@ -241,25 +238,6 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 			'result'   => 'success',
 			'redirect' => $this->get_return_url( $order ),
 		);
-	}
-		
-	
-	/**
-	 * Saves Collector data to WooCommerce order as meta field.
-	 *
-	 * @param string $order_id WooCommerce order id.
-	 * @param array    $data  Posted data.
-	 */
-	public function save_collector_order_data( $order_id, $data ) {
-		
-		if( WC()->session->get( 'collector_private_id' ) ) {
-			
-			Collector_Checkout::log('Saving Collector meta data for private id ' . WC()->session->get( 'collector_private_id' ) . ' in order id ' . $order_id );
-			
-			update_post_meta( $order_id, '_collector_customer_type', WC()->session->get( 'collector_customer_type' ) );
-			update_post_meta( $order_id, '_collector_public_token', WC()->session->get( 'collector_public_token' ) );
-			update_post_meta( $order_id, '_collector_private_id', WC()->session->get( 'collector_private_id' ) );	
-		}
 	}
 
 

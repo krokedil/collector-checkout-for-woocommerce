@@ -43,6 +43,9 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 
 			// Remove the storefront sticky checkout.
 			add_action( 'wp_enqueue_scripts', array( $this, 'jk_remove_sticky_checkout' ), 99 );
+			
+			// Save Collector data (private id) in WC order
+			add_action( 'woocommerce_new_order', array( $this, 'save_collector_order_data' ) );
 		}
 
 		public function init() {
@@ -234,6 +237,23 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 			if ( 'woocommerce_page_wc-settings' == $hook && 'collector_checkout' == $_GET['section'] ) {
 				wp_register_style( 'collector-checkout-admin', plugin_dir_url( __FILE__ ) . 'assets/css/admin.css', false );
 				wp_enqueue_style( 'collector-checkout-admin' );
+			}
+		}
+		
+		/**
+		 * Saves Collector data to WooCommerce order as meta field.
+		 *
+		 * @param string $order_id WooCommerce order id.
+		 * @param array    $data  Posted data.
+		 */
+		public function save_collector_order_data( $order_id ) {
+			if( WC()->session->get( 'collector_private_id' ) ) {
+				
+				Collector_Checkout::log('Saving Collector meta data for private id ' . WC()->session->get( 'collector_private_id' ) . ' in order id ' . $order_id );
+				
+				update_post_meta( $order_id, '_collector_customer_type', WC()->session->get( 'collector_customer_type' ) );
+				update_post_meta( $order_id, '_collector_public_token', WC()->session->get( 'collector_public_token' ) );
+				update_post_meta( $order_id, '_collector_private_id', WC()->session->get( 'collector_private_id' ) );	
 			}
 		}
 	
