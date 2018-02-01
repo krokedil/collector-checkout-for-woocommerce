@@ -32,6 +32,7 @@ ul.collector-checkout-tabs li:before {
     left: 0;
     background: #ffffff;
     border: 2px solid #BBBBBB;
+    box-sizing: content-box;
 }
 ul.collector-checkout-tabs li:hover:before {
 	 border: 2px solid grey;
