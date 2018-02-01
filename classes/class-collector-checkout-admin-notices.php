@@ -26,8 +26,10 @@ class Collector_Checkout_Admin_Notices {
 	public function check_settings() {
 		if ( ! empty( $_POST ) ) {
 			add_action( 'woocommerce_settings_saved', array( $this, 'check_terms' ) );
+			add_action( 'woocommerce_settings_saved', array( $this, 'check_price_decimals' ) );
 		} else {
 			add_action( 'admin_notices', array( $this, 'check_terms' ) );
+			add_action( 'admin_notices', array( $this, 'check_price_decimals' ) );
 		}
 	}
 
@@ -45,6 +47,23 @@ class Collector_Checkout_Admin_Notices {
 			echo '</div>';
 		}
 	}
+	
+	/**
+	 * Check decimals (we need 2)
+	 */
+	public function check_price_decimals() {
+		if ( 'yes' != $this->enabled ) {
+			return;
+		}
+		// Terms page
+		if ( wc_get_price_decimals() < 2 ) {
+			echo '<div class="notice notice-error">';
+			echo '<p>' . __( 'You need to set price decimals to <em>2</em> to ensure that prices is reported correctly to Collector.', 'collector-checkout-for-woocommerce' ) . '</p>';
+			echo '</div>';
+		}
+	}
+	
+	
 }
 
 $collector_checkout_admin_notices = new Collector_Checkout_Admin_Notices;
