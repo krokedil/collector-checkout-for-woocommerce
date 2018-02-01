@@ -279,7 +279,7 @@ class Collector_Api_Callbacks {
 		$order->add_order_note( sprintf( __( 'Purchase via %s', 'collector-checkout-for-woocommerce' ), wc_collector_get_payment_method_name($collector_order->data->purchase->paymentMethod ) ) );
 		$order->calculate_totals();
 		$order->save();
-
+		
 		if ( 'Preliminary' === $collector_order->data->purchase->result ) {
 			$order->payment_complete( $collector_order->data->purchase->purchaseIdentifier );
 			$order->add_order_note( 'Payment via Collector Checkout, order ID: ' . sanitize_key( $collector_order->data->purchase->purchaseIdentifier ) );
@@ -287,6 +287,12 @@ class Collector_Api_Callbacks {
 			$order->add_order_note( __( 'Order is PENDING APPROVAL by Collector. Payment ID: ', 'collector-checkout-for-woocommerce' ) . $collector_order->data->purchase->purchaseIdentifier );
 			$order->update_status( 'on-hold' );
 		}
+		
+		// Check order total and compare it with Woo
+		if ( intval( round( $order->get_total() ) ) != $collector_order->data->order->totalAmount ) {
+			$order->update_status( 'on-hold',  sprintf(__( 'Order needs manual review. WooCommerce order total and Collector Order total do not match. Collector order total: %s.', 'collector-checkout-for-woocommerce' ), $collector_order->data->order->totalAmount ) );
+		}
+		
 		return $order;
 	}
 	
