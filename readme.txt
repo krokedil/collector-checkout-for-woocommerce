@@ -2,11 +2,11 @@
 Contributors: collectorbank, krokedil, NiklasHogefjord
 Tags: ecommerce, e-commerce, woocommerce, collector, checkout
 Requires at least: 4.7
-Tested up to: 4.9.1
+Tested up to: 4.9.2
 Requires PHP: 5.6
 Stable tag: trunk
-Requires WooCommerce at least: 3.0
-Tested WooCommerce up to: 3.2.6
+WC requires at least: 3.0.0
+WC tested up to: 3.3.1
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -39,6 +39,12 @@ For help setting up and configuring Collector Checkout for WooCommerce please re
 
 
 == CHANGELOG ==
+= 2018.02.05  	- version 0.8.0 =
+* Feature		- Added Collector Status report to be able to count and display number of orders created via API callback.
+* Tweak			- Added admin notice if price decimals is set to lower than 2.
+* Tweak			- Check order totals between Collector and Woo on API callback order creation. Set order to On hold if mismatch is detected.
+* Fix			- CSS change to display B2B/B2C radio button switcher correct.
+
 = 2018.01.30  	- version 0.7.1 =
 * Feature		- Automatically tie customer account to order if it exist in WC.
 * Tweak			- Improved error logging for initialize checkout request.
