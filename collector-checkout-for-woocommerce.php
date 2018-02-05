@@ -62,6 +62,7 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 			include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-order-emails.php' );
 			include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-create-order-fallback.php' );
 			include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-api-callbacks.php' );
+			include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-status.php' );
 			
 			// Include and add the Gateway
 			include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-gateway.php' );
