@@ -63,6 +63,7 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 			include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-create-order-fallback.php' );
 			include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-api-callbacks.php' );
 			include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-status.php' );
+			include_once( COLLECTOR_BANK_PLUGIN_DIR . '/includes/collector-checkout-for-woocommerce-functions.php' );
 			
 			// Include and add the Gateway
 			include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-gateway.php' );

@@ -2,8 +2,41 @@
     'use strict';
     var checkout_initiated = false;
 
-    function get_checkout_iframe( customer ) {
+    function get_new_checkout_iframe( customer ) {
 	    console.log( customer );
+        var url = window.location.href;
+        
+        var data = {
+            'action': 'get_public_token',
+            'customer_type': customer
+        };
+        jQuery.post(wc_collector_checkout.get_public_token_url, data, function (data) {
+            if (true === data.success) {
+                // Add class to body
+                $('body').addClass('collector-checkout-selected');
+                // Empty any checkout content to prevent duplicate
+                $('#collector-bank-iframe').empty();
+                
+                var publicToken = data.data.publicToken;
+                var testmode = data.data.test_mode;
+                console.log('checkout initiated ' + JSON.stringify(data.data));
+                
+                if(testmode === 'yes') {
+                	$('#collector-bank-iframe').append('<script src="https://checkout-uat.collector.se/collector-checkout-loader.js" data-lang="' + wc_collector_checkout.locale + '" data-token="' + publicToken + '" data-variant="' + customer + '" >');
+                } else {
+                	$('#collector-bank-iframe').append('<script src="https://checkout.collector.se/collector-checkout-loader.js" data-lang="' + wc_collector_checkout.locale + '" data-token="' + publicToken + '" data-variant="' + customer + '" >');
+                }
+                checkout_initiated = true;
+            } else {
+                $('#collector-bank-iframe').append('<ul class="woocommerce-error"><li>' + data.data + '</li></ul>');
+                console.log('error');
+                console.log(data.data);
+            }
+        });
+    }
+    
+    
+    function maybe_post_form() {
         var url = window.location.href;
         console.log( url.indexOf('payment_successful') );
         if (url.indexOf('payment_successful') != -1) {
@@ -35,34 +68,6 @@
                 console.log( 'post form' );
                 collector_post_form();
             }
-        } else {
-            var data = {
-                'action': 'get_public_token',
-                'customer_type': customer
-            };
-            jQuery.post(wc_collector_checkout.get_public_token_url, data, function (data) {
-                if (true === data.success) {
-                    // Add class to body
-                    $('body').addClass('collector-checkout-selected');
-                    // Empty any checkout content to prevent duplicate
-                    $('#collector-bank-iframe').empty();
-                    
-                    var publicToken = data.data.publicToken;
-                    var testmode = data.data.test_mode;
-                    console.log('checkout initiated ' + JSON.stringify(data.data));
-                    
-                    if(testmode === 'yes') {
-                    	$('#collector-bank-iframe').append('<script src="https://checkout-uat.collector.se/collector-checkout-loader.js" data-lang="' + wc_collector_checkout.locale + '" data-token="' + publicToken + '" data-variant="' + customer + '" >');
-                    } else {
-                    	$('#collector-bank-iframe').append('<script src="https://checkout.collector.se/collector-checkout-loader.js" data-lang="' + wc_collector_checkout.locale + '" data-token="' + publicToken + '" data-variant="' + customer + '" >');
-                    }
-                    checkout_initiated = true;
-                } else {
-                    $('#collector-bank-iframe').append('<ul class="woocommerce-error"><li>' + data.data + '</li></ul>');
-                    console.log('error');
-                    console.log(data.data);
-                }
-            });
         }
     }
     
@@ -97,7 +102,7 @@
 	$(document).on('click', '.collector-checkout-tabs li',function() {
        var tab_id = $(this).attr('data-tab');
        console.log(tab_id);
-       get_checkout_iframe( tab_id );
+       get_new_checkout_iframe( tab_id );
        $('.collector-checkout-tabs li').removeClass('current');
        $(this).addClass('current');
     });
@@ -111,6 +116,7 @@
         if ("collector_checkout" === $("input[name='payment_method']:checked").val() && checkout_initiated === true) {
             window.collector.checkout.api.suspend();
         }
+        checkout_initiated = true;
     });
     
     $(document).on('updated_checkout', function () {
@@ -248,10 +254,10 @@
             });
     }
 
-    // Load the iframe on the custom template page, and save any customer order notes.
+    // Check if we need to post the WC checkout form and save any customer order notes.
     $( document ).ready( function() {
         if ($('#collector-bank-iframe').length) {
-                get_checkout_iframe( wc_collector_checkout.default_customer_type );
+	        maybe_post_form();
         }
         $('#order_comments').focusout(function(){
             var text = $('#order_comments').val();
