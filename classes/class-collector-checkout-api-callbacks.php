@@ -62,8 +62,9 @@ class Collector_Api_Callbacks {
 		    $order = wc_get_order( $order_id_match );
 	        
 	        if( $order ) {
-				//@todo - check order status & order total
-				Collector_Checkout::log('API-callback hit. Private id ' . $private_id . '. already exist in order ID ' . $order_id_match);
+				// Check order status & order total
+				Collector_Checkout::log('API-callback hit. Private id ' . $private_id . '. already exist in order ID ' . $order_id_match . ' Checking order status...');
+				$this->check_order_status( $private_id, $public_token, $customer_type, $order );
 	        } else {
 				// No order, why?
 				Collector_Checkout::log('API-callback hit. Private id ' . $private_id . '. already exist in order ID ' . $order_id_match . '. But we could not instantiate an order object' );
@@ -75,7 +76,37 @@ class Collector_Api_Callbacks {
 		}
 	    
 	}
-
+	
+	/**
+	 * Check order status order total and transaction id, in case checkout process failed.
+	 *
+	 * @param string $private_id, $public_token, $customer_type.
+	 *
+	 * @throws Exception WC_Data_Exception.
+	 */
+	public function check_order_status( $private_id, $public_token, $customer_type, $order ) {
+		$response 			= new Collector_Checkout_Requests_Get_Checkout_Information( $private_id, $customer_type );
+		$response 			= $response->request();
+		$collector_order 	= json_decode( $response );
+		
+		if( is_object( $order ) ) {
+			
+			// Check order status
+			if ( ! $order->has_status( array( 'on-hold', 'processing', 'completed' ) ) ) {
+				// Set order status in Woo
+				$this->set_order_status( $order, $collector_order );
+			}
+			
+			// Compare order totals between the orders
+			$this->check_order_totals( $order, $collector_order );
+			
+			// Check if we need to update reference in collectors system
+			if( empty( $collector_order->data->reference ) ) {
+				$this->update_order_reference_in_collector( $order, $customer_type, $private_id )
+			}
+		}
+	}
+	
 	/**
 	 * Backup order creation, in case checkout process failed.
 	 *
@@ -280,21 +311,49 @@ class Collector_Api_Callbacks {
 		$order->calculate_totals();
 		$order->save();
 		
-		if ( 'Preliminary' === $collector_order->data->purchase->result ) {
-			$order->payment_complete( $collector_order->data->purchase->purchaseIdentifier );
-			$order->add_order_note( 'Payment via Collector Checkout, order ID: ' . sanitize_key( $collector_order->data->purchase->purchaseIdentifier ) );
-		} else {
-			$order->add_order_note( __( 'Order is PENDING APPROVAL by Collector. Payment ID: ', 'collector-checkout-for-woocommerce' ) . $collector_order->data->purchase->purchaseIdentifier );
-			$order->update_status( 'on-hold' );
-		}
+		// Set order status in Woo
+		$this->set_order_status( $order, $collector_order );
 		
 		// Check order total and compare it with Woo
-		if ( intval( round( $order->get_total() ) ) != $collector_order->data->order->totalAmount ) {
-			$order->update_status( 'on-hold',  sprintf(__( 'Order needs manual review. WooCommerce order total and Collector Order total do not match. Collector order total: %s.', 'collector-checkout-for-woocommerce' ), $collector_order->data->order->totalAmount ) );
-		}
+		$this->set_order_status( $order, $collector_order );
 		
 		return $order;
 	}
+	
+	
+	/**
+	 * Set order status function
+	 *
+	 */
+	public function set_order_status( $order, $collector_order ) {
+		if ( 'Preliminary' === $collector_order->data->purchase->result ) {
+			$order->payment_complete( $collector_order->data->purchase->purchaseIdentifier );
+			$order->add_order_note( 'Payment via Collector Checkout. Payment ID: ' . sanitize_key( $collector_order->data->purchase->purchaseIdentifier ) );
+			Collector_Checkout::log('Order status not set correctly for order ' . $order->get_order_number() . ' during checkout process. Setting order status to Processing/Completed.');
+		} else {
+			$order->add_order_note( __( 'Order is PENDING APPROVAL by Collector. Payment ID: ', 'collector-checkout-for-woocommerce' ) . $collector_order->data->purchase->purchaseIdentifier );
+			$order->update_status( 'on-hold' );
+			Collector_Checkout::log('Order status not set correctly for order ' . $order->get_order_number() . ' during checkout process. Setting order status to On hold.');
+		}
+	}
+	
+	/**
+	 * Check order totals
+	 *
+	 */
+	public function check_order_totals( $order, $collector_order ) {
+		// Check order total and compare it with Woo
+		$woo_order_total = intval( round( $order->get_total() ) );
+		$collector_order_total = $collector_order->data->order->totalAmount;
+		if( $woo_order_total > $collector_order_total && ( $woo_order_total - $collector_order_total ) > 3 ) {
+			$order->update_status( 'on-hold',  sprintf(__( 'Order needs manual review. WooCommerce order total and Collector order total do not match. Collector order total: %s.', 'collector-checkout-for-woocommerce' ), $collector_order_total ) );
+			Collector_Checkout::log('Order total missmatch in order:' . $order->get_order_number() . '. Woo order total: ' . $woo_order_total . '. Collector order total: ' . $collector_order_total );
+		} elseif( $collector_order_total > $woo_order_total && ( $collector_order_total - $woo_order_total ) > 3 ) {
+			$order->update_status( 'on-hold',  sprintf(__( 'Order needs manual review. WooCommerce order total and Collector order total do not match. Collector order total: %s.', 'collector-checkout-for-woocommerce' ), $collector_order_total ) );
+			Collector_Checkout::log('Order total missmatch in order:' . $order->get_order_number() . '. Woo order total: ' . $woo_order_total . '. Collector order total: ' . $collector_order_total );
+		}
+	}
+	
 	
 	/**
 	 * Update the Collector Order with the WooCommerce Order number
@@ -303,7 +362,7 @@ class Collector_Api_Callbacks {
 	public function update_order_reference_in_collector( $order, $customer_type, $private_id ) {
 		$update_reference = new Collector_Checkout_Requests_Update_Reference( $order->get_order_number(), $private_id, $customer_type );
 		$update_reference->request();
-		Collector_Checkout::log('Update Collector order reference in backup order creation - ' . $order->get_order_number());
+		Collector_Checkout::log('Update Collector order reference for order - ' . $order->get_order_number());
 	}  
 }
 Collector_Api_Callbacks::get_instance();
