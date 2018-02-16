@@ -102,7 +102,7 @@ class Collector_Api_Callbacks {
 			
 			// Check if we need to update reference in collectors system
 			if( empty( $collector_order->data->reference ) ) {
-				$this->update_order_reference_in_collector( $order, $customer_type, $private_id )
+				$this->update_order_reference_in_collector( $order, $customer_type, $private_id );
 			}
 		}
 	}
