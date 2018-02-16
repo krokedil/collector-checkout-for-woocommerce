@@ -39,6 +39,11 @@ For help setting up and configuring Collector Checkout for WooCommerce please re
 
 
 == CHANGELOG ==
+= 2018.02.16  	- version 0.8.1 =
+* Tweak			- Check order status in WooCommerce and compare order total with Collector on notification callback from Collector to avoid mismatch between the two.
+* Tweak			- Improved logging in update cart & update fees request.
+* Tweak			- Use order meta data instead of session data when making update reference request to Collector.
+
 = 2018.02.05  	- version 0.8.0 =
 * Feature		- Added Collector Status report to be able to count and display number of orders created via API callback.
 * Tweak			- Added admin notice if price decimals is set to lower than 2.
