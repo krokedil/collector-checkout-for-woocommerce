@@ -37,6 +37,7 @@ class Collector_Checkout_Requests_Update_Cart extends Collector_Checkout_Request
 	public function request() {
 		$request_url = $this->base_url . $this->path;
 		$request = wp_remote_request( $request_url, $this->get_request_args() );
+		$this->log( 'Collector update cart request response: ' . json_encode( $request ) );
 		return $request;
 	}
 
