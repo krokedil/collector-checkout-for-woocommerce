@@ -231,9 +231,16 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 		}
 
 		WC()->session->__unset( 'collector_customer_order_note' );
-		// Update the Collector Order with the Order ID
-		$update_reference = new Collector_Checkout_Requests_Update_Reference( $order->get_order_number(), WC()->session->get( 'collector_private_id' ), WC()->session->get( 'collector_customer_type' ) );
-		$update_reference->request();
+		
+		// Update the Collector Order with the Order number
+		$private_id = get_post_meta( $order_id, '_collector_private_id', true );
+		$customer_type = get_post_meta( $order_id, '_collector_customer_type', true );
+		if( !empty( $private_id ) && !empty( $customer_type ) ) {
+			$update_reference = new Collector_Checkout_Requests_Update_Reference( $order->get_order_number(), $private_id, $customer_type );
+			$update_reference->request();
+			Collector_Checkout::log('Update Collector order reference for order - ' . $order->get_order_number());
+		}
+		
 		return array(
 			'result'   => 'success',
 			'redirect' => $this->get_return_url( $order ),
