@@ -30,7 +30,9 @@ do_action( 'woocommerce_before_checkout_form', $checkout );
                 <li class="tab-link" data-tab="b2b"><?php _e( 'Företag', 'woocommerce' ); ?></li>
             </ul>
 		<?php } ?>
-        <div id="collector-bank-iframe"></div>
+        <div id="collector-bank-iframe">
+	        <?php collector_wc_show_snippet(); ?>
+        </div>
 
     </form>
 
