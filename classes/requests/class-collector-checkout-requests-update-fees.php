@@ -37,7 +37,12 @@ class Collector_Checkout_Requests_Update_Fees extends Collector_Checkout_Request
 	public function request() {
 		$request_url = $this->base_url . $this->path;
 		$request = wp_remote_request( $request_url, $this->get_request_args() );
-		$this->log( 'Collector update cart fees response: ' . json_encode( $request ) );
+		if ( is_wp_error( $request ) ) {
+			$this->log( 'Collector update fees request response ERROR: ' . json_encode( $request->get_error_message() ) . ' (Request endpoint: ' . $request_url . ')' );			
+		} else {
+			$this->log( 'Collector update fees request response: ' . json_encode( $request ) . ' (Request endpoint: ' . $request_url . ')' );
+			$request = wp_remote_retrieve_body( $request );
+		}
 		return $request;
 	}
 
