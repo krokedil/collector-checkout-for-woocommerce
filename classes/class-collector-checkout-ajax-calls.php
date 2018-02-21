@@ -87,6 +87,10 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 	}
 
 	public static function update_checkout() {
+		WC()->cart->calculate_shipping();
+		WC()->cart->calculate_fees();
+		WC()->cart->calculate_totals();
+
 		$private_id				= WC()->session->get( 'collector_private_id' );
 		$customer_type			= WC()->session->get( 'collector_customer_type' );
 		$update_fees			= new Collector_Checkout_Requests_Update_Fees( $private_id, $customer_type );
