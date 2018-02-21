@@ -115,6 +115,11 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 				} else {
 					$public_token = '';
 				}
+				if( WC()->session->get( 'collector_private_id' ) ) {
+					$checkout_initiated = 'yes';
+				} else {
+					$checkout_initiated = 'no';
+				}
 				if( is_wc_endpoint_url( 'order-received' ) ) {
 					$is_thank_you_page = true;
 					if( isset( $_GET['key'] ) ) {
@@ -139,6 +144,7 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 					'is_thank_you_page'             => $is_thank_you_page,
 					'order_id'             			=> $order_id,
 					'public_token'             		=> $public_token,
+					'checkout_initiated'			=> $checkout_initiated,
 					'purchase_status'             	=> $purchase_status,
 					'default_customer_type' 		=> wc_collector_get_default_customer_type(),
 					'collector_nonce' 				=> wp_create_nonce( 'collector_nonce' ),
@@ -249,13 +255,15 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 		 * @param array    $data  Posted data.
 		 */
 		public function save_collector_order_data( $order_id ) {
-			if( WC()->session->get( 'collector_private_id' ) ) {
-				
-				Collector_Checkout::log('Saving Collector meta data for private id ' . WC()->session->get( 'collector_private_id' ) . ' in order id ' . $order_id );
-				
-				update_post_meta( $order_id, '_collector_customer_type', WC()->session->get( 'collector_customer_type' ) );
-				update_post_meta( $order_id, '_collector_public_token', WC()->session->get( 'collector_public_token' ) );
-				update_post_meta( $order_id, '_collector_private_id', WC()->session->get( 'collector_private_id' ) );	
+			if ( method_exists( WC()->session, 'get' ) ) {
+				if( WC()->session->get( 'collector_private_id' ) ) {
+					
+					Collector_Checkout::log('Saving Collector meta data for private id ' . WC()->session->get( 'collector_private_id' ) . ' in order id ' . $order_id );
+					
+					update_post_meta( $order_id, '_collector_customer_type', WC()->session->get( 'collector_customer_type' ) );
+					update_post_meta( $order_id, '_collector_public_token', WC()->session->get( 'collector_public_token' ) );
+					update_post_meta( $order_id, '_collector_private_id', WC()->session->get( 'collector_private_id' ) );	
+				}
 			}
 		}
 	
