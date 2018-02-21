@@ -305,8 +305,8 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 	            WC()->session->__unset( 'collector_org_nr' );
             }
             // Unset Collector token and id
-			WC()->session->__unset( 'collector_public_token' );
-			WC()->session->__unset( 'collector_private_id' );
+			wc_collector_unset_sessions();
+
 		} else {
 			// @todo - add logging here.
 			Collector_Checkout::log('collector_thankyou page hit but collector_private_id session not existing.');
@@ -329,8 +329,7 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 		}
 		if( isset( $_GET['purchase-status'] ) && 'not-completed' == $_GET['purchase-status'] ) {
 			// Unset Collector token and id
-			WC()->session->__unset( 'collector_public_token' );
-			WC()->session->__unset( 'collector_private_id' );
+			wc_collector_unset_sessions();
 			WC()->cart->empty_cart();
 			Collector_Checkout::log('Rendering simplified thankyou page (only display Collector thank you iframe).' );
 			return '<div class="collector-checkout-thankyou"></div>';

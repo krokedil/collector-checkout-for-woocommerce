@@ -68,3 +68,11 @@ function collector_wc_show_snippet() {
      
     echo $return;
 }
+
+/**
+ * Unset Collector public token and private id
+ */
+function wc_collector_unset_sessions() {
+	WC()->session->__unset( 'collector_public_token' );
+	WC()->session->__unset( 'collector_private_id' );
+}
