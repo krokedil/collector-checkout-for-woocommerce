@@ -87,13 +87,31 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 	}
 
 	public static function update_checkout() {
-		$private_id 	= WC()->session->get( 'collector_private_id' );
-		$customer_type 	= WC()->session->get( 'collector_customer_type' );
-		$update_fees 	= new Collector_Checkout_Requests_Update_Fees( $private_id, $customer_type );
-		$update_fees->request();
+		$private_id				= WC()->session->get( 'collector_private_id' );
+		$customer_type			= WC()->session->get( 'collector_customer_type' );
+		$update_fees			= new Collector_Checkout_Requests_Update_Fees( $private_id, $customer_type );
+		$update_fees_request	= $update_fees->request();
+
+		// Check that update fees request was ok
+		if( is_wp_error( $update_fees_request ) || !empty( $update_fees_request->error ) ) {
+			wc_collector_unset_sessions();
+			$return = array();
+			$return['redirect_url'] = wc_get_checkout_url();
+			wp_send_json_error( $return );
+			wp_die();
+		}
 
 		$update_cart 	= new Collector_Checkout_Requests_Update_Cart( $private_id, $customer_type );
-		$update_cart->request();
+		$update_cart_request = $update_cart->request();
+
+		// Check that update cart request was ok
+		if( is_wp_error( $update_cart_request ) || !empty( $update_cart_request->error ) ) {
+			wc_collector_unset_sessions();
+			$return = array();
+			$return['redirect_url'] = wc_get_checkout_url();
+			wp_send_json_error( $return );
+			wp_die();
+		}
 
 		wp_send_json_success();
 		wp_die();
