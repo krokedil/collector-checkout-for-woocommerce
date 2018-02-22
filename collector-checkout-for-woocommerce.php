@@ -8,7 +8,7 @@
  * Plugin Name:     Collector Checkout for WooCommerce
  * Plugin URI:      https://krokedil.se/collector/
  * Description:     Extends WooCommerce. Provides a <a href="https://www.collector.se/" target="_blank">Collector Checkout</a> checkout for WooCommerce.
- * Version:         0.8.1
+ * Version:         0.9.0
  * Author:          Krokedil
  * Author URI:      https://krokedil.se/
  * Text Domain:     collector-checkout-for-woocommerce
@@ -24,7 +24,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 define( 'COLLECTOR_BANK_PLUGIN_DIR', untrailingslashit( plugin_dir_path( __FILE__ ) ) );
 define( 'COLLECTOR_BANK_PLUGIN_URL', untrailingslashit( plugin_dir_url( __FILE__ ) ) );
-define( 'COLLECTOR_BANK_VERSION', '0.8.1' );
+define( 'COLLECTOR_BANK_VERSION', '0.9.0' );
 
 if ( ! class_exists( 'Collector_Checkout' ) ) {
 	class Collector_Checkout {
@@ -120,6 +120,11 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 				} else {
 					$checkout_initiated = 'no';
 				}
+				if( isset( $_GET['payment_successful'] ) && '1' == $_GET['payment_successful'] ) {
+					$payment_successful = '1';
+				} else {
+					$payment_successful = '0';
+				}
 				if( is_wc_endpoint_url( 'order-received' ) ) {
 					$is_thank_you_page = true;
 					if( isset( $_GET['key'] ) ) {
@@ -145,6 +150,7 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 					'order_id'             			=> $order_id,
 					'public_token'             		=> $public_token,
 					'checkout_initiated'			=> $checkout_initiated,
+					'payment_successful'			=> $payment_successful,
 					'purchase_status'             	=> $purchase_status,
 					'default_customer_type' 		=> wc_collector_get_default_customer_type(),
 					'collector_nonce' 				=> wp_create_nonce( 'collector_nonce' ),
@@ -331,12 +337,14 @@ function wc_collector_get_payment_method_name( $payment_method ) {
 	switch ( $payment_method ) {
 		
 		case 'Direct Invoice' :
+		case 'DirectInvoice' :
 			$payment_method = __( 'Collector Invoice', 'collector-checkout-for-woocommerce' );
 			break;
 		case 'Account' :
 			$payment_method = __( 'Collector Account', 'collector-checkout-for-woocommerce' );
 			break;
-		case 'PartPayment' :
+			case 'Part Payment' :
+			case 'PartPayment' :
 			$payment_method = __( 'Collector Part Payment', 'collector-checkout-for-woocommerce' );
 			break;
 		case 'Campaign' :
@@ -346,6 +354,7 @@ function wc_collector_get_payment_method_name( $payment_method ) {
 			$payment_method = __( 'Collector Card', 'collector-checkout-for-woocommerce' );
 			break;
 		case 'Bank Transfer' :
+		case 'BankTransfer' :
 			$payment_method = __( 'Collector Bank Transfer', 'collector-checkout-for-woocommerce' );
 			break;
 		default :
