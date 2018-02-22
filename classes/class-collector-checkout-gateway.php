@@ -139,7 +139,7 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 	 */
 	public function get_transaction_url( $order ) {
 		// Check if order is completed
-		$invoice_url = get_post_meta( $order->id, '_collector_invoice_url', true );
+		$invoice_url = get_post_meta( $order->get_id(), '_collector_invoice_url', true );
 		if ( $invoice_url ) {
 			$this->view_transaction_url = $invoice_url;
 		}
