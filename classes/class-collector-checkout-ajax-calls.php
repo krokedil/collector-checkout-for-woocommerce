@@ -226,7 +226,7 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 		
 		if( 'PurchaseCompleted' == $decoded_json->data->status ) {
 			// Save the payment method and payment id
-			$payment_method = $decoded_json->data->purchase->paymentMethod;
+			$payment_method = $decoded_json->data->purchase->paymentName;
 			$payment_id = $decoded_json->data->purchase->purchaseIdentifier;
 			WC()->session->set( 'collector_payment_method', $payment_method );
 			WC()->session->set( 'collector_payment_id', $payment_id );

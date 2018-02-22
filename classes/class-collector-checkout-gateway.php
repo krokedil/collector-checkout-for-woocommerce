@@ -183,7 +183,7 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 	public function process_payment( $order_id, $retry = false ) {
 		$order = wc_get_order( $order_id );
 
-		if ( 'Direct Invoice' == WC()->session->get( 'collector_payment_method' ) ) {
+		if ( 'DirectInvoice' == WC()->session->get( 'collector_payment_method' ) ) {
 			$product_id = $this->get_option( 'collector_invoice_fee' );
 			
 			if( $product_id ) {
@@ -250,7 +250,6 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 
 	public function collector_thankyou( $order_id ) {
 		$order = wc_get_order( $order_id );
-		
 		if( WC()->session->get( 'collector_private_id' ) ) {
 			
 			$private_id 	= get_post_meta( $order_id, '_collector_private_id', true );
@@ -261,7 +260,7 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 			$payment_data 	= $payment_data->request();
 			$payment_data 	= json_decode( $payment_data );
 			$payment_status = $payment_data->data->purchase->result;
-			$payment_method = $payment_data->data->purchase->paymentMethod;
+			$payment_method = $payment_data->data->purchase->paymentName;
 			$payment_id 	= $payment_data->data->purchase->purchaseIdentifier;
 			
 			update_post_meta( $order_id, '_collector_payment_method', $payment_method );
