@@ -2,11 +2,11 @@
 Contributors: collectorbank, krokedil, NiklasHogefjord
 Tags: ecommerce, e-commerce, woocommerce, collector, checkout
 Requires at least: 4.7
-Tested up to: 4.9.2
+Tested up to: 4.9.4
 Requires PHP: 5.6
 Stable tag: trunk
 WC requires at least: 3.0.0
-WC tested up to: 3.3.1
+WC tested up to: 3.3.2
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -39,6 +39,14 @@ For help setting up and configuring Collector Checkout for WooCommerce please re
 
 
 == CHANGELOG ==
+= 2018.02.22  	- version 0.9.0 =
+* Tweak         - Make initialize request to Collector before checkout page is rendered to avoid error/timeout and get a faster loading checkout.
+* Tweak         - Improved logging.
+* Tweak         - Avoid making update cart request directly after initialize request.
+* Fix           - WC 3.3 session bug fix that caused orders not being created correctly in backup order creation (server-to-server). 
+* Fix           - Create new checkout session in WooCommerce & Collector if update fees/update cart has error.
+* Fix           - Determine selected payment method on paymentName returned from Collector since paymentMethod has been debrecated.
+
 = 2018.02.16  	- version 0.8.1 =
 * Tweak			- Check order status in WooCommerce and compare order total with Collector on notification callback from Collector to avoid mismatch between the two.
 * Tweak			- Improved logging in update cart & update fees request.
