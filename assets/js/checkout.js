@@ -1,6 +1,6 @@
 (function ($) {
     'use strict';
-    var checkout_initiated = false;
+    var checkout_initiated = wc_collector_checkout.checkout_initiated;
 
     function get_new_checkout_iframe( customer ) {
 	    console.log( customer );
@@ -26,7 +26,7 @@
                 } else {
                 	$('#collector-bank-iframe').append('<script src="https://checkout.collector.se/collector-checkout-loader.js" data-lang="' + wc_collector_checkout.locale + '" data-token="' + publicToken + '" data-variant="' + customer + '" >');
                 }
-                checkout_initiated = true;
+                checkout_initiated = 'yes';
             } else {
                 $('#collector-bank-iframe').append('<ul class="woocommerce-error"><li>' + data.data + '</li></ul>');
                 console.log('error');
@@ -106,17 +106,18 @@
        $('.collector-checkout-tabs li').removeClass('current');
        $(this).addClass('current');
     });
+
     // Set the correct checked radio button
 	$( document ).ready(function() {
         $('.collector-checkout-tabs li').removeClass('current');
         $('li[data-tab="' + wc_collector_checkout.default_customer_type + '"]').addClass('current');
     });
+
 	// Suspend Collector Checkout during WooCommerce checkout update
     $(document).on('update_checkout', function () {
-        if ("collector_checkout" === $("input[name='payment_method']:checked").val() && checkout_initiated === true) {
-            window.collector.checkout.api.suspend();
+        if ("collector_checkout" === $("input[name='payment_method']:checked").val() && checkout_initiated == 'yes') {
+            //window.collector.checkout.api.suspend();
         }
-        checkout_initiated = true;
     });
     
     $(document).on('updated_checkout', function () {
@@ -205,7 +206,7 @@
     });
 
     function update_checkout() {
-        if( checkout_initiated === true ) {
+        if( checkout_initiated == 'yes' && wc_collector_checkout.payment_successful == 0 ) {
             //window.collector.checkout.api.suspend();
             var data = {
                 'action': 'update_checkout'
@@ -215,9 +216,12 @@
                     window.collector.checkout.api.resume();
                 } else {
                     console.log('error');
+                    window.location.href = data.data.redirect_url;
                 }
 
             });
+        } else {
+            checkout_initiated = 'yes';
         }
     }
 
