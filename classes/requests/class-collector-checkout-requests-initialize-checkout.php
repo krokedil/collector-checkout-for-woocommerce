@@ -40,7 +40,7 @@ class Collector_Checkout_Requests_Initialize_Checkout extends Collector_Checkout
 			'body'    => $this->request_body(),
 			'method'  => 'POST',
 		);
-		$this->log( 'Collector Init checkout request args: ' . json_encode( $request_args ) );
+		$this->log( 'Collector Init checkout request args: ' . stripslashes_deep( json_encode( $request_args ) ) );
 		
 		return $request_args;
 	}
@@ -49,9 +49,9 @@ class Collector_Checkout_Requests_Initialize_Checkout extends Collector_Checkout
 		$request_url = $this->base_url . '/checkout';
 		$request = wp_remote_request( $request_url, $this->get_request_args() );
 		if ( is_wp_error( $request ) ) {
-			$this->log( 'Collector init checkout request response ERROR: ' . json_encode( $request->get_error_message() ) . ' (Request endpoint: ' . $request_url . ')' );			
+			$this->log( 'Collector init checkout request response ERROR: ' . stripslashes_deep( json_encode( $request->get_error_message() ) ) . ' (Request endpoint: ' . $request_url . ')' );			
 		} else {
-			$this->log( 'Collector init checkout request response: ' . json_encode( $request ) . ' (Request endpoint: ' . $request_url . ')' );
+			$this->log( 'Collector init checkout request response: ' . stripslashes_deep( json_encode( $request ) ) . ' (Request endpoint: ' . $request_url . ')' );
 			$request = wp_remote_retrieve_body( $request );
 		}
 		
