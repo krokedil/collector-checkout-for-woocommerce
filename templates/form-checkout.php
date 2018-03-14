@@ -4,6 +4,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 wc_print_notices();
 do_action( 'woocommerce_before_checkout_form', $checkout );
+do_action( 'collector_wc_before_checkout_form' );
 ?>
 
     <form name="checkout" method="post" class="checkout woocommerce-checkout" action="<?php echo esc_url( wc_get_checkout_url() ); ?>" enctype="multipart/form-data">
