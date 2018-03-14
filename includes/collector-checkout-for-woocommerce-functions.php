@@ -51,7 +51,7 @@ function collector_wc_show_snippet() {
 			);
 			
 			echo("<script>console.log('Collector: ".json_encode($output)."');</script>");
-			$return = '<script src="' . $url . '" data-lang="' . $locale . '" data-token="' . $public_token . '" data-variant="' . $customer_type . '" >';
+			$return = '<script src="' . $url . '" data-lang="' . $locale . '" data-token="' . $public_token . '" data-variant="' . $customer_type . '" ></script>';
     	}
     	
     	
@@ -63,7 +63,7 @@ function collector_wc_show_snippet() {
 			'customer_type' => $customer_type,
 		);
 		echo("<script>console.log('Collector: ".json_encode($output)."');</script>");
-        $return = '<script src="' . $url . '" data-lang="' . $locale . '" data-token="' . $public_token . '" data-variant="' . $customer_type . '" >';
+        $return = '<script src="' . $url . '" data-lang="' . $locale . '" data-token="' . $public_token . '" data-variant="' . $customer_type . '" ></script>';
     }
      
     echo $return;
