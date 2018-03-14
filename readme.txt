@@ -6,7 +6,7 @@ Tested up to: 4.9.4
 Requires PHP: 5.6
 Stable tag: trunk
 WC requires at least: 3.0.0
-WC tested up to: 3.3.2
+WC tested up to: 3.3.3
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -39,6 +39,12 @@ For help setting up and configuring Collector Checkout for WooCommerce please re
 
 
 == CHANGELOG ==
+= 2018.03.14  	- version 0.9.1 =
+* Tweak         - Added collector_wc_before_checkout_form action hook in template file.
+* Tweak         - Calculate totals before rendering the Collector Checkout template file.
+* Fix           - Added closing scrip tag for Collector js file.
+* Fix           - Remove PHP notice when Collector iframe doesn't load correctly.
+
 = 2018.02.22  	- version 0.9.0 =
 * Tweak         - Make initialize request to Collector before checkout page is rendered to avoid error/timeout and get a faster loading checkout.
 * Tweak         - Improved logging.
