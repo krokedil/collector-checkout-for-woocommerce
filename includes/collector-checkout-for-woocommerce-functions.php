@@ -33,13 +33,12 @@ function collector_wc_show_snippet() {
         // Get a new public token from Collector
 		$init_checkout 	= new Collector_Checkout_Requests_Initialize_Checkout( $customer_type );
 		$request 		= $init_checkout->request();
-		$decode			= json_decode( $request );
 		
 		if ( is_wp_error( $request ) || empty( $request ) ) {
 			$return =  '<ul class="woocommerce-error"><li>' . sprintf( '%s <a href="%s" class="button wc-forward">%s</a>', __( 'Could not connect to Collector.', 'collector-checkout-for-woocommerce' ), wc_get_checkout_url(), __( 'Try again', 'collector-checkout-for-woocommerce' ) ) . '</li></ul>';
 			
 		} else {
-			
+			$decode	= json_decode( $request );
 			WC()->session->set( 'collector_public_token', $decode->data->publicToken );
 			WC()->session->set( 'collector_private_id', $decode->data->privateId );
 			
@@ -75,4 +74,13 @@ function collector_wc_show_snippet() {
 function wc_collector_unset_sessions() {
 	WC()->session->__unset( 'collector_public_token' );
 	WC()->session->__unset( 'collector_private_id' );
+}
+
+/**
+ * Calculates cart totals.
+ */
+function collector_wc_calculate_totals() {
+	WC()->cart->calculate_fees();
+	WC()->cart->calculate_shipping();
+	WC()->cart->calculate_totals();
 }
