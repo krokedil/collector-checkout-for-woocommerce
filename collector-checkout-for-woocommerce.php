@@ -127,7 +127,7 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 					$payment_successful = '0';
 				}
 				if( is_wc_endpoint_url( 'order-received' ) ) {
-					$is_thank_you_page = true;
+					$is_thank_you_page = 'yes';
 					if( isset( $_GET['key'] ) ) {
 						$order_id = wc_get_order_id_by_order_key(sanitize_text_field($_GET['key']));
 					} else {
@@ -139,7 +139,7 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 						$purchase_status = '';
 					}
 				} else {
-					$is_thank_you_page = false;
+					$is_thank_you_page = 'no';
 					$order_id = '';
 					$purchase_status = '';
 				}
