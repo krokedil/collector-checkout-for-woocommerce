@@ -39,6 +39,9 @@ For help setting up and configuring Collector Checkout for WooCommerce please re
 
 
 == CHANGELOG ==
+= 2018.03.21  	- version 0.9.2 =
+* Fix			- Update cart in WC & Collector checkout on collectorCheckoutCustomerUpdated event.
+
 = 2018.03.14  	- version 0.9.1 =
 * Tweak         - Added collector_wc_before_checkout_form action hook in template file.
 * Tweak         - Calculate totals before rendering the Collector Checkout template file.
