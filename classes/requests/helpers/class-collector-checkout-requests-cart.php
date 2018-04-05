@@ -28,6 +28,10 @@ class Collector_Checkout_Requests_Cart {
 			array_push( $items, $item_line );
 		}
 
+		if ( ! empty( WC()->cart->get_fees() ) ) {
+			$items = self::get_fees( $items );
+		}
+
 		// Check if we need to make any id/sku's unique (required by Collector)
 		$items = self::maybe_make_ids_unique( $items );
 		
@@ -52,6 +56,34 @@ class Collector_Checkout_Requests_Cart {
 			$part_number = $product->get_id();
 		}
 		return substr( $part_number, 0, 32 );
+	}
+
+	public static function get_fees( $items ) {
+
+		foreach ( WC()->cart->get_fees() as $fee_key => $fee ) {
+			
+			$fee_tax_amount = round( $fee->tax * 100 );
+			$fee_amount     = round( ( $fee->amount + $fee->tax ), 2 );
+			$_tax      = new WC_Tax();
+			$tmp_rates = $_tax->get_rates( $fee->tax_class );
+			$vat       = array_shift( $tmp_rates );
+			if ( isset( $vat['rate'] ) ) {
+				$fee_tax_rate = round( $vat['rate'] );
+			} else {
+				$fee_tax_rate = 0;
+			}
+			
+			$fee_item = array(
+				'id'            => 'fee|' . $fee->id,
+				'description'   => $fee->name,
+				'unitPrice'     => $fee_amount,
+				'quantity'     	=> 1,
+				'vat'           => $fee_tax_rate,
+			);
+
+			array_push( $items, $fee_item );
+		} // End foreach().
+		return $items;
 	}
 
 	public static function maybe_make_ids_unique( $items ) {
