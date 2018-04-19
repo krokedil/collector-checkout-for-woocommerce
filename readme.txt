@@ -6,7 +6,7 @@ Tested up to: 4.9.5
 Requires PHP: 5.6
 Stable tag: trunk
 WC requires at least: 3.0.0
-WC tested up to: 3.3.4
+WC tested up to: 3.3.5
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -39,6 +39,10 @@ For help setting up and configuring Collector Checkout for WooCommerce please re
 
 
 == CHANGELOG ==
+= 2018.04.19  	- version 0.9.4 =
+* Fix			- Change how Collector order activation response is interpret so activations also works for part payment.
+* Tweak         - Create new Collector session if currency is changed.  
+
 = 2018.04.09  	- version 0.9.3 =
 * Fix			- Send WooCommerce fees correctly to Collector.
 
