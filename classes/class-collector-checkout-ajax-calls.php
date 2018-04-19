@@ -45,7 +45,7 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 		$test_mode          = $collector_settings['test_mode'];
 		
 		// Use current token if one is stored in session previously and we still have the same customer type
-		if( !empty( $public_token ) &&  $customer_type == WC()->session->get( 'collector_customer_type' ) ) {	
+		if( !empty( $public_token ) &&  $customer_type == WC()->session->get( 'collector_customer_type' ) && get_woocommerce_currency() == WC()->session->get( 'collector_currency' ) ) {	
 			$return             = array(
 				'publicToken'   => WC()->session->get( 'collector_public_token' ),
 				'test_mode'     => $test_mode,
@@ -78,6 +78,7 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 				WC()->session->set( 'collector_public_token', $decode->data->publicToken );
 				WC()->session->set( 'collector_private_id', $decode->data->privateId );
 				WC()->session->set( 'collector_customer_type', $customer_type );
+				WC()->session->set( 'collector_currency', get_woocommerce_currency() );
 				
 				wp_send_json_success( $return );
 				wp_die();

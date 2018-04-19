@@ -27,9 +27,10 @@ function collector_wc_show_snippet() {
         WC()->session->set( 'collector_customer_type', $customer_type );
     }
     
-    $public_token 		= WC()->session->get( 'collector_public_token' );
-    
-    if( empty( $public_token ) ) {
+	$public_token 		= WC()->session->get( 'collector_public_token' );
+	$collector_currency = WC()->session->get( 'collector_currency' );
+	
+    if( empty( $public_token ) || $collector_currency !== get_woocommerce_currency() ) {
         // Get a new public token from Collector
 		$init_checkout 	= new Collector_Checkout_Requests_Initialize_Checkout( $customer_type );
 		$request 		= $init_checkout->request();
@@ -41,6 +42,7 @@ function collector_wc_show_snippet() {
 			$decode	= json_decode( $request );
 			WC()->session->set( 'collector_public_token', $decode->data->publicToken );
 			WC()->session->set( 'collector_private_id', $decode->data->privateId );
+			WC()->session->set( 'collector_currency', get_woocommerce_currency() );
 			
 			$public_token = $decode->data->publicToken;
 			$output             = array(
@@ -74,6 +76,7 @@ function collector_wc_show_snippet() {
 function wc_collector_unset_sessions() {
 	WC()->session->__unset( 'collector_public_token' );
 	WC()->session->__unset( 'collector_private_id' );
+	WC()->session->__unset( 'collector_currency' );
 }
 
 /**
