@@ -63,7 +63,7 @@ class Collector_Checkout_SOAP_Requests_Activate_Invoice {
 		}
 		$order = wc_get_order( $order_id );
 		$due_date = '';
-		if ( isset( $request->TotalAmount ) && $request->TotalAmount == $order->get_total() ) {
+		if ( isset( $request->TotalAmount ) ) {
 			if( isset( $request->InvoiceUrl ) ) {
 				update_post_meta( $order_id, '_collector_invoice_url', wc_clean( $request->InvoiceUrl ) );
 				$due_date = date( get_option( 'date_format' ) . ' - ' . get_option( 'time_format' ), strtotime( $request->DueDate ) );
@@ -72,6 +72,7 @@ class Collector_Checkout_SOAP_Requests_Activate_Invoice {
 
 			$order->add_order_note( sprintf( __( 'Order activated with Collector Bank.' . $due_date, 'collector-checkout-for-woocommerce' ) ) );
 			update_post_meta( $order_id, '_collector_order_activated', time() );
+			$this->log( 'Activate order response for order ID ' . $order_id . ': ' . var_export( $request, true ) );
 			
 		} else {
 			$order->update_status( $order->get_status() );
