@@ -277,9 +277,11 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 				$order->payment_complete( $payment_id );
 			} elseif( 'Signing' == $payment_status ) {
 				$order->add_order_note( __( 'Order is waiting for electronic signing by customer. Payment ID: ', 'woocommerce-gateway-klarna' ) . $payment_id );
+				update_post_meta( $order_id, '_transaction_id', $payment_id );
 				$order->update_status( 'on-hold' );
 			} else {
 				$order->add_order_note( __( 'Order is PENDING APPROVAL by Collector. Payment ID: ', 'woocommerce-gateway-klarna' ) . $payment_id );
+				update_post_meta( $order_id, '_transaction_id', $payment_id );
 				$order->update_status( 'on-hold' );
 			}
 			
