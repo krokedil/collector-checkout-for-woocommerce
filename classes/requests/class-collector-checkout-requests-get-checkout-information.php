@@ -7,10 +7,16 @@ class Collector_Checkout_Requests_Get_Checkout_Information extends Collector_Che
 
 	public $path = '';
 
-	public function __construct( $private_id, $customer_type ) {
+	public function __construct( $private_id, $customer_type, $currency = false ) {
 		parent::__construct();
+
+		// Use current selected (or store base) currency if it's not passed in the constructor
+		if( empty( $currency ) ) {
+			$currency = get_woocommerce_currency();
+		}
+		
 		$collector_settings = get_option( 'woocommerce_collector_checkout_settings' );
-		switch ( get_woocommerce_currency() ) {
+		switch ( $currency ) {
 			case 'SEK' :
 				$store_id = $collector_settings['collector_merchant_id_se_' . $customer_type];
 				break;
