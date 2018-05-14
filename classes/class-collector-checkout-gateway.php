@@ -112,13 +112,14 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 				$collector_b2c_se 	= $collector_settings['collector_merchant_id_se_b2c'];
 				$collector_b2b_se 	= $collector_settings['collector_merchant_id_se_b2b'];
 				$collector_b2c_no 	= $collector_settings['collector_merchant_id_no_b2c'];
+				$collector_b2b_no 	= $collector_settings['collector_merchant_id_no_b2b'];
 	
 				// Currency check.
 				if ( ! in_array( get_woocommerce_currency(), array( 'NOK', 'SEK' ) ) ) {
 					return false;
 				}
 				// Store ID check
-				if( 'NOK' == get_woocommerce_currency() && ! $collector_b2c_no ) {
+				if( 'NOK' == get_woocommerce_currency() && ( ! $collector_b2c_no && ! $collector_b2b_no  ) ) {
 					return false;
 				}
 				if( 'SEK' == get_woocommerce_currency() && ( ! $collector_b2c_se && ! $collector_b2b_se  ) ) {
