@@ -292,12 +292,13 @@ function wc_collector_get_available_customer_types() {
 	$collector_b2c_se 	= $collector_settings['collector_merchant_id_se_b2c'];
 	$collector_b2b_se 	= $collector_settings['collector_merchant_id_se_b2b'];
 	$collector_b2c_no 	= $collector_settings['collector_merchant_id_no_b2c'];
+	$collector_b2b_no 	= $collector_settings['collector_merchant_id_no_b2b'];
 
-	if( 'SEK' == get_woocommerce_currency() && $collector_b2c_se && $collector_b2b_se ) {
+	if( ( 'SEK' == get_woocommerce_currency() && $collector_b2c_se && $collector_b2b_se ) || ( 'NOK' == get_woocommerce_currency() && $collector_b2c_no && $collector_b2b_no ) ) {
 		return 'collector-b2c-b2b';
 	} elseif( ( 'SEK' == get_woocommerce_currency() && $collector_b2c_se ) || ( 'NOK' == get_woocommerce_currency() && $collector_b2c_no ) ) {
 		return 'collector-b2c';
-	} elseif( $collector_b2b_se ) {
+	} elseif( $collector_b2b_se || $collector_b2b_no ) {
 		return 'collector-b2b';
 	}
 }
@@ -309,22 +310,40 @@ function wc_collector_get_default_customer_type() {
 	$collector_b2c_se 		= $collector_settings['collector_merchant_id_se_b2c'];
 	$collector_b2b_se 		= $collector_settings['collector_merchant_id_se_b2b'];
 	$collector_b2c_no 		= $collector_settings['collector_merchant_id_no_b2c'];
+	$collector_b2b_no 		= $collector_settings['collector_merchant_id_no_b2b'];
 	
-	if( $collector_b2c_no && 'NOK' == get_woocommerce_currency() ) {
-		return 'b2c';
-	} elseif( $collector_b2c_se && empty( $default_customer_type ) ) {
-		return 'b2c';
-	} elseif( $collector_b2b_se && empty( $default_customer_type ) ) {
-		return 'b2b';
-	} elseif( $collector_b2c_se && 'b2c' == $default_customer_type ) {
-		return 'b2c';
-	} elseif( $collector_b2b_se && 'b2b' == $default_customer_type ) {
-		return 'b2b';
-	} elseif( empty( $collector_b2c_se ) && !empty( $collector_b2b_se ) && 'b2c' == $default_customer_type ) {
-		return 'b2b';
-	} else {
-		return 'b2c';
+	if( 'NOK' == get_woocommerce_currency() ) {
+		if( $collector_b2c_no && empty( $default_customer_type ) ) {
+			return 'b2c';
+		} elseif( $collector_b2b_no && empty( $default_customer_type ) ) {
+			return 'b2b';
+		} elseif( $collector_b2c_no && 'b2c' == $default_customer_type ) {
+			return 'b2c';
+		} elseif( $collector_b2b_no && 'b2b' == $default_customer_type ) {
+			return 'b2b';
+		} elseif( empty( $collector_b2c_no ) && !empty( $collector_b2b_no ) && 'b2c' == $default_customer_type ) {
+			return 'b2b';
+		} else {
+			return 'b2c';
+		}
 	}
+
+	if( 'SEK' == get_woocommerce_currency() ) {
+		if( $collector_b2c_se && empty( $default_customer_type ) ) {
+			return 'b2c';
+		} elseif( $collector_b2b_se && empty( $default_customer_type ) ) {
+			return 'b2b';
+		} elseif( $collector_b2c_se && 'b2c' == $default_customer_type ) {
+			return 'b2c';
+		} elseif( $collector_b2b_se && 'b2b' == $default_customer_type ) {
+			return 'b2b';
+		} elseif( empty( $collector_b2c_se ) && !empty( $collector_b2b_se ) && 'b2c' == $default_customer_type ) {
+			return 'b2b';
+		} else {
+			return 'b2c';
+		}
+	}
+	
 }
 
 /**
