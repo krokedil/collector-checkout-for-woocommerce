@@ -398,8 +398,10 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 			$email                  = isset( $customer_data['customer_data']->data->businessCustomer->email ) ? $customer_data['customer_data']->data->businessCustomer->email : '.';
 
 			$org_nr                 = isset( $customer_data['customer_data']->data->businessCustomer->organizationNumber ) ? $customer_data['customer_data']->data->businessCustomer->organizationNumber : '.';
+			$invoice_reference		= isset( $customer_data['customer_data']->data->businessCustomer->invoiceReference ) ? $customer_data['customer_data']->data->businessCustomer->invoiceReference : '.';
 
 			WC()->session->set( 'collector_org_nr', $org_nr );
+			WC()->session->set( 'collector_invoice_reference', $invoice_reference );
 		}
 		$countryCode            = isset( $customer_data['customer_data']->data->countryCode ) ? $customer_data['customer_data']->data->countryCode : $base_country;
 

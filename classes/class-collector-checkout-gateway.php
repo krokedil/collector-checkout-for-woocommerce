@@ -306,6 +306,13 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 	            update_post_meta( $order_id, '_collector_org_nr', $org_nr );
 	            WC()->session->__unset( 'collector_org_nr' );
             }
+            
+            // Check if there is a invoice refernce set, if so add post meta
+            if ( WC()->session->get( 'collector_invoice_reference' ) ) {
+	            $invoice_reference = WC()->session->get( 'collector_invoice_reference' );
+	            update_post_meta( $order_id, 'collector_invoice_reference', $invoice_reference );
+	            WC()->session->__unset( 'collector_invoice_reference' );
+            }
             // Unset Collector token and id
 			wc_collector_unset_sessions();
 
