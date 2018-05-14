@@ -154,6 +154,7 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 					'payment_successful'			=> $payment_successful,
 					'purchase_status'             	=> $purchase_status,
 					'default_customer_type' 		=> wc_collector_get_default_customer_type(),
+					'selected_customer_type' 		=> wc_collector_get_selected_customer_type(),
 					'collector_nonce' 				=> wp_create_nonce( 'collector_nonce' ),
 					'refresh_checkout_fragment_url'	=> WC_AJAX::get_endpoint( 'update_fragment' ),
 					'get_public_token_url'   		=> WC_AJAX::get_endpoint( 'get_public_token' ),
@@ -315,7 +316,7 @@ function wc_collector_get_default_customer_type() {
 	if( 'NOK' == get_woocommerce_currency() ) {
 		if( $collector_b2c_no && empty( $default_customer_type ) ) {
 			return 'b2c';
-		} elseif( $collector_b2b_no && empty( $default_customer_type ) ) {
+		} elseif( $collector_b2b_no && empty( $default_customer_type ) ) {		
 			return 'b2b';
 		} elseif( $collector_b2c_no && 'b2c' == $default_customer_type ) {
 			return 'b2c';
@@ -344,6 +345,19 @@ function wc_collector_get_default_customer_type() {
 		}
 	}
 	
+}
+
+function wc_collector_get_selected_customer_type() {
+	$selected_customer_type = false;
+	if ( method_exists( WC()->session, 'get' ) ) {
+		$selected_customer_type = WC()->session->get( 'collector_customer_type' );
+	}
+
+	if( empty( $selected_customer_type ) ) {
+		$selected_customer_type = wc_collector_get_default_customer_type();
+	}
+
+	return $selected_customer_type;
 }
 
 /**
