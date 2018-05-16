@@ -310,7 +310,7 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
             // Check if there is a invoice refernce set, if so add post meta
             if ( WC()->session->get( 'collector_invoice_reference' ) ) {
 	            $invoice_reference = WC()->session->get( 'collector_invoice_reference' );
-	            update_post_meta( $order_id, 'collector_invoice_reference', $invoice_reference );
+	            update_post_meta( $order_id, '_collector_invoice_reference', $invoice_reference );
 	            WC()->session->__unset( 'collector_invoice_reference' );
             }
             // Unset Collector token and id
@@ -404,9 +404,12 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 
     public function add_org_nr_to_order( $order ) {
 	    if ( 'collector_checkout' === $order->get_payment_method() ) {
-		    $order_id = $order->get_order_number();
+		    $order_id = $order->get_id();
 		    if ( get_post_meta( $order_id, '_collector_org_nr' ) ) {
-			    echo '<p><strong>' . __( 'Org Nr', 'collector-checkout-for-woocommerce' ) . ':</strong> ' . get_post_meta( $order_id, '_collector_org_nr', true ) . '</p>';
+			    echo '<p class="form-field form-field-wide"><strong>' . __( 'Org Nr', 'collector-checkout-for-woocommerce' ) . ':</strong> ' . get_post_meta( $order_id, '_collector_org_nr', true ) . '</p>';
+			}
+			if ( get_post_meta( $order_id, '_collector_invoice_reference' ) ) {
+			    echo '<p class="form-field form-field-wide"><strong>' . __( 'Invoice reference', 'collector-checkout-for-woocommerce' ) . ':</strong> ' . get_post_meta( $order_id, '_collector_invoice_reference', true ) . '</p>';
 		    }
 	    }
     }
