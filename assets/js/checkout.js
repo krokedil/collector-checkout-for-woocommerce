@@ -375,8 +375,10 @@
 function checkout_error() {
     console.log('checkout error');
 	if ("collector_checkout" === $("input[name='payment_method']:checked").val()) {
+        var error_message = $( ".woocommerce-NoticeGroup-checkout" ).text();
         var data = {
-            'action': 'checkout_error'
+            'action': 'checkout_error',
+            'error_message': error_message,
         };
         
         jQuery.post(wc_collector_checkout.checkout_error, data, function (data) {

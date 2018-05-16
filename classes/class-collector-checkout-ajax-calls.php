@@ -489,8 +489,14 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 		$create_order->update_order_reference_in_collector( $order, $customer_type, $private_id );
 
 		//Add order note
-		$order->add_order_note( __( 'This order was made as a fallback due to an error in the checkout, please verify the order with Collector.', 'collector-checkout-for-woocommerce' ) );
-
+		if ( ! empty( $_POST['error_message'] ) ) { // Input var okay.
+			$error_message = 'Error message: ' . sanitize_text_field( trim( $_POST['error_message'] ) );
+		} else {
+			$error_message = 'Error message could not be retreived';
+		}
+		$note = sprintf( __( 'This order was made as a fallback due to an error in the checkout (%s). Please verify the order with Collector.', 'collector-checkout-for-woocommerce' ), $error_message );
+		$order->add_order_note( $note );
+		
 		$redirect_url = $order->get_checkout_order_received_url();
 		$return = array( 'redirect_url'	=>	$redirect_url );
 		wp_send_json_success( $return );
