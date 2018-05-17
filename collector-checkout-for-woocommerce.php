@@ -8,11 +8,15 @@
  * Plugin Name:     Collector Checkout for WooCommerce
  * Plugin URI:      https://krokedil.se/collector/
  * Description:     Extends WooCommerce. Provides a <a href="https://www.collector.se/" target="_blank">Collector Checkout</a> checkout for WooCommerce.
- * Version:         0.9.4
+ * Version:         1.0.0
  * Author:          Krokedil
  * Author URI:      https://krokedil.se/
  * Text Domain:     collector-checkout-for-woocommerce
  * Domain Path:     /languages
+ * 
+ * WC requires at least: 3.0.0
+ * WC tested up to: 3.4.0
+ *
  * Copyright:       © 2017-2018 Krokedil.
  * License:         GNU General Public License v3.0
  * License URI:     http://www.gnu.org/licenses/gpl-3.0.html
@@ -24,7 +28,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 define( 'COLLECTOR_BANK_PLUGIN_DIR', untrailingslashit( plugin_dir_path( __FILE__ ) ) );
 define( 'COLLECTOR_BANK_PLUGIN_URL', untrailingslashit( plugin_dir_url( __FILE__ ) ) );
-define( 'COLLECTOR_BANK_VERSION', '0.9.4' );
+define( 'COLLECTOR_BANK_VERSION', '1.0.0' );
 
 if ( ! class_exists( 'Collector_Checkout' ) ) {
 	class Collector_Checkout {
@@ -64,6 +68,8 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 			include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-api-callbacks.php' );
 			include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-status.php' );
 			include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-templates.php' );
+			include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-gdpr.php' );
+
 			include_once( COLLECTOR_BANK_PLUGIN_DIR . '/includes/collector-checkout-for-woocommerce-functions.php' );
 			
 			// Include and add the Gateway
@@ -154,6 +160,7 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 					'payment_successful'			=> $payment_successful,
 					'purchase_status'             	=> $purchase_status,
 					'default_customer_type' 		=> wc_collector_get_default_customer_type(),
+					'selected_customer_type' 		=> wc_collector_get_selected_customer_type(),
 					'collector_nonce' 				=> wp_create_nonce( 'collector_nonce' ),
 					'refresh_checkout_fragment_url'	=> WC_AJAX::get_endpoint( 'update_fragment' ),
 					'get_public_token_url'   		=> WC_AJAX::get_endpoint( 'get_public_token' ),
@@ -292,12 +299,13 @@ function wc_collector_get_available_customer_types() {
 	$collector_b2c_se 	= $collector_settings['collector_merchant_id_se_b2c'];
 	$collector_b2b_se 	= $collector_settings['collector_merchant_id_se_b2b'];
 	$collector_b2c_no 	= $collector_settings['collector_merchant_id_no_b2c'];
+	$collector_b2b_no 	= $collector_settings['collector_merchant_id_no_b2b'];
 
-	if( 'SEK' == get_woocommerce_currency() && $collector_b2c_se && $collector_b2b_se ) {
+	if( ( 'SEK' == get_woocommerce_currency() && $collector_b2c_se && $collector_b2b_se ) || ( 'NOK' == get_woocommerce_currency() && $collector_b2c_no && $collector_b2b_no ) ) {
 		return 'collector-b2c-b2b';
 	} elseif( ( 'SEK' == get_woocommerce_currency() && $collector_b2c_se ) || ( 'NOK' == get_woocommerce_currency() && $collector_b2c_no ) ) {
 		return 'collector-b2c';
-	} elseif( $collector_b2b_se ) {
+	} elseif( $collector_b2b_se || $collector_b2b_no ) {
 		return 'collector-b2b';
 	}
 }
@@ -309,22 +317,53 @@ function wc_collector_get_default_customer_type() {
 	$collector_b2c_se 		= $collector_settings['collector_merchant_id_se_b2c'];
 	$collector_b2b_se 		= $collector_settings['collector_merchant_id_se_b2b'];
 	$collector_b2c_no 		= $collector_settings['collector_merchant_id_no_b2c'];
+	$collector_b2b_no 		= $collector_settings['collector_merchant_id_no_b2b'];
 	
-	if( $collector_b2c_no && 'NOK' == get_woocommerce_currency() ) {
-		return 'b2c';
-	} elseif( $collector_b2c_se && empty( $default_customer_type ) ) {
-		return 'b2c';
-	} elseif( $collector_b2b_se && empty( $default_customer_type ) ) {
-		return 'b2b';
-	} elseif( $collector_b2c_se && 'b2c' == $default_customer_type ) {
-		return 'b2c';
-	} elseif( $collector_b2b_se && 'b2b' == $default_customer_type ) {
-		return 'b2b';
-	} elseif( empty( $collector_b2c_se ) && !empty( $collector_b2b_se ) && 'b2c' == $default_customer_type ) {
-		return 'b2b';
-	} else {
-		return 'b2c';
+	if( 'NOK' == get_woocommerce_currency() ) {
+		if( $collector_b2c_no && empty( $default_customer_type ) ) {
+			return 'b2c';
+		} elseif( $collector_b2b_no && empty( $default_customer_type ) ) {		
+			return 'b2b';
+		} elseif( $collector_b2c_no && 'b2c' == $default_customer_type ) {
+			return 'b2c';
+		} elseif( $collector_b2b_no && 'b2b' == $default_customer_type ) {
+			return 'b2b';
+		} elseif( empty( $collector_b2c_no ) && !empty( $collector_b2b_no ) && 'b2c' == $default_customer_type ) {
+			return 'b2b';
+		} else {
+			return 'b2c';
+		}
 	}
+
+	if( 'SEK' == get_woocommerce_currency() ) {
+		if( $collector_b2c_se && empty( $default_customer_type ) ) {
+			return 'b2c';
+		} elseif( $collector_b2b_se && empty( $default_customer_type ) ) {
+			return 'b2b';
+		} elseif( $collector_b2c_se && 'b2c' == $default_customer_type ) {
+			return 'b2c';
+		} elseif( $collector_b2b_se && 'b2b' == $default_customer_type ) {
+			return 'b2b';
+		} elseif( empty( $collector_b2c_se ) && !empty( $collector_b2b_se ) && 'b2c' == $default_customer_type ) {
+			return 'b2b';
+		} else {
+			return 'b2c';
+		}
+	}
+	
+}
+
+function wc_collector_get_selected_customer_type() {
+	$selected_customer_type = false;
+	if ( method_exists( WC()->session, 'get' ) ) {
+		$selected_customer_type = WC()->session->get( 'collector_customer_type' );
+	}
+
+	if( empty( $selected_customer_type ) ) {
+		$selected_customer_type = wc_collector_get_default_customer_type();
+	}
+
+	return $selected_customer_type;
 }
 
 /**

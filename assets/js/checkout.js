@@ -111,7 +111,7 @@
     // Set the correct checked radio button
 	$( document ).ready(function() {
         $('.collector-checkout-tabs li').removeClass('current');
-        $('li[data-tab="' + wc_collector_checkout.default_customer_type + '"]').addClass('current');
+        $('li[data-tab="' + wc_collector_checkout.selected_customer_type + '"]').addClass('current');
     });
 
 	// Suspend Collector Checkout during WooCommerce checkout update
@@ -357,7 +357,7 @@
                             } else {
                                 console.log(wc_checkout_params.i18n_checkout_error);
                             }
-                            checkout_error();
+                            checkout_error( result.messages );
                         }
                     },
                     error: function (jqXHR, textStatus, errorThrown) {
@@ -372,20 +372,22 @@
     }
 
     // When WooCommerce checkout submission fails
-function checkout_error() {
-    console.log('checkout error');
-	if ("collector_checkout" === $("input[name='payment_method']:checked").val()) {
-        var data = {
-            'action': 'checkout_error'
-        };
+    function checkout_error( error_messages ) {
+        console.log('checkout error ' + $( error_messages ).text() );
         
-        jQuery.post(wc_collector_checkout.checkout_error, data, function (data) {
-            if (true === data.success) {
-                console.log('Collector checkout error');
-                console.log(data.data.redirect_url);
-                window.location.href = data.data.redirect_url;
-            }
-        });
+        if ("collector_checkout" === $("input[name='payment_method']:checked").val()) {
+            var data = {
+                'action': 'checkout_error',
+                'error_message': $( error_messages ).text(),
+            };
+            
+            jQuery.post(wc_collector_checkout.checkout_error, data, function (data) {
+                if (true === data.success) {
+                    console.log('Collector checkout error');
+                    console.log(data.data.redirect_url);
+                    window.location.href = data.data.redirect_url;
+                }
+            });
+        }
     }
-}
 }(jQuery));

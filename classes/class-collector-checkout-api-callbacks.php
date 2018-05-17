@@ -85,7 +85,7 @@ class Collector_Api_Callbacks {
 	 * @throws Exception WC_Data_Exception.
 	 */
 	public function check_order_status( $private_id, $public_token, $customer_type, $order ) {
-		$response 			= new Collector_Checkout_Requests_Get_Checkout_Information( $private_id, $customer_type );
+		$response 			= new Collector_Checkout_Requests_Get_Checkout_Information( $private_id, $customer_type, $order->get_currency() );
 		$response 			= $response->request();
 		$collector_order 	= json_decode( $response );
 		

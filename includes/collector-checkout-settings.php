@@ -80,6 +80,13 @@ return apply_filters( 'collector_checkout_settings',
 			'default'       => '',
 			'desc_tip'      => true,
 		),
+		'collector_merchant_id_no_b2b'     => array(
+			'title'         => __( 'Merchant ID Norway B2B', 'collector-checkout-for-woocommerce' ),
+			'type'          => 'text',
+			'description'   => __( 'Enter your Collector Checkout Merchant ID for B2B purchases in Norway', 'collector-checkout-for-woocommerce' ),
+			'default'       => '',
+			'desc_tip'      => true,
+		),
 		'checkout_settings_title' => array(
 			'title' => __( 'Checkout settings', 'collector-checkout-for-woocommerce' ),
 			'type'  => 'title',

@@ -398,8 +398,10 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 			$email                  = isset( $customer_data['customer_data']->data->businessCustomer->email ) ? $customer_data['customer_data']->data->businessCustomer->email : '.';
 
 			$org_nr                 = isset( $customer_data['customer_data']->data->businessCustomer->organizationNumber ) ? $customer_data['customer_data']->data->businessCustomer->organizationNumber : '.';
+			$invoice_reference		= isset( $customer_data['customer_data']->data->businessCustomer->invoiceReference ) ? $customer_data['customer_data']->data->businessCustomer->invoiceReference : '.';
 
 			WC()->session->set( 'collector_org_nr', $org_nr );
+			WC()->session->set( 'collector_invoice_reference', $invoice_reference );
 		}
 		$countryCode            = isset( $customer_data['customer_data']->data->countryCode ) ? $customer_data['customer_data']->data->countryCode : $base_country;
 
@@ -453,6 +455,15 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 
 		//Add fees to order.
 		$create_order->add_order_fees( $order );
+
+		// Maybe add invoice fee to order
+		if ( 'DirectInvoice' == WC()->session->get( 'collector_payment_method' ) ) {
+			$collector_settings = get_option( 'woocommerce_collector_checkout_settings' );
+			$product_id = $collector_settings['collector_invoice_fee'];
+			if( $product_id ) {
+				wc_collector_add_invoice_fee_to_order( $order_id, $product_id );
+			}
+		}
 		
 		//Add shipping to order.
 		$create_order->add_order_shipping( $order );
@@ -487,8 +498,14 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 		$create_order->update_order_reference_in_collector( $order, $customer_type, $private_id );
 
 		//Add order note
-		$order->add_order_note( __( 'This order was made as a fallback due to an error in the checkout, please verify the order with Collector.', 'collector-checkout-for-woocommerce' ) );
-
+		if ( ! empty( $_POST['error_message'] ) ) { // Input var okay.
+			$error_message = 'Error message: ' . sanitize_text_field( trim( $_POST['error_message'] ) );
+		} else {
+			$error_message = 'Error message could not be retreived';
+		}
+		$note = sprintf( __( 'This order was made as a fallback due to an error in the checkout (%s). Please verify the order with Collector.', 'collector-checkout-for-woocommerce' ), $error_message );
+		$order->add_order_note( $note );
+		
 		$redirect_url = $order->get_checkout_order_received_url();
 		$return = array( 'redirect_url'	=>	$redirect_url );
 		wp_send_json_success( $return );

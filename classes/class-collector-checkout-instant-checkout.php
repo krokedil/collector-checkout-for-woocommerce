@@ -13,7 +13,11 @@ class Collector_Checkout_Instant_Checkout {
 		$collector_settings = get_option( 'woocommerce_collector_checkout_settings' );
 		$instant_checkout = $collector_settings['collector_instant_checkout'];
 		if ( is_product() && 'no' !== $instant_checkout ) {
-			//echo '<br><br><script src="https://checkout-uat.collector.se/collector-instant-loader.js" data-lang="sv-SE"></script>';
+			if( 'NOK' == get_woocommerce_currency() ) {
+				$locale = 'nb-NO';
+			} else {
+				$locale = 'sv-SE';
+			}
 			?>
 			
 			<button id="button-instant-checkout" type="button" class="single_add_to_cart_button button alt button-expand-collapse is-collapsed">Snabbköp<span class="button-expand-collapse-additional"> denna vara</span></button>
@@ -29,7 +33,7 @@ class Collector_Checkout_Instant_Checkout {
 							<script
 							    type="text/javascript"
 							    src="https://checkout-uat.collector.se/collector-instant-loader.js"
-							    data-lang="sv-SE"
+							    data-lang="<?php echo $locale;?>"
 							    data-theme="core"
 							    data-instance-id="INSTANT_CHECKOUT_MODAL">
 							</script>

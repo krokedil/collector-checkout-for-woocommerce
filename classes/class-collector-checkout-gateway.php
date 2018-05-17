@@ -112,13 +112,14 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 				$collector_b2c_se 	= $collector_settings['collector_merchant_id_se_b2c'];
 				$collector_b2b_se 	= $collector_settings['collector_merchant_id_se_b2b'];
 				$collector_b2c_no 	= $collector_settings['collector_merchant_id_no_b2c'];
+				$collector_b2b_no 	= $collector_settings['collector_merchant_id_no_b2b'];
 	
 				// Currency check.
 				if ( ! in_array( get_woocommerce_currency(), array( 'NOK', 'SEK' ) ) ) {
 					return false;
 				}
 				// Store ID check
-				if( 'NOK' == get_woocommerce_currency() && ! $collector_b2c_no ) {
+				if( 'NOK' == get_woocommerce_currency() && ( ! $collector_b2c_no && ! $collector_b2b_no  ) ) {
 					return false;
 				}
 				if( 'SEK' == get_woocommerce_currency() && ( ! $collector_b2c_se && ! $collector_b2b_se  ) ) {
@@ -183,51 +184,12 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 	public function process_payment( $order_id, $retry = false ) {
 		$order = wc_get_order( $order_id );
 
+		// Maybe add invoice fee to order
 		if ( 'DirectInvoice' == WC()->session->get( 'collector_payment_method' ) ) {
 			$product_id = $this->get_option( 'collector_invoice_fee' );
-			
 			if( $product_id ) {
-
-				$product = wc_get_product( $product_id );
-				
-				if ( is_object( $product ) ) {
-					$tax_display_mode 	= get_option('woocommerce_tax_display_shop');
-					$price 				= wc_get_price_excluding_tax( $product );
-					
-					if ( $product->is_taxable() ) {
-						$product_tax = true;
-					} else {
-						$product_tax = false;
-					}
-					
-					$_tax = new WC_Tax();
-					$tmp_rates = $_tax->get_base_tax_rates( $product->get_tax_class() );
-					$_vat = array_shift( $tmp_rates );// Get the rate 
-					//Check what kind of tax rate we have 
-					if( $product->is_taxable() && isset($_vat['rate']) ) {
-						$vat_rate=round($_vat['rate']);
-					} else {
-						//if empty, set 0% as rate
-						$vat_rate = 0;
-					}
-					
-					$collector_fee            	= new stdClass();
-					$collector_fee->id        	= sanitize_title( $product->get_title() );
-					$collector_fee->name      	= $product->get_title();
-					$collector_fee->amount    	= $price;
-					$collector_fee->taxable   	= $product_tax;
-					$collector_fee->tax       	= $vat_rate;
-					$collector_fee->tax_data  	= array();
-					$collector_fee->tax_class 	= $product->get_tax_class();
-					$fee_id                   	= $order->add_fee( $collector_fee );
-		
-					if ( ! $fee_id ) {
-						$order->add_order_note( __( 'Unable to add Collector Bank Invoice Fee to the order.', 'collector-checkout-for-woocommerce' ) );
-					}
-					$order->calculate_totals( true );
-				}
+				wc_collector_add_invoice_fee_to_order( $order_id, $product_id );
 			}
-			
 		}
 
 		WC()->session->__unset( 'collector_customer_order_note' );
@@ -277,9 +239,11 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 				$order->payment_complete( $payment_id );
 			} elseif( 'Signing' == $payment_status ) {
 				$order->add_order_note( __( 'Order is waiting for electronic signing by customer. Payment ID: ', 'woocommerce-gateway-klarna' ) . $payment_id );
+				update_post_meta( $order_id, '_transaction_id', $payment_id );
 				$order->update_status( 'on-hold' );
 			} else {
 				$order->add_order_note( __( 'Order is PENDING APPROVAL by Collector. Payment ID: ', 'woocommerce-gateway-klarna' ) . $payment_id );
+				update_post_meta( $order_id, '_transaction_id', $payment_id );
 				$order->update_status( 'on-hold' );
 			}
 			
@@ -302,6 +266,13 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 	            $org_nr = WC()->session->get( 'collector_org_nr' );
 	            update_post_meta( $order_id, '_collector_org_nr', $org_nr );
 	            WC()->session->__unset( 'collector_org_nr' );
+            }
+            
+            // Check if there is a invoice refernce set, if so add post meta
+            if ( WC()->session->get( 'collector_invoice_reference' ) ) {
+	            $invoice_reference = WC()->session->get( 'collector_invoice_reference' );
+	            update_post_meta( $order_id, '_collector_invoice_reference', $invoice_reference );
+	            WC()->session->__unset( 'collector_invoice_reference' );
             }
             // Unset Collector token and id
 			wc_collector_unset_sessions();
@@ -394,9 +365,12 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 
     public function add_org_nr_to_order( $order ) {
 	    if ( 'collector_checkout' === $order->get_payment_method() ) {
-		    $order_id = $order->get_order_number();
+		    $order_id = $order->get_id();
 		    if ( get_post_meta( $order_id, '_collector_org_nr' ) ) {
-			    echo '<p><strong>' . __( 'Org Nr', 'collector-checkout-for-woocommerce' ) . ':</strong> ' . get_post_meta( $order_id, '_collector_org_nr', true ) . '</p>';
+			    echo '<p class="form-field form-field-wide"><strong>' . __( 'Org Nr', 'collector-checkout-for-woocommerce' ) . ':</strong> ' . get_post_meta( $order_id, '_collector_org_nr', true ) . '</p>';
+			}
+			if ( get_post_meta( $order_id, '_collector_invoice_reference' ) ) {
+			    echo '<p class="form-field form-field-wide"><strong>' . __( 'Invoice reference', 'collector-checkout-for-woocommerce' ) . ':</strong> ' . get_post_meta( $order_id, '_collector_invoice_reference', true ) . '</p>';
 		    }
 	    }
     }

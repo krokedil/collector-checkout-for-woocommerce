@@ -2,11 +2,11 @@
 Contributors: collectorbank, krokedil, NiklasHogefjord
 Tags: ecommerce, e-commerce, woocommerce, collector, checkout
 Requires at least: 4.7
-Tested up to: 4.9.5
+Tested up to: 4.9.6
 Requires PHP: 5.6
 Stable tag: trunk
 WC requires at least: 3.0.0
-WC tested up to: 3.3.5
+WC tested up to: 3.4.0
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -39,6 +39,17 @@ For help setting up and configuring Collector Checkout for WooCommerce please re
 
 
 == CHANGELOG ==
+= 2018.05.17  	- version 1.0.0 =
+* Feature		- Add support for B2B Norway.
+* Feature		- Add support for wp_add_privacy_policy_content (for GDPR compliance). More info: https://core.trac.wordpress.org/attachment/ticket/43473/PRIVACY-POLICY-CONTENT-HOOK.md.
+* Tweak			- Add order note in fallback order creation describing reason why checkout form submission failed.
+* Tweak			- Save Collector field Invoice reference in WooCommerce order for B2B purchases.
+* Tweak			- Added wc_collector_get_selected_customer_type() helper function. Used to display current selected customer type in frontend better.
+* Fix			- Fixed Instant checkout for Norway.
+* Fix			- Use order currency instead of store base currency in GET request to Collector after order is created in Woocommerce.
+* Fix			- Store Collector paymentId as _transaction_id even for orders with status On hold.
+* Fix			- Add invoice fee in fallback order creation process (if needed).
+
 = 2018.04.19  	- version 0.9.4 =
 * Fix			- Change how Collector order activation response is interpret so activations also works for part payment.
 * Tweak         - Create new Collector session if currency is changed.  
