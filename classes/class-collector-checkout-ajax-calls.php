@@ -455,6 +455,15 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 
 		//Add fees to order.
 		$create_order->add_order_fees( $order );
+
+		// Maybe add invoice fee to order
+		if ( 'DirectInvoice' == WC()->session->get( 'collector_payment_method' ) ) {
+			$collector_settings = get_option( 'woocommerce_collector_checkout_settings' );
+			$product_id = $collector_settings['collector_invoice_fee'];
+			if( $product_id ) {
+				wc_collector_add_invoice_fee_to_order( $order_id, $product_id );
+			}
+		}
 		
 		//Add shipping to order.
 		$create_order->add_order_shipping( $order );
