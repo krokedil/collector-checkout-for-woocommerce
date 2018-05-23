@@ -88,6 +88,11 @@ class Collector_Checkout_Post_Checkout {
 	 **/
 	public function collector_order_number( $order_number, $order ) {
 		if( is_admin() ) {
+			// Check if function get_current_screen() exist
+			if ( ! function_exists( 'get_current_screen' ) ) {
+				return $order_number;
+			}
+
 			$current_screen = get_current_screen();
 			if( 'edit-shop_order' == $current_screen->id ) {
 				$collector_payment_id = get_post_meta( $order->id, '_collector_payment_id', true );
