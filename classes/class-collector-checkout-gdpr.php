@@ -14,6 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 class Collector_Checkout_GDPR {
 	public function __construct() {
 		add_action( 'admin_init', array( $this, 'privacy_declarations' ) );
+		add_action( 'init', array( $this, 'maybe_add_privacy_policy_text' ) );
 		//add_filter( 'wp_privacy_personal_data_exporters', array( $this, 'register_exporters' ) );
 		//add_filter( 'wp_privacy_personal_data_erasers', array( $this, 'register_erasers' ) );
 	}
@@ -29,6 +30,32 @@ class Collector_Checkout_GDPR {
 				'Collector Checkout for WooCommerce',
 				wp_kses_post( wpautop( $content ) )
 			);
+		}
+	}
+
+	/**
+	 * Maybe adds the terms checkbox to the checkout.
+	 *
+	 * @return void
+	 */
+	public function maybe_add_privacy_policy_text() {
+		$settings                    = get_option( 'woocommerce_collector_checkout_settings' );
+		$display_privacy_policy_text = $settings['display_privacy_policy_text'];
+		if ( 'above' == $display_privacy_policy_text ) {
+			add_action( 'collector_wc_before_iframe', array( $this, 'wc_display_privacy_policy_text' ) );
+		} elseif ( 'below' == $display_privacy_policy_text ) {
+			add_action( 'collector_wc_after_iframe', array( $this, 'wc_display_privacy_policy_text' ) );
+		}
+	}
+
+	/**
+	 * Gets the terms template.
+	 *
+	 * @return void
+	 */
+	public function wc_display_privacy_policy_text() {
+		if ( function_exists( 'wc_checkout_privacy_policy_text' ) ) {
+			echo wc_checkout_privacy_policy_text();
 		}
 	}
 }

@@ -25,6 +25,7 @@ do_action( 'collector_wc_before_checkout_form' );
 		if ( count( $available_payment_gateways ) > 1 ){ ?>
             <a class="button" id="collector_change_payment_method" href="#"><?php  echo __( 'Select another payment method', 'collector-checkout-for-woocommerce' ) ?></a>
 		<?php } ?>
+		<?php do_action( 'collector_wc_before_iframe' ); ?>
 		<?php if( 'collector-b2c-b2b' == wc_collector_get_available_customer_types() ) { ?>
             <ul class="collector-checkout-tabs">
                 <li class="tab-link current" data-tab="b2c"><?php _e( 'Privatperson', 'woocommerce' ); ?></li>
@@ -34,6 +35,7 @@ do_action( 'collector_wc_before_checkout_form' );
         <div id="collector-bank-iframe">
 	        <?php collector_wc_show_snippet(); ?>
         </div>
+		<?php do_action( 'collector_wc_after_iframe' ); ?>
 
     </form>
 
