@@ -51,8 +51,6 @@ class Collector_Checkout_Post_Checkout {
 	function check_callback() {
 		if ( strpos( $_SERVER["REQUEST_URI"], 'module/collectorcheckout/invoicestatus' ) !== false ) {
 
-			header( "HTTP/1.1 200 Ok" );
-
 			if( isset( $_GET['InvoiceNo'] ) && isset( $_GET['OrderNo'] ) && isset( $_GET['InvoiceStatus'] ) ) {
 				Collector_Checkout::log( 'Collector Invoice Status Change callback hit' );
 				$collector_payment_id = wc_clean( $_GET['InvoiceNo'] );
@@ -75,8 +73,10 @@ class Collector_Checkout_Post_Checkout {
 					} elseif ( '5' == $_GET['InvoiceStatus'] ) {
 						$order->update_status( 'failed' );
 					}
+					header( "HTTP/1.1 200 Ok" );
 				} else {
 					Collector_Checkout::log( 'Invoice status callback from Collector but we could not find the corresponding order in WC. Collector InvoiceNo: ' . wc_clean( $_GET['InvoiceNo'] ) . '. InvoiceStatus: ' . wc_clean( $_GET['InvoiceStatus'] ) . '. OrderNo: ' . wc_clean( $_GET['OrderNo'] ) );
+					header("HTTP/1.0 404 Not Found");
 				}
 			}
 			die();	
