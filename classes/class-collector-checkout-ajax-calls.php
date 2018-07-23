@@ -88,6 +88,9 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 	}
 
 	public static function update_checkout() {
+
+		wc_maybe_define_constant( 'WOOCOMMERCE_CHECKOUT', true );
+
 		WC()->cart->calculate_shipping();
 		WC()->cart->calculate_fees();
 		WC()->cart->calculate_totals();
@@ -130,6 +133,9 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 		if ( ! wp_verify_nonce( $_REQUEST['nonce'], 'collector_nonce' ) ) {
 			exit( 'Nonce can not be verified.' );
 		}
+
+		wc_maybe_define_constant( 'WOOCOMMERCE_CHECKOUT', true );
+		
 		$update_needed = 'no';
 		
 		// Get customer data from Collector
