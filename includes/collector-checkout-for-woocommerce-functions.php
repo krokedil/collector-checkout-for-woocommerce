@@ -8,8 +8,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 function collector_wc_show_snippet() {
 	if( 'NOK' == get_woocommerce_currency() ) {
 		$locale = 'nb-NO';
+	} elseif( 'DKK' == get_woocommerce_currency() ) {
+		$locale = 'en-DK';
+	} elseif( 'EUR' == get_woocommerce_currency() ) {
+		$locale = 'fi-FI';
 	} else {
-		$locale = 'sv';
+		$locale = 'sv-SE';
 	}
 	
 	$collector_settings = get_option( 'woocommerce_collector_checkout_settings' );

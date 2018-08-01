@@ -360,9 +360,9 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 
 	public static function verify_customer_data( $customer_data ) {
 		$base_country = WC()->countries->get_base_country();
-		if ( 'SE' === $base_country ) {
+		if ( 'SE' === $base_country || 'FI' === $base_country ) {
 			$fallback_postcode = 11111;
-		} else if ( 'NO' === $base_country ) {
+		} else if ( 'NO' === $base_country || 'DK' === $base_country ) {
 			$fallback_postcode = 1111;
 		}
 		if ( 'PrivateCustomer' === $customer_data['customer_data']->data->customerType ) {

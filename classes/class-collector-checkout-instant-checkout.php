@@ -15,6 +15,10 @@ class Collector_Checkout_Instant_Checkout {
 		if ( is_product() && 'no' !== $instant_checkout ) {
 			if( 'NOK' == get_woocommerce_currency() ) {
 				$locale = 'nb-NO';
+			} elseif( 'DKK' == get_woocommerce_currency() ) {
+				$locale = 'en-DK';
+			} elseif( 'EUR' == get_woocommerce_currency() ) {
+				$locale = 'fi-FI';
 			} else {
 				$locale = 'sv-SE';
 			}

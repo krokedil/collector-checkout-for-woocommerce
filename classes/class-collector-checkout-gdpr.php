@@ -39,8 +39,8 @@ class Collector_Checkout_GDPR {
 	 * @return void
 	 */
 	public function maybe_add_privacy_policy_text() {
-		$settings                    = get_option( 'woocommerce_collector_checkout_settings' );
-		$display_privacy_policy_text = $settings['display_privacy_policy_text'];
+		$settings                    	= get_option( 'woocommerce_collector_checkout_settings' );
+		$display_privacy_policy_text 	= ( isset( $settings['display_privacy_policy_text'] ) ) ? $settings['display_privacy_policy_text'] : '';
 		if ( 'above' == $display_privacy_policy_text ) {
 			add_action( 'collector_wc_before_iframe', array( $this, 'wc_display_privacy_policy_text' ) );
 		} elseif ( 'below' == $display_privacy_policy_text ) {

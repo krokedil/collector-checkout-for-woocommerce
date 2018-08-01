@@ -30,6 +30,14 @@ class Collector_Checkout_SOAP_Requests_Credit_Payment {
 				$country_code = 'NO';
 				$this->store_id = $collector_settings['collector_merchant_id_no_' . $customer_type];
 				break;
+			case 'DKK' :
+				$country_code = 'DK';
+				$this->store_id = $collector_settings['collector_merchant_id_dk_' . $customer_type];
+				break;
+			case 'EUR' :
+				$country_code = 'FI';
+				$this->store_id = $collector_settings['collector_merchant_id_fi_' . $customer_type];
+				break;
 			default :
 				$country_code = 'SE';
 				$this->store_id = $collector_settings['collector_merchant_id_se_' . $customer_type];

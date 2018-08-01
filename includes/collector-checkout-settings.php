@@ -85,6 +85,35 @@ $settings = array(
 		'default'       => '',
 		'desc_tip'      => true,
 	),
+	'fi_settings_title' => array(
+		'title'			=> __( 'Finland', 'collector-checkout-for-woocommerce' ),
+		'type'  		=> 'title',
+	),
+	'collector_merchant_id_fi_b2c'     => array(
+		'title'         => __( 'Merchant ID Finland B2C', 'collector-checkout-for-woocommerce' ),
+		'type'          => 'text',
+		'description'   => __( 'Enter your Collector Checkout Merchant ID for B2C purchases in Finland', 'collector-checkout-for-woocommerce' ),
+		'default'       => '',
+		'desc_tip'      => true,
+	),
+	'collector_merchant_id_fi_b2b'     => array(
+		'title'         => __( 'Merchant ID Finland B2B', 'collector-checkout-for-woocommerce' ),
+		'type'          => 'text',
+		'description'   => __( 'Enter your Collector Checkout Merchant ID for B2B purchases in Finland', 'collector-checkout-for-woocommerce' ),
+		'default'       => '',
+		'desc_tip'      => true,
+	),
+	'dk_settings_title' => array(
+		'title'			=> __( 'Denmark', 'collector-checkout-for-woocommerce' ),
+		'type'  		=> 'title',
+	),
+	'collector_merchant_id_dk_b2c'     => array(
+		'title'         => __( 'Merchant ID Denmark B2C', 'collector-checkout-for-woocommerce' ),
+		'type'          => 'text',
+		'description'   => __( 'Enter your Collector Checkout Merchant ID for B2C purchases in Denmark', 'collector-checkout-for-woocommerce' ),
+		'default'       => '',
+		'desc_tip'      => true,
+	),
 	'checkout_settings_title' => array(
 		'title' => __( 'Checkout settings', 'collector-checkout-for-woocommerce' ),
 		'type'  => 'title',
