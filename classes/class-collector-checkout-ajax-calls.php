@@ -62,7 +62,7 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 			$decode			= json_decode( $request );
 			
 			if ( is_wp_error( $request ) || empty( $request ) ) {
-					$return =  sprintf( '%s <a href="%s" class="button wc-forward">%s</a>', __( 'Could not connect to Collector.', 'collector-checkout-for-woocommerce' ), wc_get_checkout_url(), __( 'Try again', 'collector-checkout-for-woocommerce' ) );
+					$return =  sprintf( '%s <a href="%s" class="button wc-forward">%s</a>', __( 'Could not connect to Collector. Error message: ', 'collector-checkout-for-woocommerce' ) . $request->get_error_message(), wc_get_checkout_url(), __( 'Try again', 'collector-checkout-for-woocommerce' ) );
 				wp_send_json_error( $return );
 				wp_die();
 
