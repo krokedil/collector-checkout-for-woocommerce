@@ -59,6 +59,7 @@ class Collector_Checkout_Requests_Initialize_Checkout extends Collector_Checkout
 		if ( is_wp_error( $request ) ) {
 			$this->log( 'Collector init checkout request response ERROR: ' . stripslashes_deep( json_encode( $request->get_error_message() ) ) . ' (Request endpoint: ' . $request_url . ')' );			
 		} elseif( 200 !== $request['response']['code'] ) {
+			$this->log( 'Collector init checkout request response ERROR: ' . stripslashes_deep( json_encode( $request ) ) . ' (Request endpoint: ' . $request_url . ')' );
 			$request = new WP_Error( $request['response']['code'], $request['response']['message'] );
 		} else {
 			$this->log( 'Collector init checkout request response: ' . stripslashes_deep( json_encode( $request ) ) . ' (Request endpoint: ' . $request_url . ')' );

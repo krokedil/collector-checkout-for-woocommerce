@@ -40,8 +40,7 @@ function collector_wc_show_snippet() {
 		$request 		= $init_checkout->request();
 		
 		if ( is_wp_error( $request ) || empty( $request ) ) {
-			$return =  '<ul class="woocommerce-error"><li>' . sprintf( '%s <a href="%s" class="button wc-forward">%s</a>', __( 'Could not connect to Collector.', 'collector-checkout-for-woocommerce' ), wc_get_checkout_url(), __( 'Try again', 'collector-checkout-for-woocommerce' ) ) . '</li></ul>';
-			
+			$return =  '<ul class="woocommerce-error"><li>' . sprintf( '%s <a href="%s" class="button wc-forward">%s</a>', __( 'Could not connect to Collector. Error message: ', 'collector-checkout-for-woocommerce' ) . $request->get_error_message(), wc_get_checkout_url(), __( 'Try again', 'collector-checkout-for-woocommerce' ) ) . '</li></ul>';
 		} else {
 			$decode	= json_decode( $request );
 			WC()->session->set( 'collector_public_token', $decode->data->publicToken );
