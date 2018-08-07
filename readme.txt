@@ -2,11 +2,11 @@
 Contributors: collectorbank, krokedil, NiklasHogefjord
 Tags: ecommerce, e-commerce, woocommerce, collector, checkout
 Requires at least: 4.7
-Tested up to: 4.9.6
+Tested up to: 4.9.8
 Requires PHP: 5.6
 Stable tag: trunk
 WC requires at least: 3.0.0
-WC tested up to: 3.4.0
+WC tested up to: 3.4.4
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -39,6 +39,17 @@ For help setting up and configuring Collector Checkout for WooCommerce please re
 
 
 == CHANGELOG ==
+= 2018.05.17  	- version 1.1.0 =
+* Feature		- Added support for B2C B2B Finland.
+* Feature		- Added support for B2C Denmark.
+* Feature		- Added setting for displaying privacy policy text in checkout.
+* Tweak			- Display response message in frontend if response code isn’t 200 on initialize checkout request.
+* Tweak			- Improved http response for anti-fraud control (respons with 404 if Woo order hasn't been created yet).
+* Tweak			- Improved error messaging/logging when request to Collector fails.
+* Fix			- Maybe define constant WOOCOMMERCE_CHECKOUT in ajax functions.
+* Fix			- Check if function get_current_screen() exist before tying to add collector invoice number to WC order number.
+
+
 = 2018.05.17  	- version 1.0.0 =
 * Feature		- Add support for B2B Norway.
 * Feature		- Add support for wp_add_privacy_policy_content (for GDPR compliance). More info: https://core.trac.wordpress.org/attachment/ticket/43473/PRIVACY-POLICY-CONTENT-HOOK.md.

@@ -16,6 +16,12 @@ class Collector_Checkout_Requests_Update_Fees extends Collector_Checkout_Request
 			case 'NOK' :
 				$store_id = $collector_settings['collector_merchant_id_no_' . $customer_type];
 				break;
+			case 'DKK' :
+				$store_id = $collector_settings['collector_merchant_id_dk_' . $customer_type];
+				break;
+			case 'EUR' :
+				$store_id = $collector_settings['collector_merchant_id_fi_' . $customer_type];
+				break;
 			default :
 				$store_id = $collector_settings['collector_merchant_id_se_' . $customer_type];
 				break;

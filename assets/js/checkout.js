@@ -28,6 +28,7 @@
                 }
                 checkout_initiated = 'yes';
             } else {
+                $('#collector-bank-iframe').empty();
                 $('#collector-bank-iframe').append('<ul class="woocommerce-error"><li>' + data.data + '</li></ul>');
                 console.log('error');
                 console.log(data.data);

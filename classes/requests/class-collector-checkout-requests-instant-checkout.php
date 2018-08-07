@@ -14,9 +14,33 @@ class Collector_Checkout_Requests_Instant_Checkout extends Collector_Checkout_Re
 	public function __construct( $customer_token, $customer_type = 'b2c' ) {
 		parent::__construct();
 		$collector_settings = get_option( 'woocommerce_collector_checkout_settings' );
-		$this->store_id = $collector_settings['collector_merchant_id_se_' . $customer_type];
+
+		switch ( get_woocommerce_currency() ) {
+			case 'SEK' :
+				$country_code = 'SE';
+				$this->store_id = $collector_settings['collector_merchant_id_se_' . $customer_type];
+				break;
+			case 'NOK' :
+				$country_code = 'NO';
+				$this->store_id = $collector_settings['collector_merchant_id_no_' . $customer_type];
+				break;
+			case 'DKK' :
+				$country_code = 'DK';
+				$this->store_id = $collector_settings['collector_merchant_id_dk_' . $customer_type];
+				break;
+			case 'EUR' :
+				$country_code = 'FI';
+				$this->store_id = $collector_settings['collector_merchant_id_fi_' . $customer_type];
+				break;
+			default :
+				$country_code = 'SE';
+				$this->store_id = $collector_settings['collector_merchant_id_se_' . $customer_type];
+				break;
+		}
+
+		$this->customer_type = $customer_type;
+		$this->country_code = $country_code;
 		$this->terms_page = esc_url( get_permalink( wc_get_page_id( 'terms' ) ) );
-		$this->customer_token = $customer_token;
 	}
 
 	private function get_request_args() {
@@ -40,7 +64,7 @@ class Collector_Checkout_Requests_Instant_Checkout extends Collector_Checkout_Re
 	protected function request_body() {
 		$formatted_request_body = array(
 			'storeId'           => $this->store_id,
-			'countryCode'       => 'SE',
+			'countryCode'       => $this->country_code,
 			'reference'         => '',
 			'redirectPageUri'   => WC()->cart->get_checkout_url() . '?payment_successful=1',
 			'merchantTermsUri'  => $this->terms_page,

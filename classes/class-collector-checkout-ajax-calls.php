@@ -62,7 +62,7 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 			$decode			= json_decode( $request );
 			
 			if ( is_wp_error( $request ) || empty( $request ) ) {
-					$return =  sprintf( '%s <a href="%s" class="button wc-forward">%s</a>', __( 'Could not connect to Collector.', 'collector-checkout-for-woocommerce' ), wc_get_checkout_url(), __( 'Try again', 'collector-checkout-for-woocommerce' ) );
+					$return =  sprintf( '%s <a href="%s" class="button wc-forward">%s</a>', __( 'Could not connect to Collector. Error message: ', 'collector-checkout-for-woocommerce' ) . $request->get_error_message(), wc_get_checkout_url(), __( 'Try again', 'collector-checkout-for-woocommerce' ) );
 				wp_send_json_error( $return );
 				wp_die();
 
@@ -88,6 +88,9 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 	}
 
 	public static function update_checkout() {
+
+		wc_maybe_define_constant( 'WOOCOMMERCE_CHECKOUT', true );
+
 		WC()->cart->calculate_shipping();
 		WC()->cart->calculate_fees();
 		WC()->cart->calculate_totals();
@@ -130,6 +133,9 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 		if ( ! wp_verify_nonce( $_REQUEST['nonce'], 'collector_nonce' ) ) {
 			exit( 'Nonce can not be verified.' );
 		}
+
+		wc_maybe_define_constant( 'WOOCOMMERCE_CHECKOUT', true );
+		
 		$update_needed = 'no';
 		
 		// Get customer data from Collector
@@ -354,9 +360,9 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 
 	public static function verify_customer_data( $customer_data ) {
 		$base_country = WC()->countries->get_base_country();
-		if ( 'SE' === $base_country ) {
+		if ( 'SE' === $base_country || 'FI' === $base_country ) {
 			$fallback_postcode = 11111;
-		} else if ( 'NO' === $base_country ) {
+		} else if ( 'NO' === $base_country || 'DK' === $base_country ) {
 			$fallback_postcode = 1111;
 		}
 		if ( 'PrivateCustomer' === $customer_data['customer_data']->data->customerType ) {
