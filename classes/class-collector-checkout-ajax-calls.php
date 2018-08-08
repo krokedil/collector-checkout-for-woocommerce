@@ -380,7 +380,8 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 			$billing_postal_code    = isset( $customer_data['customer_data']->data->customer->billingAddress->postalCode ) ? $customer_data['customer_data']->data->customer->billingAddress->postalCode : isset( $customer_data['customer_data']->data->customer->deliveryAddress->postalCode ) ? $customer_data['customer_data']->data->customer->deliveryAddress->postalCode : $fallback_postcode;
 			$billing_city           = isset( $customer_data['customer_data']->data->customer->billingAddress->city ) ? $customer_data['customer_data']->data->customer->billingAddress->city : isset( $customer_data['customer_data']->data->customer->deliveryAddress->city ) ? $customer_data['customer_data']->data->customer->deliveryAddress->city : '.';
 
-			$company_name           = '';
+			$billing_company_name   = '';
+			$shipping_company_name  = '';
 			$org_nr                 = '';
 
 			$phone                  = isset( $customer_data['customer_data']->data->customer->mobilePhoneNumber ) ? $customer_data['customer_data']->data->customer->mobilePhoneNumber : '.';
@@ -397,9 +398,10 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 
 			$billing_first_name     = isset( $customer_data['customer_data']->data->businessCustomer->firstName ) ? $customer_data['customer_data']->data->businessCustomer->firstName : '.';
 			$billing_last_name      = isset( $customer_data['customer_data']->data->businessCustomer->lastName ) ? $customer_data['customer_data']->data->businessCustomer->lastName : '.';
+			$billing_company_name   = isset( $customer_data['customer_data']->data->businessCustomer->companyName ) ? $customer_data['customer_data']->data->businessCustomer->companyName : '.';
 			$shipping_first_name    = isset( $customer_data['customer_data']->data->businessCustomer->firstName ) ? $customer_data['customer_data']->data->businessCustomer->firstName : '.';
 			$shipping_last_name     = isset( $customer_data['customer_data']->data->businessCustomer->lastName ) ? $customer_data['customer_data']->data->businessCustomer->lastName : '.';
-			$company_name           = isset( $customer_data['customer_data']->data->businessCustomer->companyName ) ? $customer_data['customer_data']->data->businessCustomer->companyName : '.';
+			$shipping_company_name  = isset( $customer_data['customer_data']->data->businessCustomer->deliveryAddress->companyName ) ? $customer_data['customer_data']->data->businessCustomer->deliveryAddress->companyName : $customer_data['customer_data']->data->businessCustomer->companyName;
 			$phone                  = isset( $customer_data['customer_data']->data->businessCustomer->mobilePhoneNumber ) ? $customer_data['customer_data']->data->businessCustomer->mobilePhoneNumber : '.';
 			$email                  = isset( $customer_data['customer_data']->data->businessCustomer->email ) ? $customer_data['customer_data']->data->businessCustomer->email : '.';
 
@@ -415,13 +417,14 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 		$customer_information = array(
 			'billingFirstName'      =>  $billing_first_name,
 			'billingLastName'       =>  $billing_last_name,
-			'companyName'           =>  $company_name,
+			'billingCompanyName'    =>  $billing_company_name,
 			'billingAddress'        =>  $billing_address,
 			'billingAddress2'       =>  $billing_address2,
 			'billingPostalCode'     =>  $billing_postal_code,
 			'billingCity'           =>  $billing_city,
 			'shippingFirstName'     =>  $shipping_first_name,
 			'shippingLastName'      =>  $shipping_last_name,
+			'shippingCompanyName'   =>  $shipping_company_name,
 			'shippingAddress'       =>  $shipping_address,
 			'shippingAddress2'      =>  $shipping_address2,
 			'shippingPostalCode'    =>  $shipping_postal_code,
