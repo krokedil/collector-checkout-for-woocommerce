@@ -224,6 +224,35 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 	public static function get_customer_data() {
 		$private_id 	= WC()->session->get( 'collector_private_id' );
 		$customer_type 	= WC()->session->get( 'collector_customer_type' );
+
+		// Prevent duplicate orders if confirmation page is reloaded manually by customer
+		$query = new WC_Order_Query( array(
+	        'limit' => -1,
+	        'orderby' => 'date',
+	        'order' => 'DESC',
+	        'return' => 'ids',
+	        'payment_method' => 'collector_checkout',
+	        'date_created' => '>' . ( time() - DAY_IN_SECONDS )
+	    ) );
+	    $orders = $query->get_orders();
+		$order_id_match = '';
+	    foreach( $orders as $order_id ) {
+			
+			$order_private_id = get_post_meta( $order_id, '_collector_private_id', true );
+			
+	        if( $order_private_id === $private_id ) {
+	            $order_id_match = $order_id;
+	            break;
+	        }
+		}
+		if( $order_id_match ) {
+			$order = wc_get_order( $order_id_match );
+			Collector_Checkout::log('Payment complete triggered for private id ' . $private_id . ' but _collector_private_id already exist in this order. Redirecting customer to thankyou page.');
+			$return = array();
+			$return['redirect_url'] = $order->get_checkout_order_received_url();
+			wp_send_json_error( $return );
+			wp_die();
+		}
 		
 		Collector_Checkout::log('Payment complete triggered for private id ' . $private_id . '. Starting WooCommerce checkout form processing...');
 		
