@@ -294,7 +294,7 @@
             if (true === data.success) {
 		            var datastring = 'billing_first_name=' + data.data.customer_data.billingFirstName +
                     '&billing_last_name=' + data.data.customer_data.billingLastName +
-                    '&billing_company=' + data.data.customer_data.companyName +
+                    '&billing_company=' + data.data.customer_data.billingCompanyName +
                     '&billing_country=' + data.data.customer_data.countryCode +
                     '&billing_address_1=' + data.data.customer_data.billingAddress +
                     '&billing_postcode=' + data.data.customer_data.billingPostalCode +
@@ -303,7 +303,7 @@
                     '&billing_email=' + data.data.customer_data.email +
                     '&shipping_first_name=' + data.data.customer_data.shippingFirstName +
                     '&shipping_last_name=' + data.data.customer_data.shippingLastName +
-                    '&shipping_company=' + data.data.customer_data.companyName +
+                    '&shipping_company=' + data.data.customer_data.shippingCompanyName +
                     '&shipping_country=' + data.data.customer_data.countryCode +
                     '&shipping_address_1=' + data.data.customer_data.shippingAddress +
                     '&shipping_postcode=' + data.data.customer_data.shippingPostalCode +
