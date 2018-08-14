@@ -43,7 +43,7 @@ For help setting up and configuring Collector Checkout for WooCommerce please re
 * Fix 			- Save Shipping company name correctly in WooCommerce order.
 * Fix			- Prevent duplicate orders if Collector confirmation page is reloaded manually by customer during create Woo order process.
 
-= 2018.05.17  	- version 1.1.0 =
+= 2018.08.07  	- version 1.1.0 =
 * Feature		- Added support for B2C B2B Finland.
 * Feature		- Added support for B2C Denmark.
 * Feature		- Added setting for displaying privacy policy text in checkout.
