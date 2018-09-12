@@ -1,0 +1,478 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Collector Checkout for WooCommerce\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2018-09-12 14:49+0000\n"
+"PO-Revision-Date: 2018-09-12 14:51+0000\n"
+"Last-Translator: Krokedil Produktionsbyrå <info@krokedil.se>\n"
+"Language-Team: Norwegian (Bokmål)\n"
+"Language: nb_NO\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Loco https://localise.biz/"
+
+#: includes/collector-checkout-settings.php:134
+msgid "B2B"
+msgstr ""
+
+#: includes/collector-checkout-settings.php:133
+msgid "B2C"
+msgstr ""
+
+#: includes/collector-checkout-settings.php:150
+msgid "Button color"
+msgstr ""
+
+#: includes/collector-checkout-settings.php:157
+msgid "Button text color"
+msgstr ""
+
+#: includes/collector-checkout-settings.php:118
+msgid "Checkout settings"
+msgstr ""
+
+#: collector-checkout-for-woocommerce.php:415
+msgid "Collector Account"
+msgstr ""
+
+#: classes/class-collector-checkout-gateway.php:358
+msgid ""
+"Collector Bank currently only supports full refunds, for a partial refund "
+"use the Collector Bank Merchant Portal"
+msgstr ""
+
+#: collector-checkout-for-woocommerce.php:429
+msgid "Collector Bank Transfer"
+msgstr ""
+
+#: collector-checkout-for-woocommerce.php:422
+msgid "Collector Campaign"
+msgstr ""
+
+#: collector-checkout-for-woocommerce.php:425
+msgid "Collector Card"
+msgstr ""
+
+#: includes/collector-status-report.php:15
+#: includes/collector-checkout-settings.php:20
+#: classes/class-collector-checkout-gateway.php:9
+#: classes/class-collector-checkout-gateway.php:80
+msgid "Collector Checkout"
+msgstr ""
+
+#. Name of the plugin
+msgid "Collector Checkout for WooCommerce"
+msgstr ""
+
+#: classes/class-collector-checkout-gateway.php:10
+msgid "Collector Checkout payment solution for WooCommerce."
+msgstr ""
+
+#: includes/collector-status-report.php:15
+msgid "Collector Checkout System Status."
+msgstr ""
+
+#: classes/class-collector-checkout-order-emails.php:33
+msgid "Collector details"
+msgstr ""
+
+#: collector-checkout-for-woocommerce.php:412
+msgid "Collector Invoice"
+msgstr ""
+
+#: collector-checkout-for-woocommerce.php:419
+msgid "Collector Part Payment"
+msgstr ""
+
+#: classes/class-collector-checkout-order-emails.php:35
+msgid "Collector Payment ID: "
+msgstr ""
+
+#: templates/form-checkout.php:32
+msgid "Company"
+msgstr "Bedrift"
+
+#: classes/class-collector-checkout-post-checkout.php:28
+msgid ""
+"Could not activate Collector reservation, Collector reservation is already "
+"activated."
+msgstr ""
+
+#: classes/class-collector-checkout-post-checkout.php:40
+msgid ""
+"Could not cancel Collector reservation, Collector reservation is already "
+"cancelled."
+msgstr ""
+
+#: includes/collector-checkout-for-woocommerce-functions.php:43
+#: classes/class-collector-checkout-ajax-calls.php:65
+msgid "Could not connect to Collector. Error message: "
+msgstr ""
+
+#: includes/collector-checkout-settings.php:124
+#, php-format
+msgid ""
+"Create a hidden (simple) product that acts as the invoice fee. Enter the "
+"product <strong>ID</strong> number in this textfield. Leave blank to disable."
+" <a href=\"%s\" target=\"_blank\">Read more</a>."
+msgstr ""
+
+#: includes/collector-checkout-settings.php:190
+msgid "Debug"
+msgstr ""
+
+#: includes/collector-checkout-settings.php:129
+msgid "Default customer"
+msgstr ""
+
+#: includes/collector-checkout-settings.php:107
+msgid "Denmark"
+msgstr ""
+
+#: includes/collector-checkout-settings.php:212
+msgid "Display above checkout"
+msgstr ""
+
+#: includes/collector-checkout-settings.php:213
+msgid "Display below checkout"
+msgstr ""
+
+#: includes/collector-checkout-settings.php:206
+msgid "Display checkout privacy policy text"
+msgstr ""
+
+#: includes/collector-checkout-settings.php:176
+msgid ""
+"Display Collector Invoice Number after WooCommerce Order Number on "
+"WooCommerce order page (-> WooCommerce -> Orders)."
+msgstr ""
+
+#: includes/collector-status-report.php:22
+msgid ""
+"Displays the number of orders created via the API callback feature during "
+"the last month."
+msgstr ""
+
+#: includes/collector-checkout-settings.php:211
+msgid "Do not display"
+msgstr ""
+
+#: includes/collector-checkout-settings.php:13
+msgid "Enable Collector Checkout"
+msgstr ""
+
+#: includes/collector-checkout-settings.php:145
+msgid "Enable Instant Buy feature on single product pages"
+msgstr ""
+
+#: includes/collector-checkout-settings.php:192
+msgid "Enable logging."
+msgstr ""
+
+#: includes/collector-checkout-settings.php:186
+msgid "Enable Test mode for Collector Checkout."
+msgstr ""
+
+#: includes/collector-checkout-settings.php:170
+msgid ""
+"Enable WooCommerce to manage orders in Collectors backend (when order status "
+"changes to Cancelled and Completed in WooCommerce)."
+msgstr ""
+
+#: includes/collector-checkout-settings.php:11
+msgid "Enable/Disable"
+msgstr ""
+
+#: includes/collector-checkout-settings.php:102
+msgid "Enter your Collector Checkout Merchant ID for B2B purchases in Finland"
+msgstr ""
+
+#: includes/collector-checkout-settings.php:84
+msgid "Enter your Collector Checkout Merchant ID for B2B purchases in Norway"
+msgstr ""
+
+#: includes/collector-checkout-settings.php:66
+msgid "Enter your Collector Checkout Merchant ID for B2B purchases in Sweden"
+msgstr ""
+
+#: includes/collector-checkout-settings.php:113
+msgid "Enter your Collector Checkout Merchant ID for B2C purchases in Denmark"
+msgstr ""
+
+#: includes/collector-checkout-settings.php:95
+msgid "Enter your Collector Checkout Merchant ID for B2C purchases in Finland"
+msgstr ""
+
+#: includes/collector-checkout-settings.php:77
+msgid "Enter your Collector Checkout Merchant ID for B2C purchases in Norway"
+msgstr ""
+
+#: includes/collector-checkout-settings.php:59
+msgid "Enter your Collector Checkout Merchant ID for B2C purchases in Sweden"
+msgstr ""
+
+#: includes/collector-checkout-settings.php:41
+msgid "Enter your Collector Checkout Password"
+msgstr ""
+
+#: includes/collector-checkout-settings.php:48
+msgid "Enter your Collector Checkout Shared Key"
+msgstr ""
+
+#: includes/collector-checkout-settings.php:34
+msgid "Enter your Collector Checkout Username"
+msgstr ""
+
+#. Description of the plugin
+msgid ""
+"Extends WooCommerce. Provides a <a href=\"https://www.collector.se/\" "
+"target=\"_blank\">Collector Checkout</a> checkout for WooCommerce."
+msgstr ""
+
+#: includes/collector-checkout-settings.php:89
+msgid "Finland"
+msgstr ""
+
+#. Author URI of the plugin
+msgid "https://krokedil.se/"
+msgstr ""
+
+#. URI of the plugin
+msgid "https://krokedil.se/collector/"
+msgstr ""
+
+#: includes/collector-checkout-settings.php:143
+msgid "Instant Buy"
+msgstr ""
+
+#: includes/collector-checkout-settings.php:152
+msgid ""
+"Instant Buy button color. Leave blank to use your theme <em>Add to cart</em> "
+"button color."
+msgstr ""
+
+#: includes/collector-checkout-settings.php:159
+msgid "Instant Buy button text color"
+msgstr ""
+
+#: includes/collector-checkout-settings.php:139
+msgid "Instant Buy settings"
+msgstr ""
+
+#: includes/collector-checkout-settings.php:122
+msgid "Invoice fee ID"
+msgstr ""
+
+#: includes/collector-checkout-settings.php:174
+msgid "Invoice number on order page"
+msgstr ""
+
+#: classes/class-collector-checkout-gateway.php:382
+msgid "Invoice reference"
+msgstr ""
+
+#: classes/class-collector-checkout-post-checkout.php:69
+#, php-format
+msgid "Invoice status callback from Collector. New Invoice status: %s"
+msgstr ""
+
+#. Author of the plugin
+msgid "Krokedil"
+msgstr ""
+
+#: classes/class-collector-checkout-gateway.php:269
+msgid "Link to the order"
+msgstr ""
+
+#: includes/collector-checkout-settings.php:193
+#, php-format
+msgid "Log Collector events, in <code>%s</code>"
+msgstr ""
+
+#: includes/collector-checkout-settings.php:168
+msgid "Manage orders"
+msgstr ""
+
+#: includes/collector-checkout-settings.php:111
+msgid "Merchant ID Denmark B2C"
+msgstr ""
+
+#: includes/collector-checkout-settings.php:100
+msgid "Merchant ID Finland B2B"
+msgstr ""
+
+#: includes/collector-checkout-settings.php:93
+msgid "Merchant ID Finland B2C"
+msgstr ""
+
+#: includes/collector-checkout-settings.php:82
+msgid "Merchant ID Norway B2B"
+msgstr ""
+
+#: includes/collector-checkout-settings.php:75
+msgid "Merchant ID Norway B2C"
+msgstr ""
+
+#: includes/collector-checkout-settings.php:64
+msgid "Merchant ID Sweden B2B"
+msgstr ""
+
+#: includes/collector-checkout-settings.php:57
+msgid "Merchant ID Sweden B2C"
+msgstr ""
+
+#: includes/collector-checkout-settings.php:71
+msgid "Norway"
+msgstr ""
+
+#: classes/requests/soap/class-collector-checkout-soap-requests-cancel-invoice.php:74
+msgid "Order canceled with Collector Bank"
+msgstr ""
+
+#: classes/class-collector-checkout-api-callbacks.php:225
+msgid ""
+"Order created via Collector Checkout API callback. Please verify the order "
+"in Collectors system."
+msgstr ""
+
+#: classes/requests/soap/class-collector-checkout-soap-requests-credit-payment.php:73
+msgid "Order credited with Collector Bank"
+msgstr ""
+
+#: classes/class-collector-checkout-gateway.php:264
+msgid "Order data was missing from Collector"
+msgstr ""
+
+#: classes/class-collector-checkout-api-callbacks.php:334
+msgid "Order is PENDING APPROVAL by Collector. Payment ID: "
+msgstr ""
+
+#: includes/collector-checkout-settings.php:164
+msgid "Order management settings"
+msgstr ""
+
+#: classes/class-collector-checkout-api-callbacks.php:349
+#: classes/class-collector-checkout-api-callbacks.php:352
+#, php-format
+msgid ""
+"Order needs manual review. WooCommerce order total and Collector order total "
+"do not match. Collector order total: %s."
+msgstr ""
+
+#: includes/collector-status-report.php:21
+msgid "Orders created via API callback"
+msgstr ""
+
+#: classes/class-collector-checkout-gateway.php:379
+msgid "Org Nr"
+msgstr ""
+
+#: includes/collector-checkout-settings.php:39
+msgid "Password"
+msgstr ""
+
+#: classes/class-collector-checkout-order-emails.php:38
+msgid "Payment type: "
+msgstr ""
+
+#: templates/form-checkout.php:31
+msgid "Person"
+msgstr "Privatperson"
+
+#: classes/class-collector-checkout-gateway.php:396
+msgid "Please wait while we process your order."
+msgstr ""
+
+#: classes/class-collector-checkout-gateway.php:259
+#: classes/class-collector-checkout-api-callbacks.php:310
+#, php-format
+msgid "Purchase via %s"
+msgstr ""
+
+#: templates/form-checkout.php:26
+msgid "Select another payment method"
+msgstr ""
+
+#: includes/collector-checkout-settings.php:207
+msgid ""
+"Select if you want to show the <em>Checkout privacy policy</em> text on the "
+"checkout page, and where you want to display it."
+msgstr ""
+
+#: includes/collector-checkout-settings.php:131
+msgid ""
+"Sets the default customer/checkout type for Collector Checkout (if offering "
+"both B2B & B2C)"
+msgstr ""
+
+#: includes/collector-checkout-settings.php:46
+msgid "Shared Key"
+msgstr ""
+
+#: includes/collector-checkout-settings.php:53
+msgid "Sweden"
+msgstr ""
+
+#: includes/collector-checkout-settings.php:184
+msgid "Test mode"
+msgstr ""
+
+#: includes/collector-checkout-settings.php:180
+msgid "Test Mode Settings"
+msgstr ""
+
+#: classes/class-collector-checkout-gateway.php:265
+msgid ""
+"The following fields had missing data from Collector, please verify the "
+"order with Collector."
+msgstr ""
+
+#: classes/class-collector-checkout-gdpr.php:24
+msgid ""
+"This data plus an unique identifier for the purchase is then stored as "
+"billing and shipping data in the order in WooCommerce."
+msgstr ""
+
+#: includes/collector-checkout-settings.php:19
+msgid ""
+"This is the title that the user sees on the checkout page for Collector "
+"Checkout."
+msgstr ""
+
+#: classes/class-collector-checkout-ajax-calls.php:546
+#, php-format
+msgid ""
+"This order was made as a fallback due to an error in the checkout (%s). "
+"Please verify the order with Collector."
+msgstr ""
+
+#: includes/collector-checkout-settings.php:17
+msgid "Title"
+msgstr ""
+
+#: includes/collector-checkout-for-woocommerce-functions.php:43
+#: classes/class-collector-checkout-ajax-calls.php:65
+msgid "Try again"
+msgstr ""
+
+#: includes/collector-checkout-for-woocommerce-functions.php:134
+msgid "Unable to add Collector Bank Invoice Fee to the order."
+msgstr ""
+
+#: includes/collector-checkout-settings.php:32
+msgid "Username"
+msgstr ""
+
+#: classes/class-collector-checkout-admin-notices.php:61
+msgid ""
+"You need to set price decimals to <em>2</em> to ensure that prices is "
+"reported correctly to Collector."
+msgstr ""
+
+#: classes/class-collector-checkout-admin-notices.php:46
+msgid ""
+"You need to specify a terms page in WooCommerce Settings to be able to use "
+"Collector."
+msgstr ""
