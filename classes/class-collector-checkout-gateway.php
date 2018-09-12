@@ -355,8 +355,15 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 				return false;
 			}
 		} else {
-			$order->add_order_note( sprintf( __( 'Collector Bank currently only supports full refunds, for a partial refund use the Collector Bank Merchant Portal', 'collector-checkout-for-woocommerce' ) ) );
-			return false;
+			$credit_order = new Collector_Checkout_SOAP_Requests_Adjust_Invoice( $order_id );
+			if ( $credit_order->request( $order_id, $amount, $reason ) === true ) {
+				return true;
+			} else {
+				return false;
+			}
+
+			//$order->add_order_note( sprintf( __( 'Collector Bank currently only supports full refunds, for a partial refund use the Collector Bank Merchant Portal', 'collector-checkout-for-woocommerce' ) ) );
+			//return false;
 		}
 	}
 
