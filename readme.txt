@@ -6,7 +6,7 @@ Tested up to: 4.9.8
 Requires PHP: 5.6
 Stable tag: trunk
 WC requires at least: 3.0.0
-WC tested up to: 3.4.4
+WC tested up to: 3.4.5
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -39,6 +39,11 @@ For help setting up and configuring Collector Checkout for WooCommerce please re
 
 
 == CHANGELOG ==
+= 2018.09.13  	- version 1.1.2 =
+* Tweak			- Created POT file + started Norwegian translation.
+* Fix			- Create new Collector transaction id if response code != 200 on a update request.
+* Fix			- Fixed missing text domain. Making Private / Company text in checkout translatable.
+
 = 2018.08.14  	- version 1.1.1 =
 * Fix 			- Save Shipping company name correctly in WooCommerce order.
 * Fix			- Prevent duplicate orders if Collector confirmation page is reloaded manually by customer during create Woo order process.
