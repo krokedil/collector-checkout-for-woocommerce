@@ -31,7 +31,7 @@ More information on how to get started can be found in the [plugin documentation
 
 == Frequently Asked Questions ==
 = Which countries does this payment gateway support? =
-At the moment it's only available for merchants in Sweden. Norway will be added during autumn 2017.
+Collector Checkout is available for merchants and customers in Sweden (B2C & B2B), Norway (B2C & B2B), Finland (B2C & B2B) & Denmark (B2C).
 
 = Where can I find Collector Checkout for WooCommerce documentation? =
 For help setting up and configuring Collector Checkout for WooCommerce please refer to our [documentation](http://docs.krokedil.com/documentation/collector-checkout-for-woocommerce/).
