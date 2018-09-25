@@ -28,8 +28,8 @@ do_action( 'collector_wc_before_checkout_form' );
 		<?php do_action( 'collector_wc_before_iframe' ); ?>
 		<?php if( 'collector-b2c-b2b' == wc_collector_get_available_customer_types() ) { ?>
             <ul class="collector-checkout-tabs">
-                <li class="tab-link current" data-tab="b2c"><?php _e( 'Privatperson', 'woocommerce' ); ?></li>
-                <li class="tab-link" data-tab="b2b"><?php _e( 'Företag', 'woocommerce' ); ?></li>
+                <li class="tab-link current" data-tab="b2c"><?php _e( 'Person', 'collector-checkout-for-woocommerce' ); ?></li>
+                <li class="tab-link" data-tab="b2b"><?php _e( 'Company', 'collector-checkout-for-woocommerce' ); ?></li>
             </ul>
 		<?php } ?>
         <div id="collector-bank-iframe">
