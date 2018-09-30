@@ -43,8 +43,8 @@ class Collector_Checkout_Create_Refund_Data {
 					$quantity           = ( 0 === $item->get_quantity() ) ? 1 : $item->get_quantity();
 					$data[]             = array(
 						'ArticleId'   => $sku,
-						'Description' => $title . '(Refund #' . $refund_id . ')',
-						'Quantity'    => $quantity,
+						'Description' => $title,
+						'Quantity'    => abs( $quantity ),
 						'UnitPrice'   => $total,
 						'VAT'         => $formatted_tax_rate,
 					);
