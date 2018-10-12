@@ -65,8 +65,10 @@ class Collector_Checkout_SOAP_Requests_Adjust_Invoice {
 		try {
 			$request = $soap->AdjustInvoice( $args );
 		} catch ( SoapFault $e ) {
-			error_log( '$e ' . var_export( $e, true ) );
+			//error_log( '$e ' . var_export( $e, true ) );
 			$request = $e->getMessage();
+			$this->log( 'Order failed to be credited (AdjustInvoice) with Collector. Request response: ' . var_export( $e, true ) );
+			return false;
 		}
 		// error_log('$request ' . var_export($request, true) );
 		$order = wc_get_order( $order_id );
