@@ -355,7 +355,8 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 				return false;
 			}
 		} else {
-			$credit_order = new Collector_Checkout_SOAP_Requests_Adjust_Invoice( $order_id );
+			//$credit_order = new Collector_Checkout_SOAP_Requests_Adjust_Invoice( $order_id );
+			$credit_order = new Collector_Checkout_SOAP_Requests_Part_Credit_Invoice( $order_id );
 			if ( $credit_order->request( $order_id, $amount, $reason ) === true ) {
 				return true;
 			} else {
