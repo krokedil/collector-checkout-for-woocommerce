@@ -97,6 +97,7 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 			include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/soap/class-collector-checkout-soap-requests-cancel-invoice.php' );
 			include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/soap/class-collector-checkout-soap-requests-credit-payment.php' );
 			include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/soap/class-collector-checkout-soap-requests-adjust-invoice.php' );
+			include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/soap/class-collector-checkout-soap-requests-part-credit-invoice.php' );
 
 			// Definitions
 			define( 'COLLECTOR_BANK_REST_LIVE', 'https://checkout-api.collector.se' );
