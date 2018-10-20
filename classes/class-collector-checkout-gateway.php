@@ -32,9 +32,6 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 		// Body class
 		add_filter( 'body_class', array( $this, 'add_body_class' ) );
 
-		// Set fields to not required.
-		add_filter( 'woocommerce_checkout_fields' ,  array( $this, 'collector_set_not_required' ), 20 );
-
 		// Add org nr after address on company order.
 		add_action( 'woocommerce_admin_order_data_after_billing_address', array( $this, 'add_org_nr_to_order' ) );
 		
@@ -322,18 +319,6 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 			return false;
 		}
 	}
-
-	public function collector_set_not_required( $checkout_fields ) {
-		//Set fields to not required, to prevent orders from failing
-		if ( 'collector_checkout' === WC()->session->get( 'chosen_payment_method' ) ) {
-			foreach ( $checkout_fields as $fieldset_key => $fieldset ) {
-				foreach ( $fieldset as $field_key => $field ) {
-					$checkout_fields[ $fieldset_key ][ $field_key ]['required'] = false;
-				}
-			}
-		}
-		return $checkout_fields;
-    }
 
     public function add_org_nr_to_order( $order ) {
 	    if ( 'collector_checkout' === $order->get_payment_method() ) {

@@ -28,7 +28,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 define( 'COLLECTOR_BANK_PLUGIN_DIR', untrailingslashit( plugin_dir_path( __FILE__ ) ) );
 define( 'COLLECTOR_BANK_PLUGIN_URL', untrailingslashit( plugin_dir_url( __FILE__ ) ) );
-define( 'COLLECTOR_BANK_VERSION', '1.1.2' );
+define( 'COLLECTOR_BANK_VERSION', '1.1.28' );
 
 if ( ! class_exists( 'Collector_Checkout' ) ) {
 	class Collector_Checkout {
@@ -44,12 +44,7 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 			
 			// CSS for settings page
 			add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_css' ) );
-
-			// Remove the storefront sticky checkout.
-			add_action( 'wp_enqueue_scripts', array( $this, 'jk_remove_sticky_checkout' ), 99 );
 			
-			// Save Collector data (private id) in WC order
-			add_action( 'woocommerce_new_order', array( $this, 'save_collector_order_data' ) );
 		}
 
 		public function init() {
@@ -69,6 +64,7 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 			include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-status.php' );
 			include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-templates.php' );
 			include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-gdpr.php' );
+			include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-confirmation.php' );
 
 			include_once( COLLECTOR_BANK_PLUGIN_DIR . '/includes/collector-checkout-for-woocommerce-functions.php' );
 			
@@ -266,34 +262,12 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 			}
 		}
 		
-		/**
-		 * Saves Collector data to WooCommerce order as meta field.
-		 *
-		 * @param string $order_id WooCommerce order id.
-		 * @param array    $data  Posted data.
-		 */
-		public function save_collector_order_data( $order_id ) {
-			if ( method_exists( WC()->session, 'get' ) ) {
-				if( WC()->session->get( 'collector_private_id' ) ) {
-					
-					Collector_Checkout::log('Saving Collector meta data for private id ' . WC()->session->get( 'collector_private_id' ) . ' in order id ' . $order_id );
-					
-					update_post_meta( $order_id, '_collector_customer_type', WC()->session->get( 'collector_customer_type' ) );
-					update_post_meta( $order_id, '_collector_public_token', WC()->session->get( 'collector_public_token' ) );
-					update_post_meta( $order_id, '_collector_private_id', WC()->session->get( 'collector_private_id' ) );	
-				}
-			}
-		}
 	
 		public function add_collector_checkout_gateway( $methods ) {
 			$methods[] = 'Collector_Checkout_Gateway';
 
 			return $methods;
 		}
-
-		public function jk_remove_sticky_checkout() {
-			wp_dequeue_script( 'storefront-sticky-payment' );
-		}	
 	}
 }
 $collector_checkout = new Collector_Checkout();
