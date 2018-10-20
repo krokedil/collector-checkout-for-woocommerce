@@ -32,9 +32,6 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 		// Body class
 		add_filter( 'body_class', array( $this, 'add_body_class' ) );
 
-		// Override the checkout template
-		add_filter( 'woocommerce_locate_template', array( $this, 'override_template' ), 10, 3 );
-
 		// Set fields to not required.
 		add_filter( 'woocommerce_checkout_fields' ,  array( $this, 'collector_set_not_required' ), 20 );
 
@@ -155,40 +152,6 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 		}
 		return parent::get_transaction_url( $order );
 	}
-	
-
-	public function override_template( $template, $template_name, $template_path ) {
-		if ( is_checkout() ) {
-			$available_payment_gateways = WC()->payment_gateways->get_available_payment_gateways();
-			if ( 'checkout/form-checkout.php' === $template_name ) {
-				// Collector checkout page.
-				if ( array_key_exists( 'collector_checkout', $available_payment_gateways ) ) {
-					// If chosen payment method exists.
-					if ( 'collector_checkout' === WC()->session->get( 'chosen_payment_method' ) ) {
-						$template = COLLECTOR_BANK_PLUGIN_DIR . '/templates/form-checkout.php';
-					}
-					// If chosen payment method does not exist and KCO is the first gateway.
-					if ( null === WC()->session->get( 'chosen_payment_method' ) ) {
-						reset( $available_payment_gateways );
-						if ( 'collector_checkout' === key( $available_payment_gateways ) ) {
-							$template = COLLECTOR_BANK_PLUGIN_DIR . '/templates/form-checkout.php';
-						}
-					}
-				}
-			}
-		}
-		return $template;
-	}
-
-	/*public function get_customer_data() {
-		// Get information about order from Collector
-		$private_id    	= WC()->session->get( 'collector_private_id' );
-		$customer_type 	= WC()->session->get( 'collector_customer_type' );
-		$customer_data 	= new Collector_Checkout_Requests_Get_Checkout_Information( $private_id, $customer_type );
-		$customer_data 	= $customer_data->request();
-
-		return json_decode( $customer_data );
-	}*/
 
 	public function process_payment( $order_id, $retry = false ) {
 		$order = wc_get_order( $order_id );
