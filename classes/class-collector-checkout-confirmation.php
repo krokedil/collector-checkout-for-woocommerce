@@ -113,24 +113,12 @@ class Collector_Checkout_Confirmation {
 		if ( ! $this->is_collector_confirmation() ) {
 			return;
 		}
-
-		
 		?>
 
 		<script>
 			jQuery(function ($) {
 				$('input#terms').prop('checked', true);
 				$('input#ship-to-different-address-checkbox').prop('checked', true);
-
-				// If order value = 0, payment method fields will not be in the page, so we need to
-				/*
-				if (!$('input#payment_method_kco').length) {
-					$('#order_review').append('<input id="payment_method_kco" type="radio" class="input-radio" name="payment_method" value="kco" checked="checked" />');
-				}
-
-				$('input#payment_method_kco').prop('checked', true);
-				*/
-				
 
 				$('.validate-required').removeClass('validate-required');
 				$('form.woocommerce-checkout').submit();
