@@ -269,6 +269,7 @@
         });
     });
 
+     // When WooCommerce checkout submission fails
     $( document ).on( 'checkout_error', function () {
         console.log('checkout_error');
         if ("collector_checkout" === $("input[name='payment_method']:checked").val() ) {
@@ -276,7 +277,6 @@
         }
     });
 
-    // When WooCommerce checkout submission fails
     function checkout_error() {
         var error_message = $( ".woocommerce-NoticeGroup-checkout" ).text();
         console.log('checkout error ' + error_message );
