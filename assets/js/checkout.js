@@ -269,7 +269,7 @@
         });
     });
 
-    $( document.body ).on( 'checkout_error', function () {
+    $( document ).on( 'checkout_error', function () {
         console.log('checkout_error');
         if ("collector_checkout" === $("input[name='payment_method']:checked").val() ) {
             checkout_error();
@@ -279,12 +279,12 @@
     // When WooCommerce checkout submission fails
     function checkout_error() {
         var error_message = $( ".woocommerce-NoticeGroup-checkout" ).text();
-        console.log('checkout error ' + $( error_messages ).text() );
+        console.log('checkout error ' + error_message );
         
         if ("collector_checkout" === $("input[name='payment_method']:checked").val()) {
             var data = {
                 'action': 'checkout_error',
-                'error_message': $( error_messages ).text(),
+                'error_message': error_message,
             };
             
             jQuery.post(wc_collector_checkout.checkout_error, data, function (data) {
