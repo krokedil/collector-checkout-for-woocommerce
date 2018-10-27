@@ -116,7 +116,9 @@ class Collector_Checkout_Confirmation {
 		?>
 
 		<script>
+			var collector_text = '<?php echo __( 'Please wait while we process your order.', 'collector-checkout-for-woocommerce' ); ?>';
 			jQuery(function ($) {
+				$( 'body' ).append( $( '<div class="collector-modal"><div class="collector-modal-content">' + collector_text + '</div></div>' ) );
 				$('input#terms').prop('checked', true);
 				$('input#ship-to-different-address-checkbox').prop('checked', true);
 
