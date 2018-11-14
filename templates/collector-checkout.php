@@ -19,7 +19,9 @@ do_action( 'collector_wc_before_checkout_form' );
 	<div id="collector-wrapper">
 		<h3 id="order_review_heading" style="float:none"><?php _e( 'Your order', 'woocommerce' ); ?></h3>
 		<div id="collector-order-review">
+			<?php do_action( 'collector_wc_before_order_review' ); ?>
 			<?php woocommerce_order_review(); ?>
+			<?php do_action( 'collector_wc_after_order_review' ); ?>
 		</div>
 		<div id="collector-iframe">
 			<?php do_action( 'collector_wc_before_iframe' ); ?>
