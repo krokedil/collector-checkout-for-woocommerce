@@ -69,8 +69,8 @@ class Collector_Checkout_Templates {
 					if ( 'collector_checkout' === WC()->session->get( 'chosen_payment_method' ) ) {
 						$template = $collector_checkout_template;
 					}
-					// If chosen payment method does not exist and KCO is the first gateway.
-					if ( null === WC()->session->get( 'chosen_payment_method' ) ) {
+					// If chosen payment method does not exist and Collector is the first gateway.
+					if ( null === WC()->session->get( 'chosen_payment_method' ) || '' === WC()->session->get( 'chosen_payment_method' ) ) {
 						reset( $available_payment_gateways );
 						if ( 'collector_checkout' === key( $available_payment_gateways ) ) {
 							$template = $collector_checkout_template;
