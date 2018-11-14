@@ -48,7 +48,7 @@ class Collector_Checkout_Templates {
 	 * @return string
 	 */
 	public function override_template( $template, $template_name, $template_path ) {
-		if ( is_checkout() && !isset( $_GET['payment_successful'] ) ) {
+		if ( is_checkout() && ! isset( $_GET['payment_successful'] ) ) {
 
 			$available_payment_gateways = WC()->payment_gateways->get_available_payment_gateways();
 			if ( 'checkout/form-checkout.php' === $template_name ) {
