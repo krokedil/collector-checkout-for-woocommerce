@@ -50,19 +50,26 @@ class Collector_Checkout_Templates {
 	public function override_template( $template, $template_name, $template_path ) {
 		if ( is_checkout() && ! isset( $_GET['payment_successful'] ) ) {
 
-			$available_payment_gateways = WC()->payment_gateways->get_available_payment_gateways();
 			if ( 'checkout/form-checkout.php' === $template_name ) {
+				$available_payment_gateways = WC()->payment_gateways->get_available_payment_gateways();
+
+				if ( locate_template( 'woocommerce/collector-checkout.php' ) ) {
+					$collector_checkout_template = locate_template( 'woocommerce/collector-checkout.php' );
+				} else {
+					$collector_checkout_template = COLLECTOR_BANK_PLUGIN_DIR . '/templates/collector-checkout.php';
+				}
+
 				// Collector checkout page.
 				if ( array_key_exists( 'collector_checkout', $available_payment_gateways ) ) {
 					// If chosen payment method exists.
 					if ( 'collector_checkout' === WC()->session->get( 'chosen_payment_method' ) ) {
-						$template = COLLECTOR_BANK_PLUGIN_DIR . '/templates/form-checkout.php';
+						$template = $collector_checkout_template;
 					}
 					// If chosen payment method does not exist and KCO is the first gateway.
 					if ( null === WC()->session->get( 'chosen_payment_method' ) ) {
 						reset( $available_payment_gateways );
 						if ( 'collector_checkout' === key( $available_payment_gateways ) ) {
-							$template = COLLECTOR_BANK_PLUGIN_DIR . '/templates/form-checkout.php';
+							$template = $collector_checkout_template;
 						}
 					}
 				}
