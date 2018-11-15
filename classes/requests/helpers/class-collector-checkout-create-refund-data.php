@@ -59,35 +59,8 @@ class Collector_Checkout_Create_Refund_Data {
 						'UnitPrice'   => -$amount,
 						'VAT'         => 0,
 					),
-				);/*
-				$data[] = array(
-					'InvoiceRow' => array(
-						'ArticleId'         => 'ref2',
-						'Description'       => '2 Refund #' . $refund_id . $reason,
-						'Quantity'          => 1,
-						'UnitPrice'         => -$amount,
-						'VAT'               => 0,
-					),
 				);
-				*/
 			}
-			/*
-			$data = array(
-				'ArticleId'         =>  'Woo-beanie-logo',
-				'Description'       => 'Refund #' . $refund_id . $reason,
-				'Quantity'          => 1,
-				'UnitPrice'         =>  18,
-				'VAT'               =>  self::calculate_tax( $refund_id ),
-			);
-
-			$data = array(
-				'ArticleId'         =>  $refund_id,
-				'Description'       => 'Refund #' . $refund_id . $reason,
-				'Quantity'          => 1,
-				'UnitPrice'         =>  -$amount,
-				'VAT'               =>  self::calculate_tax( $refund_id ),
-			);
-			*/
 		}
 		update_post_meta( $refund_id, '_krokedil_refunded', 'true' );
 		return $data;
