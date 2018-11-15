@@ -6,7 +6,7 @@ Tested up to: 4.9.8
 Requires PHP: 5.6
 Stable tag: trunk
 WC requires at least: 3.0.0
-WC tested up to: 3.4.5
+WC tested up to: 3.5.1
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -31,7 +31,7 @@ More information on how to get started can be found in the [plugin documentation
 
 == Frequently Asked Questions ==
 = Which countries does this payment gateway support? =
-At the moment it's only available for merchants in Sweden. Norway will be added during autumn 2017.
+Collector Checkout is available for merchants and customers in Sweden (B2C & B2B), Norway (B2C & B2B), Finland (B2C & B2B) & Denmark (B2C).
 
 = Where can I find Collector Checkout for WooCommerce documentation? =
 For help setting up and configuring Collector Checkout for WooCommerce please refer to our [documentation](http://docs.krokedil.com/documentation/collector-checkout-for-woocommerce/).
@@ -39,6 +39,18 @@ For help setting up and configuring Collector Checkout for WooCommerce please re
 
 
 == CHANGELOG ==
+= 2018.11.15  	- version 1.2.0 =
+* Feature		- Added support for partial refunds.
+* Feature		- Improved template handling. Template can now be overwritten by adding collector-checkout.php to themes woocommerce folder.
+* Tweak			- Added hooks collector_wc_before_order_review & collector_wc_after_order_review to template file.
+* Tweak			- Changed class names in html markup in template file.
+* Tweak			- Change how order is created in WooCommerce to support enhanced e-commerce tracking via Google Analytics.
+* Tweak			- Change ”Please wait while we process your order” so it is added as a modal above all content.
+* Tweak			- Added events during Woo order creation to confirmation class.
+* Tweak			- Updated Swedish translation.
+* Tweak			- Code cleaning & PHP notice fixes.
+* Fix			- Add support for orders with 100% dicsount and free shipping.
+
 = 2018.09.13  	- version 1.1.2 =
 * Tweak			- Created POT file + started Norwegian translation.
 * Fix			- Create new Collector transaction id if response code != 200 on a update request.

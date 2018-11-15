@@ -15,17 +15,19 @@ class Collector_Checkout_GDPR {
 	public function __construct() {
 		add_action( 'admin_init', array( $this, 'privacy_declarations' ) );
 		add_action( 'init', array( $this, 'maybe_add_privacy_policy_text' ) );
-		//add_filter( 'wp_privacy_personal_data_exporters', array( $this, 'register_exporters' ) );
-		//add_filter( 'wp_privacy_personal_data_erasers', array( $this, 'register_erasers' ) );
+		// add_filter( 'wp_privacy_personal_data_exporters', array( $this, 'register_exporters' ) );
+		// add_filter( 'wp_privacy_personal_data_erasers', array( $this, 'register_erasers' ) );
 	}
 	public function privacy_declarations() {
 		if ( function_exists( 'wp_add_privacy_policy_content' ) ) {
 			$content =
-				__( 'When you place an order in the webstore with Collector Checkout as the choosen payment method, ' .
+				__(
+					'When you place an order in the webstore with Collector Checkout as the choosen payment method, ' .
 					'information about the products in the order (namne, price, quantity, SKU) is sent to Collector Bank. ' .
 					'When the purchase is finalized Collector Bank sends your billing and shipping address back to the webstore. ' .
 					'This data plus an unique identifier for the purchase is then stored as billing and shipping data in the order in WooCommerce.',
-					'collector-checkout-for-woocommerce' );
+					'collector-checkout-for-woocommerce'
+				);
 			wp_add_privacy_policy_content(
 				'Collector Checkout for WooCommerce',
 				wp_kses_post( wpautop( $content ) )
@@ -39,10 +41,10 @@ class Collector_Checkout_GDPR {
 	 * @return void
 	 */
 	public function maybe_add_privacy_policy_text() {
-		$settings                    	= get_option( 'woocommerce_collector_checkout_settings' );
-		$display_privacy_policy_text 	= ( isset( $settings['display_privacy_policy_text'] ) ) ? $settings['display_privacy_policy_text'] : '';
+		$settings                    = get_option( 'woocommerce_collector_checkout_settings' );
+		$display_privacy_policy_text = ( isset( $settings['display_privacy_policy_text'] ) ) ? $settings['display_privacy_policy_text'] : '';
 		if ( 'above' == $display_privacy_policy_text ) {
-			add_action( 'collector_wc_before_iframe', array( $this, 'wc_display_privacy_policy_text' ) );
+			add_action( 'collector_wc_before_iframe', array( $this, 'wc_display_privacy_policy_text' ), 40 );
 		} elseif ( 'below' == $display_privacy_policy_text ) {
 			add_action( 'collector_wc_after_iframe', array( $this, 'wc_display_privacy_policy_text' ) );
 		}
