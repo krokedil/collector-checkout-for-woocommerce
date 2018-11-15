@@ -8,14 +8,14 @@
  * Plugin Name:     Collector Checkout for WooCommerce
  * Plugin URI:      https://krokedil.se/collector/
  * Description:     Extends WooCommerce. Provides a <a href="https://www.collector.se/" target="_blank">Collector Checkout</a> checkout for WooCommerce.
- * Version:         1.1.2
+ * Version:         1.2.0
  * Author:          Krokedil
  * Author URI:      https://krokedil.se/
  * Text Domain:     collector-checkout-for-woocommerce
  * Domain Path:     /languages
  *
  * WC requires at least: 3.0.0
- * WC tested up to: 3.4.5
+ * WC tested up to: 3.5.1
  *
  * Copyright:       © 2017-2018 Krokedil.
  * License:         GNU General Public License v3.0
@@ -28,7 +28,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 define( 'COLLECTOR_BANK_PLUGIN_DIR', untrailingslashit( plugin_dir_path( __FILE__ ) ) );
 define( 'COLLECTOR_BANK_PLUGIN_URL', untrailingslashit( plugin_dir_url( __FILE__ ) ) );
-define( 'COLLECTOR_BANK_VERSION', '1.1.29' );
+define( 'COLLECTOR_BANK_VERSION', '1.2.0' );
 
 if ( ! class_exists( 'Collector_Checkout' ) ) {
 	class Collector_Checkout {
@@ -82,18 +82,18 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/class-collector-checkout-requests-instant-checkout.php';
 
 			// Include the Request Helpers
-			include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/helpers/class-collector-checkout-requests-cart.php' );
-			include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/helpers/class-collector-checkout-requests-fees.php' );
-			include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/helpers/class-collector-checkout-requests-header.php' );
-			include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/helpers/class-collector-checkout-requests-calculate-auth.php' );
-			include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/helpers/class-collector-checkout-create-refund-data.php' );
+			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/helpers/class-collector-checkout-requests-cart.php';
+			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/helpers/class-collector-checkout-requests-fees.php';
+			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/helpers/class-collector-checkout-requests-header.php';
+			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/helpers/class-collector-checkout-requests-calculate-auth.php';
+			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/helpers/class-collector-checkout-create-refund-data.php';
 
 			// Include the Soap Request Classes
-			include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/soap/class-collector-checkout-soap-requests-activate-invoice.php' );
-			include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/soap/class-collector-checkout-soap-requests-cancel-invoice.php' );
-			include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/soap/class-collector-checkout-soap-requests-credit-payment.php' );
-			include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/soap/class-collector-checkout-soap-requests-adjust-invoice.php' );
-			include_once( COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/soap/class-collector-checkout-soap-requests-part-credit-invoice.php' );
+			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/soap/class-collector-checkout-soap-requests-activate-invoice.php';
+			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/soap/class-collector-checkout-soap-requests-cancel-invoice.php';
+			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/soap/class-collector-checkout-soap-requests-credit-payment.php';
+			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/soap/class-collector-checkout-soap-requests-adjust-invoice.php';
+			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/soap/class-collector-checkout-soap-requests-part-credit-invoice.php';
 
 			// Definitions
 			define( 'COLLECTOR_BANK_REST_LIVE', 'https://checkout-api.collector.se' );
