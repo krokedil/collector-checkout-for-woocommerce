@@ -40,6 +40,7 @@ class Collector_Checkout_Templates {
 		add_action( 'collector_wc_before_iframe', 'collector_wc_show_customer_order_notes', 10 );
 		add_action( 'collector_wc_before_iframe', 'collector_wc_show_another_gateway_button', 20 );
 		add_action( 'collector_wc_before_iframe', 'collector_wc_show_customer_type_switcher', 30 );
+		add_action( 'collector_wc_after_iframe', 'collector_wc_show_payment_method_field', 10 );
 	}
 
 	/**

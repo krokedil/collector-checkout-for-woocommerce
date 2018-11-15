@@ -126,6 +126,15 @@ function collector_wc_show_customer_order_notes() {
 }
 
 /**
+ * Adds a hidden payment method field in Collector Checkout page.
+ */
+function collector_wc_show_payment_method_field() {
+	?>
+	<input style="display:none" type="radio" name="payment_method" value="collector_checkout"/>
+	<?php
+}
+
+/**
  * Unset Collector public token and private id
  */
 function wc_collector_add_invoice_fee_to_order( $order_id, $product_id ) {
