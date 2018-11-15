@@ -34,17 +34,8 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 		// Body class
 		add_filter( 'body_class', array( $this, 'add_body_class' ) );
 
-		// Override the checkout template
-		add_filter( 'woocommerce_locate_template', array( $this, 'override_template' ), 10, 3 );
-
-		// Set fields to not required.
-		add_filter( 'woocommerce_checkout_fields', array( $this, 'collector_set_not_required' ), 20 );
-
 		// Add org nr after address on company order.
 		add_action( 'woocommerce_admin_order_data_after_billing_address', array( $this, 'add_org_nr_to_order' ) );
-
-		// Change the title when processing the WooCommerce order in checkout
-		add_filter( 'the_title', array( $this, 'confirm_page_title' ) );
 
 		// Notification listener.
 		add_action( 'woocommerce_api_collector_checkout_gateway', array( $this, 'notification_listener' ) );
@@ -157,41 +148,6 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 		}
 		return parent::get_transaction_url( $order );
 	}
-
-
-	public function override_template( $template, $template_name, $template_path ) {
-		if ( is_checkout() ) {
-			$available_payment_gateways = WC()->payment_gateways->get_available_payment_gateways();
-			if ( 'checkout/form-checkout.php' === $template_name ) {
-				// Collector checkout page.
-				if ( array_key_exists( 'collector_checkout', $available_payment_gateways ) ) {
-					// If chosen payment method exists.
-					if ( 'collector_checkout' === WC()->session->get( 'chosen_payment_method' ) ) {
-						$template = COLLECTOR_BANK_PLUGIN_DIR . '/templates/form-checkout.php';
-					}
-					// If chosen payment method does not exist and KCO is the first gateway.
-					if ( null === WC()->session->get( 'chosen_payment_method' ) ) {
-						reset( $available_payment_gateways );
-						if ( 'collector_checkout' === key( $available_payment_gateways ) ) {
-							$template = COLLECTOR_BANK_PLUGIN_DIR . '/templates/form-checkout.php';
-						}
-					}
-				}
-			}
-		}
-		return $template;
-	}
-
-	/*
-	public function get_customer_data() {
-		// Get information about order from Collector
-		$private_id    	= WC()->session->get( 'collector_private_id' );
-		$customer_type 	= WC()->session->get( 'collector_customer_type' );
-		$customer_data 	= new Collector_Checkout_Requests_Get_Checkout_Information( $private_id, $customer_type );
-		$customer_data 	= $customer_data->request();
-
-		return json_decode( $customer_data );
-	}*/
 
 	public function process_payment( $order_id, $retry = false ) {
 		$order = wc_get_order( $order_id );
@@ -383,19 +339,19 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 		return $checkout_fields;
 	}
 
-	public function add_org_nr_to_order( $order ) {
-		if ( 'collector_checkout' === $order->get_payment_method() ) {
-			$order_id = $order->get_id();
-			if ( get_post_meta( $order_id, '_collector_org_nr' ) ) {
-				echo '<p class="form-field form-field-wide"><strong>' . __( 'Org Nr', 'collector-checkout-for-woocommerce' ) . ':</strong> ' . get_post_meta( $order_id, '_collector_org_nr', true ) . '</p>';
+    public function add_org_nr_to_order( $order ) {
+	    if ( 'collector_checkout' === $order->get_payment_method() ) {
+		    $order_id = $order->get_id();
+		    if ( get_post_meta( $order_id, '_collector_org_nr' ) ) {
+			    echo '<p class="form-field form-field-wide"><strong>' . __( 'Org Nr', 'collector-checkout-for-woocommerce' ) . ':</strong> ' . get_post_meta( $order_id, '_collector_org_nr', true ) . '</p>';
 			}
 			if ( get_post_meta( $order_id, '_collector_invoice_reference' ) ) {
-				echo '<p class="form-field form-field-wide"><strong>' . __( 'Invoice reference', 'collector-checkout-for-woocommerce' ) . ':</strong> ' . get_post_meta( $order_id, '_collector_invoice_reference', true ) . '</p>';
-			}
-		}
-	}
-
-	/**
+			    echo '<p class="form-field form-field-wide"><strong>' . __( 'Invoice reference', 'collector-checkout-for-woocommerce' ) . ':</strong> ' . get_post_meta( $order_id, '_collector_invoice_reference', true ) . '</p>';
+		    }
+	    }
+    }
+    
+    /**
 	 * Filter Checkout page title in confirmation page.
 	 *
 	 * @param $title
