@@ -320,12 +320,23 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 				return false;
 			}
 		} else {
-			// $credit_order = new Collector_Checkout_SOAP_Requests_Adjust_Invoice( $order_id );
-			$credit_order = new Collector_Checkout_SOAP_Requests_Part_Credit_Invoice( $order_id );
-			if ( $credit_order->request( $order_id, $amount, $reason ) === true ) {
-				return true;
+			$refund_id      = Collector_Checkout_Create_Refund_Data::get_refunded_order( $order_id );
+			$refund_order   = wc_get_order( $refund_id );
+			$refunded_items = $refund_order->get_items();
+			if ( $refunded_items ) {
+				$credit_order = new Collector_Checkout_SOAP_Requests_Part_Credit_Invoice( $order_id );
+				if ( $credit_order->request( $order_id, $amount, $reason ) === true ) {
+					return true;
+				} else {
+					return false;
+				}
 			} else {
-				return false;
+				$credit_order = new Collector_Checkout_SOAP_Requests_Adjust_Invoice( $order_id );
+				if ( $credit_order->request( $order_id, $amount, $reason ) === true ) {
+					return true;
+				} else {
+					return false;
+				}
 			}
 
 			// $order->add_order_note( sprintf( __( 'Collector Bank currently only supports full refunds, for a partial refund use the Collector Bank Merchant Portal', 'collector-checkout-for-woocommerce' ) ) );
