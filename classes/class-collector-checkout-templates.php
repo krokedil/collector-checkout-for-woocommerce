@@ -55,6 +55,11 @@ class Collector_Checkout_Templates {
 	public function override_template( $template, $template_name, $template_path ) {
 		if ( is_checkout() && ! isset( $_GET['payment_successful'] ) ) {
 
+			// Don't display Collector Checkout template if we have a cart that doesn't needs payment
+			if ( ! WC()->cart->needs_payment() ) {
+				return $template;
+			}
+
 			if ( 'checkout/form-checkout.php' === $template_name ) {
 				$available_payment_gateways = WC()->payment_gateways->get_available_payment_gateways();
 
