@@ -333,29 +333,22 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 		}
 	}
 
-	public function collector_set_not_required( $checkout_fields ) {
-		// Set fields to not required, to prevent orders from failing
-		if ( 'collector_checkout' === WC()->session->get( 'chosen_payment_method' ) ) {
-			foreach ( $checkout_fields as $fieldset_key => $fieldset ) {
-				foreach ( $fieldset as $field_key => $field ) {
-					$checkout_fields[ $fieldset_key ][ $field_key ]['required'] = false;
-				}
-			}
-		}
-		return $checkout_fields;
-	}
-
 	/**
-	 * Filter Checkout page title in confirmation page.
+	 * Add org nr and invoice reference to order for
 	 *
 	 * @param $title
 	 *
 	 * @return string
 	 */
-	public function confirm_page_title( $title ) {
-		if ( ! is_admin() && is_main_query() && in_the_loop() && is_page() && is_checkout() && isset( $_GET['payment_successful'] ) && 1 == $_GET['payment_successful'] ) {
-			$title = __( 'Please wait while we process your order.', 'collector-checkout-for-woocommerce' );
+	public function add_org_nr_to_order( $order ) {
+		if ( 'collector_checkout' === $order->get_payment_method() ) {
+			$order_id = $order->get_id();
+			if ( get_post_meta( $order_id, '_collector_org_nr' ) ) {
+				echo '<p class="form-field form-field-wide"><strong>' . __( 'Org Nr', 'collector-checkout-for-woocommerce' ) . ':</strong> ' . get_post_meta( $order_id, '_collector_org_nr', true ) . '</p>';
+			}
+			if ( get_post_meta( $order_id, '_collector_invoice_reference' ) ) {
+				echo '<p class="form-field form-field-wide"><strong>' . __( 'Invoice reference', 'collector-checkout-for-woocommerce' ) . ':</strong> ' . get_post_meta( $order_id, '_collector_invoice_reference', true ) . '</p>';
+			}
 		}
-		return $title;
 	}
 }
