@@ -94,7 +94,7 @@ class Collector_Checkout_Post_Checkout {
 			}
 
 			$current_screen = get_current_screen();
-			if ( 'edit-shop_order' == $current_screen->id ) {
+			if ( is_object( $current_screen ) && 'edit-shop_order' == $current_screen->id ) {
 				$collector_payment_id = null !== get_post_meta( $order->get_id(), '_collector_payment_id', true ) ? get_post_meta( $order->get_id(), '_collector_payment_id', true ) : '';
 				// $collector_payment_id = get_post_meta( $order->get_id(), '_collector_payment_id', true );
 				if ( $collector_payment_id ) {
