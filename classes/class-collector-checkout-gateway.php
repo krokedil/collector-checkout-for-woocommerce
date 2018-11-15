@@ -339,19 +339,7 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 		return $checkout_fields;
 	}
 
-    public function add_org_nr_to_order( $order ) {
-	    if ( 'collector_checkout' === $order->get_payment_method() ) {
-		    $order_id = $order->get_id();
-		    if ( get_post_meta( $order_id, '_collector_org_nr' ) ) {
-			    echo '<p class="form-field form-field-wide"><strong>' . __( 'Org Nr', 'collector-checkout-for-woocommerce' ) . ':</strong> ' . get_post_meta( $order_id, '_collector_org_nr', true ) . '</p>';
-			}
-			if ( get_post_meta( $order_id, '_collector_invoice_reference' ) ) {
-			    echo '<p class="form-field form-field-wide"><strong>' . __( 'Invoice reference', 'collector-checkout-for-woocommerce' ) . ':</strong> ' . get_post_meta( $order_id, '_collector_invoice_reference', true ) . '</p>';
-		    }
-	    }
-    }
-    
-    /**
+	/**
 	 * Filter Checkout page title in confirmation page.
 	 *
 	 * @param $title
