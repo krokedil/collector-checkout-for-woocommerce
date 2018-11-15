@@ -15,21 +15,21 @@
                 // Add class to body
                 $('body').addClass('collector-checkout-selected');
                 // Empty any checkout content to prevent duplicate
-                $('#collector-bank-iframe').empty();
+                $('#collector-container').empty();
                 
                 var publicToken = data.data.publicToken;
                 var testmode = data.data.test_mode;
                 console.log('checkout initiated ' + JSON.stringify(data.data));
                 
                 if(testmode === 'yes') {
-                	$('#collector-bank-iframe').append('<script src="https://checkout-uat.collector.se/collector-checkout-loader.js" data-lang="' + wc_collector_checkout.locale + '" data-token="' + publicToken + '" data-variant="' + customer + '" >');
+                	$('#collector-container').append('<script src="https://checkout-uat.collector.se/collector-checkout-loader.js" data-lang="' + wc_collector_checkout.locale + '" data-token="' + publicToken + '" data-variant="' + customer + '" >');
                 } else {
-                	$('#collector-bank-iframe').append('<script src="https://checkout.collector.se/collector-checkout-loader.js" data-lang="' + wc_collector_checkout.locale + '" data-token="' + publicToken + '" data-variant="' + customer + '" >');
+                	$('#collector-container').append('<script src="https://checkout.collector.se/collector-checkout-loader.js" data-lang="' + wc_collector_checkout.locale + '" data-token="' + publicToken + '" data-variant="' + customer + '" >');
                 }
                 checkout_initiated = 'yes';
             } else {
-                $('#collector-bank-iframe').empty();
-                $('#collector-bank-iframe').append('<ul class="woocommerce-error"><li>' + data.data + '</li></ul>');
+                $('#collector-container').empty();
+                $('#collector-container').append('<ul class="woocommerce-error"><li>' + data.data + '</li></ul>');
                 console.log('error');
                 console.log(data.data);
             }
