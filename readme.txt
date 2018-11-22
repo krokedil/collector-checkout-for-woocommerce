@@ -39,6 +39,9 @@ For help setting up and configuring Collector Checkout for WooCommerce please re
 
 
 == CHANGELOG ==
+= 2018.11.22  	- version 1.2.1 =
+* Tweak			- Moved collector_wc_show_customer_order_notes & collector_wc_show_another_gateway_button to be displayed in the collector_wc_after_order_review hook.
+
 = 2018.11.15  	- version 1.2.0 =
 * Feature		- Added support for partial refunds.
 * Feature		- Improved template handling. Template can now be overwritten by adding collector-checkout.php to themes woocommerce folder.
