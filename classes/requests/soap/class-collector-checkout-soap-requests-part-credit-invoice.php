@@ -53,7 +53,6 @@ class Collector_Checkout_SOAP_Requests_Part_Credit_Invoice {
 	}
 
 
-
 	public function request( $order_id, $amount, $reason ) {
 		$order = wc_get_order( $order_id );
 		$soap  = new SoapClient( $this->endpoint );
