@@ -35,7 +35,7 @@ class Collector_Checkout_Create_Refund_Data {
 				foreach ( $refunded_items as $item ) {
 					$product            = $refund_order->get_product_from_item( $item );
 					$title              = $item->get_name();
-					$sku                = ( '' === $product->get_sku() ) ? $title : $product->get_sku();
+					$sku                = empty( $product->get_sku() ) ? $product->get_id() : $product->get_sku();
 					$tax_rates          = WC_Tax::get_rates( $item->get_tax_class() );
 					$tax_rate           = reset( $tax_rates );
 					$formatted_tax_rate = round( $tax_rate['rate'] );
