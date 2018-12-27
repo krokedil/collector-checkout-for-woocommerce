@@ -41,6 +41,7 @@ For help setting up and configuring Collector Checkout for WooCommerce please re
 == CHANGELOG ==
 = 2018.12.27  	- version 1.2.2 =
 * Fix			- Fixed error in communication with Collector when trying to refund product without SKU.
+* Tweak			- Plugin WordPress 5.0 compatible.
 
 = 2018.11.22  	- version 1.2.1 =
 * Tweak			- Moved collector_wc_show_customer_order_notes & collector_wc_show_another_gateway_button to be displayed in the collector_wc_after_order_review hook.
