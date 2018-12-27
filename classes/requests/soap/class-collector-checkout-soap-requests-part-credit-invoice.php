@@ -55,8 +55,8 @@ class Collector_Checkout_SOAP_Requests_Part_Credit_Invoice {
 
 	public function request( $order_id, $amount, $reason ) {
 		$order = wc_get_order( $order_id );
-		$soap = new SoapClient( $this->endpoint );
-		$args = $this->get_request_args( $order_id, $amount, $reason );
+		$soap  = new SoapClient( $this->endpoint );
+		$args  = $this->get_request_args( $order_id, $amount, $reason );
 		// error_log('$args ' . var_export($args, true));
 		$headers   = array();
 		$headers[] = new SoapHeader( 'http://schemas.ecommerce.collector.se/v30/InvoiceService', 'Username', $this->username );
@@ -66,14 +66,13 @@ class Collector_Checkout_SOAP_Requests_Part_Credit_Invoice {
 		try {
 			$request = $soap->PartCreditInvoice( $args );
 		} catch ( SoapFault $e ) {
-			//error_log( '$e ' . var_export( $e, true ) );
+			// error_log( '$e ' . var_export( $e, true ) );
 			$request = $e->getMessage();
-			$this->log( 'Collector PartCreditInvoice request response ERROR: ' . $request = $e->getMessage() . '. Request object: ' . stripslashes_deep( json_encode( $request ) ) );
+			$this->log( 'Collector PartCreditInvoice request response ERROR: ' . $request              = $e->getMessage() . '. Request object: ' . stripslashes_deep( json_encode( $request ) ) );
 			$order->add_order_note( sprintf( __( 'Collector credit invoice request ERROR: ' . $request = $e->getMessage(), 'collector-checkout-for-woocommerce' ) ) );
 			return false;
 		}
-		//error_log('$request ' . var_export($request, true) );
-		
+		// error_log('$request ' . var_export($request, true) );
 		if ( isset( $request->CorrelationId ) || $request->CorrelationId == null ) {
 			$order->add_order_note( sprintf( __( 'Order credited with Collector Bank. CorrelationId ' . $request->CorrelationId, 'collector-checkout-for-woocommerce' ) ) );
 			$this->log( 'Collector PartCreditInvoice request response: ' . stripslashes_deep( json_encode( $request ) ) );
@@ -93,12 +92,12 @@ class Collector_Checkout_SOAP_Requests_Part_Credit_Invoice {
 		$order          = wc_get_order( $order_id );
 		$transaction_id = $order->get_transaction_id();
 		$invoice_rows   = Collector_Checkout_Create_Refund_Data::create_refund_data( $order_id, $amount, $reason );
-		$request_args = array(
+		$request_args   = array(
 			'StoreId'       => $this->store_id,
 			'CountryCode'   => $this->country_code,
 			'InvoiceNo'     => $transaction_id,
 			'ArticleList'   => $invoice_rows,
-			'CreditDate'   	=> date( 'Y-m-d\TH:i:s', strtotime( 'now' ) ),
+			'CreditDate'    => date( 'Y-m-d\TH:i:s', strtotime( 'now' ) ),
 			'CorrelationId' => Collector_Checkout_Create_Refund_Data::get_refunded_order( $order_id ),
 		);
 
