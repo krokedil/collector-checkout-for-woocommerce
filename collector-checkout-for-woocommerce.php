@@ -8,7 +8,7 @@
  * Plugin Name:     Collector Checkout for WooCommerce
  * Plugin URI:      https://krokedil.se/collector/
  * Description:     Extends WooCommerce. Provides a <a href="https://www.collector.se/" target="_blank">Collector Checkout</a> checkout for WooCommerce.
- * Version:         1.2.2
+ * Version:         1.2.3
  * Author:          Krokedil
  * Author URI:      https://krokedil.se/
  * Text Domain:     collector-checkout-for-woocommerce
@@ -17,7 +17,7 @@
  * WC requires at least: 3.0.0
  * WC tested up to: 3.5.3
  *
- * Copyright:       © 2017-2018 Krokedil.
+ * Copyright:       © 2017-2019 Krokedil.
  * License:         GNU General Public License v3.0
  * License URI:     http://www.gnu.org/licenses/gpl-3.0.html
  */
@@ -28,7 +28,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 define( 'COLLECTOR_BANK_PLUGIN_DIR', untrailingslashit( plugin_dir_path( __FILE__ ) ) );
 define( 'COLLECTOR_BANK_PLUGIN_URL', untrailingslashit( plugin_dir_url( __FILE__ ) ) );
-define( 'COLLECTOR_BANK_VERSION', '1.2.2' );
+define( 'COLLECTOR_BANK_VERSION', '1.2.3' );
 
 if ( ! class_exists( 'Collector_Checkout' ) ) {
 	class Collector_Checkout {
@@ -56,7 +56,6 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 			// Include the Classes
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-ajax-calls.php';
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-post-checkout.php';
-			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-instant-checkout.php';
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-admin-notices.php';
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-order-emails.php';
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-create-order-fallback.php';
@@ -79,7 +78,6 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/class-collector-checkout-requests-update-cart.php';
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/class-collector-checkout-requests-get-checkout-information.php';
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/class-collector-checkout-requests-update-reference.php';
-			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/class-collector-checkout-requests-instant-checkout.php';
 
 			// Include the Request Helpers
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/helpers/class-collector-checkout-requests-cart.php';
@@ -177,50 +175,6 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 					)
 				);
 				wp_enqueue_script( 'checkout' );
-			}
-
-			// Load js + style for Instant Buy
-			$collector_settings = get_option( 'woocommerce_collector_checkout_settings' );
-			$instant_checkout   = $collector_settings['collector_instant_checkout'];
-			if ( is_product() && 'no' !== $instant_checkout ) {
-				wp_register_script( 'instantcheckout', plugins_url( '/assets/js/instant-checkout.js', __FILE__ ), array( 'jquery' ), COLLECTOR_BANK_VERSION );
-				wp_localize_script(
-					'instantcheckout', 'wc_collector_checkout_instant_checkout', array(
-						'ajaxurl'                     => admin_url( 'admin-ajax.php' ),
-						'instant_purchase_url'        => WC_AJAX::get_endpoint( 'instant_purchase' ),
-						'update_instant_checkout_url' => WC_AJAX::get_endpoint( 'update_instant_checkout' ),
-					)
-				);
-				wp_enqueue_script( 'instantcheckout' );
-
-				// Load stylesheet for the checkout page
-				wp_register_style(
-					'instantcheckout',
-					plugin_dir_url( __FILE__ ) . 'assets/css/instant-checkout.css',
-					array(),
-					COLLECTOR_BANK_VERSION
-				);
-				wp_enqueue_style( 'instantcheckout' );
-
-				$button_color      = $collector_settings['button_color'];
-				$button_color_text = $collector_settings['button_color_text'];
-
-				if ( $button_color ) {
-					$color      = get_theme_mod( 'my-custom-color' ); // E.g. #FF0000
-					$custom_css = "
-			                button#button-instant-checkout{
-			                        background-color: {$button_color};
-			                        color: {$button_color_text};
-			                        opacity:0.9;
-			                        
-			                }
-			                button#button-instant-checkout:hover{
-			                        opacity:1.0;
-			                        
-			                }";
-
-					wp_add_inline_style( 'instantcheckout', $custom_css );
-				}
 			}
 
 			// Load stylesheet for the checkout page

@@ -2,7 +2,7 @@
 Contributors: collectorbank, krokedil, NiklasHogefjord
 Tags: ecommerce, e-commerce, woocommerce, collector, checkout
 Requires at least: 4.7
-Tested up to: 5.0.2
+Tested up to: 5.0.3
 Requires PHP: 5.6
 Stable tag: trunk
 WC requires at least: 3.0.0
@@ -39,6 +39,9 @@ For help setting up and configuring Collector Checkout for WooCommerce please re
 
 
 == CHANGELOG ==
+= 2019.01.11  	- version 1.2.3 =
+* Tweak			- Removed Collectors Instant purchase feature since it's being retired.
+
 = 2018.12.27  	- version 1.2.2 =
 * Fix			- Fixed error in communication with Collector when trying to refund product without SKU.
 * Tweak			- Plugin WordPress 5.0 compatible.
