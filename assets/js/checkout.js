@@ -19,9 +19,7 @@
                 
                 var publicToken = data.data.publicToken;
                 var testmode = data.data.test_mode;
-                
                 console.log('checkout initiated ' + JSON.stringify(data.data));
-                console.log(wc_collector_checkout);
                 
                 if(testmode === 'yes') {
                 	$('#collector-container').append('<script src="https://checkout-uat.collector.se/collector-checkout-loader.js" data-lang="' + wc_collector_checkout.locale + '" data-token="' + publicToken + '" data-variant="' + customer + '" data-action-color="' + wc_collector_checkout.button_color + '" >');
