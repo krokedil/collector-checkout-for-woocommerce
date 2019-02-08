@@ -16,12 +16,10 @@ function collector_wc_show_snippet() {
 		$locale = 'sv-SE';
 	}
 
-	$collector_settings = get_option( 'woocommerce_collector_checkout_settings' );
-	$test_mode          = $collector_settings['test_mode'];
-	$button_color       = $collector_settings['checkout_button_color'];
-	if ( empty( $button_color ) ) {
-		$button_color = '#5ca375';
-	}
+	$collector_settings       = get_option( 'woocommerce_collector_checkout_settings' );
+	$test_mode                = $collector_settings['test_mode'];
+	$data_action_color_button = isset( $collector_settings['checkout_button_color'] ) && ! empty( $collector_settings['checkout_button_color'] ) ? ' data-action-color="' . $collector_settings['checkout_button_color'] . '"' : '';
+
 	if ( 'yes' == $test_mode ) {
 		$url = 'https://checkout-uat.collector.se/collector-checkout-loader.js';
 	} else {
@@ -59,7 +57,7 @@ function collector_wc_show_snippet() {
 			);
 
 			echo( "<script>console.log('Collector: " . json_encode( $output ) . "');</script>" );
-			$return = '<div id="collector-container"><script src="' . $url . '" data-lang="' . $locale . '" data-token="' . $public_token . '" data-variant="' . $customer_type . '" data-action-color="' . $button_color . '" ></script></div>';
+			$return = '<div id="collector-container"><script src="' . $url . '" data-lang="' . $locale . '" data-token="' . $public_token . '" data-variant="' . $customer_type . '"' . $data_action_color_button . ' ></script></div>';
 		}
 	} else {
 
@@ -69,7 +67,7 @@ function collector_wc_show_snippet() {
 			'customer_type' => $customer_type,
 		);
 		echo( "<script>console.log('Collector: " . json_encode( $output ) . "');</script>" );
-		$return = '<div id="collector-container"><script src="' . $url . '" data-lang="' . $locale . '" data-token="' . $public_token . '" data-variant="' . $customer_type . '" data-action-color="' . $button_color . '" ></script></div>';
+		$return = '<div id="collector-container"><script src="' . $url . '" data-lang="' . $locale . '" data-token="' . $public_token . '" data-variant="' . $customer_type . '"' . $data_action_color_button . ' ></script></div>';
 	}
 
 	echo $return;

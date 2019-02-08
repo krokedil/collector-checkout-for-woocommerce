@@ -150,12 +150,8 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 					$order_id          = '';
 					$purchase_status   = '';
 				}
-				$collector_settings = get_option( 'woocommerce_collector_checkout_settings' );
-				$button_color       = $collector_settings['checkout_button_color'];
-				if ( empty( $button_color ) ) {
-					$button_color = '#5ca375';
-				}
-
+				$collector_settings       = get_option( 'woocommerce_collector_checkout_settings' );
+				$data_action_color_button = isset( $collector_settings['checkout_button_color'] ) && ! empty( $collector_settings['checkout_button_color'] ) ? "data-action-color='" . $collector_settings['checkout_button_color'] . "'" : '';
 				wp_localize_script(
 					'checkout',
 					'wc_collector_checkout',
@@ -168,7 +164,7 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 						'checkout_initiated'            => $checkout_initiated,
 						'payment_successful'            => $payment_successful,
 						'purchase_status'               => $purchase_status,
-						'button_color'                  => $button_color,
+						'data_action_color_button'      => $data_action_color_button,
 						'default_customer_type'         => wc_collector_get_default_customer_type(),
 						'selected_customer_type'        => wc_collector_get_selected_customer_type(),
 						'collector_nonce'               => wp_create_nonce( 'collector_nonce' ),
