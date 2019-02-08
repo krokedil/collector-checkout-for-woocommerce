@@ -168,6 +168,13 @@ $settings = array(
 		'description' => sprintf( __( 'Log Collector events, in <code>%s</code>', 'collector-checkout-for-woocommerce' ), wc_get_log_file_path( 'collector_checkout' ) ),
 		'default'     => 'no',
 	),
+	'checkout_button_color'           => array(
+		'title'       => __( 'Checkout button color', 'collector-checkout-for-woocommerce' ),
+		'type'        => 'color',
+		'description' => __( 'Collector checkout button color', 'collector-checkout-for-woocommerce' ),
+		'default'     => '',
+		'desc_tip'    => true,
+	),
 );
 
 $wc_version = defined( 'WC_VERSION' ) && WC_VERSION ? WC_VERSION : null;
