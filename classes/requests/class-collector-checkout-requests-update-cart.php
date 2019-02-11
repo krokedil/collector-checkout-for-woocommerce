@@ -10,20 +10,20 @@ class Collector_Checkout_Requests_Update_Cart extends Collector_Checkout_Request
 		parent::__construct();
 		$collector_settings = get_option( 'woocommerce_collector_checkout_settings' );
 		switch ( get_woocommerce_currency() ) {
-			case 'SEK' :
-				$store_id = $collector_settings['collector_merchant_id_se_' . $customer_type];
+			case 'SEK':
+				$store_id = $collector_settings[ 'collector_merchant_id_se_' . $customer_type ];
 				break;
-			case 'NOK' :
-				$store_id = $collector_settings['collector_merchant_id_no_' . $customer_type];
+			case 'NOK':
+				$store_id = $collector_settings[ 'collector_merchant_id_no_' . $customer_type ];
 				break;
-			case 'DKK' :
-				$store_id = $collector_settings['collector_merchant_id_dk_' . $customer_type];
+			case 'DKK':
+				$store_id = $collector_settings[ 'collector_merchant_id_dk_' . $customer_type ];
 				break;
-			case 'EUR' :
-				$store_id = $collector_settings['collector_merchant_id_fi_' . $customer_type];
+			case 'EUR':
+				$store_id = $collector_settings[ 'collector_merchant_id_fi_' . $customer_type ];
 				break;
-			default :
-				$store_id = $collector_settings['collector_merchant_id_se_' . $customer_type];
+			default:
+				$store_id = $collector_settings[ 'collector_merchant_id_se_' . $customer_type ];
 				break;
 		}
 		$this->path = '/merchants/' . $store_id . '/checkouts/' . $private_id . '/cart';
@@ -42,9 +42,9 @@ class Collector_Checkout_Requests_Update_Cart extends Collector_Checkout_Request
 
 	public function request() {
 		$request_url = $this->base_url . $this->path;
-		$request = wp_remote_request( $request_url, $this->get_request_args() );
+		$request     = wp_remote_request( $request_url, $this->get_request_args() );
 		if ( is_wp_error( $request ) ) {
-			$this->log( 'Collector update cart request response ERROR: ' . json_encode( $request ) . ' (Request endpoint: ' . $request_url . ')' );			
+			$this->log( 'Collector update cart request response ERROR: ' . json_encode( $request ) . ' (Request endpoint: ' . $request_url . ')' );
 		} else {
 			$this->log( 'Collector update cart request response: ' . stripslashes_deep( json_encode( $request ) ) . ' (Request endpoint: ' . $request_url . ')' );
 		}
