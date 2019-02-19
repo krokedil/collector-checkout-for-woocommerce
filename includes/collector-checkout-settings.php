@@ -135,6 +135,13 @@ $settings = array(
 		),
 		'default'     => 'b2c',
 	),
+	'checkout_button_color'           => array(
+		'title'       => __( 'Checkout button color', 'collector-checkout-for-woocommerce' ),
+		'type'        => 'color',
+		'description' => __( 'Background color of call to action buttons in Collector Checkout.', 'collector-checkout-for-woocommerce' ),
+		'default'     => '',
+		'desc_tip'    => true,
+	),
 	'order_management_settings_title' => array(
 		'title' => __( 'Order management settings', 'collector-checkout-for-woocommerce' ),
 		'type'  => 'title',
@@ -167,13 +174,6 @@ $settings = array(
 		'label'       => __( 'Enable logging.', 'collector-checkout-for-woocommerce' ),
 		'description' => sprintf( __( 'Log Collector events, in <code>%s</code>', 'collector-checkout-for-woocommerce' ), wc_get_log_file_path( 'collector_checkout' ) ),
 		'default'     => 'no',
-	),
-	'checkout_button_color'           => array(
-		'title'       => __( 'Checkout button color', 'collector-checkout-for-woocommerce' ),
-		'type'        => 'color',
-		'description' => __( 'Collector checkout button color', 'collector-checkout-for-woocommerce' ),
-		'default'     => '',
-		'desc_tip'    => true,
 	),
 );
 
