@@ -6,7 +6,7 @@ Tested up to: 5.0.3
 Requires PHP: 5.6
 Stable tag: trunk
 WC requires at least: 3.0.0
-WC tested up to: 3.5.3
+WC tested up to: 3.5.4
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -39,6 +39,10 @@ For help setting up and configuring Collector Checkout for WooCommerce please re
 
 
 == CHANGELOG ==
+= 2019.02.19  	- version 1.3.0 =
+* Feature       - Added support for changing background color of call to action buttons in Collector Checkout.
+* Tweak         - Product title is now sent to Collector correctly for variable products.
+
 = 2019.01.11  	- version 1.2.3 =
 * Tweak			- Removed Collectors Instant purchase feature since it's being retired.
 

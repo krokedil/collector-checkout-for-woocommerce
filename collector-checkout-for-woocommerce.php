@@ -8,14 +8,14 @@
  * Plugin Name:     Collector Checkout for WooCommerce
  * Plugin URI:      https://krokedil.se/collector/
  * Description:     Extends WooCommerce. Provides a <a href="https://www.collector.se/" target="_blank">Collector Checkout</a> checkout for WooCommerce.
- * Version:         1.2.3
+ * Version:         1.3.0
  * Author:          Krokedil
  * Author URI:      https://krokedil.se/
  * Text Domain:     collector-checkout-for-woocommerce
  * Domain Path:     /languages
  *
  * WC requires at least: 3.0.0
- * WC tested up to: 3.5.3
+ * WC tested up to: 3.5.4
  *
  * Copyright:       © 2017-2019 Krokedil.
  * License:         GNU General Public License v3.0
@@ -28,7 +28,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 define( 'COLLECTOR_BANK_PLUGIN_DIR', untrailingslashit( plugin_dir_path( __FILE__ ) ) );
 define( 'COLLECTOR_BANK_PLUGIN_URL', untrailingslashit( plugin_dir_url( __FILE__ ) ) );
-define( 'COLLECTOR_BANK_VERSION', '1.2.3' );
+define( 'COLLECTOR_BANK_VERSION', '1.3.0' );
 
 if ( ! class_exists( 'Collector_Checkout' ) ) {
 	class Collector_Checkout {
@@ -150,9 +150,12 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 					$order_id          = '';
 					$purchase_status   = '';
 				}
-
+				$collector_settings       = get_option( 'woocommerce_collector_checkout_settings' );
+				$data_action_color_button = isset( $collector_settings['checkout_button_color'] ) && ! empty( $collector_settings['checkout_button_color'] ) ? "data-action-color='" . $collector_settings['checkout_button_color'] . "'" : '';
 				wp_localize_script(
-					'checkout', 'wc_collector_checkout', array(
+					'checkout',
+					'wc_collector_checkout',
+					array(
 						'ajaxurl'                       => admin_url( 'admin-ajax.php' ),
 						'locale'                        => $locale,
 						'is_thank_you_page'             => $is_thank_you_page,
@@ -161,6 +164,7 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 						'checkout_initiated'            => $checkout_initiated,
 						'payment_successful'            => $payment_successful,
 						'purchase_status'               => $purchase_status,
+						'data_action_color_button'      => $data_action_color_button,
 						'default_customer_type'         => wc_collector_get_default_customer_type(),
 						'selected_customer_type'        => wc_collector_get_selected_customer_type(),
 						'collector_nonce'               => wp_create_nonce( 'collector_nonce' ),

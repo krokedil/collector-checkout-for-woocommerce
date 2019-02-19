@@ -22,9 +22,9 @@
                 console.log('checkout initiated ' + JSON.stringify(data.data));
                 
                 if(testmode === 'yes') {
-                	$('#collector-container').append('<script src="https://checkout-uat.collector.se/collector-checkout-loader.js" data-lang="' + wc_collector_checkout.locale + '" data-token="' + publicToken + '" data-variant="' + customer + '" >');
+                	$('#collector-container').append('<script src="https://checkout-uat.collector.se/collector-checkout-loader.js" data-lang="' + wc_collector_checkout.locale + '" data-token="' + publicToken + '" data-variant="' + customer + '"' + wc_collector_checkout.data_action_color_button + ' >');
                 } else {
-                	$('#collector-container').append('<script src="https://checkout.collector.se/collector-checkout-loader.js" data-lang="' + wc_collector_checkout.locale + '" data-token="' + publicToken + '" data-variant="' + customer + '" >');
+                	$('#collector-container').append('<script src="https://checkout.collector.se/collector-checkout-loader.js" data-lang="' + wc_collector_checkout.locale + '" data-token="' + publicToken + '" data-variant="' + customer + '"' + wc_collector_checkout.data_action_color_button + ' >');
                 }
                 checkout_initiated = 'yes';
             } else {
@@ -234,9 +234,9 @@
                     var testmode = data.data.test_mode;
                     var customer_type = data.data.customer_type;
                     if(testmode === 'yes') {
-                        $('div.collector-checkout-thankyou').append('<script src="https://checkout-uat.collector.se/collector-checkout-loader.js" data-lang="' + wc_collector_checkout.locale + '" data-token="' + publicToken + '" data-variant="' + customer_type + '" >');
+                        $('div.collector-checkout-thankyou').append('<script src="https://checkout-uat.collector.se/collector-checkout-loader.js" data-lang="' + wc_collector_checkout.locale + '" data-token="' + publicToken + '" data-variant="' + customer_type + '" ' + wc_collector_checkout.data_action_color_button + '>');
                     } else {
-                        $('div.collector-checkout-thankyou').prepend('<script src="https://checkout.collector.se/collector-checkout-loader.js" data-lang="' + wc_collector_checkout.locale + '" data-token="' + publicToken + '" data-variant="' + customer_type + '" >');
+                        $('div.collector-checkout-thankyou').prepend('<script src="https://checkout.collector.se/collector-checkout-loader.js" data-lang="' + wc_collector_checkout.locale + '" data-token="' + publicToken + '" data-variant="' + customer_type + '" ' + wc_collector_checkout.data_action_color_button + '>');
                     }
                 }
             });
