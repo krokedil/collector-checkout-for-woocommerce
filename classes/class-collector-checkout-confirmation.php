@@ -174,7 +174,7 @@ class Collector_Checkout_Confirmation {
 		// Street address 2.
 		if ( isset( $formated_customer_data['customer_data']['billingAddress2'] ) ) {
 			WC()->customer->set_billing_address_2( sanitize_text_field( $formated_customer_data['customer_data']['billingAddress2'] ) );
-			WC()->customer->set_shipping_address_2( sanitize_text_field( $formated_customer_data['customer_data']['shippingAddress'] ) );
+			WC()->customer->set_shipping_address_2( sanitize_text_field( $formated_customer_data['customer_data']['shippingAddress2'] ) );
 		}
 
 		// Company Name.

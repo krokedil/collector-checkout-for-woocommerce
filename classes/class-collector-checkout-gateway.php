@@ -45,7 +45,7 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 	 * Schedule order status check on notificationUri callback from Collector
 	 */
 	public function notification_listener() {
-
+		Collector_Checkout::log( 'Notification Listener hitt: ' . json_encode( $_GET ) );
 		if ( isset( $_GET['private-id'] ) && isset( $_GET['public-token'] ) ) {
 			$private_id    = $_GET['private-id'];
 			$public_token  = $_GET['public-token'];
