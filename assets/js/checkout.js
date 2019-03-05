@@ -285,6 +285,7 @@
             var data = {
                 'action': 'checkout_error',
                 'error_message': error_message,
+                'public_token':  wc_collector_checkout.public_token,
             };
             
             jQuery.post(wc_collector_checkout.checkout_error, data, function (data) {

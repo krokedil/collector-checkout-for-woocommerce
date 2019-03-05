@@ -124,6 +124,9 @@ class Collector_Api_Callbacks {
 		// Process order.
 		$order = $this->process_order( $collector_order, $private_id, $public_token, $customer_type );
 
+		// Check order total.
+		$this->check_order_totals( $order, $collector_order );
+
 		// Send order number to Collector
 		if ( is_object( $order ) ) {
 			$this->update_order_reference_in_collector( $order, $customer_type, $private_id );

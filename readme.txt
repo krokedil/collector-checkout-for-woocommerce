@@ -2,11 +2,11 @@
 Contributors: collectorbank, krokedil, NiklasHogefjord
 Tags: ecommerce, e-commerce, woocommerce, collector, checkout
 Requires at least: 4.7
-Tested up to: 5.0.3
+Tested up to: 5.1
 Requires PHP: 5.6
 Stable tag: trunk
 WC requires at least: 3.0.0
-WC tested up to: 3.5.4
+WC tested up to: 3.5.5
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -39,6 +39,12 @@ For help setting up and configuring Collector Checkout for WooCommerce please re
 
 
 == CHANGELOG ==
+= 2019.03.05  	- version 1.3.1 =
+* Tweak         - Improved callback logging.
+* Tweak         - Added order total comparison (between Collector & WooCommerce) on fallback creation orders aswell.
+* Fixed         - Save shipping address 2 correctly in order in WooCommerce.
+* Fix           - Added checks to prevent creation of empty WooCommerce orders on confirmation page.
+
 = 2019.02.19  	- version 1.3.0 =
 * Feature       - Added support for changing background color of call to action buttons in Collector Checkout.
 * Tweak         - Product title is now sent to Collector correctly for variable products.
