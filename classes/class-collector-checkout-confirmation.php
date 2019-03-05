@@ -117,6 +117,35 @@ class Collector_Checkout_Confirmation {
 		if ( ! $this->is_collector_confirmation() ) {
 			return;
 		}
+		// Prevent duplicate orders if confirmation page is reloaded manually by customer.
+		$collector_public_token = sanitize_key( $_GET['public-token'] );
+		$query                  = new WC_Order_Query(
+			array(
+				'limit'          => -1,
+				'orderby'        => 'date',
+				'order'          => 'DESC',
+				'return'         => 'ids',
+				'payment_method' => 'collector_checkout',
+				'date_created'   => '>' . ( time() - DAY_IN_SECONDS ),
+			)
+		);
+		$orders          = $query->get_orders();
+		$order_id_match  = null;
+		foreach ( $orders as $order_id ) {
+			$order_collector_public_token = get_post_meta( $order_id, '_collector_public_token', true );
+			if ( strtolower( $order_collector_public_token ) === strtolower( $collector_public_token ) ) {
+				$order_id_match = $order_id;
+				break;
+			}
+		}
+		// _collector_public_token already exist in an order. Let's redirect the customer to the thankyou page for that order.
+		if ( $order_id_match ) {
+			Collector_Checkout::log( 'Confirmation page rendered but _collector_public_token already exist in this order: ' . $order_id_match );
+			$order    = wc_get_order( $order_id_match );
+			$location = $order->get_checkout_order_received_url();
+			wp_safe_redirect( $location );
+			exit;
+		}
 		?>
 
 		<script>
@@ -174,7 +203,7 @@ class Collector_Checkout_Confirmation {
 		// Street address 2.
 		if ( isset( $formated_customer_data['customer_data']['billingAddress2'] ) ) {
 			WC()->customer->set_billing_address_2( sanitize_text_field( $formated_customer_data['customer_data']['billingAddress2'] ) );
-			WC()->customer->set_shipping_address_2( sanitize_text_field( $formated_customer_data['customer_data']['shippingAddress'] ) );
+			WC()->customer->set_shipping_address_2( sanitize_text_field( $formated_customer_data['customer_data']['shippingAddress2'] ) );
 		}
 
 		// Company Name.

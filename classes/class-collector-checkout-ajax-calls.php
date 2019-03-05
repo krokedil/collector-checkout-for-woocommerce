@@ -440,6 +440,39 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 		$customer_type = WC()->session->get( 'collector_customer_type' );
 		$private_id    = WC()->session->get( 'collector_private_id' );
 
+		// Prevent duplicate orders if confirmation page is reloaded manually by customer.
+		$collector_public_token = sanitize_key( $_POST['public_token'] );
+		$query                  = new WC_Order_Query(
+			array(
+				'limit'          => -1,
+				'orderby'        => 'date',
+				'order'          => 'DESC',
+				'return'         => 'ids',
+				'payment_method' => 'collector_checkout',
+				'date_created'   => '>' . ( time() - DAY_IN_SECONDS ),
+			)
+		);
+		$orders          = $query->get_orders();
+		$order_id_match  = null;
+		foreach ( $orders as $order_id ) {
+			$order_collector_public_token = get_post_meta( $order_id, '_collector_public_token', true );
+			if ( strtolower( $order_collector_public_token ) === strtolower( $collector_public_token ) ) {
+				$order_id_match = $order_id;
+				break;
+			}
+		}
+		// _collector_public_token already exist in an order. Let's redirect the customer to the thankyou page for that order.
+		if ( $order_id_match ) {
+			Collector_Checkout::log( 'Checkout error triggered but _collector_public_token already exist in this order: ' . $order_id_match );
+			$order        = wc_get_order( $order_id_match );
+			$redirect_url = $order->get_checkout_order_received_url();
+			$return       = array( 'redirect_url' => $redirect_url );
+			wp_send_json_success( $return );
+			wp_die();
+			exit;
+		}
+
+		// If we get here its safe to create an order.
 		$create_order = new Collector_Create_Local_Order_Fallback();
 
 		// Create the order.
