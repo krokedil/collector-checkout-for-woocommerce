@@ -6,7 +6,7 @@ Tested up to: 5.1
 Requires PHP: 5.6
 Stable tag: trunk
 WC requires at least: 3.0.0
-WC tested up to: 3.5.5
+WC tested up to: 3.5.7
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -39,6 +39,10 @@ For help setting up and configuring Collector Checkout for WooCommerce please re
 
 
 == CHANGELOG ==
+= 2019.05.02  	- version 1.3.2 =
+* Tweak         - Changed filter to wc_get_template for overriding checkout template.
+* Fix           - Added check on update order call to prevent error response redirect to cart if purchase is already completed.
+
 = 2019.03.05  	- version 1.3.1 =
 * Tweak         - Improved callback logging.
 * Tweak         - Added order total comparison (between Collector & WooCommerce) on fallback creation orders aswell.
