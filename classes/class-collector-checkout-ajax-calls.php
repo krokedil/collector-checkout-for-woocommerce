@@ -99,8 +99,19 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 		$update_fees_request = $update_fees->request();
 		$response_body       = json_decode( $update_fees_request['body'] );
 
-		// Check that update fees request was ok
+		// Check that update fees request was ok.
 		if ( is_wp_error( $update_fees_request ) || ! empty( $response_body->error ) || 200 !== $update_fees_request['response']['code'] ) {
+			// Check if purchase was completed, if it was dont redirect customer.
+			if ( 900 === $response_body->error->code ) {
+				foreach ( $response_body->error->errors as $error ) {
+					if ( 'Purchase_Completed' === $error->reason ) {
+						$return                 = array();
+						$return['redirect_url'] = '#';
+						wp_send_json_error( $return );
+						wp_die();
+					}
+				}
+			}
 			wc_collector_unset_sessions();
 			$return                 = array();
 			$return['redirect_url'] = wc_get_checkout_url();
@@ -452,8 +463,8 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 				'date_created'   => '>' . ( time() - DAY_IN_SECONDS ),
 			)
 		);
-		$orders          = $query->get_orders();
-		$order_id_match  = null;
+		$orders                 = $query->get_orders();
+		$order_id_match         = null;
 		foreach ( $orders as $order_id ) {
 			$order_collector_public_token = get_post_meta( $order_id, '_collector_public_token', true );
 			if ( strtolower( $order_collector_public_token ) === strtolower( $collector_public_token ) ) {

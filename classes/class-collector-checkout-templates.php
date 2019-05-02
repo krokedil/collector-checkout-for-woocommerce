@@ -32,7 +32,7 @@ class Collector_Checkout_Templates {
 	public function __construct() {
 
 		// Override the checkout template
-		add_filter( 'woocommerce_locate_template', array( $this, 'override_template' ), 10, 3 );
+		add_filter( 'wc_get_template', array( $this, 'override_template' ), 10, 2 );
 
 		// Template hooks.
 		add_action( 'collector_wc_before_checkout_form', 'collector_wc_calculate_totals', 1 );
@@ -48,11 +48,10 @@ class Collector_Checkout_Templates {
 	 *
 	 * @param string $template      Template.
 	 * @param string $template_name Template name.
-	 * @param string $template_path Template path.
 	 *
 	 * @return string
 	 */
-	public function override_template( $template, $template_name, $template_path ) {
+	public function override_template( $template, $template_name ) {
 		if ( is_checkout() && ! isset( $_GET['payment_successful'] ) ) {
 
 			// Don't display Collector Checkout template if we have a cart that doesn't needs payment

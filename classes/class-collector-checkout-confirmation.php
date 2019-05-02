@@ -99,7 +99,8 @@ class Collector_Checkout_Confirmation {
 				array(
 					'purchase-status' => 'not-completed',
 					'public-token'    => sanitize_text_field( $_POST['public_token'] ),
-				), wc_get_endpoint_url( 'order-received', '', get_permalink( wc_get_page_id( 'checkout' ) ) )
+				),
+				wc_get_endpoint_url( 'order-received', '', get_permalink( wc_get_page_id( 'checkout' ) ) )
 			);
 
 			Collector_Checkout::log( 'Payment complete triggered for private id ' . $private_id . ' but status is not PurchaseCompleted in Collectors system. Current status: ' . var_export( $decoded_json->data->status, true ) . '. Redirecting customer to simplified thankyou page.' );
@@ -129,8 +130,8 @@ class Collector_Checkout_Confirmation {
 				'date_created'   => '>' . ( time() - DAY_IN_SECONDS ),
 			)
 		);
-		$orders          = $query->get_orders();
-		$order_id_match  = null;
+		$orders                 = $query->get_orders();
+		$order_id_match         = null;
 		foreach ( $orders as $order_id ) {
 			$order_collector_public_token = get_post_meta( $order_id, '_collector_public_token', true );
 			if ( strtolower( $order_collector_public_token ) === strtolower( $collector_public_token ) ) {
