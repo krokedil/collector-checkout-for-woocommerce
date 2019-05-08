@@ -39,6 +39,9 @@ For help setting up and configuring Collector Checkout for WooCommerce please re
 
 
 == CHANGELOG ==
+= 2019.05.08  	- version 1.3.3 =
+* Fix           - Fix to use correct address data for logged in users on confirmation page.
+
 = 2019.05.02  	- version 1.3.2 =
 * Tweak         - Changed filter to wc_get_template for overriding checkout template.
 * Fix           - Added check on update order call to prevent error response redirect to cart if purchase is already completed.

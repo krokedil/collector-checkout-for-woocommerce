@@ -185,6 +185,10 @@ class Collector_Checkout_Confirmation {
 	 * @param $klarna_order
 	 */
 	private function save_customer_data( $formated_customer_data ) {
+		if ( is_user_logged_in() ) {
+			// Load customer object, if user is logged in.
+			WC()->customer = new WC_Customer( get_current_user_id() );
+		}
 		// First name.
 		WC()->customer->set_billing_first_name( sanitize_text_field( $formated_customer_data['customer_data']['billingFirstName'] ) );
 		WC()->customer->set_shipping_first_name( sanitize_text_field( $formated_customer_data['customer_data']['shippingFirstName'] ) );
