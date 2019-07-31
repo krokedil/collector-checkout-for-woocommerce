@@ -545,6 +545,8 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 		}
 		$note = sprintf( __( 'This order was made as a fallback due to an error in the checkout (%s). Please verify the order with Collector.', 'collector-checkout-for-woocommerce' ), $error_message );
 		$order->add_order_note( $note );
+		$order->set_status( 'on-hold' );
+		$order->save();
 
 		$redirect_url = $order->get_checkout_order_received_url();
 		$return       = array( 'redirect_url' => $redirect_url );
