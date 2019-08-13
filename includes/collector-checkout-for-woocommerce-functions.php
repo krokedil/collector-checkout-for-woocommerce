@@ -9,11 +9,15 @@ function collector_wc_show_snippet() {
 	if ( 'NOK' == get_woocommerce_currency() ) {
 		$locale = 'nb-NO';
 	} elseif ( 'DKK' == get_woocommerce_currency() ) {
-		$locale = 'en-DK';
+		$locale = 'da-DK';
 	} elseif ( 'EUR' == get_woocommerce_currency() ) {
 		$locale = 'fi-FI';
 	} else {
-		$locale = 'sv-SE';
+		if ( 'sv_SE' === get_locale() ) {
+			$locale = 'sv-SE';
+		} else {
+			$locale = 'en-SE';
+		}
 	}
 
 	$collector_settings       = get_option( 'woocommerce_collector_checkout_settings' );
