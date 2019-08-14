@@ -2,11 +2,11 @@
 Contributors: collectorbank, krokedil, NiklasHogefjord
 Tags: ecommerce, e-commerce, woocommerce, collector, checkout
 Requires at least: 4.7
-Tested up to: 5.1
+Tested up to: 5.2.2
 Requires PHP: 5.6
 Stable tag: trunk
 WC requires at least: 3.0.0
-WC tested up to: 3.5.7
+WC tested up to: 3.7.0
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -39,6 +39,11 @@ For help setting up and configuring Collector Checkout for WooCommerce please re
 
 
 == CHANGELOG ==
+= 2019.08.14  	- version 1.4.0 =
+* Feature       - Added support for English in swedish market and Danish (in Danish market, changed en-DK to da-DK).
+* Tweak         - Set orders created via checkout_error to On Hold.
+* Fix           - Improved handling/http status respons on fraud callback from Collector.
+
 = 2019.05.08  	- version 1.3.3 =
 * Fix           - Fix to use correct address data for logged in users on confirmation page.
 
