@@ -21,7 +21,8 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 		);
 
 		add_action(
-			'woocommerce_update_options_payment_gateways_' . $this->id, array(
+			'woocommerce_update_options_payment_gateways_' . $this->id,
+			array(
 				$this,
 				'process_admin_options',
 			)
@@ -322,25 +323,27 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 				return false;
 			}
 		} else {
-			$refund_id      = Collector_Checkout_Create_Refund_Data::get_refunded_order( $order_id );
-			$refund_order   = wc_get_order( $refund_id );
-			$refunded_items = $refund_order->get_items();
-			if ( $refunded_items ) {
+			$result          = false;
+			$refund_order_id = Collector_Checkout_Create_Refund_Data::get_refunded_order( $order_id );
+			$refunded_items  = Collector_Checkout_Create_Refund_Data::create_refund_data( $order_id, $refund_order_id, $amount, $reason );
+
+			if ( isset( $refunded_items['full_refunds'] ) ) {
 				$credit_order = new Collector_Checkout_SOAP_Requests_Part_Credit_Invoice( $order_id );
-				if ( $credit_order->request( $order_id, $amount, $reason ) === true ) {
-					return true;
+				if ( $credit_order->request( $order_id, $amount, $reason, $refunded_items['full_refunds'] ) === true ) {
+					$result = true;
 				} else {
-					return false;
-				}
-			} else {
-				$credit_order = new Collector_Checkout_SOAP_Requests_Adjust_Invoice( $order_id );
-				if ( $credit_order->request( $order_id, $amount, $reason ) === true ) {
-					return true;
-				} else {
-					return false;
+					$result = false;
 				}
 			}
-
+			if ( isset( $refunded_items['partial_refunds'] ) ) {
+				$credit_order = new Collector_Checkout_SOAP_Requests_Adjust_Invoice( $order_id );
+				if ( $credit_order->request( $order_id, $amount, $reason, $refunded_items['partial_refunds'] ) === true ) {
+					$result = true;
+				} else {
+					$result = false;
+				}
+			}
+			return $result;
 			// $order->add_order_note( sprintf( __( 'Collector Bank currently only supports full refunds, for a partial refund use the Collector Bank Merchant Portal', 'collector-checkout-for-woocommerce' ) ) );
 			// return false;
 		}

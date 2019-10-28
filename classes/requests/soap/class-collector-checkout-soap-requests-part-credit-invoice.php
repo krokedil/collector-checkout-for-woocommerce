@@ -53,10 +53,10 @@ class Collector_Checkout_SOAP_Requests_Part_Credit_Invoice {
 	}
 
 
-	public function request( $order_id, $amount, $reason ) {
+	public function request( $order_id, $amount, $reason, $refunded_items ) {
 		$order = wc_get_order( $order_id );
 		$soap  = new SoapClient( $this->endpoint );
-		$args  = $this->get_request_args( $order_id, $amount, $reason );
+		$args  = $this->get_request_args( $order_id, $amount, $reason, $refunded_items );
 		// error_log('$args ' . var_export($args, true));
 		$headers   = array();
 		$headers[] = new SoapHeader( 'http://schemas.ecommerce.collector.se/v30/InvoiceService', 'Username', $this->username );
@@ -87,16 +87,15 @@ class Collector_Checkout_SOAP_Requests_Part_Credit_Invoice {
 		}
 	}
 
-	public function get_request_args( $order_id, $amount, $reason ) {
+	public function get_request_args( $order_id, $amount, $reason, $refunded_items ) {
 
 		$order          = wc_get_order( $order_id );
 		$transaction_id = $order->get_transaction_id();
-		$invoice_rows   = Collector_Checkout_Create_Refund_Data::create_refund_data( $order_id, $amount, $reason );
 		$request_args   = array(
 			'StoreId'       => $this->store_id,
 			'CountryCode'   => $this->country_code,
 			'InvoiceNo'     => $transaction_id,
-			'ArticleList'   => $invoice_rows,
+			'ArticleList'   => $refunded_items,
 			'CreditDate'    => date( 'Y-m-d\TH:i:s', strtotime( 'now' ) ),
 			'CorrelationId' => Collector_Checkout_Create_Refund_Data::get_refunded_order( $order_id ),
 		);
