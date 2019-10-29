@@ -313,7 +313,7 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 	}
 
 	public function process_refund( $order_id, $amount = null, $reason = '' ) {
-		// Check if amount equals total order
+		// Check if amount equals total order.
 		$order = wc_get_order( $order_id );
 		if ( $amount == $order->get_total() ) {
 			$credit_order = new Collector_Checkout_SOAP_Requests_Credit_Payment( $order_id );
@@ -323,29 +323,31 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 				return false;
 			}
 		} else {
-			$result          = false;
+			$result_full     = true;
+			$result_part     = true;
 			$refund_order_id = Collector_Checkout_Create_Refund_Data::get_refunded_order( $order_id );
 			$refunded_items  = Collector_Checkout_Create_Refund_Data::create_refund_data( $order_id, $refund_order_id, $amount, $reason );
-
 			if ( isset( $refunded_items['full_refunds'] ) ) {
 				$credit_order = new Collector_Checkout_SOAP_Requests_Part_Credit_Invoice( $order_id );
-				if ( $credit_order->request( $order_id, $amount, $reason, $refunded_items['full_refunds'] ) === true ) {
-					$result = true;
-				} else {
-					$result = false;
+				if ( ! $credit_order->request( $order_id, $amount, $reason, $refunded_items['full_refunds'] ) ) {
+					$result_full = false;
 				}
 			}
-			if ( isset( $refunded_items['partial_refunds'] ) ) {
+			if ( isset( $refunded_items['partial_refund'] ) ) {
 				$credit_order = new Collector_Checkout_SOAP_Requests_Adjust_Invoice( $order_id );
-				if ( $credit_order->request( $order_id, $amount, $reason, $refunded_items['partial_refunds'] ) === true ) {
-					$result = true;
-				} else {
+				if ( ! $credit_order->request( $order_id, $amount, $reason, $refunded_items['partial_refund'] ) ) {
 					$result = false;
 				}
 			}
-			return $result;
-			// $order->add_order_note( sprintf( __( 'Collector Bank currently only supports full refunds, for a partial refund use the Collector Bank Merchant Portal', 'collector-checkout-for-woocommerce' ) ) );
-			// return false;
+			// Failed full item refunds.
+			if ( ! $result_full ) {
+				$order->add_order_note( sprintf( __( 'Failed to refund full order lines with Collector.', 'collector-checkout-for-woocommerce' ) ) );
+			}
+			// Failed partial item refunds.
+			if ( ! $result_part ) {
+				$order->add_order_note( sprintf( __( 'Failed to refund partial order lines with Collector.', 'collector-checkout-for-woocommerce' ) ) );
+			}
+			return ( ! $result_full || ! $result_part ) ? false : true;
 		}
 	}
 
