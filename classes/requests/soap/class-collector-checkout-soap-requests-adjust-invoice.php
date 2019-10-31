@@ -53,10 +53,9 @@ class Collector_Checkout_SOAP_Requests_Adjust_Invoice {
 	}
 
 
-	public function request( $order_id, $amount, $reason ) {
-		$soap = new SoapClient( $this->endpoint );
-		$args = $this->get_request_args( $order_id, $amount, $reason );
-		// error_log('$args ' . var_export($args, true));
+	public function request( $order_id, $amount, $reason, $refunded_items ) {
+		$soap      = new SoapClient( $this->endpoint );
+		$args      = $this->get_request_args( $order_id, $amount, $reason, $refunded_items );
 		$headers   = array();
 		$headers[] = new SoapHeader( 'http://schemas.ecommerce.collector.se/v30/InvoiceService', 'Username', $this->username );
 		$headers[] = new SoapHeader( 'http://schemas.ecommerce.collector.se/v30/InvoiceService', 'Password', $this->password );
@@ -65,12 +64,10 @@ class Collector_Checkout_SOAP_Requests_Adjust_Invoice {
 		try {
 			$request = $soap->AdjustInvoice( $args );
 		} catch ( SoapFault $e ) {
-			//error_log( '$e ' . var_export( $e, true ) );
 			$request = $e->getMessage();
 			$this->log( 'Order failed to be credited (AdjustInvoice) with Collector. Request response: ' . var_export( $e, true ) );
 			return false;
 		}
-		// error_log('$request ' . var_export($request, true) );
 		$order = wc_get_order( $order_id );
 		if ( isset( $request->CorrelationId ) || $request->CorrelationId == null ) {
 			$order->add_order_note( sprintf( __( 'Order credited with Collector Bank. CorrelationId ' . $request->CorrelationId, 'collector-checkout-for-woocommerce' ) ) );
@@ -85,16 +82,17 @@ class Collector_Checkout_SOAP_Requests_Adjust_Invoice {
 		}
 	}
 
-	public function get_request_args( $order_id, $amount, $reason ) {
+	public function get_request_args( $order_id, $amount, $reason, $refunded_items ) {
 
 		$order          = wc_get_order( $order_id );
 		$transaction_id = $order->get_transaction_id();
-		$invoice_rows   = Collector_Checkout_Create_Refund_Data::create_refund_data( $order_id, $amount, $reason );
 		return array(
 			'StoreId'       => $this->store_id,
 			'CountryCode'   => $this->country_code,
 			'InvoiceNo'     => $transaction_id,
-			'InvoiceRows'   => $invoice_rows,
+			'InvoiceRows'   => array(
+				'InvoiceRow' => $refunded_items,
+			),
 			'CorrelationId' => Collector_Checkout_Create_Refund_Data::get_refunded_order( $order_id ),
 		);
 	}
