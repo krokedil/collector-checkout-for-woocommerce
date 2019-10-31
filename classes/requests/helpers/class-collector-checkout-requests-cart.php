@@ -6,7 +6,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 class Collector_Checkout_Requests_Cart {
 	public static function cart() {
 		// Get cart contents
-		$wc_cart = WC()->cart->get_cart_contents();
+		$wc_cart         = WC()->cart->get_cart_contents();
+		$wc_cart_coupons = WC()->cart->get_coupons();
 		// Set the return array
 		$items = array();
 		// Loop through cart items and make an item line for each.
@@ -30,6 +31,14 @@ class Collector_Checkout_Requests_Cart {
 
 		if ( ! empty( WC()->cart->get_fees() ) ) {
 			$items = self::get_fees( $items );
+		}
+
+		// Smart coupons.
+		foreach ( $wc_cart_coupons as $coupon ) {
+			if ( 'smart_coupon' === $coupon->get_discount_type() ) {
+				$item_line = self::create_item( $coupon->get_id(), __( 'Gift Card', 'collector-checkout-for-woocommerce' ), $coupon->get_amount() * -1, 1, 0 );
+				array_push( $items, $item_line );
+			}
 		}
 
 		// Check if we need to make any id/sku's unique (required by Collector)
