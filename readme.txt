@@ -39,6 +39,10 @@ For help setting up and configuring Collector Checkout for WooCommerce please re
 
 
 == CHANGELOG ==
+= 2019.11.04  	- version 1.4.1 =
+* Enhancement   - Added support for partial order line refunds.
+* Enhancement   - Added support for WooCommerce Smart Coupons.
+
 = 2019.08.14  	- version 1.4.0 =
 * Feature       - Added support for English in swedish market and Danish (in Danish market, changed en-DK to da-DK).
 * Tweak         - Set orders created via checkout_error to On Hold.
