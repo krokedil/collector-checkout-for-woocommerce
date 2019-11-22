@@ -28,22 +28,24 @@ class Collector_Checkout_Create_Refund_Data {
 		}
 		if ( null !== $refund_order_id ) {
 			// Get refund order data.
-			$refund_order   = wc_get_order( $refund_order_id );
-			$refunded_items = $refund_order->get_items();
+			$refund_order      = wc_get_order( $refund_order_id );
+			$refunded_items    = $refund_order->get_items();
+			$refunded_shipping = $refund_order->get_items( 'shipping' );
+			$refunded_fees     = $refund_order->get_items( 'fee' );
 
-			// Set needed variables.
+			// Set needed variables for item refunds.
 			$modified_item_prices = 0;
 			$full_item_refund     = array();
 			if ( $refunded_items ) {
 				foreach ( $refunded_items as $item ) {
 					$original_order = wc_get_order( $order_id );
 					foreach ( $original_order->get_items() as $original_order_item ) {
-						if ( $item->get_id() == $original_order_item->get_id() ) {
+						if ( $item->get_product_id() == $original_order_item->get_product_id() ) {
 							// Found product match, continue.
 							break;
 						}
 					}
-					if ( abs( $item->get_total() ) / abs( $item->get_quantity() ) === $original_order_item->get_total() / $original_order_item->get_quantity() ) {
+					if ( abs( $item->get_total() ) / abs( $item->get_quantity() ) == $original_order_item->get_total() / $original_order_item->get_quantity() ) {
 						// The entire item price is refunded.
 						array_push( $full_item_refund, self::get_full_refund_item_data( $item ) );
 					} else {
@@ -62,6 +64,76 @@ class Collector_Checkout_Create_Refund_Data {
 			} else {
 				// Partial item Refund here.
 				if ( $modified_item_prices > 0 ) {
+					$data['partial_refund'] = self::get_partial_refund_data( $amount, $refund_order_id, $reason );
+				}
+			}
+
+			// Set needed variables for shipping refunds.
+			$modified_shipping_prices = 0;
+			$full_shipping_refund     = array();
+			if ( $refunded_shipping ) {
+				foreach ( $refunded_shipping as $shipping ) {
+					$original_order = wc_get_order( $order_id );
+					foreach ( $original_order->get_items( 'shipping' ) as $original_order_shipping ) {
+						if ( $shipping->get_name() == $original_order_shipping->get_name() ) {
+							// Found product match, continue.
+							break;
+						}
+					}
+					if ( abs( $shipping->get_total() ) / abs( $shipping->get_quantity() ) == $original_order_shipping->get_total() / $original_order_shipping->get_quantity() ) {
+						// The entire shipping price is refunded.
+						array_push( $full_shipping_refund, self::get_full_refund_shipping_data( $shipping ) );
+					} else {
+						// The shipping is partial refunded.
+						$modified_shipping_prices += abs( $shipping->get_total() + $shipping->get_total_tax() );
+					}
+				}
+				if ( $modified_shipping_prices > 0 ) {
+					// Maybe add partial shipping refund on remaining products.
+					$data['partial_refund'] = self::get_partial_refund_data( $modified_shipping_prices, $refund_order_id, $reason );
+				}
+				if ( ! empty( $full_shipping_refund ) ) {
+					// Maybe add full refunds.
+					$data['full_refunds'] = $full_shipping_refund;
+				}
+			} else {
+				// Partial shipping Refund here.
+				if ( $modified_shipping_prices > 0 ) {
+					$data['partial_refund'] = self::get_partial_refund_data( $amount, $refund_order_id, $reason );
+				}
+			}
+
+			// Set needed variables for fee refunds.
+			$modified_fee_prices = 0;
+			$full_fee_refund     = array();
+			if ( $refunded_fees ) {
+				foreach ( $refunded_fees as $fee ) {
+					$original_order = wc_get_order( $order_id );
+					foreach ( $original_order->get_items( 'fee' ) as $original_order_fee ) {
+						if ( $fee->get_name() == $original_order_fee->get_name() ) {
+							// Found product match, continue.
+							break;
+						}
+					}
+					if ( abs( $fee->get_total() ) / abs( $fee->get_quantity() ) == $original_order_fee->get_total() / $original_order_fee->get_quantity() ) {
+						// The entire fee price is refunded.
+						array_push( $full_fee_refund, self::get_full_refund_fee_data( $fee ) );
+					} else {
+						// The fee is partial refunded.
+						$modified_fee_prices += abs( $fee->get_total() + $fee->get_total_tax() );
+					}
+				}
+				if ( $modified_fee_prices > 0 ) {
+					// Maybe add partial fee refund on remaining products.
+					$data['partial_refund'] = self::get_partial_refund_data( $modified_fee_prices, $refund_order_id, $reason );
+				}
+				if ( ! empty( $full_fee_refund ) ) {
+					// Maybe add full refunds.
+					$data['full_refunds'] = $full_fee_refund;
+				}
+			} else {
+				// Partial fee Refund here.
+				if ( $modified_fee_prices > 0 ) {
 					$data['partial_refund'] = self::get_partial_refund_data( $amount, $refund_order_id, $reason );
 				}
 			}
@@ -111,17 +183,17 @@ class Collector_Checkout_Create_Refund_Data {
 	/**
 	 * Gets a partial refund item object
 	 *
-	 * @param int    $modified_item_prices Total remaining amount to be refunded.
+	 * @param int    $modified_prices Total remaining amount to be refunded.
 	 * @param int    $refund_order_id WooCommerce refund order id.
 	 * @param string $reason The reason given for the refund.
 	 * @return array
 	 */
-	private static function get_partial_refund_data( $modified_item_prices, $refund_order_id, $reason ) {
+	private static function get_partial_refund_data( $modified_prices, $refund_order_id, $reason ) {
 		return array(
 			'ArticleId'   => 'ref1',
 			'Description' => 'Refund #' . $refund_order_id . $reason,
 			'Quantity'    => 1,
-			'UnitPrice'   => -$modified_item_prices,
+			'UnitPrice'   => -$modified_prices,
 			'VAT'         => 0,
 		);
 	}
@@ -151,4 +223,77 @@ class Collector_Checkout_Create_Refund_Data {
 			'VAT'         => $formatted_tax_rate,
 		);
 	}
+
+	/**
+	 * Gets a full refund shipping object.
+	 *
+	 * @param WC_Order_Item_Shipping $shipping WooCommerce Order shipping.
+	 * @return array
+	 */
+	private static function get_full_refund_shipping_data( $shipping ) {
+		// The entire shipping price is refunded.
+		$free_shipping = false;
+		if ( 0 === intval( $shipping->get_total() ) ) {
+			$free_shipping = true;
+		}
+
+		$shipping_reference = 'Shipping';
+		if ( null !== $shipping->get_instance_id() ) {
+			$shipping_reference = 'shipping|' . $shipping->get_method_id() . ':' . $shipping->get_instance_id();
+		} else {
+			$shipping_reference = 'shipping|' . $shipping->get_method_id();
+		}
+
+		$title    = $shipping->get_name();
+		$tax_rate = ( $free_shipping ) ? 0 : intval( round( $shipping->get_total_tax() / $shipping->get_total() * 100 ) );
+		$total    = ( $free_shipping ) ? 0 : $shipping->get_total();
+		$quantity = ( 0 === $shipping->get_quantity() ) ? 1 : $shipping->get_quantity();
+
+		return array(
+			'ArticleId'   => $shipping_reference,
+			'Description' => $title,
+			'Quantity'    => abs( $quantity ),
+			'UnitPrice'   => $total,
+			'VAT'         => $tax_rate,
+		);
+	}
+
+	/**
+	 * Gets a full refund fee object.
+	 *
+	 * @param WC_Order_Item_Fee $fee WooCommerce Order fee.
+	 * @return array
+	 */
+	private static function get_full_refund_fee_data( $fee ) {
+		// The entire fee price is refunded.
+		$collector_settings = get_option( 'woocommerce_collector_checkout_settings' );
+		$invoice_fee_id     = $collector_settings['collector_invoice_fee'];
+		$_product           = wc_get_product( $invoice_fee_id );
+		$sku                = 'Fee';
+
+		// Check if the refunded fee is the invoice fee.
+		if ( $_product->get_name() === $fee->get_name() ) {
+			$sku = 'invoicefee|' . Collector_Checkout_Requests_Cart::get_sku( $_product, $_product->get_id() );
+		} else {
+			// Format the fee name so it match the same fee in Collector.
+			$fee_name = str_replace( ' ', '-', strtolower( $fee->get_name() ) );
+			$sku      = 'fee|' . $fee_name;
+		}
+		$title              = $fee->get_name();
+		$tax_rates          = WC_Tax::get_rates( $fee->get_tax_class() );
+		$tax_rate           = reset( $tax_rates );
+		$formatted_tax_rate = round( $tax_rate['rate'] );
+		$total              = $fee->get_total();
+		$quantity           = ( 0 === $fee->get_quantity() ) ? 1 : $fee->get_quantity();
+
+		return array(
+			'ArticleId'   => $sku,
+			'Description' => $title,
+			'Quantity'    => abs( $quantity ),
+			'UnitPrice'   => $total,
+			'VAT'         => $formatted_tax_rate,
+		);
+	}
+
+
 }
