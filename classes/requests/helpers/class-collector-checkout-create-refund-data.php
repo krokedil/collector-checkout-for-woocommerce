@@ -181,17 +181,17 @@ class Collector_Checkout_Create_Refund_Data {
 	/**
 	 * Gets a partial refund item object
 	 *
-	 * @param int    $modified_prices Total remaining amount to be refunded.
+	 * @param int    $modified_item_prices Total remaining amount to be refunded.
 	 * @param int    $refund_order_id WooCommerce refund order id.
 	 * @param string $reason The reason given for the refund.
 	 * @return array
 	 */
-	private static function get_partial_refund_data( $modified_prices, $refund_order_id, $reason ) {
+	private static function get_partial_refund_data( $modified_item_prices, $refund_order_id, $reason ) {
 		return array(
 			'ArticleId'   => 'ref1',
 			'Description' => 'Refund #' . $refund_order_id . $reason,
 			'Quantity'    => 1,
-			'UnitPrice'   => -$modified_prices,
+			'UnitPrice'   => -$modified_item_prices,
 			'VAT'         => 0,
 		);
 	}
