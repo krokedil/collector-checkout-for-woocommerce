@@ -28,14 +28,14 @@ class Collector_Checkout_Create_Refund_Data {
 		}
 		if ( null !== $refund_order_id ) {
 			// Get refund order data.
-			$refund_order      = wc_get_order( $refund_order_id );
-			$refunded_items    = $refund_order->get_items();
-			$refunded_shipping = $refund_order->get_items( 'shipping' );
-			$refunded_fees     = $refund_order->get_items( 'fee' );
-
-			// Set needed variables for item refunds.
+			$refund_order         = wc_get_order( $refund_order_id );
+			$refunded_items       = $refund_order->get_items();
+			$refunded_shipping    = $refund_order->get_items( 'shipping' );
+			$refunded_fees        = $refund_order->get_items( 'fee' );
 			$modified_item_prices = 0;
-			$full_item_refund     = array();
+
+			// Set needed variables for full item refunds.
+			$full_item_refund = array();
 			if ( $refunded_items ) {
 				foreach ( $refunded_items as $item ) {
 					$original_order = wc_get_order( $order_id );
@@ -68,9 +68,8 @@ class Collector_Checkout_Create_Refund_Data {
 				}
 			}
 
-			// Set needed variables for shipping refunds.
-			$modified_shipping_prices = 0;
-			$full_shipping_refund     = array();
+			// Set needed variables for full shipping refunds.
+			$full_shipping_refund = array();
 			if ( $refunded_shipping ) {
 				foreach ( $refunded_shipping as $shipping ) {
 					$original_order = wc_get_order( $order_id );
@@ -85,12 +84,12 @@ class Collector_Checkout_Create_Refund_Data {
 						array_push( $full_shipping_refund, self::get_full_refund_shipping_data( $shipping ) );
 					} else {
 						// The shipping is partial refunded.
-						$modified_shipping_prices += abs( $shipping->get_total() + $shipping->get_total_tax() );
+						$modified_item_prices += abs( $shipping->get_total() + $shipping->get_total_tax() );
 					}
 				}
-				if ( $modified_shipping_prices > 0 ) {
+				if ( $modified_item_prices > 0 ) {
 					// Maybe add partial shipping refund on remaining products.
-					$data['partial_refund'] = self::get_partial_refund_data( $modified_shipping_prices, $refund_order_id, $reason );
+					$data['partial_refund'] = self::get_partial_refund_data( $modified_item_prices, $refund_order_id, $reason );
 				}
 				if ( ! empty( $full_shipping_refund ) ) {
 					// Maybe add full refunds.
@@ -98,14 +97,13 @@ class Collector_Checkout_Create_Refund_Data {
 				}
 			} else {
 				// Partial shipping Refund here.
-				if ( $modified_shipping_prices > 0 ) {
+				if ( $modified_item_prices > 0 ) {
 					$data['partial_refund'] = self::get_partial_refund_data( $amount, $refund_order_id, $reason );
 				}
 			}
 
-			// Set needed variables for fee refunds.
-			$modified_fee_prices = 0;
-			$full_fee_refund     = array();
+			// Set needed variables for full fee refunds.
+			$full_fee_refund = array();
 			if ( $refunded_fees ) {
 				foreach ( $refunded_fees as $fee ) {
 					$original_order = wc_get_order( $order_id );
@@ -120,12 +118,12 @@ class Collector_Checkout_Create_Refund_Data {
 						array_push( $full_fee_refund, self::get_full_refund_fee_data( $fee ) );
 					} else {
 						// The fee is partial refunded.
-						$modified_fee_prices += abs( $fee->get_total() + $fee->get_total_tax() );
+						$modified_item_prices += abs( $fee->get_total() + $fee->get_total_tax() );
 					}
 				}
-				if ( $modified_fee_prices > 0 ) {
+				if ( $modified_item_prices > 0 ) {
 					// Maybe add partial fee refund on remaining products.
-					$data['partial_refund'] = self::get_partial_refund_data( $modified_fee_prices, $refund_order_id, $reason );
+					$data['partial_refund'] = self::get_partial_refund_data( $modified_item_prices, $refund_order_id, $reason );
 				}
 				if ( ! empty( $full_fee_refund ) ) {
 					// Maybe add full refunds.
@@ -133,7 +131,7 @@ class Collector_Checkout_Create_Refund_Data {
 				}
 			} else {
 				// Partial fee Refund here.
-				if ( $modified_fee_prices > 0 ) {
+				if ( $modified_item_prices > 0 ) {
 					$data['partial_refund'] = self::get_partial_refund_data( $amount, $refund_order_id, $reason );
 				}
 			}
