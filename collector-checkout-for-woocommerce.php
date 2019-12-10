@@ -159,6 +159,7 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 						'ajaxurl'                       => admin_url( 'admin-ajax.php' ),
 						'locale'                        => $locale,
 						'is_thank_you_page'             => $is_thank_you_page,
+						'is_collector_confirmation'     => ( is_collector_confirmation() ) ? 'yes' : 'no',
 						'order_id'                      => $order_id,
 						'public_token'                  => $public_token,
 						'checkout_initiated'            => $checkout_initiated,

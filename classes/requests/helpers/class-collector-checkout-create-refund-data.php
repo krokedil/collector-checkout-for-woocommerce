@@ -28,14 +28,16 @@ class Collector_Checkout_Create_Refund_Data {
 		}
 		if ( null !== $refund_order_id ) {
 			// Get refund order data.
-			$refund_order         = wc_get_order( $refund_order_id );
-			$refunded_items       = $refund_order->get_items();
-			$refunded_shipping    = $refund_order->get_items( 'shipping' );
-			$refunded_fees        = $refund_order->get_items( 'fee' );
-			$modified_item_prices = 0;
+			$refund_order      = wc_get_order( $refund_order_id );
+			$refunded_items    = $refund_order->get_items();
+			$refunded_shipping = $refund_order->get_items( 'shipping' );
+			$refunded_fees     = $refund_order->get_items( 'fee' );
 
-			// Set needed variables for full item refunds.
-			$full_item_refund = array();
+			// Set needed variables for refunds.
+			$modified_item_prices = 0;
+			$full_item_refund     = array();
+
+			// Item refund.
 			if ( $refunded_items ) {
 				foreach ( $refunded_items as $item ) {
 					$original_order = wc_get_order( $order_id );
@@ -68,8 +70,7 @@ class Collector_Checkout_Create_Refund_Data {
 				}
 			}
 
-			// Set needed variables for full shipping refunds.
-			$full_shipping_refund = array();
+			// Shipping item refund.
 			if ( $refunded_shipping ) {
 				foreach ( $refunded_shipping as $shipping ) {
 					$original_order = wc_get_order( $order_id );
@@ -81,7 +82,7 @@ class Collector_Checkout_Create_Refund_Data {
 					}
 					if ( abs( $shipping->get_total() ) / abs( $shipping->get_quantity() ) == $original_order_shipping->get_total() / $original_order_shipping->get_quantity() ) {
 						// The entire shipping price is refunded.
-						array_push( $full_shipping_refund, self::get_full_refund_shipping_data( $shipping ) );
+						array_push( $full_item_refund, self::get_full_refund_shipping_data( $shipping ) );
 					} else {
 						// The shipping is partial refunded.
 						$modified_item_prices += abs( $shipping->get_total() + $shipping->get_total_tax() );
@@ -91,9 +92,9 @@ class Collector_Checkout_Create_Refund_Data {
 					// Maybe add partial shipping refund on remaining products.
 					$data['partial_refund'] = self::get_partial_refund_data( $modified_item_prices, $refund_order_id, $reason );
 				}
-				if ( ! empty( $full_shipping_refund ) ) {
+				if ( ! empty( $full_item_refund ) ) {
 					// Maybe add full refunds.
-					$data['full_refunds'] = $full_shipping_refund;
+					$data['full_refunds'] = $full_item_refund;
 				}
 			} else {
 				// Partial shipping Refund here.
@@ -102,8 +103,7 @@ class Collector_Checkout_Create_Refund_Data {
 				}
 			}
 
-			// Set needed variables for full fee refunds.
-			$full_fee_refund = array();
+			// Fee item refund.
 			if ( $refunded_fees ) {
 				foreach ( $refunded_fees as $fee ) {
 					$original_order = wc_get_order( $order_id );
@@ -115,7 +115,7 @@ class Collector_Checkout_Create_Refund_Data {
 					}
 					if ( abs( $fee->get_total() ) / abs( $fee->get_quantity() ) == $original_order_fee->get_total() / $original_order_fee->get_quantity() ) {
 						// The entire fee price is refunded.
-						array_push( $full_fee_refund, self::get_full_refund_fee_data( $fee ) );
+						array_push( $full_item_refund, self::get_full_refund_fee_data( $fee ) );
 					} else {
 						// The fee is partial refunded.
 						$modified_item_prices += abs( $fee->get_total() + $fee->get_total_tax() );
@@ -125,9 +125,9 @@ class Collector_Checkout_Create_Refund_Data {
 					// Maybe add partial fee refund on remaining products.
 					$data['partial_refund'] = self::get_partial_refund_data( $modified_item_prices, $refund_order_id, $reason );
 				}
-				if ( ! empty( $full_fee_refund ) ) {
+				if ( ! empty( $full_item_refund ) ) {
 					// Maybe add full refunds.
-					$data['full_refunds'] = $full_fee_refund;
+					$data['full_refunds'] = $full_item_refund;
 				}
 			} else {
 				// Partial fee Refund here.
@@ -264,19 +264,25 @@ class Collector_Checkout_Create_Refund_Data {
 	 */
 	private static function get_full_refund_fee_data( $fee ) {
 		// The entire fee price is refunded.
-		$collector_settings = get_option( 'woocommerce_collector_checkout_settings' );
-		$invoice_fee_id     = $collector_settings['collector_invoice_fee'];
-		$_product           = wc_get_product( $invoice_fee_id );
 		$sku                = 'Fee';
+		$invoice_fee_name   = '';
+		$collector_settings = get_option( 'woocommerce_collector_checkout_settings' );
+		$invoice_fee_id     = isset( $collector_settings['collector_invoice_fee'] ) ? $collector_settings['collector_invoice_fee'] : '';
+
+		if ( $invoice_fee_id ) {
+			$_product         = wc_get_product( $invoice_fee_id );
+			$invoice_fee_name = $_product->get_name();
+		}
 
 		// Check if the refunded fee is the invoice fee.
-		if ( $_product->get_name() === $fee->get_name() ) {
+		if ( $invoice_fee_name === $fee->get_name() ) {
 			$sku = 'invoicefee|' . Collector_Checkout_Requests_Cart::get_sku( $_product, $_product->get_id() );
 		} else {
 			// Format the fee name so it match the same fee in Collector.
 			$fee_name = str_replace( ' ', '-', strtolower( $fee->get_name() ) );
 			$sku      = 'fee|' . $fee_name;
 		}
+
 		$title              = $fee->get_name();
 		$tax_rates          = WC_Tax::get_rates( $fee->get_tax_class() );
 		$tax_rate           = reset( $tax_rates );
