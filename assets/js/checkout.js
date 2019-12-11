@@ -149,8 +149,8 @@
     });
 
     // Change to Collector Checkout payment method
-    if ( 'yes' !== wc_collector_checkout.is_collector_confirmation ) {
-        $(document).on("change", "input[name='payment_method']", function (event) {
+    $(document).on("change", "input[name='payment_method']", function (event) {
+        if ( 'yes' !== wc_collector_checkout.is_collector_confirmation ) {
             if ("collector_checkout" === $("input[name='payment_method']:checked").val()) {
                 $('form.checkout').block({
                     message: "",
@@ -187,8 +187,8 @@
                     }
                 );
             }
-        });
-    }
+        }
+    });
 
     function update_checkout() {
         if( checkout_initiated == 'yes' && wc_collector_checkout.payment_successful == 0 ) {
