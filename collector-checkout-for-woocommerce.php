@@ -15,7 +15,7 @@
  * Domain Path:     /languages
  *
  * WC requires at least: 3.0.0
- * WC tested up to: 3.7.0
+ * WC tested up to: 3.8.1
  *
  * Copyright:       © 2017-2019 Krokedil.
  * License:         GNU General Public License v3.0
