@@ -2,11 +2,11 @@
 Contributors: collectorbank, krokedil, NiklasHogefjord
 Tags: ecommerce, e-commerce, woocommerce, collector, checkout
 Requires at least: 4.7
-Tested up to: 5.2.2
+Tested up to: 5.3.0
 Requires PHP: 5.6
 Stable tag: trunk
 WC requires at least: 3.0.0
-WC tested up to: 3.7.0
+WC tested up to: 3.8.1
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -39,6 +39,10 @@ For help setting up and configuring Collector Checkout for WooCommerce please re
 
 
 == CHANGELOG ==
+= 2019.12.10  	- version 1.4.2 =
+* Enhancement   - Added support for partial order line refunds on shipping and fee items.
+* Fix           - Prevent function for changing to Collector Checkout payment method from running on the confirmation page. Caused an issue with Google Tag Manager for WordPress by Thomas Geiger.
+
 = 2019.11.04  	- version 1.4.1 =
 * Enhancement   - Added support for partial order line refunds.
 * Enhancement   - Added support for WooCommerce Smart Coupons.

@@ -186,3 +186,15 @@ function wc_collector_add_invoice_fee_to_order( $order_id, $product_id ) {
 	}
 	return $result;
 }
+
+/**
+ * Checking if it is Collector confirmation page.
+ *
+ * @return boolean
+ */
+function is_collector_confirmation() {
+	if ( isset( $_GET['payment_successful'] ) && '1' === $_GET['payment_successful'] && isset( $_GET['public-token'] ) ) {
+		return true;
+	}
+	return false;
+}

@@ -147,43 +147,46 @@
                 }
             });
     });
+
     // Change to Collector Checkout payment method
     $(document).on("change", "input[name='payment_method']", function (event) {
-        if ("collector_checkout" === $("input[name='payment_method']:checked").val()) {
-            $('form.checkout').block({
-                message: "",
-                baseZ: 99999,
-                overlayCSS:
-                    {
-                        background: "#fff",
-                        opacity: 0.6
-                    },
-                css: {
-                    padding:        "20px",
-                    zindex:         "9999999",
-                    textAlign:      "center",
-                    color:          "#555",
-                    backgroundColor:"#fff",
-                    cursor:         "wait",
-                    lineHeight:		"24px",
-                }
-            });
-            $( '.woocommerce-info, .checkout_coupon' ).remove();
-            $.ajax(
-                wc_collector_checkout.refresh_checkout_fragment_url,
-                {
-                    type: 'POST',
-                    dataType: 'json',
-                    data: {
-                        action: 'update_fragment',
-                        collector: true,
-                    },
-                    success: function (data) {
-                        console.log(data);
-                        window.location.href = data.data.redirect;
+        if ( 'yes' !== wc_collector_checkout.is_collector_confirmation ) {
+            if ("collector_checkout" === $("input[name='payment_method']:checked").val()) {
+                $('form.checkout').block({
+                    message: "",
+                    baseZ: 99999,
+                    overlayCSS:
+                        {
+                            background: "#fff",
+                            opacity: 0.6
+                        },
+                    css: {
+                        padding:        "20px",
+                        zindex:         "9999999",
+                        textAlign:      "center",
+                        color:          "#555",
+                        backgroundColor:"#fff",
+                        cursor:         "wait",
+                        lineHeight:		"24px",
                     }
-            	}
-            );
+                });
+                $( '.woocommerce-info, .checkout_coupon' ).remove();
+                $.ajax(
+                    wc_collector_checkout.refresh_checkout_fragment_url,
+                    {
+                        type: 'POST',
+                        dataType: 'json',
+                        data: {
+                            action: 'update_fragment',
+                            collector: true,
+                        },
+                        success: function (data) {
+                            console.log(data);
+                            window.location.href = data.data.redirect;
+                        }
+                    }
+                );
+            }
         }
     });
 
