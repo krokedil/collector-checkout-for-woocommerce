@@ -147,7 +147,9 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 
 		wc_maybe_define_constant( 'WOOCOMMERCE_CHECKOUT', true );
 
-		$update_needed = 'no';
+		$update_needed      = 'no';
+		$must_login         = 'no';
+		$must_login_message = apply_filters( 'woocommerce_registration_error_email_exists', __( 'An account is already registered with your email address. Please log in.', 'woocommerce' ) );
 
 		// Get customer data from Collector
 		$private_id    = WC()->session->get( 'collector_private_id' );
@@ -156,6 +158,7 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 		$customer_data = $customer_data->request();
 		$customer_data = json_decode( $customer_data );
 		$country       = $customer_data->data->countryCode;
+		$email         = $customer_data->data->customer->email;
 
 		if ( 'BusinessCustomer' == $customer_data->data->customerType ) {
 			$billing_postcode  = $customer_data->data->businessCustomer->invoiceAddress->postalCode;
@@ -172,7 +175,7 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 				$update_needed = 'yes';
 			}
 
-			// If country is changed then we need to trigger an cart update in the Collector Checkout
+			// If postcode is changed then we need to trigger an cart update in the Collector Checkout
 			if ( WC()->customer->get_shipping_postcode() !== $shipping_postcode ) {
 				$update_needed = 'yes';
 			}
@@ -181,12 +184,27 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 			WC()->customer->set_shipping_country( $country );
 			WC()->customer->set_billing_postcode( $billing_postcode );
 			WC()->customer->set_shipping_postcode( $shipping_postcode );
+			WC()->customer->set_billing_email( $email );
 			WC()->customer->save();
 			WC()->cart->calculate_totals();
 
 		}
 
-		wp_send_json_success( $update_needed );
+		// If customer is not logged in and guest checkout is not allowed.
+		if ( ! is_user_logged_in() && ( 'no' === get_option( 'woocommerce_enable_guest_checkout' ) ) ) {
+			if ( email_exists( $email ) ) {
+				// Email exist in a user account, customer must login.
+				$must_login = 'yes';
+			}
+		}
+
+		wp_send_json_success(
+			array(
+				'updateNeeded'     => $update_needed,
+				'mustLogin'        => $must_login,
+				'mustLoginMessage' => $must_login_message,
+			)
+		);
 		wp_die();
 	}
 
@@ -299,7 +317,8 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 				array(
 					'purchase-status' => 'not-completed',
 					'public-token'    => sanitize_text_field( $_POST['public_token'] ),
-				), wc_get_endpoint_url( 'order-received', '', get_permalink( wc_get_page_id( 'checkout' ) ) )
+				),
+				wc_get_endpoint_url( 'order-received', '', get_permalink( wc_get_page_id( 'checkout' ) ) )
 			);
 			$return['redirect_url'] = $url;
 			Collector_Checkout::log( 'Payment complete triggered for private id ' . $private_id . ' but status is not PurchaseCompleted in Collectors system. Current status: ' . var_export( $decoded_json->data->status, true ) . '. Redirecting customer to simplified thankyou page.' );

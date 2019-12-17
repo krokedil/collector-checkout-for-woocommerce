@@ -57,7 +57,6 @@
         var url = window.location.href;
         // Check that this only happens in checkout page. Don't do it on thank you page
         if ( wc_collector_checkout.is_thank_you_page === 'no' ) {
-            window.collector.checkout.api.suspend();
             $.ajax(
                 wc_collector_checkout.customer_adress_updated_url,
                 {
@@ -67,15 +66,33 @@
                         action  : 'customer_adress_updated',
                         nonce: wc_collector_checkout.collector_nonce
                     },
-                    success: function(response) {
-                        console.log('customer_adress_updated ' + response);
-                        if( 'yes' == response.data ) {
-                        jQuery(document.body).trigger('update_checkout'); 
+                    complete: function(response) {
+                        console.log('customer_adress_updated');
+                        console.log(JSON.stringify(response.responseJSON.data));
+                        if( 'yes' == response.responseJSON.data.updateNeeded && 'no' == response.responseJSON.data.mustLogin ) {
+                            jQuery(document.body).trigger('update_checkout'); 
                         }
-                    }
+
+                        if( 'yes' == response.responseJSON.data.mustLogin ) {
+                            // Customer might need to login. Inform customer and suspend Collector checkout.
+                            var $form = $( 'form.checkout' );
+                            $form.prepend( '<div id="collector-login-notice" class="woocommerce-NoticeGroup woocommerce-NoticeGroup-updateOrderReview"><ul class="woocommerce-error" role="alert"><li>' + response.responseJSON.data.mustLoginMessage + '</li></ul></div>' );
+                            window.collector.checkout.api.suspend();
+
+                            var etop = $('form.checkout').offset().top;
+                            $('html, body').animate({
+                                scrollTop: etop
+                            }, 1000);
+                        } else {
+                            // All good release checkout and trigger update_checkout event
+                            window.collector.checkout.api.resume();
+                            jQuery(document.body).trigger('update_checkout');
+                        }
+                    },
+                    error: function(response) {},
+                    success: function(response) {}
                 }
             );
-            window.collector.checkout.api.resume();
         }
 	});
 	
@@ -200,7 +217,7 @@
             };
             jQuery.post(wc_collector_checkout.update_checkout_url, data, function (data) {
                 if (true === data.success) {
-                    window.collector.checkout.api.resume();
+                    //window.collector.checkout.api.resume();
                 } else {
                     console.log('error in update checkout');
                     window.location.href = data.data.redirect_url;
