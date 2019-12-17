@@ -125,6 +125,18 @@
             //$('#place_order').remove();
         }
     });
+
+    // maybe print login message
+    $(document).on('updated_checkout', function () {
+        if ("collector_checkout" === $("input[name='payment_method']:checked").val() ) {
+            if ( 'yes' == wc_collector_checkout.must_login ) {
+                // Customer might need to login. Inform customer and suspend Collector checkout.
+                maybePrintLoginMessage();
+                window.collector.checkout.api.suspend();
+            }
+        }
+    });
+
     // Change from Collector Checkout payment method
     $(document).on( 'click', '#collector_change_payment_method', function () {
 	    $( '.woocommerce-info, .checkout_coupon' ).remove();
@@ -260,6 +272,19 @@
                     }
                 }
             });
+    }
+
+    function maybePrintLoginMessage() {
+        if ( 'yes' == wc_collector_checkout.must_login ) {
+            var $form = $( 'form.checkout' );
+            $form.prepend( '<div id="collector-login-notice" class="woocommerce-NoticeGroup woocommerce-NoticeGroup-updateOrderReview"><ul class="woocommerce-error" role="alert"><li>' + wc_collector_checkout.must_login_message + '</li></ul></div>' );
+            var etop = $('form.checkout').offset().top;
+            $('html, body').animate({
+                scrollTop: etop
+            }, 1000);
+        } else {
+            $('#collector-login-notice').remove();
+        }
     }
 
     // Check if we need to post the WC checkout form and save any customer order notes.

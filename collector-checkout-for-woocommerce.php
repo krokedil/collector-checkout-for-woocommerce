@@ -150,6 +150,17 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 					$order_id          = '';
 					$purchase_status   = '';
 				}
+
+				$must_login = 'no';
+				if ( ! is_user_logged_in() && ( 'no' === get_option( 'woocommerce_enable_guest_checkout' ) ) ) {
+					if ( method_exists( WC()->customer, 'get_billing_email' ) && ! empty( WC()->customer->get_billing_email() ) ) {
+						if ( email_exists( WC()->customer->get_billing_email() ) ) {
+							// Email exist in a user account.
+							$must_login = 'yes';
+						}
+					}
+				}
+
 				$collector_settings       = get_option( 'woocommerce_collector_checkout_settings' );
 				$data_action_color_button = isset( $collector_settings['checkout_button_color'] ) && ! empty( $collector_settings['checkout_button_color'] ) ? "data-action-color='" . $collector_settings['checkout_button_color'] . "'" : '';
 				wp_localize_script(
@@ -166,6 +177,8 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 						'payment_successful'            => $payment_successful,
 						'purchase_status'               => $purchase_status,
 						'data_action_color_button'      => $data_action_color_button,
+						'must_login'                    => $must_login,
+						'must_login_message'            => apply_filters( 'woocommerce_registration_error_email_exists', __( 'An account is already registered with your email address. Please log in.', 'woocommerce' ) ),
 						'default_customer_type'         => wc_collector_get_default_customer_type(),
 						'selected_customer_type'        => wc_collector_get_selected_customer_type(),
 						'collector_nonce'               => wp_create_nonce( 'collector_nonce' ),
