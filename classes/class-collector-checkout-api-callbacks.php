@@ -248,6 +248,8 @@ class Collector_Api_Callbacks {
 					)
 				);
 				$order->add_item( $item );
+				// Save shipping reference to order.
+				update_post_meta( $order->get_id(), '_collector_shipping_reference', $cart_item->id );
 
 			} elseif ( strpos( $cart_item->id, 'invoicefee|' ) !== false ) {
 

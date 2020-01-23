@@ -82,7 +82,7 @@ class Collector_Checkout_Create_Refund_Data {
 					}
 					if ( abs( $shipping->get_total() ) / abs( $shipping->get_quantity() ) == $original_order_shipping->get_total() / $original_order_shipping->get_quantity() ) {
 						// The entire shipping price is refunded.
-						array_push( $full_item_refund, self::get_full_refund_shipping_data( $shipping ) );
+						array_push( $full_item_refund, self::get_full_refund_shipping_data( $shipping, $original_order ) );
 					} else {
 						// The shipping is partial refunded.
 						$modified_item_prices += abs( $shipping->get_total() + $shipping->get_total_tax() );
@@ -226,20 +226,27 @@ class Collector_Checkout_Create_Refund_Data {
 	 * Gets a full refund shipping object.
 	 *
 	 * @param WC_Order_Item_Shipping $shipping WooCommerce Order shipping.
+	 * @param WC_Order               $original_order WooCommerce original order.
 	 * @return array
 	 */
-	private static function get_full_refund_shipping_data( $shipping ) {
+	private static function get_full_refund_shipping_data( $shipping, $original_order ) {
 		// The entire shipping price is refunded.
+		$shipping_reference = 'Shipping';
+
+		$collector_shipping_reference = get_post_meta( $original_order->get_id(), '_collector_shipping_reference', true );
+		if ( isset( $collector_shipping_reference ) && ! empty( $collector_shipping_reference ) ) {
+			$shipping_reference = $collector_shipping_reference;
+		} else {
+			if ( null !== $shipping->get_instance_id() ) {
+				$shipping_reference = 'shipping|' . $shipping->get_method_id() . ':' . $shipping->get_instance_id();
+			} else {
+				$shipping_reference = 'shipping|' . $shipping->get_method_id();
+			}
+		}
+
 		$free_shipping = false;
 		if ( 0 === intval( $shipping->get_total() ) ) {
 			$free_shipping = true;
-		}
-
-		$shipping_reference = 'Shipping';
-		if ( null !== $shipping->get_instance_id() ) {
-			$shipping_reference = 'shipping|' . $shipping->get_method_id() . ':' . $shipping->get_instance_id();
-		} else {
-			$shipping_reference = 'shipping|' . $shipping->get_method_id();
 		}
 
 		$title    = $shipping->get_name();
