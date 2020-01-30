@@ -2,7 +2,7 @@
 Contributors: collectorbank, krokedil, NiklasHogefjord
 Tags: ecommerce, e-commerce, woocommerce, collector, checkout
 Requires at least: 4.7
-Tested up to: 5.3.0
+Tested up to: 5.3.2
 Requires PHP: 5.6
 Stable tag: trunk
 WC requires at least: 3.0.0
@@ -39,6 +39,10 @@ For help setting up and configuring Collector Checkout for WooCommerce please re
 
 
 == CHANGELOG ==
+= 2020.01.30    - versiom 1.4.3 =
+* Enhancement   - Saving shipping reference to order as post meta. (Support for refunds made on orders with "Table Rate Shipping" as the shipping).
+* Fix           - Improved logic for when shipping gets created via API Callback.
+
 = 2019.12.10  	- version 1.4.2 =
 * Enhancement   - Added support for partial order line refunds on shipping and fee items.
 * Fix           - Prevent function for changing to Collector Checkout payment method from running on the confirmation page. Caused an issue with Google Tag Manager for WordPress by Thomas Geiger.

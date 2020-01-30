@@ -196,6 +196,7 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 
 			update_post_meta( $order_id, '_collector_payment_method', $payment_method );
 			update_post_meta( $order_id, '_collector_payment_id', $payment_id );
+			$this->save_shipping_reference_to_order( $order_id, $payment_data );
 
 			// Tie this order to a user if we have one.
 			if ( email_exists( $payment_data->data->customer->email ) ) {
@@ -253,6 +254,22 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 			Collector_Checkout::log( 'collector_thankyou page hit but collector_private_id session not existing.' );
 		}
 
+	}
+
+	/**
+	 * Saving shipping reference to order
+	 *
+	 * @param int    $order_id WooCommerce order id.
+	 * @param object $payment_data Collector payment data.
+	 * @return void
+	 */
+	public function save_shipping_reference_to_order( $order_id, $payment_data ) {
+		$order_items = $payment_data->data->order->items;
+		foreach ( $order_items as $item ) {
+			if ( strpos( $item->id, 'shipping|' ) !== false ) {
+				update_post_meta( $order_id, '_collector_shipping_reference', $item->id );
+			}
+		}
 	}
 
 	/**
