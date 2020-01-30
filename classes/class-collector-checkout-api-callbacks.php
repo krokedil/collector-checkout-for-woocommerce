@@ -235,6 +235,8 @@ class Collector_Api_Callbacks {
 				$trimmed_cart_item_id = str_replace( 'shipping|', '', $cart_item->id );
 				if ( $cart_item->vat > 0 ) {
 					$price_excl_vat = $cart_item->unitPrice / ( ( $cart_item->vat * 0.01 ) + 1 );
+				} else {
+					$price_excl_vat = $cart_item->unitPrice;
 				}
 				$rate = new WC_Shipping_Rate( $trimmed_cart_item_id, $cart_item->description, $price_excl_vat, array(), 'flat_rate' );
 				$item = new WC_Order_Item_Shipping();
@@ -248,6 +250,8 @@ class Collector_Api_Callbacks {
 					)
 				);
 				$order->add_item( $item );
+				// Save shipping reference to order.
+				update_post_meta( $order->get_id(), '_collector_shipping_reference', $cart_item->id );
 
 			} elseif ( strpos( $cart_item->id, 'invoicefee|' ) !== false ) {
 
