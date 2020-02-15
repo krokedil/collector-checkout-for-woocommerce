@@ -28,6 +28,13 @@ class Collector_Checkout_Post_Checkout {
 				$order->add_order_note( __( 'Could not activate Collector reservation, Collector reservation is already activated.', 'collector-checkout-for-woocommerce' ) );
 				return;
 			}
+
+			$collector_payment_method = get_post_meta( $order_id, '_collector_payment_method', true );
+			if ( 'Swish' === $collector_payment_method ) {
+				$order->add_order_note( sprintf( __( 'No activation needed in Collector\'s system since %s payments is charged directly during purchase.', 'dibs-easy-for-woocommerce' ), $collector_payment_method ) );
+				return;
+			}
+
 			$activate_order = new Collector_Checkout_SOAP_Requests_Activate_Invoice( $order_id );
 			$activate_order->request( $order_id );
 		}
@@ -38,6 +45,12 @@ class Collector_Checkout_Post_Checkout {
 		if ( 'collector_checkout' === $order->get_payment_method() ) {
 			if ( get_post_meta( $order_id, '_collector_order_cancelled', true ) ) {
 				$order->add_order_note( __( 'Could not cancel Collector reservation, Collector reservation is already cancelled.', 'collector-checkout-for-woocommerce' ) );
+				return;
+			}
+
+			$collector_payment_method = get_post_meta( $order_id, '_collector_payment_method', true );
+			if ( 'Swish' === $collector_payment_method ) {
+				$order->add_order_note( sprintf( __( 'No cancellation performed in Collector\'s system. %1$s payments should be manually handled directly with %1$s/your bank.', 'dibs-easy-for-woocommerce' ), $collector_payment_method ) );
 				return;
 			}
 			$cancel_order = new Collector_Checkout_SOAP_Requests_Cancel_Invoice( $order_id );
