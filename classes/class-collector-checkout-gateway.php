@@ -20,6 +20,22 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 			'refunds',
 		);
 
+		if( null !== get_current_screen() ) {
+			
+			$current_screen = get_current_screen();
+			
+			if( 'shop_order' === $current_screen->post_type && ( isset($_GET['action']) && 'edit' === $_GET['action'] ) && isset($_GET['post'])) {
+				
+				$order_id = $_GET['post'];
+				$order = wc_get_order( $order_id );
+				if ( 'collector_checkout' === $order->get_payment_method() && 'Swish' === get_post_meta( $order_id, '_collector_payment_method', true ) ) {
+					if (($key = array_search('refunds', $this->supports)) !== false) {
+						unset($this->supports[$key]);
+					}
+				}
+			}
+		}	
+
 		add_action(
 			'woocommerce_update_options_payment_gateways_' . $this->id,
 			array(
