@@ -20,6 +20,22 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 			'refunds',
 		);
 
+		if( null !== get_current_screen() ) {
+			
+			$current_screen = get_current_screen();
+			
+			if( 'shop_order' === $current_screen->post_type && ( isset($_GET['action']) && 'edit' === $_GET['action'] ) && isset($_GET['post'])) {
+				
+				$order_id = $_GET['post'];
+				$order = wc_get_order( $order_id );
+				if ( 'collector_checkout' === $order->get_payment_method() && 'Swish' === get_post_meta( $order_id, '_collector_payment_method', true ) ) {
+					if (($key = array_search('refunds', $this->supports)) !== false) {
+						unset($this->supports[$key]);
+					}
+				}
+			}
+		}	
+
 		add_action(
 			'woocommerce_update_options_payment_gateways_' . $this->id,
 			array(
@@ -31,6 +47,7 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 		// Function to handle the thankyou page.
 		add_action( 'woocommerce_thankyou_collector_checkout', array( $this, 'collector_thankyou' ) );
 		add_filter( 'woocommerce_thankyou_order_received_text', array( $this, 'collector_thankyou_order_received_text' ), 10, 2 );
+		add_action( 'woocommerce_thankyou', array( $this, 'maybe_delete_collector_sessions' ), 100, 1 );
 
 		// Body class
 		add_filter( 'body_class', array( $this, 'add_body_class' ) );
@@ -206,7 +223,7 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 			}
 
 			if ( ! $order->has_status( 'on-hold' ) ) {
-				if ( 'Preliminary' == $payment_status ) {
+				if ( 'Preliminary' === $payment_status || 'Completed' === $payment_status ) {
 					$order->payment_complete( $payment_id );
 				} elseif ( 'Signing' == $payment_status ) {
 					$order->add_order_note( __( 'Order is waiting for electronic signing by customer. Payment ID: ', 'woocommerce-gateway-klarna' ) . $payment_id );
@@ -246,14 +263,23 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 				update_post_meta( $order_id, '_collector_invoice_reference', $invoice_reference );
 				WC()->session->__unset( 'collector_invoice_reference' );
 			}
-			// Unset Collector token and id
-			wc_collector_unset_sessions();
 
 		} else {
 			// @todo - add logging here.
 			Collector_Checkout::log( 'collector_thankyou page hit but collector_private_id session not existing.' );
 		}
 
+	}
+
+	/**
+	 * Delete the Collector stored sessions.
+	 *
+	 * @param int $order_id WooCommerce order id.
+	 * @return void
+	 */
+	public function maybe_delete_collector_sessions( $order_id ) {
+		// Unset Collector token and id.
+		wc_collector_unset_sessions();
 	}
 
 	/**

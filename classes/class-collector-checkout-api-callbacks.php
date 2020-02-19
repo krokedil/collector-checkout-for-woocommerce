@@ -340,7 +340,7 @@ class Collector_Api_Callbacks {
 	 * Set order status function
 	 */
 	public function set_order_status( $order, $collector_order ) {
-		if ( 'Preliminary' === $collector_order->data->purchase->result ) {
+		if ( 'Preliminary' === $collector_order->data->purchase->result || 'Completed' === $collector_order->data->purchase->result ) {
 			$order->payment_complete( $collector_order->data->purchase->purchaseIdentifier );
 			$order->add_order_note( 'Payment via Collector Checkout. Payment ID: ' . sanitize_key( $collector_order->data->purchase->purchaseIdentifier ) );
 			Collector_Checkout::log( 'Order status not set correctly for order ' . $order->get_order_number() . ' during checkout process. Setting order status to Processing/Completed.' );
