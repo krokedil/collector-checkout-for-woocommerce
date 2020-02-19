@@ -372,11 +372,15 @@ class Collector_Checkout_Confirmation {
 	 * Saves Collector data to WooCommerce order as meta field.
 	 *
 	 * @param string $order_id WooCommerce order id.
-	 * @param array  $data  Posted data.
 	 */
 	public function save_collector_order_data( $order_id ) {
+		$order = wc_get_order( $order_id );
+
+		if ( 'collector_checkout' !== $order->get_payment_method() ) {
+			return;
+		}
+
 		if ( method_exists( WC()->session, 'get' ) ) {
-			$order = wc_get_order( $order_id );
 
 			if ( WC()->session->get( 'collector_private_id' ) ) {
 
