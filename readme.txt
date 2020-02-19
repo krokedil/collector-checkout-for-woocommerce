@@ -6,7 +6,7 @@ Tested up to: 5.3.2
 Requires PHP: 5.6
 Stable tag: trunk
 WC requires at least: 3.0.0
-WC tested up to: 3.8.1
+WC tested up to: 3.9.2
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -39,6 +39,12 @@ For help setting up and configuring Collector Checkout for WooCommerce please re
 
 
 == CHANGELOG ==
+= 2020.02.19    - versiom 1.5.0 =
+* Feature       - Added support for Swish as external payment method in the checkout.
+* Tweak         - Trigger payment_complete() ofr Collector orders with the status of "Completed".
+* Fix           - Delete sessions related to Collector on order received page, even when Collector isn't the selected payment gateway for the order.
+* Fix           - Don't try to save Collector specific info to order if other payment method is used.
+
 = 2020.01.30    - versiom 1.4.3 =
 * Enhancement   - Saving shipping reference to order as post meta. (Support for refunds made on orders with "Table Rate Shipping" as the shipping).
 * Fix           - Improved logic for when shipping gets created via API Callback.
