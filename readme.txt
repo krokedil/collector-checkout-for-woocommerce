@@ -39,6 +39,9 @@ For help setting up and configuring Collector Checkout for WooCommerce please re
 
 
 == CHANGELOG ==
+= 2020.02.20    - versiom 1.5.1 =
+* Fix           - Do not try to call WP function get_current_screen() if it hasn't been defined.
+
 = 2020.02.19    - versiom 1.5.0 =
 * Feature       - Added support for Swish as external payment method in the checkout.
 * Tweak         - Trigger payment_complete() ofr Collector orders with the status of "Completed".
