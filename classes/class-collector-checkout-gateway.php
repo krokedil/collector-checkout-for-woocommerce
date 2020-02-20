@@ -20,7 +20,8 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 			'refunds',
 		);
 
-		if( null !== get_current_screen() ) {
+		// Do not allow refunds via Collector for Swish orders.
+		if( function_exists( 'get_current_screen' ) && null !== get_current_screen() ) {
 			
 			$current_screen = get_current_screen();
 			
