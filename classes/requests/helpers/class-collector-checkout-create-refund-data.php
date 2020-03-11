@@ -40,13 +40,25 @@ class Collector_Checkout_Create_Refund_Data {
 			// Item refund.
 			if ( $refunded_items ) {
 				foreach ( $refunded_items as $item ) {
+					$product_id = $item->get_product_id();
+					$product    = wc_get_product( $product_id );
+
 					$original_order = wc_get_order( $order_id );
 					foreach ( $original_order->get_items() as $original_order_item ) {
-						if ( $item->get_product_id() == $original_order_item->get_product_id() ) {
-							// Found product match, continue.
-							break;
+						if ( $product->is_type( 'variable' ) ) { // Check if is variable product.
+							// If product is variable we need to compare with the variation id, not the product id.
+							if ( $item->get_variation_id() == $original_order_item->get_variation_id() ) {
+								// Found product variation match, continue.
+								break;
+							}
+						} else {
+							if ( $item->get_product_id() == $original_order_item->get_product_id() ) {
+								// Found product match, continue.
+								break;
+							}
 						}
 					}
+
 					if ( abs( $item->get_total() ) / abs( $item->get_quantity() ) == $original_order_item->get_total() / $original_order_item->get_quantity() ) {
 						// The entire item price is refunded.
 						array_push( $full_item_refund, self::get_full_refund_item_data( $item ) );
