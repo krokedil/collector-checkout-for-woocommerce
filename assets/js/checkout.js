@@ -77,6 +77,7 @@
                             // Customer might need to login. Inform customer and suspend Collector checkout.
                             var $form = $( 'form.checkout' );
                             $form.prepend( '<div id="collector-login-notice" class="woocommerce-NoticeGroup woocommerce-NoticeGroup-updateOrderReview"><ul class="woocommerce-error" role="alert"><li>' + response.responseJSON.data.mustLoginMessage + '</li></ul></div>' );
+                            $('.collector-checkout-tabs li').css("pointer-events", "none");
                             window.collector.checkout.api.suspend();
 
                             var etop = $('form.checkout').offset().top;
@@ -132,6 +133,7 @@
             if ( 'yes' == wc_collector_checkout.must_login ) {
                 // Customer might need to login. Inform customer and suspend Collector checkout.
                 maybePrintLoginMessage();
+                $('.collector-checkout-tabs li').css("pointer-events", "none");
                 window.collector.checkout.api.suspend();
             }
         }
