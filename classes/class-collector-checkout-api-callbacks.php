@@ -235,6 +235,8 @@ class Collector_Api_Callbacks {
 				$trimmed_cart_item_id = str_replace( 'shipping|', '', $cart_item->id );
 				if ( $cart_item->vat > 0 ) {
 					$price_excl_vat = $cart_item->unitPrice / ( ( $cart_item->vat * 0.01 ) + 1 );
+				} else {
+					$price_excl_vat = $cart_item->unitPrice;
 				}
 				$rate = new WC_Shipping_Rate( $trimmed_cart_item_id, $cart_item->description, $price_excl_vat, array(), 'flat_rate' );
 				$item = new WC_Order_Item_Shipping();
@@ -248,6 +250,8 @@ class Collector_Api_Callbacks {
 					)
 				);
 				$order->add_item( $item );
+				// Save shipping reference to order.
+				update_post_meta( $order->get_id(), '_collector_shipping_reference', $cart_item->id );
 
 			} elseif ( strpos( $cart_item->id, 'invoicefee|' ) !== false ) {
 
@@ -336,7 +340,7 @@ class Collector_Api_Callbacks {
 	 * Set order status function
 	 */
 	public function set_order_status( $order, $collector_order ) {
-		if ( 'Preliminary' === $collector_order->data->purchase->result ) {
+		if ( 'Preliminary' === $collector_order->data->purchase->result || 'Completed' === $collector_order->data->purchase->result ) {
 			$order->payment_complete( $collector_order->data->purchase->purchaseIdentifier );
 			$order->add_order_note( 'Payment via Collector Checkout. Payment ID: ' . sanitize_key( $collector_order->data->purchase->purchaseIdentifier ) );
 			Collector_Checkout::log( 'Order status not set correctly for order ' . $order->get_order_number() . ' during checkout process. Setting order status to Processing/Completed.' );

@@ -40,13 +40,25 @@ class Collector_Checkout_Create_Refund_Data {
 			// Item refund.
 			if ( $refunded_items ) {
 				foreach ( $refunded_items as $item ) {
+					$product_id = $item->get_product_id();
+					$product    = wc_get_product( $product_id );
+
 					$original_order = wc_get_order( $order_id );
 					foreach ( $original_order->get_items() as $original_order_item ) {
-						if ( $item->get_product_id() == $original_order_item->get_product_id() ) {
-							// Found product match, continue.
-							break;
+						if ( $product->is_type( 'variable' ) ) { // Check if is variable product.
+							// If product is variable we need to compare with the variation id, not the product id.
+							if ( $item->get_variation_id() == $original_order_item->get_variation_id() ) {
+								// Found product variation match, continue.
+								break;
+							}
+						} else {
+							if ( $item->get_product_id() == $original_order_item->get_product_id() ) {
+								// Found product match, continue.
+								break;
+							}
 						}
 					}
+
 					if ( abs( $item->get_total() ) / abs( $item->get_quantity() ) == $original_order_item->get_total() / $original_order_item->get_quantity() ) {
 						// The entire item price is refunded.
 						array_push( $full_item_refund, self::get_full_refund_item_data( $item ) );
@@ -82,7 +94,7 @@ class Collector_Checkout_Create_Refund_Data {
 					}
 					if ( abs( $shipping->get_total() ) / abs( $shipping->get_quantity() ) == $original_order_shipping->get_total() / $original_order_shipping->get_quantity() ) {
 						// The entire shipping price is refunded.
-						array_push( $full_item_refund, self::get_full_refund_shipping_data( $shipping ) );
+						array_push( $full_item_refund, self::get_full_refund_shipping_data( $shipping, $original_order ) );
 					} else {
 						// The shipping is partial refunded.
 						$modified_item_prices += abs( $shipping->get_total() + $shipping->get_total_tax() );
@@ -226,20 +238,27 @@ class Collector_Checkout_Create_Refund_Data {
 	 * Gets a full refund shipping object.
 	 *
 	 * @param WC_Order_Item_Shipping $shipping WooCommerce Order shipping.
+	 * @param WC_Order               $original_order WooCommerce original order.
 	 * @return array
 	 */
-	private static function get_full_refund_shipping_data( $shipping ) {
+	private static function get_full_refund_shipping_data( $shipping, $original_order ) {
 		// The entire shipping price is refunded.
+		$shipping_reference = 'Shipping';
+
+		$collector_shipping_reference = get_post_meta( $original_order->get_id(), '_collector_shipping_reference', true );
+		if ( isset( $collector_shipping_reference ) && ! empty( $collector_shipping_reference ) ) {
+			$shipping_reference = $collector_shipping_reference;
+		} else {
+			if ( null !== $shipping->get_instance_id() ) {
+				$shipping_reference = 'shipping|' . $shipping->get_method_id() . ':' . $shipping->get_instance_id();
+			} else {
+				$shipping_reference = 'shipping|' . $shipping->get_method_id();
+			}
+		}
+
 		$free_shipping = false;
 		if ( 0 === intval( $shipping->get_total() ) ) {
 			$free_shipping = true;
-		}
-
-		$shipping_reference = 'Shipping';
-		if ( null !== $shipping->get_instance_id() ) {
-			$shipping_reference = 'shipping|' . $shipping->get_method_id() . ':' . $shipping->get_instance_id();
-		} else {
-			$shipping_reference = 'shipping|' . $shipping->get_method_id();
 		}
 
 		$title    = $shipping->get_name();
