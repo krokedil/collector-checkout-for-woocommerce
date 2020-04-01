@@ -76,6 +76,9 @@ class Collector_Checkout_Requests_Initialize_Checkout extends Collector_Checkout
 		$validation_uri = add_query_arg(
 			array(
 				'collector_session_id' => $collector_checkout_sessions->get_session_id(),
+				'private-id'           => '{checkout.id}',
+				'public-token'         => '{checkout.publictoken}',
+				'customer-type'        => $this->customer_type,
 			),
 			get_home_url() . '/wc-api/Collector_WC_Validation/'
 		);
@@ -105,6 +108,7 @@ class Collector_Checkout_Requests_Initialize_Checkout extends Collector_Checkout
 			'cart'             => $this->cart(),
 			'fees'             => $this->fees(),
 		);
+
 		return wp_json_encode( $formatted_request_body );
 	}
 }
