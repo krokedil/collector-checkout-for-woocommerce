@@ -65,20 +65,45 @@ class Collector_Checkout_Requests_Initialize_Checkout extends Collector_Checkout
 			$this->log( 'Collector init checkout request response: ' . stripslashes_deep( json_encode( $request ) ) . ' (Request endpoint: ' . $request_url . ')' );
 			$request = wp_remote_retrieve_body( $request );
 		}
-		
+
 		return $request;
 	}
 
 	protected function request_body() {
+		$collector_checkout_sessions = new Collector_Checkout_Sessions();
+
+		// Set validation URI query args.
+		$validation_uri = add_query_arg(
+			array(
+				'collector_session_id' => $collector_checkout_sessions->get_session_id(),
+			),
+			get_home_url() . '/wc-api/Collector_WC_Validation/'
+		);
+
 		$formatted_request_body = array(
-			'storeId'           => $this->store_id,
-			'countryCode'       => $this->country_code,
-			'reference'         => '',
-			'redirectPageUri'   => add_query_arg( array( 'payment_successful' =>'1', 'public-token' =>'{checkout.publictoken}'), wc_get_checkout_url() ),
-			'merchantTermsUri'  => $this->terms_page,
-			'notificationUri'   => add_query_arg( array( 'notification-callback' =>'1', 'private-id' =>'{checkout.id}', 'public-token' =>'{checkout.publictoken}', 'customer-type' => $this->customer_type ), get_home_url() . '/wc-api/Collector_Checkout_Gateway/' ),
-			'cart'              => $this->cart(),
-			'fees'              => $this->fees(),
+			'storeId'          => $this->store_id,
+			'countryCode'      => $this->country_code,
+			'reference'        => '',
+			'redirectPageUri'  => add_query_arg(
+				array(
+					'payment_successful' => '1',
+					'public-token'       => '{checkout.publictoken}',
+				),
+				wc_get_checkout_url()
+			),
+			'merchantTermsUri' => $this->terms_page,
+			'notificationUri'  => add_query_arg(
+				array(
+					'notification-callback' => '1',
+					'private-id'            => '{checkout.id}',
+					'public-token'          => '{checkout.publictoken}',
+					'customer-type'         => $this->customer_type,
+				),
+				get_home_url() . '/wc-api/Collector_Checkout_Gateway/'
+			),
+			'validationUri'    => $validation_uri,
+			'cart'             => $this->cart(),
+			'fees'             => $this->fees(),
 		);
 		return wp_json_encode( $formatted_request_body );
 	}
