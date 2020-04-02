@@ -553,5 +553,30 @@ class Collector_Api_Callbacks {
 			$this->validation_messages['amount_error_totals'] = 'Woo Total: ' . $woo_total . ' Collector total: ' . $collector_total;
 		}
 	}
+
+	/**
+	 * Checks if the email exists as a user and if they are logged in.
+	 *
+	 * @return void
+	 */
+	public function check_if_user_exists_and_logged_in() {
+		// Check customer type.
+		$collector_email = '';
+		if ( 'BusinessCustomer' === $this->collector_order->data->customerType ) {
+			$collector_email = $this->collector_order->data->businessCustomer->email;
+		} elseif ( 'PrivateCustomer' === $this->collector_order->data->customerType ) {
+			$collector_email = $this->collector_order->data->customer->email;
+		}
+
+		// Check if the email exists as a user.
+		$user = email_exists( $collector_email );
+		// If not false, user exists. Check if the session id matches the User id.
+		if ( false !== $user ) {
+			if ( $user != $_GET['collector_session_id'] ) {
+				$this->order_is_valid                    = false;
+				$this->validation_messages['user_login'] = __( 'An account already exists with this email. Please login to complete the purchase.', 'collector-checkout-for-woocommerce' );
+			}
+		}
+	}
 }
 Collector_Api_Callbacks::get_instance();
