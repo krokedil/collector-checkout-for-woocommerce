@@ -599,5 +599,16 @@ class Collector_Api_Callbacks {
 		$collector_total = $fee_total_amount + $cart_total_amount;
 		return floatval( round( $collector_total, 2 ) );
 	}
+
+	/**
+	 * Sets the current user for the callback.
+	 *
+	 * @return void
+	 */
+	public function set_current_user() {
+		if ( isset( $_GET['collector_session_id'] ) ) {
+			wp_set_current_user( $_GET['collector_session_id'] );
+		}
+	}
 }
 Collector_Api_Callbacks::get_instance();
