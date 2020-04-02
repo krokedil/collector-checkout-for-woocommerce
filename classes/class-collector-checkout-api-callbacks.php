@@ -521,5 +521,18 @@ class Collector_Api_Callbacks {
 		}
 	}
 
+
+	/**
+	 * Checks if all cart items are still in stock.
+	 *
+	 * @return void
+	 */
+	public function check_all_in_stock() {
+		$stock_check = WC()->cart->check_cart_item_stock();
+		if ( true !== $stock_check ) {
+			$this->order_is_valid                      = false;
+			$this->validation_messages['amount_error'] = __( 'Not all items are in stock.', 'collector-checkout-for-woocommerce' );
+		}
+	}
 }
 Collector_Api_Callbacks::get_instance();
