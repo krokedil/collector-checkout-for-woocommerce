@@ -534,5 +534,24 @@ class Collector_Api_Callbacks {
 			$this->validation_messages['amount_error'] = __( 'Not all items are in stock.', 'collector-checkout-for-woocommerce' );
 		}
 	}
+
+	/**
+	 * Checks if Collector order total equals the current cart total.
+	 *
+	 * @return void
+	 */
+	public function check_order_amount() {
+		$collector_total = $this->get_collector_total();
+		$woo_total       = floatval( WC()->cart->get_total( 'collector_validation' ) );
+		if ( $woo_total > $collector_total && ( $woo_total - $collector_total ) > 3 ) {
+			$this->order_is_valid                             = false;
+			$this->validation_messages['amount_error']        = __( 'Missmatch between the Collector and WooCommerce order total.', 'collector-checkout-for-woocommerce' );
+			$this->validation_messages['amount_error_totals'] = 'Woo Total: ' . $woo_total . ' Collector total: ' . $collector_total;
+		} elseif ( $collector_total > $woo_total && ( $collector_total - $woo_total ) > 3 ) {
+			$this->order_is_valid                             = false;
+			$this->validation_messages['amount_error']        = __( 'Missmatch between the Collector and WooCommerce order total.', 'collector-checkout-for-woocommerce' );
+			$this->validation_messages['amount_error_totals'] = 'Woo Total: ' . $woo_total . ' Collector total: ' . $collector_total;
+		}
+	}
 }
 Collector_Api_Callbacks::get_instance();
