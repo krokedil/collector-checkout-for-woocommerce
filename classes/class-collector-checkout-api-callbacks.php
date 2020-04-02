@@ -9,6 +9,26 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Class that handles Collector API callbacks.
  */
 class Collector_Api_Callbacks {
+	/**
+	 * Order is valid flag.
+	 *
+	 * @var boolean
+	 */
+	public $order_is_valid = true;
+
+	/**
+	 * Validation messages.
+	 *
+	 * @var array
+	 */
+	public $validation_messages = array();
+
+	/**
+	 * The Collector order
+	 *
+	 * @var array The Collector order object.
+	 */
+	public $collector_order = array();
 
 	/**
 	 * The reference the *Singleton* instance of this class.
@@ -32,7 +52,80 @@ class Collector_Api_Callbacks {
 	 * Collector_Api_Callbacks constructor.
 	 */
 	public function __construct() {
+		add_action( 'init', array( $this, 'set_current_user' ) );
+		add_action( 'woocommerce_api_collector_wc_validation', array( $this, 'validation_cb' ) );
 		add_action( 'collector_check_for_order', array( $this, 'collector_check_for_order_callback' ), 10, 3 );
+		$this->needs_login = 'no' === get_option( 'woocommerce_enable_guest_checkout' ) ? true : false; // Needs to be logged in order to checkout.
+	}
+
+	/**
+	 * Handles validation callbacks.
+	 */
+	public function validation_cb() {
+		Collector_Checkout::log( 'Validation Callback hit: ' . json_encode( $_GET ) . ' URL: ' . $_SERVER['REQUEST_URI'] );
+
+		$private_id    = isset( $_GET['private-id'] ) ? sanitize_text_field( wp_unslash( $_GET['private-id'] ) ) : null;
+		$customer_type = isset( $_GET['customer-type'] ) ? sanitize_text_field( wp_unslash( $_GET['customer-type'] ) ) : null;
+
+		$response              = new Collector_Checkout_Requests_Get_Checkout_Information( $private_id, $customer_type );
+		$response              = $response->request();
+		$this->collector_order = json_decode( $response );
+
+		// Check if we have a session id.
+		$this->check_session_id();
+
+		// Check coupons.
+		$this->check_cart_coupons();
+
+		// Check for error notices from WooCommerce.
+		$this->check_woo_notices();
+
+		// Check order amount match.
+		$this->check_order_amount();
+
+		// Check that all items are still in stock.
+		$this->check_all_in_stock();
+
+		// Check if user need to login.
+		if ( $this->needs_login ) {
+			$this->check_if_user_exists_and_logged_in();
+		}
+
+		// Check if order is still valid.
+		if ( $this->order_is_valid ) {
+			Collector_Checkout::log( 'Private id: ' . $private_id . ' Collector Validation Callback. Order is valid.' );
+			header( 'HTTP/1.0 200 OK' );
+		} else {
+			$log_array = array(
+				'message'             => 'Private id: ' . $private_id . ' Collector Validation Callback. Order is NOT valid.',
+				'validation_messages' => $this->validation_messages,
+			);
+			$log       = wp_json_encode( $log_array );
+			Collector_Checkout::log( $log );
+			if ( isset( $this->validation_messages['amount_error_totals'] ) ) {
+				unset( $this->validation_messages['amount_error_totals'] );
+			}
+
+			// Gets the validation messages
+			$message = '';
+			foreach ( $this->validation_messages as $error_type => $error_message ) {
+				if ( 1 < count( $this->validation_messages ) ) { // If we have multiple messages, append.
+					$message .= $error_message . ' ';
+				} else {
+					$message = $error_message;
+				}
+			}
+
+			$data = array(
+				'title'   => 'Order Validation Failed',
+				'message' => empty( $message ) ? 'Error during checkout process.' : $message,
+			);
+
+			header( 'HTTP/1.0 303 See Other' );
+			header( 'Content-Type: application/json' );
+			echo wp_json_encode( $data );
+			die();
+		}
 
 	}
 
