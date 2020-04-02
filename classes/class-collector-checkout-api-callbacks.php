@@ -490,5 +490,20 @@ class Collector_Api_Callbacks {
 			$this->validation_messages['missing_session_id'] = __( 'No session ID detected.', 'collector-checkout-for-woocommerce' );
 		}
 	}
+
+	/**
+	 * Check cart coupons for errors.
+	 *
+	 * @return void
+	 */
+	public function check_cart_coupons() {
+		foreach ( WC()->cart->get_applied_coupons() as $code ) {
+			$coupon = new WC_Coupon( $code );
+			if ( ! $coupon->is_valid() ) {
+				$this->order_is_valid                      = false;
+				$this->validation_messages['coupon_error'] = WC_Coupon::E_WC_COUPON_INVALID_REMOVED;
+			}
+		}
+	}
 }
 Collector_Api_Callbacks::get_instance();
