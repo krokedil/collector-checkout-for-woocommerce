@@ -129,6 +129,15 @@ class Collector_Api_Callbacks {
 
 	}
 
+
+	/**
+	 * Check for order.
+	 *
+	 * @param string $private_id The private id.
+	 * @param string $public_token The public token.
+	 * @param string $customer_type The customer type.
+	 * @return void
+	 */
 	public function collector_check_for_order_callback( $private_id, $public_token, $customer_type = 'b2c' ) {
 		$query          = new WC_Order_Query(
 			array(
@@ -468,6 +477,18 @@ class Collector_Api_Callbacks {
 		$update_reference = new Collector_Checkout_Requests_Update_Reference( $order->get_order_number(), $private_id, $customer_type );
 		$update_reference->request();
 		Collector_Checkout::log( 'Update Collector order reference for order - ' . $order->get_order_number() );
+	}
+
+	/**
+	 * Checks if we have a session id set.
+	 *
+	 * @return void
+	 */
+	public function check_session_id() {
+		if ( ! isset( $_GET['collector_session_id'] ) ) {
+			$this->order_is_valid                            = false;
+			$this->validation_messages['missing_session_id'] = __( 'No session ID detected.', 'collector-checkout-for-woocommerce' );
+		}
 	}
 }
 Collector_Api_Callbacks::get_instance();
