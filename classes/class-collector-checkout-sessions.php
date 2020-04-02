@@ -95,3 +95,5 @@ class Collector_Checkout_Sessions {
 		}
 	}
 }
+
+new Collector_Checkout_Sessions();
