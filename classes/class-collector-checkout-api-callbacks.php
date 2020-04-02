@@ -578,5 +578,26 @@ class Collector_Api_Callbacks {
 			}
 		}
 	}
+
+	/**
+	 * Get collector total amount.
+	 *
+	 * @return int
+	 */
+	public function get_collector_total() {
+		$cart_total_amount = $this->collector_order->data->cart->totalAmount;
+		$cart_fees         = $this->collector_order->data->fees;
+		$fee_total_amount  = 0;
+		foreach ( $cart_fees as $cart_fee => $fee ) {
+			if ( 'shipping' !== $cart_fee ) { // Shipping fee is not included in WC()->cart->get_total(). Therefore excluding it in this calculation.
+				if ( is_numeric( $fee->unitPrice ) ) {
+					$fee_total_amount += $fee->unitPrice;
+				}
+			}
+		}
+
+		$collector_total = $fee_total_amount + $cart_total_amount;
+		return floatval( round( $collector_total, 2 ) );
+	}
 }
 Collector_Api_Callbacks::get_instance();
