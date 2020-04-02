@@ -505,5 +505,21 @@ class Collector_Api_Callbacks {
 			}
 		}
 	}
+
+	/**
+	 * Checks for any WooCommerce error notices from the session.
+	 *
+	 * @return void
+	 */
+	public function check_woo_notices() {
+		$errors = wc_get_notices( 'error' );
+		if ( ! empty( $errors ) ) {
+			$this->order_is_valid = false;
+			foreach ( $errors as $error ) {
+				$this->validation_messages['wc_notice'] = $error;
+			}
+		}
+	}
+
 }
 Collector_Api_Callbacks::get_instance();
