@@ -139,6 +139,7 @@ class Collector_Api_Callbacks {
 	 * @return void
 	 */
 	public function collector_check_for_order_callback( $private_id, $public_token, $customer_type = 'b2c' ) {
+		Collector_Checkout::log( 'Check for order in API-callback. Private id: ' . $private_id . '. Public token: ' . $public_token );
 		$query          = new WC_Order_Query(
 			array(
 				'limit'          => -1,
