@@ -39,6 +39,9 @@ For help setting up and configuring Collector Checkout for WooCommerce please re
 
 
 == CHANGELOG ==
+= 2020.04.21    - version 1.5.3 =
+* Fix           - Correct amount is refunded when some order rows is partially and some completely refunded.
+
 = 2020.04.01    - version 1.5.2 =
 * Enhancement   - Collector 1.5.2 tested with WooCommerce 4.0.1.
 
