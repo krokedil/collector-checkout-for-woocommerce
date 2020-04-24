@@ -86,7 +86,9 @@ class Collector_Checkout_DB {
 		global $wpdb;
 		$charset_collate = $wpdb->get_charset_collate();
 		$sql             = "CREATE TABLE {$table_name} (
-			`data` MEDIUMTEXT NOT NULL
+			`id` VARCHAR(128) NOT NULL,
+			`data` MEDIUMTEXT NOT NULL,
+			PRIMARY KEY (id)
 		) $charset_collate;";
 		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
 		$result = dbDelta( $sql );
@@ -114,7 +116,8 @@ class Collector_Checkout_DB {
 		$wpdb->insert( // phpcs:ignore
 			$table_name,
 			array(
-				'data' => $args['data'], // TODO: json data. Check sanitization.
+				'id'   => $args['private_id'],
+				'data' => wp_json_encode( $args['data'] ),
 			),
 			array(
 				'%s',
@@ -129,12 +132,13 @@ class Collector_Checkout_DB {
 	 *
 	 * @since 1.0.0
 	 *
+	 * @param string $data_id The database row id.
 	 * @return object
 	 */
-	public static function get_data_entry() {
+	public static function get_data_entry( $data_id ) {
 		global $wpdb;
 		$table_name = $wpdb->prefix . self::$table_name;
-		$query      = $wpdb->query( "SELECT * FROM `{$table_name}` LIMIT 1" ); //phpcs:ignore
+		$query      = $wpdb->prepare( "SELECT * FROM `{$table_name}` WHERE `id` = %s LIMIT 1", $data_id ); //phpcs:ignore
 		$data       = $wpdb->get_results( $query ); // phpcs:ignore
 
 		return $data[0];
