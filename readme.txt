@@ -2,11 +2,11 @@
 Contributors: collectorbank, krokedil, NiklasHogefjord
 Tags: ecommerce, e-commerce, woocommerce, collector, checkout
 Requires at least: 4.7
-Tested up to: 5.3.2
+Tested up to: 5.4.0
 Requires PHP: 5.6
 Stable tag: trunk
 WC requires at least: 3.0.0
-WC tested up to: 3.9.2
+WC tested up to: 4.0.1
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -39,16 +39,22 @@ For help setting up and configuring Collector Checkout for WooCommerce please re
 
 
 == CHANGELOG ==
-= 2020.02.20    - versiom 1.5.1 =
+= 2020.04.21    - version 1.5.3 =
+* Fix           - Correct amount is refunded when some order rows is partially and some completely refunded.
+
+= 2020.04.01    - version 1.5.2 =
+* Enhancement   - Collector 1.5.2 tested with WooCommerce 4.0.1.
+
+= 2020.02.20    - version 1.5.1 =
 * Fix           - Do not try to call WP function get_current_screen() if it hasn't been defined.
 
-= 2020.02.19    - versiom 1.5.0 =
+= 2020.02.19    - version 1.5.0 =
 * Feature       - Added support for Swish as external payment method in the checkout.
 * Tweak         - Trigger payment_complete() ofr Collector orders with the status of "Completed".
 * Fix           - Delete sessions related to Collector on order received page, even when Collector isn't the selected payment gateway for the order.
 * Fix           - Don't try to save Collector specific info to order if other payment method is used.
 
-= 2020.01.30    - versiom 1.4.3 =
+= 2020.01.30    - version 1.4.3 =
 * Enhancement   - Saving shipping reference to order as post meta. (Support for refunds made on orders with "Table Rate Shipping" as the shipping).
 * Fix           - Improved logic for when shipping gets created via API Callback.
 
