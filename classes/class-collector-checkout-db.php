@@ -144,4 +144,19 @@ class Collector_Checkout_DB {
 		return $data[0];
 	}
 
+	/**
+	 * Removes the database table row.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param string $data_id The database row id.
+	 * @return object
+	 */
+	public static function remove_table_row( $data_id ) {
+		global $wpdb;
+		$table_name = $wpdb->prefix . self::$table_name;
+		$query      = $wpdb->prepare( "DELETE FROM `{$table_name}` WHERE `id` = %s LIMIT 1", $data_id ); //phpcs:ignore
+		$data       = $wpdb->get_results( $query ); // phpcs:ignore
+	}
+
 }
