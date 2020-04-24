@@ -31,6 +31,13 @@ class Collector_Api_Callbacks {
 	public $collector_order = array();
 
 	/**
+	 * The session id from Database.
+	 *
+	 * @var string
+	 */
+	public $db_session_id = null;
+
+	/**
 	 * The reference the *Singleton* instance of this class.
 	 *
 	 * @var $instance
@@ -64,8 +71,10 @@ class Collector_Api_Callbacks {
 	public function validation_cb() {
 		Collector_Checkout::log( 'Validation Callback hit: ' . json_encode( $_GET ) . ' URL: ' . $_SERVER['REQUEST_URI'] );
 
-		$private_id    = isset( $_GET['private-id'] ) ? sanitize_text_field( wp_unslash( $_GET['private-id'] ) ) : null;
-		$customer_type = isset( $_GET['customer-type'] ) ? sanitize_text_field( wp_unslash( $_GET['customer-type'] ) ) : null;
+		$private_id          = isset( $_GET['private-id'] ) ? sanitize_text_field( wp_unslash( $_GET['private-id'] ) ) : null;
+		$customer_type       = isset( $_GET['customer-type'] ) ? sanitize_text_field( wp_unslash( $_GET['customer-type'] ) ) : null;
+		$collector_db_data   = get_collector_data_from_db( $private_id );
+		$this->db_session_id = $collector_db_data->session_id;
 
 		$response              = new Collector_Checkout_Requests_Get_Checkout_Information( $private_id, $customer_type );
 		$response              = $response->request();
@@ -180,6 +189,8 @@ class Collector_Api_Callbacks {
 			$this->backup_order_creation( $private_id, $public_token, $customer_type );
 		}
 
+		// Remove database table row data.
+		$this->remove_db_row_data( $private_id );
 	}
 
 	/**
@@ -486,7 +497,7 @@ class Collector_Api_Callbacks {
 	 * @return void
 	 */
 	public function check_session_id() {
-		if ( ! isset( $_GET['collector_session_id'] ) ) {
+		if ( ! isset( $this->db_session_id ) ) {
 			$this->order_is_valid                            = false;
 			$this->validation_messages['missing_session_id'] = __( 'No session ID detected.', 'collector-checkout-for-woocommerce' );
 		}
@@ -573,7 +584,7 @@ class Collector_Api_Callbacks {
 		$user = email_exists( $collector_email );
 		// If not false, user exists. Check if the session id matches the User id.
 		if ( false !== $user ) {
-			if ( $user != $_GET['collector_session_id'] ) {
+			if ( $user != $this->db_session_id ) {
 				$this->order_is_valid                    = false;
 				$this->validation_messages['user_login'] = __( 'An account already exists with this email. Please login to complete the purchase.', 'collector-checkout-for-woocommerce' );
 			}
@@ -607,9 +618,19 @@ class Collector_Api_Callbacks {
 	 * @return void
 	 */
 	public function set_current_user() {
-		if ( isset( $_GET['collector_session_id'] ) ) {
-			wp_set_current_user( $_GET['collector_session_id'] );
+		if ( isset( $this->db_session_id ) ) {
+			wp_set_current_user( $this->db_session_id );
 		}
+	}
+
+	/**
+	 * Removes the database table row data.
+	 *
+	 * @param string $private_id Collector private id.
+	 * @return void
+	 */
+	public function remove_db_row_data( $private_id ) {
+		Collector_Checkout_DB::remove_table_row( $private_id );
 	}
 }
 Collector_Api_Callbacks::get_instance();
