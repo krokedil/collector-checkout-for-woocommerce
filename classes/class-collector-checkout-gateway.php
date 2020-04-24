@@ -21,21 +21,21 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 		);
 
 		// Do not allow refunds via Collector for Swish orders.
-		if( function_exists( 'get_current_screen' ) && null !== get_current_screen() ) {
-			
+		if ( function_exists( 'get_current_screen' ) && null !== get_current_screen() ) {
+
 			$current_screen = get_current_screen();
-			
-			if( 'shop_order' === $current_screen->post_type && ( isset($_GET['action']) && 'edit' === $_GET['action'] ) && isset($_GET['post'])) {
-				
+
+			if ( 'shop_order' === $current_screen->post_type && ( isset( $_GET['action'] ) && 'edit' === $_GET['action'] ) && isset( $_GET['post'] ) ) {
+
 				$order_id = $_GET['post'];
-				$order = wc_get_order( $order_id );
+				$order    = wc_get_order( $order_id );
 				if ( 'collector_checkout' === $order->get_payment_method() && 'Swish' === get_post_meta( $order_id, '_collector_payment_method', true ) ) {
-					if (($key = array_search('refunds', $this->supports)) !== false) {
-						unset($this->supports[$key]);
+					if ( ( $key = array_search( 'refunds', $this->supports ) ) !== false ) {
+						unset( $this->supports[ $key ] );
 					}
 				}
 			}
-		}	
+		}
 
 		add_action(
 			'woocommerce_update_options_payment_gateways_' . $this->id,
@@ -64,7 +64,7 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 	 * Schedule order status check on notificationUri callback from Collector
 	 */
 	public function notification_listener() {
-		Collector_Checkout::log( 'Notification Listener hitt: ' . json_encode( $_GET ) . ' URL: ' . $_SERVER['REQUEST_URI'] );
+		Collector_Checkout::log( 'Notification Listener hit: ' . json_encode( $_GET ) . ' URL: ' . $_SERVER['REQUEST_URI'] );
 		if ( isset( $_GET['private-id'] ) && isset( $_GET['public-token'] ) ) {
 			$private_id    = $_GET['private-id'];
 			$public_token  = $_GET['public-token'];
@@ -264,7 +264,6 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 				update_post_meta( $order_id, '_collector_invoice_reference', $invoice_reference );
 				WC()->session->__unset( 'collector_invoice_reference' );
 			}
-
 		} else {
 			// @todo - add logging here.
 			Collector_Checkout::log( 'collector_thankyou page hit but collector_private_id session not existing.' );

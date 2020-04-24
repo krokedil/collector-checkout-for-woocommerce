@@ -9,6 +9,26 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Class that handles Collector API callbacks.
  */
 class Collector_Api_Callbacks {
+	/**
+	 * Order is valid flag.
+	 *
+	 * @var boolean
+	 */
+	public $order_is_valid = true;
+
+	/**
+	 * Validation messages.
+	 *
+	 * @var array
+	 */
+	public $validation_messages = array();
+
+	/**
+	 * The Collector order
+	 *
+	 * @var array The Collector order object.
+	 */
+	public $collector_order = array();
 
 	/**
 	 * The reference the *Singleton* instance of this class.
@@ -32,11 +52,94 @@ class Collector_Api_Callbacks {
 	 * Collector_Api_Callbacks constructor.
 	 */
 	public function __construct() {
+		add_action( 'init', array( $this, 'set_current_user' ) );
+		add_action( 'woocommerce_api_collector_wc_validation', array( $this, 'validation_cb' ) );
 		add_action( 'collector_check_for_order', array( $this, 'collector_check_for_order_callback' ), 10, 3 );
+		$this->needs_login = 'no' === get_option( 'woocommerce_enable_guest_checkout' ) ? true : false; // Needs to be logged in order to checkout.
+	}
+
+	/**
+	 * Handles validation callbacks.
+	 */
+	public function validation_cb() {
+		Collector_Checkout::log( 'Validation Callback hit: ' . json_encode( $_GET ) . ' URL: ' . $_SERVER['REQUEST_URI'] );
+
+		$private_id    = isset( $_GET['private-id'] ) ? sanitize_text_field( wp_unslash( $_GET['private-id'] ) ) : null;
+		$customer_type = isset( $_GET['customer-type'] ) ? sanitize_text_field( wp_unslash( $_GET['customer-type'] ) ) : null;
+
+		$response              = new Collector_Checkout_Requests_Get_Checkout_Information( $private_id, $customer_type );
+		$response              = $response->request();
+		$this->collector_order = json_decode( $response );
+
+		// Check if we have a session id.
+		$this->check_session_id();
+
+		// Check coupons.
+		$this->check_cart_coupons();
+
+		// Check for error notices from WooCommerce.
+		$this->check_woo_notices();
+
+		// Check order amount match.
+		$this->check_order_amount();
+
+		// Check that all items are still in stock.
+		$this->check_all_in_stock();
+
+		// Check if user need to login.
+		if ( $this->needs_login ) {
+			$this->check_if_user_exists_and_logged_in();
+		}
+
+		// Check if order is still valid.
+		if ( $this->order_is_valid ) {
+			Collector_Checkout::log( 'Private id: ' . $private_id . ' Collector Validation Callback. Order is valid.' );
+			header( 'HTTP/1.0 200 OK' );
+		} else {
+			$log_array = array(
+				'message'             => 'Private id: ' . $private_id . ' Collector Validation Callback. Order is NOT valid.',
+				'validation_messages' => $this->validation_messages,
+			);
+			$log       = wp_json_encode( $log_array );
+			Collector_Checkout::log( $log );
+			if ( isset( $this->validation_messages['amount_error_totals'] ) ) {
+				unset( $this->validation_messages['amount_error_totals'] );
+			}
+
+			// Gets the validation messages
+			$message = '';
+			foreach ( $this->validation_messages as $error_type => $error_message ) {
+				if ( 1 < count( $this->validation_messages ) ) { // If we have multiple messages, append.
+					$message .= $error_message . ' ';
+				} else {
+					$message = $error_message;
+				}
+			}
+
+			$data = array(
+				'title'   => 'Order Validation Failed',
+				'message' => empty( $message ) ? 'Error during checkout process.' : $message,
+			);
+
+			header( 'HTTP/1.0 303 See Other' );
+			header( 'Content-Type: application/json' );
+			echo wp_json_encode( $data );
+			die();
+		}
 
 	}
 
+
+	/**
+	 * Check for order.
+	 *
+	 * @param string $private_id The private id.
+	 * @param string $public_token The public token.
+	 * @param string $customer_type The customer type.
+	 * @return void
+	 */
 	public function collector_check_for_order_callback( $private_id, $public_token, $customer_type = 'b2c' ) {
+		Collector_Checkout::log( 'Check for order in API-callback. Private id: ' . $private_id . '. Public token: ' . $public_token );
 		$query          = new WC_Order_Query(
 			array(
 				'limit'          => -1,
@@ -375,6 +478,138 @@ class Collector_Api_Callbacks {
 		$update_reference = new Collector_Checkout_Requests_Update_Reference( $order->get_order_number(), $private_id, $customer_type );
 		$update_reference->request();
 		Collector_Checkout::log( 'Update Collector order reference for order - ' . $order->get_order_number() );
+	}
+
+	/**
+	 * Checks if we have a session id set.
+	 *
+	 * @return void
+	 */
+	public function check_session_id() {
+		if ( ! isset( $_GET['collector_session_id'] ) ) {
+			$this->order_is_valid                            = false;
+			$this->validation_messages['missing_session_id'] = __( 'No session ID detected.', 'collector-checkout-for-woocommerce' );
+		}
+	}
+
+	/**
+	 * Check cart coupons for errors.
+	 *
+	 * @return void
+	 */
+	public function check_cart_coupons() {
+		foreach ( WC()->cart->get_applied_coupons() as $code ) {
+			$coupon = new WC_Coupon( $code );
+			if ( ! $coupon->is_valid() ) {
+				$this->order_is_valid                      = false;
+				$this->validation_messages['coupon_error'] = WC_Coupon::E_WC_COUPON_INVALID_REMOVED;
+			}
+		}
+	}
+
+	/**
+	 * Checks for any WooCommerce error notices from the session.
+	 *
+	 * @return void
+	 */
+	public function check_woo_notices() {
+		$errors = wc_get_notices( 'error' );
+		if ( ! empty( $errors ) ) {
+			$this->order_is_valid = false;
+			foreach ( $errors as $error ) {
+				$this->validation_messages['wc_notice'] = $error;
+			}
+		}
+	}
+
+
+	/**
+	 * Checks if all cart items are still in stock.
+	 *
+	 * @return void
+	 */
+	public function check_all_in_stock() {
+		$stock_check = WC()->cart->check_cart_item_stock();
+		if ( true !== $stock_check ) {
+			$this->order_is_valid                      = false;
+			$this->validation_messages['amount_error'] = __( 'Not all items are in stock.', 'collector-checkout-for-woocommerce' );
+		}
+	}
+
+	/**
+	 * Checks if Collector order total equals the current cart total.
+	 *
+	 * @return void
+	 */
+	public function check_order_amount() {
+		$collector_total = $this->get_collector_total();
+		$woo_total       = floatval( WC()->cart->get_total( 'collector_validation' ) );
+		if ( $woo_total > $collector_total && ( $woo_total - $collector_total ) > 3 ) {
+			$this->order_is_valid                             = false;
+			$this->validation_messages['amount_error']        = __( 'Missmatch between the Collector and WooCommerce order total.', 'collector-checkout-for-woocommerce' );
+			$this->validation_messages['amount_error_totals'] = 'Woo Total: ' . $woo_total . ' Collector total: ' . $collector_total;
+		} elseif ( $collector_total > $woo_total && ( $collector_total - $woo_total ) > 3 ) {
+			$this->order_is_valid                             = false;
+			$this->validation_messages['amount_error']        = __( 'Missmatch between the Collector and WooCommerce order total.', 'collector-checkout-for-woocommerce' );
+			$this->validation_messages['amount_error_totals'] = 'Woo Total: ' . $woo_total . ' Collector total: ' . $collector_total;
+		}
+	}
+
+	/**
+	 * Checks if the email exists as a user and if they are logged in.
+	 *
+	 * @return void
+	 */
+	public function check_if_user_exists_and_logged_in() {
+		// Check customer type.
+		$collector_email = '';
+		if ( 'BusinessCustomer' === $this->collector_order->data->customerType ) {
+			$collector_email = $this->collector_order->data->businessCustomer->email;
+		} elseif ( 'PrivateCustomer' === $this->collector_order->data->customerType ) {
+			$collector_email = $this->collector_order->data->customer->email;
+		}
+
+		// Check if the email exists as a user.
+		$user = email_exists( $collector_email );
+		// If not false, user exists. Check if the session id matches the User id.
+		if ( false !== $user ) {
+			if ( $user != $_GET['collector_session_id'] ) {
+				$this->order_is_valid                    = false;
+				$this->validation_messages['user_login'] = __( 'An account already exists with this email. Please login to complete the purchase.', 'collector-checkout-for-woocommerce' );
+			}
+		}
+	}
+
+	/**
+	 * Get collector total amount.
+	 *
+	 * @return int
+	 */
+	public function get_collector_total() {
+		$cart_total_amount = $this->collector_order->data->cart->totalAmount;
+		$cart_fees         = $this->collector_order->data->fees;
+		$fee_total_amount  = 0;
+		foreach ( $cart_fees as $cart_fee => $fee ) {
+			if ( 'shipping' !== $cart_fee ) { // Shipping fee is not included in WC()->cart->get_total(). Therefore excluding it in this calculation.
+				if ( is_numeric( $fee->unitPrice ) ) {
+					$fee_total_amount += $fee->unitPrice;
+				}
+			}
+		}
+
+		$collector_total = $fee_total_amount + $cart_total_amount;
+		return floatval( round( $collector_total, 2 ) );
+	}
+
+	/**
+	 * Sets the current user for the callback.
+	 *
+	 * @return void
+	 */
+	public function set_current_user() {
+		if ( isset( $_GET['collector_session_id'] ) ) {
+			wp_set_current_user( $_GET['collector_session_id'] );
+		}
 	}
 }
 Collector_Api_Callbacks::get_instance();
