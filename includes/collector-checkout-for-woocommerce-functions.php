@@ -53,6 +53,16 @@ function collector_wc_show_snippet() {
 			WC()->session->set( 'collector_private_id', $decode->data->privateId );
 			WC()->session->set( 'collector_currency', get_woocommerce_currency() );
 
+			$collector_checkout_sessions = new Collector_Checkout_Sessions();
+			$collector_data              = array(
+				'session_id' => $collector_checkout_sessions->get_session_id(),
+			);
+			$args                        = array(
+				'private_id' => $decode->data->privateId,
+				'data'       => $collector_data,
+			);
+			$result                      = Collector_Checkout_DB::create_data_entry( $args );
+
 			$public_token = $decode->data->publicToken;
 			$output       = array(
 				'publicToken'   => $public_token,
