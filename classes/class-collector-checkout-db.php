@@ -150,7 +150,7 @@ class Collector_Checkout_DB {
 	 * @since 1.0.0
 	 *
 	 * @param string $data_id The database row id.
-	 * @return object
+	 * @return void
 	 */
 	public static function remove_table_row( $data_id ) {
 		global $wpdb;
@@ -159,4 +159,22 @@ class Collector_Checkout_DB {
 		$data       = $wpdb->get_results( $query ); // phpcs:ignore
 	}
 
+
+	/**
+	 * Updates the data column for the data entry.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param array $args The data.
+	 * @return void
+	 */
+	public static function update_data( $args ) {
+		global $wpdb;
+		$table_name = $wpdb->prefix . self::$table_name;
+		$wpdb->update( // phpcs:ignore
+			$table_name,
+			array( 'data' => wp_json_encode( $args['data'] ) ),
+			array( 'id' => $args['private_id'] )
+		);
+	}
 }
