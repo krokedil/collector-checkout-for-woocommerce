@@ -145,14 +145,14 @@ class Collector_Checkout_DB {
 	}
 
 	/**
-	 * Removes the database table row.
+	 * Deletes the data entry for the id.
 	 *
 	 * @since 1.0.0
 	 *
 	 * @param string $data_id The database row id.
 	 * @return void
 	 */
-	public static function remove_table_row( $data_id ) {
+	public static function delete_data_entry( $data_id ) {
 		global $wpdb;
 		$table_name = $wpdb->prefix . self::$table_name;
 		$query      = $wpdb->prepare( "DELETE FROM `{$table_name}` WHERE `id` = %s LIMIT 1", $data_id ); //phpcs:ignore

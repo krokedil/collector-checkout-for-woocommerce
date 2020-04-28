@@ -630,7 +630,7 @@ class Collector_Api_Callbacks {
 	 * @return void
 	 */
 	public function remove_db_row_data( $private_id ) {
-		Collector_Checkout_DB::remove_table_row( $private_id );
+		Collector_Checkout_DB::delete_data_entry( $private_id );
 	}
 }
 Collector_Api_Callbacks::get_instance();
