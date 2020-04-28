@@ -104,6 +104,8 @@ class Collector_Api_Callbacks {
 		if ( $this->order_is_valid ) {
 			Collector_Checkout::log( 'Private id: ' . $private_id . ' Collector Validation Callback. Order is valid.' );
 			header( 'HTTP/1.0 200 OK' );
+			// Remove database table row data after the validation checks.
+			$this->remove_db_row_data( $private_id );
 		} else {
 			$log_array = array(
 				'message'             => 'Private id: ' . $private_id . ' Collector Validation Callback. Order is NOT valid.',
@@ -189,8 +191,6 @@ class Collector_Api_Callbacks {
 			$this->backup_order_creation( $private_id, $public_token, $customer_type );
 		}
 
-		// Remove database table row data.
-		$this->remove_db_row_data( $private_id );
 	}
 
 	/**
