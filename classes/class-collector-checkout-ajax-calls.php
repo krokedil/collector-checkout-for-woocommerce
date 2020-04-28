@@ -132,6 +132,17 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 			wp_die();
 		}
 
+		// Update database session id.
+		$collector_checkout_sessions = new Collector_Checkout_Sessions();
+		$collector_data              = array(
+			'session_id' => $collector_checkout_sessions->get_session_id(),
+		);
+		$args                        = array(
+			'private_id' => WC()->session->get( 'collector_private_id' ),
+			'data'       => $collector_data,
+		);
+		$result                      = Collector_Checkout_DB::update_data( $args );
+
 		wp_send_json_success();
 		wp_die();
 	}
@@ -299,7 +310,8 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 				array(
 					'purchase-status' => 'not-completed',
 					'public-token'    => sanitize_text_field( $_POST['public_token'] ),
-				), wc_get_endpoint_url( 'order-received', '', get_permalink( wc_get_page_id( 'checkout' ) ) )
+				),
+				wc_get_endpoint_url( 'order-received', '', get_permalink( wc_get_page_id( 'checkout' ) ) )
 			);
 			$return['redirect_url'] = $url;
 			Collector_Checkout::log( 'Payment complete triggered for private id ' . $private_id . ' but status is not PurchaseCompleted in Collectors system. Current status: ' . var_export( $decoded_json->data->status, true ) . '. Redirecting customer to simplified thankyou page.' );
