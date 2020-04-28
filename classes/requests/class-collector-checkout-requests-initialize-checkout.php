@@ -70,8 +70,6 @@ class Collector_Checkout_Requests_Initialize_Checkout extends Collector_Checkout
 	}
 
 	protected function request_body() {
-		$collector_checkout_sessions = new Collector_Checkout_Sessions();
-
 		// Set validation URI query args.
 		$validation_uri = add_query_arg(
 			array(
