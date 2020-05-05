@@ -63,11 +63,6 @@ class Collector_Checkout_Create_Refund_Data {
 					// Maybe add full refunds.
 					$data['full_refunds'] = $full_item_refund;
 				}
-			} else {
-				// Partial item Refund here.
-				if ( $modified_item_prices > 0 ) {
-					$data['partial_refund'] = self::get_partial_refund_data( $amount, $refund_order_id, $reason );
-				}
 			}
 
 			// Shipping item refund.
@@ -96,11 +91,6 @@ class Collector_Checkout_Create_Refund_Data {
 					// Maybe add full refunds.
 					$data['full_refunds'] = $full_item_refund;
 				}
-			} else {
-				// Partial shipping Refund here.
-				if ( $modified_item_prices > 0 ) {
-					$data['partial_refund'] = self::get_partial_refund_data( $amount, $refund_order_id, $reason );
-				}
 			}
 
 			// Fee item refund.
@@ -128,11 +118,6 @@ class Collector_Checkout_Create_Refund_Data {
 				if ( ! empty( $full_item_refund ) ) {
 					// Maybe add full refunds.
 					$data['full_refunds'] = $full_item_refund;
-				}
-			} else {
-				// Partial fee Refund here.
-				if ( $modified_item_prices > 0 ) {
-					$data['partial_refund'] = self::get_partial_refund_data( $amount, $refund_order_id, $reason );
 				}
 			}
 		}

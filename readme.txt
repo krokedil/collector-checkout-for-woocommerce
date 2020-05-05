@@ -2,7 +2,7 @@
 Contributors: collectorbank, krokedil, NiklasHogefjord
 Tags: ecommerce, e-commerce, woocommerce, collector, checkout
 Requires at least: 4.7
-Tested up to: 5.4.0
+Tested up to: 5.4.1
 Requires PHP: 5.6
 Stable tag: trunk
 WC requires at least: 3.0.0
@@ -39,6 +39,9 @@ For help setting up and configuring Collector Checkout for WooCommerce please re
 
 
 == CHANGELOG ==
+= 2020.05.05    - version 1.5.3 =
+* Fix           - Correct amount is refunded when some order rows is partially and some completely refunded.
+
 = 2020.04.01    - version 1.5.2 =
 * Enhancement   - Collector 1.5.2 tested with WooCommerce 4.0.1.
 
