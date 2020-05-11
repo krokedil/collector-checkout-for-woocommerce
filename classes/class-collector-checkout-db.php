@@ -142,8 +142,11 @@ class Collector_Checkout_DB {
 		$table_name = $wpdb->prefix . self::$table_name;
 		$query      = $wpdb->prepare( "SELECT * FROM `{$table_name}` WHERE `id` = %s LIMIT 1", $data_id ); //phpcs:ignore
 		$data       = $wpdb->get_results( $query ); // phpcs:ignore
-
-		return $data[0];
+		if ( empty( $data ) ) {
+			return null;
+		} else {
+			return json_decode( $data[0]->data );
+		}
 	}
 
 	/**
