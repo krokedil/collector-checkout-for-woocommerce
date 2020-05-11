@@ -45,6 +45,8 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 			// CSS for settings page
 			add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_css' ) );
 
+			add_action( 'init', array( $this, 'collector_maybe_create_db_table' ) );
+
 		}
 
 		public function init() {
@@ -235,6 +237,18 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 			$methods[] = 'Collector_Checkout_Gateway';
 
 			return $methods;
+		}
+
+		/**
+		 * Maybe create collector database table.
+		 *
+		 * @return void
+		 */
+		public function collector_maybe_create_db_table() {
+			$current_db_version = get_option( 'collector_db_version' );
+			if ( $current_db_version < 1 ) {
+				Collector_Checkout_DB::setup_table();
+			}
 		}
 	}
 }
