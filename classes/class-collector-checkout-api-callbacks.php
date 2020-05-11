@@ -601,7 +601,7 @@ class Collector_Api_Callbacks {
 		$cart_fees         = $this->collector_order->data->fees;
 		$fee_total_amount  = 0;
 		foreach ( $cart_fees as $cart_fee => $fee ) {
-			if ( 'shipping' !== $cart_fee ) { // Shipping fee is not included in WC()->cart->get_total(). Therefore excluding it in this calculation.
+			if ( false === strpos( $fee->id, 'invoicefee|' ) ) { // Invoice fee is not included in WC()->cart->get_total(). Therefore excluding it in this calculation.
 				if ( is_numeric( $fee->unitPrice ) ) {
 					$fee_total_amount += $fee->unitPrice;
 				}
