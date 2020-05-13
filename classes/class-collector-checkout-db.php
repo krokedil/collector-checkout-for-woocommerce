@@ -152,6 +152,19 @@ class Collector_Checkout_DB {
 	}
 
 	/**
+	 * Deletes one week old data entry.
+	 *
+	 * @param string $current_date Current date.
+	 * @return void
+	 */
+	public static function delete_old_data_entry( $current_date ) {
+		global $wpdb;
+		$table_name = $wpdb->prefix . self::$table_name;
+		$query      = $wpdb->prepare( "DELETE FROM `{$table_name}` WHERE DATEDIFF(%s, `created_at`) >= 7", $current_date ); //phpcs:ignore
+		$data       = $wpdb->get_results( $query ); // phpcs:ignore
+	}
+
+	/**
 	 * Deletes the data entry for the id.
 	 *
 	 * @since 1.0.0
