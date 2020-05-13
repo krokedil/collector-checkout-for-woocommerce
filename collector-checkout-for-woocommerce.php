@@ -45,7 +45,12 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 			// CSS for settings page
 			add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_css' ) );
 
+			// Maybe create Collector db table.
 			add_action( 'init', array( $this, 'collector_maybe_create_db_table' ) );
+			// Maybe schedule action.
+			add_action( 'init', array( $this, 'collector_maybe_schedule_action' ) );
+			// Clean Collector db.
+			add_action( 'collector_clean_db', array( $this, 'collector_clean_db_callback' ) );
 
 		}
 
@@ -249,6 +254,28 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 			if ( $current_db_version < 1 ) {
 				Collector_Checkout_DB::setup_table();
 			}
+		}
+
+		/**
+		 * Maybe schedule action.
+		 *
+		 * @return void
+		 */
+		public function collector_maybe_schedule_action() {
+			if ( false === as_next_scheduled_action( 'collector_clean_db' ) ) {
+				error_log( 'scheduled' );
+				as_schedule_recurring_action( strtotime( 'midnight tonight' ), DAY_IN_SECONDS, 'collector_clean_db' );
+			}
+		}
+
+		/**
+		 * Clean database of one week old data entries.
+		 *
+		 * @return void
+		 */
+		public function collector_clean_db_callback() {
+			$current_date = date( 'Y-m-d H:i:s', time() );
+			Collector_Checkout_DB::delete_old_data_entry( $current_date );
 		}
 	}
 }
