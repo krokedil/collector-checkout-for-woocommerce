@@ -59,7 +59,7 @@ class Collector_Checkout_DB {
 		if ( self::table_exists( $table_name ) ) {
             return $wpdb->query( 'DROP TABLE IF EXISTS ' . $table_name ); //phpcs:ignore
 		}
-
+		delete_option( 'collector_db_version' );
 	}
 
 
@@ -90,6 +90,7 @@ class Collector_Checkout_DB {
 		$sql             = "CREATE TABLE {$table_name} (
 			`id` VARCHAR(128) NOT NULL,
 			`data` MEDIUMTEXT NOT NULL,
+			`created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
 			PRIMARY KEY (id)
 		) $charset_collate;";
 		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
@@ -118,8 +119,9 @@ class Collector_Checkout_DB {
 		$wpdb->insert( // phpcs:ignore
 			$table_name,
 			array(
-				'id'   => $args['private_id'],
-				'data' => wp_json_encode( $args['data'] ),
+				'id'         => $args['private_id'],
+				'data'       => wp_json_encode( $args['data'] ),
+				'created_at' => date( 'Y-m-d H:i:s', time() ),
 			),
 			array(
 				'%s',
