@@ -263,7 +263,6 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 		 */
 		public function collector_maybe_schedule_action() {
 			if ( false === as_next_scheduled_action( 'collector_clean_db' ) ) {
-				error_log( 'scheduled' );
 				as_schedule_recurring_action( strtotime( 'midnight tonight' ), DAY_IN_SECONDS, 'collector_clean_db' );
 			}
 		}
