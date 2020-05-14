@@ -31,16 +31,12 @@ class Collector_Checkout_DB {
 		global $wpdb;
 		$prefix     = $wpdb->prefix;
 		$table_name = $prefix . self::$table_name;
-		// Table already exists, return true.
-		if ( self::table_exists( $table_name ) ) {
-			return true;
-		}
 
 		if ( ! self::create_table( $table_name ) ) {
 			return false;
 		}
 		// Using this option in main plugin file to create db table or not.
-		add_option( 'collector_db_version', '1' );
+		update_option( 'collector_db_version', COLLECTOR_DB_VERSION );
 
 		return true;
 	}
