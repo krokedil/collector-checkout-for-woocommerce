@@ -29,6 +29,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 define( 'COLLECTOR_BANK_PLUGIN_DIR', untrailingslashit( plugin_dir_path( __FILE__ ) ) );
 define( 'COLLECTOR_BANK_PLUGIN_URL', untrailingslashit( plugin_dir_url( __FILE__ ) ) );
 define( 'COLLECTOR_BANK_VERSION', '1.5.3' );
+define( 'COLLECTOR_DB_VERSION', '1' );
 
 if ( ! class_exists( 'Collector_Checkout' ) ) {
 	class Collector_Checkout {
@@ -251,7 +252,7 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 		 */
 		public function collector_maybe_create_db_table() {
 			$current_db_version = get_option( 'collector_db_version' );
-			if ( $current_db_version < 1 ) {
+			if ( $current_db_version < COLLECTOR_DB_VERSION ) {
 				Collector_Checkout_DB::setup_table();
 			}
 		}

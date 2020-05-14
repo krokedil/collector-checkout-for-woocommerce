@@ -40,7 +40,7 @@ class Collector_Checkout_DB {
 			return false;
 		}
 		// Using this option in main plugin file to create db table or not.
-		add_option( 'collector_db_version', 1 );
+		add_option( 'collector_db_version', '1' );
 
 		return true;
 	}
