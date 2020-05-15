@@ -369,7 +369,7 @@ class Collector_Api_Callbacks {
 
 			} elseif ( strpos( $cart_item->id, 'invoicefee|' ) !== false ) {
 
-				// Invoice fee
+				// Invoice fee.
 				$trimmed_cart_item_id = str_replace( 'invoicefee|', '', $cart_item->id );
 				$id                   = wc_get_product_id_by_sku( $trimmed_cart_item_id );
 
@@ -391,23 +391,26 @@ class Collector_Api_Callbacks {
 
 					$_tax      = new WC_Tax();
 					$tmp_rates = $_tax->get_base_tax_rates( $product->get_tax_class() );
-					$_vat      = array_shift( $tmp_rates );// Get the rate
-					// Check what kind of tax rate we have
+					$_vat      = array_shift( $tmp_rates );// Get the rate.
+					// Check what kind of tax rate we have.
 					if ( $product->is_taxable() && isset( $_vat['rate'] ) ) {
 						$vat_rate = round( $_vat['rate'] );
 					} else {
-						// if empty, set 0% as rate
+						// if empty, set 0% as rate.
 						$vat_rate = 0;
 					}
-					$collector_fee            = new stdClass();
-					$collector_fee->id        = sanitize_title( $product->get_title() );
-					$collector_fee->name      = $product->get_title();
-					$collector_fee->amount    = $price;
-					$collector_fee->taxable   = $product_tax;
-					$collector_fee->tax       = $vat_rate;
-					$collector_fee->tax_data  = array();
-					$collector_fee->tax_class = $product->get_tax_class();
-					$fee_id                   = $order->add_fee( $collector_fee );
+					$args = array(
+						'name'      => $product->get_title(),
+						'tax_class' => $product_tax ? $product->get_tax_class() : 0,
+						'total'     => $price,
+						'total_tax' => $vat_rate,
+						'taxes'     => array(
+							'total' => array(),
+						),
+					);
+					$fee  = new WC_Order_Item_Fee();
+					$fee->set_props( $args );
+					$order->add_item( $fee );
 				}
 			} else {
 
