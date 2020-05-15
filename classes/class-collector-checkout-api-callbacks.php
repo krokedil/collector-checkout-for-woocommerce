@@ -430,13 +430,12 @@ class Collector_Api_Callbacks {
 			$sequential = new WC_Seq_Order_Number();
 			$sequential->set_sequential_order_number( $order_id, get_post( $order_id ) );
 		}
-
-		update_post_meta( $order_id, '_collector_payment_method', $collector_order->data->purchase->paymentMethod );
+		update_post_meta( $order_id, '_collector_payment_method', $collector_order->data->purchase->paymentName );
 		update_post_meta( $order_id, '_collector_payment_id', $collector_order->data->purchase->purchaseIdentifier );
 		update_post_meta( $order_id, '_collector_customer_type', $customer_type );
 		update_post_meta( $order_id, '_collector_public_token', $public_token );
 		update_post_meta( $order_id, '_collector_private_id', $private_id );
-		$order->add_order_note( sprintf( __( 'Purchase via %s', 'collector-checkout-for-woocommerce' ), wc_collector_get_payment_method_name( $collector_order->data->purchase->paymentMethod ) ) );
+		$order->add_order_note( sprintf( __( 'Purchase via %s', 'collector-checkout-for-woocommerce' ), wc_collector_get_payment_method_name( $collector_order->data->purchase->paymentName ) ) );
 		$order->calculate_totals();
 		$order->save();
 
