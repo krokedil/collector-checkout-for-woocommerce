@@ -69,9 +69,13 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 			$private_id    = $_GET['private-id'];
 			$public_token  = $_GET['public-token'];
 			$customer_type = $_GET['customer-type'];
-			wp_schedule_single_event( time() + 120, 'collector_check_for_order', array( $private_id, $public_token, $customer_type ) );
 
-			header( 'HTTP/1.1 200 OK' );
+			$collector_event_scheduled = wp_schedule_single_event( time() + 120, 'collector_check_for_order', array( $private_id, $public_token, $customer_type ) );
+			if ( $collector_event_scheduled ) {
+				header( 'HTTP/1.1 200 OK' );
+			} else {
+				Collector_Checkout::log( 'Failed to schedule collector_check_for_order event.' );
+			}
 		}
 
 	}
