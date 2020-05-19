@@ -75,7 +75,9 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 				header( 'HTTP/1.1 200 OK' );
 			} else {
 				Collector_Checkout::log( 'Failed to schedule collector_check_for_order event.' );
+				header( 'HTTP/1.1 400 Bad Request' );
 			}
+			die();
 		}
 
 	}
