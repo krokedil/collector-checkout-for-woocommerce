@@ -29,6 +29,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 define( 'COLLECTOR_BANK_PLUGIN_DIR', untrailingslashit( plugin_dir_path( __FILE__ ) ) );
 define( 'COLLECTOR_BANK_PLUGIN_URL', untrailingslashit( plugin_dir_url( __FILE__ ) ) );
 define( 'COLLECTOR_BANK_VERSION', '1.5.3' );
+define( 'COLLECTOR_DB_VERSION', '1' );
 
 if ( ! class_exists( 'Collector_Checkout' ) ) {
 	class Collector_Checkout {
@@ -44,6 +45,13 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 
 			// CSS for settings page
 			add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_css' ) );
+
+			// Maybe create Collector db table.
+			add_action( 'init', array( $this, 'collector_maybe_create_db_table' ) );
+			// Maybe schedule action.
+			add_action( 'init', array( $this, 'collector_maybe_schedule_action' ) );
+			// Clean Collector db.
+			add_action( 'collector_clean_db', array( $this, 'collector_clean_db_callback' ) );
 
 		}
 
@@ -64,6 +72,8 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-templates.php';
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-gdpr.php';
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-confirmation.php';
+			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-sessions.php';
+			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-db.php';
 
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/includes/collector-checkout-for-woocommerce-functions.php';
 
@@ -233,6 +243,39 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 			$methods[] = 'Collector_Checkout_Gateway';
 
 			return $methods;
+		}
+
+		/**
+		 * Maybe create collector database table.
+		 *
+		 * @return void
+		 */
+		public function collector_maybe_create_db_table() {
+			$current_db_version = get_option( 'collector_db_version' );
+			if ( $current_db_version < COLLECTOR_DB_VERSION ) {
+				Collector_Checkout_DB::setup_table();
+			}
+		}
+
+		/**
+		 * Maybe schedule action.
+		 *
+		 * @return void
+		 */
+		public function collector_maybe_schedule_action() {
+			if ( false === as_next_scheduled_action( 'collector_clean_db' ) ) {
+				as_schedule_recurring_action( strtotime( 'midnight tonight' ), DAY_IN_SECONDS, 'collector_clean_db' );
+			}
+		}
+
+		/**
+		 * Clean database of one week old data entries.
+		 *
+		 * @return void
+		 */
+		public function collector_clean_db_callback() {
+			$current_date = date( 'Y-m-d H:i:s', time() );
+			Collector_Checkout_DB::delete_old_data_entry( $current_date );
 		}
 	}
 }

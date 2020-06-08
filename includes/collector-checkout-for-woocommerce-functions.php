@@ -53,6 +53,16 @@ function collector_wc_show_snippet() {
 			WC()->session->set( 'collector_private_id', $decode->data->privateId );
 			WC()->session->set( 'collector_currency', get_woocommerce_currency() );
 
+			$collector_checkout_sessions = new Collector_Checkout_Sessions();
+			$collector_data              = array(
+				'session_id' => $collector_checkout_sessions->get_session_id(),
+			);
+			$args                        = array(
+				'private_id' => $decode->data->privateId,
+				'data'       => $collector_data,
+			);
+			$result                      = Collector_Checkout_DB::create_data_entry( $args );
+
 			$public_token = $decode->data->publicToken;
 			$output       = array(
 				'publicToken'   => $public_token,
@@ -177,17 +187,20 @@ function wc_collector_add_invoice_fee_to_order( $order_id, $product_id ) {
 			$vat_rate = 0;
 		}
 
-		$collector_fee            = new stdClass();
-		$collector_fee->id        = sanitize_title( $product->get_title() );
-		$collector_fee->name      = $product->get_title();
-		$collector_fee->amount    = $price;
-		$collector_fee->taxable   = $product_tax;
-		$collector_fee->tax       = $vat_rate;
-		$collector_fee->tax_data  = array();
-		$collector_fee->tax_class = $product->get_tax_class();
-		$fee_id                   = $order->add_fee( $collector_fee );
+		$args = array(
+			'name'      => $product->get_title(),
+			'tax_class' => $product_tax ? $product->get_tax_class() : 0,
+			'total'     => $price,
+			'total_tax' => $vat_rate,
+			'taxes'     => array(
+				'total' => array(),
+			),
+		);
+		$fee  = new WC_Order_Item_Fee();
+		$fee->set_props( $args );
+		$fee_result = $order->add_item( $fee );
 
-		if ( ! $fee_id ) {
+		if ( false === $fee_result ) {
 			$order->add_order_note( __( 'Unable to add Collector Bank Invoice Fee to the order.', 'collector-checkout-for-woocommerce' ) );
 		}
 		$result = $order->calculate_totals( true );
@@ -205,4 +218,16 @@ function is_collector_confirmation() {
 		return true;
 	}
 	return false;
+}
+
+
+/**
+ * Get Collector data from Database.
+ *
+ * @param string $private_id Collector private id.
+ * @return string|null
+ */
+function get_collector_data_from_db( $private_id ) {
+	$result = Collector_Checkout_DB::get_data_entry( $private_id );
+	return $result;
 }
