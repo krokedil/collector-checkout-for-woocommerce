@@ -69,9 +69,11 @@
                     },
                     success: function(response) {
                         console.log('customer_adress_updated ' + response);
-                        if( 'yes' == response.data ) {
+                        // All good trigger update_checkout event
+						set_customer_data( response.data );
+                        // if( 'yes' == response.data ) {
                         jQuery(document.body).trigger('update_checkout'); 
-                        }
+                        // }
                     }
                 }
             );
@@ -298,6 +300,25 @@
                     window.location.href = data.data.redirect_url;
                 }
             });
+        }
+    }
+
+    function set_customer_data( data ) {
+        console.log( data );
+        if (  null !== data.billing_country ) {
+            // Billing fields.
+            $( '#billing_postcode' ).val( ( ( data.billing_postcode ) ? data.billing_postcode : '' ) );
+            $( '#billing_country' ).val( ( ( data.billing_country ) ? data.billing_country.toUpperCase() : '' ) );
+            $( '#billing_email' ).val( ( ( data.billing_email ) ? data.billing_email : '' ) );
+        }
+        
+        if ( null !== data.shipping_country ) {
+            $( '#ship-to-different-address-checkbox' ).prop( 'checked', true);
+
+            // Shipping fields.
+            $( '#shipping_postcode' ).val( ( ( data.shipping_postcode ) ? data.shipping_postcode : '' ) );
+            $( '#shipping_country' ).val( ( ( data.shipping_country ) ? data.shipping_country.toUpperCase() : '' ) );
+           
         }
     }
     

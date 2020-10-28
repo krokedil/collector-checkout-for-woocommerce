@@ -161,43 +161,47 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 		$update_needed = 'no';
 
 		// Get customer data from Collector
-		$private_id    = WC()->session->get( 'collector_private_id' );
-		$customer_type = WC()->session->get( 'collector_customer_type' );
-		$customer_data = new Collector_Checkout_Requests_Get_Checkout_Information( $private_id, $customer_type );
-		$customer_data = $customer_data->request();
-		$customer_data = json_decode( $customer_data );
-		$country       = $customer_data->data->countryCode;
+		$private_id      = WC()->session->get( 'collector_private_id' );
+		$customer_type   = WC()->session->get( 'collector_customer_type' );
+		$collector_order = new Collector_Checkout_Requests_Get_Checkout_Information( $private_id, $customer_type );
+		$collector_order = $collector_order->request();
+		$collector_order = json_decode( $collector_order );
 
-		if ( 'BusinessCustomer' == $customer_data->data->customerType ) {
-			$billing_postcode  = $customer_data->data->businessCustomer->invoiceAddress->postalCode;
-			$shipping_postcode = $customer_data->data->businessCustomer->deliveryAddress->postalCode;
+		$customer_data                     = array();
+		$customer_data['billing_country']  = $collector_order->data->countryCode;
+		$customer_data['shipping_country'] = $collector_order->data->countryCode;
+		$customer_data['billing_email']    = $collector_order->data->customer->email;
+
+		if ( 'BusinessCustomer' == $collector_order->data->customerType ) {
+			$customer_data['billing_postcode']  = $collector_order->data->businessCustomer->invoiceAddress->postalCode;
+			$customer_data['shipping_postcode'] = $collector_order->data->businessCustomer->deliveryAddress->postalCode;
 		} else {
-			$billing_postcode  = $customer_data->data->customer->billingAddress->postalCode;
-			$shipping_postcode = $customer_data->data->customer->deliveryAddress->postalCode;
+			$customer_data['billing_postcode']  = $collector_order->data->customer->billingAddress->postalCode;
+			$customer_data['shipping_postcode'] = $collector_order->data->customer->deliveryAddress->postalCode;
 		}
 
-		if ( $country ) {
+		if ( $customer_data['billing_country'] ) {
 
 			// If country is changed then we need to trigger an cart update in the Collector Checkout
-			if ( WC()->customer->get_billing_country() !== $country ) {
+			if ( WC()->customer->get_billing_country() !== $customer_data['billing_country'] ) {
 				$update_needed = 'yes';
 			}
 
 			// If country is changed then we need to trigger an cart update in the Collector Checkout
-			if ( WC()->customer->get_shipping_postcode() !== $shipping_postcode ) {
+			if ( WC()->customer->get_shipping_postcode() !== $customer_data['shipping_postcode'] ) {
 				$update_needed = 'yes';
 			}
-			// Set customer data in Woo
-			WC()->customer->set_billing_country( $country );
-			WC()->customer->set_shipping_country( $country );
-			WC()->customer->set_billing_postcode( $billing_postcode );
-			WC()->customer->set_shipping_postcode( $shipping_postcode );
+			// Set customer data in Woo.
+			WC()->customer->set_billing_country( $customer_data['billing_country'] );
+			WC()->customer->set_shipping_country( $customer_data['shipping_country'] );
+			WC()->customer->set_billing_postcode( $customer_data['billing_postcode'] );
+			WC()->customer->set_shipping_postcode( $customer_data['shipping_postcode'] );
 			WC()->customer->save();
 			WC()->cart->calculate_totals();
 
 		}
 
-		wp_send_json_success( $update_needed );
+		wp_send_json_success( $customer_data );
 		wp_die();
 	}
 
