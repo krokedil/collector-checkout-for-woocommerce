@@ -318,8 +318,11 @@
             // Shipping fields.
             $( '#shipping_postcode' ).val( ( ( data.shipping_postcode ) ? data.shipping_postcode : '' ) );
             $( '#shipping_country' ).val( ( ( data.shipping_country ) ? data.shipping_country.toUpperCase() : '' ) );
-           
         }
+
+        // Trigger changes.
+        $('#billing_email').change();
+        $('#billing_email').blur();
     }
     
 }(jQuery));
