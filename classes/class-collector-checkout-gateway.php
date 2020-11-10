@@ -11,6 +11,24 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 		$this->description        = $this->get_option( 'description' );
 		$this->title              = $this->get_option( 'title' );
 		$this->enabled            = $this->get_option( 'enabled' );
+
+		switch ( get_woocommerce_currency() ) {
+			case 'SEK':
+				$this->delivery_module = isset( $this->settings['collector_delivery_module_se'] ) ? $this->settings['collector_delivery_module_se'] : 'no';
+				break;
+			case 'NOK':
+				$this->delivery_module = isset( $this->settings['collector_delivery_module_no'] ) ? $this->settings['collector_delivery_module_no'] : 'no';
+				break;
+			case 'DKK':
+				$this->delivery_module = isset( $this->settings['collector_delivery_module_dk'] ) ? $this->settings['collector_delivery_module_dk'] : 'no';
+				break;
+			case 'EUR':
+				$this->delivery_module = isset( $this->settings['collector_delivery_module_fi'] ) ? $this->settings['collector_delivery_module_fi'] : 'no';
+				break;
+			default:
+				$this->delivery_module = isset( $this->settings['collector_delivery_module_se'] ) ? $this->settings['collector_delivery_module_se'] : 'no';
+				break;
+		}
 		// Load the form fields.
 		$this->init_form_fields();
 		// Load the settings.
@@ -222,6 +240,14 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 			update_post_meta( $order_id, '_collector_payment_id', $payment_id );
 			$this->save_shipping_reference_to_order( $order_id, $payment_data );
 
+			// Save shipping data.
+			if ( isset( $payment_data->data->shipping ) ) {
+				update_post_meta( $order_id, '_collector_delivery_module_data', wp_json_encode( $payment_data->data->shipping, JSON_UNESCAPED_UNICODE ) );
+				update_post_meta( $order_id, '_collector_delivery_module_reference', $payment_data->data->shipping->pendingShipment->id );
+				WC()->session->__unset( 'collector_delivery_module_enabled' );
+				WC()->session->__unset( 'collector_delivery_module_data' );
+			}
+
 			// Tie this order to a user if we have one.
 			if ( email_exists( $payment_data->data->customer->email ) ) {
 				$user    = get_user_by( 'email', $payment_data->data->customer->email );
@@ -356,6 +382,10 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 
 			if ( 'collector_checkout' == $first_gateway ) {
 				$class[] = 'collector-checkout-selected';
+				// Add class if Collector delivery module is used.
+				if ( 'yes' === $this->delivery_module ) {
+					$class[] = 'collector-delivery-module';
+				}
 			}
 		}
 		return $class;

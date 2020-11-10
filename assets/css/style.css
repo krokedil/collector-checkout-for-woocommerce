@@ -90,3 +90,11 @@ ul.collector-checkout-tabs li.current:after {
     max-width: 600px; /* Could be more or less, depending on screen size */
     text-align: center;
 }
+
+/* Hide shipping methods in order review if displayed in Collector iframe */
+
+.collector-delivery-module ul#shipping_method {
+    position: absolute;
+    top: -9999px;
+    left: -9999px;
+}

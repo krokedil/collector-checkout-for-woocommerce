@@ -16,14 +16,15 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 	 */
 	public static function add_ajax_events() {
 		$ajax_events = array(
-			'get_public_token'        => true,
-			'update_checkout'         => true,
-			'add_customer_order_note' => true,
-			'get_checkout_thank_you'  => true,
-			'get_customer_data'       => true,
-			'customer_adress_updated' => true,
-			'update_fragment'         => true,
-			'checkout_error'          => true,
+			'get_public_token'                => true,
+			'update_checkout'                 => true,
+			'add_customer_order_note'         => true,
+			'get_checkout_thank_you'          => true,
+			'get_customer_data'               => true,
+			'customer_adress_updated'         => true,
+			'update_fragment'                 => true,
+			'checkout_error'                  => true,
+			'update_delivery_module_shipping' => true,
 		);
 		foreach ( $ajax_events as $ajax_event => $nopriv ) {
 			add_action( 'wp_ajax_woocommerce_' . $ajax_event, array( __CLASS__, $ajax_event ) );
@@ -202,6 +203,47 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 		}
 
 		wp_send_json_success( $customer_data );
+		wp_die();
+	}
+
+	/**
+	 * Collector Delivery Module shipping method update - triggered when collectorCheckoutShippingUpdated event is fired
+	 */
+	public static function update_delivery_module_shipping() {
+
+		if ( ! wp_verify_nonce( $_REQUEST['nonce'], 'collector_nonce' ) ) {
+			exit( 'Nonce can not be verified.' );
+		}
+
+		wc_maybe_define_constant( 'WOOCOMMERCE_CHECKOUT', true );
+
+		$private_id      = WC()->session->get( 'collector_private_id' );
+		$customer_type   = WC()->session->get( 'collector_customer_type' );
+		$collector_order = new Collector_Checkout_Requests_Get_Checkout_Information( $private_id, $customer_type );
+		$collector_order = $collector_order->request();
+		$collector_order = json_decode( $collector_order );
+		$shipping_title  = $collector_order->data->fees->shipping->description;
+		$shipping_id     = $collector_order->data->fees->shipping->id;
+		$shipping_price  = $collector_order->data->fees->shipping->unitPrice;
+		$shipping_vat    = $collector_order->data->fees->shipping->vat;
+
+		$shipping_data = array(
+			'label'        => $label,
+			'shipping_id'  => $shipping_id,
+			'cost'         => $cost,
+			'shipping_vat' => $shipping_vat,
+		);
+		WC()->session->set( 'collector_delivery_module_data', $shipping_data );
+
+		WC()->cart->calculate_shipping();
+		WC()->cart->calculate_fees();
+		WC()->cart->calculate_totals();
+
+		$data = array(
+			'shipping_title' => $shipping_title,
+			'shipping_price' => $shipping_price,
+		);
+		wp_send_json_success( $data );
 		wp_die();
 	}
 
