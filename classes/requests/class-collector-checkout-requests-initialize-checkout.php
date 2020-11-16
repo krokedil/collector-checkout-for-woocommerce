@@ -41,9 +41,10 @@ class Collector_Checkout_Requests_Initialize_Checkout extends Collector_Checkout
 				$this->delivery_module = isset( $collector_settings['collector_delivery_module_se'] ) ? $collector_settings['collector_delivery_module_se'] : 'no';
 				break;
 		}
-		$this->customer_type = $customer_type;
-		$this->country_code  = $country_code;
-		$this->terms_page    = esc_url( get_permalink( wc_get_page_id( 'terms' ) ) );
+		$this->customer_type                = $customer_type;
+		$this->country_code                 = $country_code;
+		$this->terms_page                   = esc_url( get_permalink( wc_get_page_id( 'terms' ) ) );
+		$this->activate_validation_callback = isset( $collector_settings['activate_validation_callback'] ) ? $collector_settings['activate_validation_callback'] : 'no';
 	}
 
 	private function get_request_args() {
@@ -106,10 +107,12 @@ class Collector_Checkout_Requests_Initialize_Checkout extends Collector_Checkout
 				),
 				get_home_url() . '/wc-api/Collector_Checkout_Gateway/'
 			),
-			'validationUri'    => $validation_uri,
 			'cart'             => $this->cart(),
 			'fees'             => $this->fees(),
 		);
+		if ( 'yes' === $this->activate_validation_callback ) {
+			$formatted_request_body['validationUri'] = $validation_uri;
+		}
 		if ( 'yes' === $this->delivery_module ) {
 			$formatted_request_body['profileName'] = 'Shipping';
 		}

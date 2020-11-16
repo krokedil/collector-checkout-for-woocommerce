@@ -166,6 +166,13 @@ $settings = array(
 		'default'     => '',
 		'desc_tip'    => true,
 	),
+	'activate_validation_callback'    => array(
+		'title'       => __( 'Validation Callback', 'collector-checkout-for-woocommerce' ),
+		'type'        => 'checkbox',
+		'label'       => __( 'Tick the checkbox to activate Collector Validation Callback.', 'collector-checkout-for-woocommerce' ),
+		'description' => sprintf( __( 'Triggered by Collector when customer clicks the Complete purchase button in Collector Checkout. <a href="%s" target="_blank">Read more about validation callback.</a>', 'collector-checkout-for-woocommerce' ), 'https://docs.krokedil.com/article/164-collector-checkout-introduction' ),
+		'default'     => 'yes',
+	),
 	'order_management_settings_title' => array(
 		'title' => __( 'Order management settings', 'collector-checkout-for-woocommerce' ),
 		'type'  => 'title',
