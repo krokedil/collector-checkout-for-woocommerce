@@ -366,6 +366,36 @@ class Collector_Api_Callbacks {
 				// Save shipping reference to order.
 				update_post_meta( $order->get_id(), '_collector_shipping_reference', $cart_item->id );
 
+			} elseif ( 'Frakt' === $cart_item->id ) {
+				// Collector Delivery Module Shipping.
+				$args = array(
+					'order_item_name' => $cart_item->description,
+					'order_item_type' => 'shipping',
+				);
+
+				$item_id = wc_add_order_item( $order->get_id(), $args );
+
+				if ( $item_id ) {
+					if ( $cart_item->unitPrice > 0 ) {
+						if ( $cart_item->vat > 0 ) {
+							$line_total_excl_vat = round( $cart_item->unitPrice / ( 1 + ( $cart_item->vat / 100 ) ), 2 );
+							$line_total_vat      = $cart_item->unitPrice - $line_total_excl_vat;
+						} else {
+							$line_total_excl_vat = round( $cart_item->unitPrice, 2 );
+							$line_total_vat      = 0;
+						}
+					} else {
+						$line_total_excl_vat = 0;
+						$line_total_vat      = 0;
+					}
+					wc_add_order_item_meta( $item_id, '_qty', 1 );
+					wc_add_order_item_meta( $item_id, 'cost', wc_format_decimal( $line_total_excl_vat ) );
+					wc_add_order_item_meta( $item_id, 'total_tax', wc_format_decimal( $line_total_vat ) );
+
+				}
+				// Save shipping reference to order.
+				update_post_meta( $order->get_id(), '_collector_shipping_reference', $cart_item->id );
+
 			} elseif ( strpos( $cart_item->id, 'invoicefee|' ) !== false ) {
 
 				// Invoice fee.
