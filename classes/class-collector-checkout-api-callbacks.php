@@ -104,8 +104,7 @@ class Collector_Api_Callbacks {
 		if ( $this->order_is_valid ) {
 			Collector_Checkout::log( 'Private id: ' . $private_id . ' Collector Validation Callback. Order is valid.' );
 			header( 'HTTP/1.0 200 OK' );
-			// Remove database table row data after the validation checks.
-			$this->remove_db_row_data( $private_id );
+			die();
 		} else {
 			$log_array = array(
 				'message'             => 'Private id: ' . $private_id . ' Collector Validation Callback. Order is NOT valid.',
@@ -433,6 +432,13 @@ class Collector_Api_Callbacks {
 			$sequential = new WC_Seq_Order_Number();
 			$sequential->set_sequential_order_number( $order_id, get_post( $order_id ) );
 		}
+
+		// Save shipping data.
+		if ( isset( $collector_order->data->shipping ) ) {
+			update_post_meta( $order_id, '_collector_delivery_module_data', wp_json_encode( $collector_order->data->shipping, JSON_UNESCAPED_UNICODE ) );
+			update_post_meta( $order_id, '_collector_delivery_module_reference', $collector_order->data->shipping->pendingShipment->id );
+		}
+
 		update_post_meta( $order_id, '_collector_payment_method', $collector_order->data->purchase->paymentName );
 		update_post_meta( $order_id, '_collector_payment_id', $collector_order->data->purchase->purchaseIdentifier );
 		update_post_meta( $order_id, '_collector_customer_type', $customer_type );
@@ -447,6 +453,9 @@ class Collector_Api_Callbacks {
 
 		// Check order total and compare it with Woo
 		$this->set_order_status( $order, $collector_order );
+
+		// Remove database table row data.
+		remove_collector_db_row_data( $private_id );
 
 		return $order;
 	}
@@ -623,16 +632,6 @@ class Collector_Api_Callbacks {
 		if ( isset( $this->db_session_id ) ) {
 			wp_set_current_user( $this->db_session_id );
 		}
-	}
-
-	/**
-	 * Removes the database table row data.
-	 *
-	 * @param string $private_id Collector private id.
-	 * @return void
-	 */
-	public function remove_db_row_data( $private_id ) {
-		Collector_Checkout_DB::delete_data_entry( $private_id );
 	}
 }
 Collector_Api_Callbacks::get_instance();
