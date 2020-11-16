@@ -478,10 +478,7 @@ class Collector_Api_Callbacks {
 		$order->calculate_totals();
 		$order->save();
 
-		// Set order status in Woo
-		$this->set_order_status( $order, $collector_order );
-
-		// Check order total and compare it with Woo
+		// Set order status in Woo.
 		$this->set_order_status( $order, $collector_order );
 
 		// Remove database table row data.
