@@ -274,7 +274,7 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 			$settings_link = '<a href="admin.php?page=wc-settings&tab=checkout&section=collector_checkout">Settings</a>';
 			array_unshift( $links, $settings_link );
 			return $links;
-    }
+		}
 
 		/**
 		 * Maybe create collector database table.
