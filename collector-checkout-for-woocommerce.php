@@ -113,6 +113,8 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 
 			// Translations
 			load_plugin_textdomain( 'collector-checkout-for-woocommerce', false, plugin_basename( dirname( __FILE__ ) ) . '/languages' );
+
+			add_filter( 'plugin_action_links_' . plugin_basename( __FILE__ ), array( $this, add_action_links ) );
 		}
 
 		public function load_scripts() {
@@ -265,6 +267,13 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 			$methods[] = 'Collector_Checkout_Gateway';
 
 			return $methods;
+		}
+
+
+		public function add_action_links( $links ) {
+			$settings_link = '<a href="admin.php?page=wc-settings&tab=checkout&section=collector_checkout">Settings</a>';
+			array_unshift( $links, $settings_link );
+			return $links;
 		}
 
 		/**
