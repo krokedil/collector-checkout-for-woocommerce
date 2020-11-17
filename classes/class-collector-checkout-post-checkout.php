@@ -23,7 +23,7 @@ class Collector_Checkout_Post_Checkout {
 
 	public function collector_order_completed( $order_id ) {
 		$order = wc_get_order( $order_id );
-		if ( 'collector_checkout' === $order->get_payment_method() ) {
+		if ( in_array( $order->get_payment_method(), array( 'collector_checkout', 'collector_invoice' ), true ) ) {
 			if ( get_post_meta( $order_id, '_collector_order_activated', true ) ) {
 				$order->add_order_note( __( 'Could not activate Collector reservation, Collector reservation is already activated.', 'collector-checkout-for-woocommerce' ) );
 				return;
@@ -42,7 +42,7 @@ class Collector_Checkout_Post_Checkout {
 
 	public function collector_order_cancel( $order_id ) {
 		$order = wc_get_order( $order_id );
-		if ( 'collector_checkout' === $order->get_payment_method() ) {
+		if ( in_array( $order->get_payment_method(), array( 'collector_checkout', 'collector_invoice' ), true ) ) {
 			if ( get_post_meta( $order_id, '_collector_order_cancelled', true ) ) {
 				$order->add_order_note( __( 'Could not cancel Collector reservation, Collector reservation is already cancelled.', 'collector-checkout-for-woocommerce' ) );
 				return;

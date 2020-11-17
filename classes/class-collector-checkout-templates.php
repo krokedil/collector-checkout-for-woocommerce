@@ -40,7 +40,7 @@ class Collector_Checkout_Templates {
 		add_action( 'collector_wc_after_order_review', 'collector_wc_show_customer_order_notes', 10 );
 		add_action( 'collector_wc_after_order_review', 'collector_wc_show_another_gateway_button', 20 );
 		add_action( 'collector_wc_before_iframe', 'collector_wc_show_customer_type_switcher', 20 );
-		add_action( 'collector_wc_after_iframe', 'collector_wc_show_payment_method_field', 10 );
+		add_action( 'collector_wc_after_iframe', array( $this, 'add_wc_form' ), 10 );
 	}
 
 	/**
@@ -85,6 +85,22 @@ class Collector_Checkout_Templates {
 			}
 		}
 		return $template;
+	}
+
+	/**
+	 * Adds the WC form and other fields to the checkout page.
+	 *
+	 * @return void
+	 */
+	public function add_wc_form() {
+		?>
+		<div aria-hidden="true" id="collector-wc-form" style="position:absolute; top:0; left:-99999px;">
+		<?php do_action( 'woocommerce_checkout_billing' ); ?>
+		<?php do_action( 'woocommerce_checkout_shipping' ); ?>
+		<?php wp_nonce_field( 'woocommerce-process_checkout', 'woocommerce-process-checkout-nonce' ); ?>
+			<input id="payment_method_collector_checkout" type="radio" class="input-radio" name="payment_method" value="collector_checkout" checked="checked"/>
+		</div>
+		<?php
 	}
 
 }

@@ -190,7 +190,7 @@ class Collector_Checkout_Create_Refund_Data {
 	private static function get_full_refund_item_data( $item ) {
 		$product = $item->get_product();
 		// The entire item price is refunded.
-		$title              = $item->get_name();
+		$title              = wp_strip_all_tags( $item->get_name() );
 		$sku                = empty( $product->get_sku() ) ? $product->get_id() : $product->get_sku();
 		$tax_rates          = WC_Tax::get_rates( $item->get_tax_class() );
 		$tax_rate           = reset( $tax_rates );

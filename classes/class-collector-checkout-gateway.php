@@ -11,6 +11,24 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 		$this->description        = $this->get_option( 'description' );
 		$this->title              = $this->get_option( 'title' );
 		$this->enabled            = $this->get_option( 'enabled' );
+
+		switch ( get_woocommerce_currency() ) {
+			case 'SEK':
+				$this->delivery_module = isset( $this->settings['collector_delivery_module_se'] ) ? $this->settings['collector_delivery_module_se'] : 'no';
+				break;
+			case 'NOK':
+				$this->delivery_module = isset( $this->settings['collector_delivery_module_no'] ) ? $this->settings['collector_delivery_module_no'] : 'no';
+				break;
+			case 'DKK':
+				$this->delivery_module = isset( $this->settings['collector_delivery_module_dk'] ) ? $this->settings['collector_delivery_module_dk'] : 'no';
+				break;
+			case 'EUR':
+				$this->delivery_module = isset( $this->settings['collector_delivery_module_fi'] ) ? $this->settings['collector_delivery_module_fi'] : 'no';
+				break;
+			default:
+				$this->delivery_module = isset( $this->settings['collector_delivery_module_se'] ) ? $this->settings['collector_delivery_module_se'] : 'no';
+				break;
+		}
 		// Load the form fields.
 		$this->init_form_fields();
 		// Load the settings.
@@ -21,21 +39,21 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 		);
 
 		// Do not allow refunds via Collector for Swish orders.
-		if( function_exists( 'get_current_screen' ) && null !== get_current_screen() ) {
-			
+		if ( function_exists( 'get_current_screen' ) && null !== get_current_screen() ) {
+
 			$current_screen = get_current_screen();
-			
-			if( 'shop_order' === $current_screen->post_type && ( isset($_GET['action']) && 'edit' === $_GET['action'] ) && isset($_GET['post'])) {
-				
+
+			if ( 'shop_order' === $current_screen->post_type && ( isset( $_GET['action'] ) && 'edit' === $_GET['action'] ) && isset( $_GET['post'] ) ) {
+
 				$order_id = $_GET['post'];
-				$order = wc_get_order( $order_id );
+				$order    = wc_get_order( $order_id );
 				if ( 'collector_checkout' === $order->get_payment_method() && 'Swish' === get_post_meta( $order_id, '_collector_payment_method', true ) ) {
-					if (($key = array_search('refunds', $this->supports)) !== false) {
-						unset($this->supports[$key]);
+					if ( ( $key = array_search( 'refunds', $this->supports ) ) !== false ) {
+						unset( $this->supports[ $key ] );
 					}
 				}
 			}
-		}	
+		}
 
 		add_action(
 			'woocommerce_update_options_payment_gateways_' . $this->id,
@@ -46,7 +64,6 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 		);
 
 		// Function to handle the thankyou page.
-		add_action( 'woocommerce_thankyou_collector_checkout', array( $this, 'collector_thankyou' ) );
 		add_filter( 'woocommerce_thankyou_order_received_text', array( $this, 'collector_thankyou_order_received_text' ), 10, 2 );
 		add_action( 'woocommerce_thankyou', array( $this, 'maybe_delete_collector_sessions' ), 100, 1 );
 
@@ -64,14 +81,29 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 	 * Schedule order status check on notificationUri callback from Collector
 	 */
 	public function notification_listener() {
-		Collector_Checkout::log( 'Notification Listener hitt: ' . json_encode( $_GET ) . ' URL: ' . $_SERVER['REQUEST_URI'] );
+		Collector_Checkout::log( 'Notification Listener hit: ' . json_encode( $_GET ) . ' URL: ' . $_SERVER['REQUEST_URI'] );
 		if ( isset( $_GET['private-id'] ) && isset( $_GET['public-token'] ) ) {
 			$private_id    = $_GET['private-id'];
 			$public_token  = $_GET['public-token'];
 			$customer_type = $_GET['customer-type'];
-			wp_schedule_single_event( time() + 120, 'collector_check_for_order', array( $private_id, $public_token, $customer_type ) );
 
-			header( 'HTTP/1.1 200 OK' );
+			$scheduled_actions = as_get_scheduled_actions(
+				array(
+					'hook'   => 'collector_check_for_order',
+					'status' => ActionScheduler_Store::STATUS_PENDING,
+					'args'   => array( $private_id, $public_token, $customer_type ),
+				),
+				'ids'
+			);
+
+			if ( empty( $scheduled_actions ) ) {
+				as_schedule_single_action( time() + 120, 'collector_check_for_order', array( $private_id, $public_token, $customer_type ) );
+				header( 'HTTP/1.1 200 OK' );
+			} else {
+				Collector_Checkout::log( 'collector_check_for_order callback already scheduled. ' . wp_json_encode( $scheduled_actions ) ); // Input var okay.
+				header( 'HTTP/1.1 400 Bad Request' );
+			}
+			die();
 		}
 
 	}
@@ -190,86 +222,98 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 			Collector_Checkout::log( 'Update Collector order reference for order - ' . $order->get_order_number() );
 		}
 
+		$process_payment = $this->process_collector_payment_in_order( $order_id );
+
 		return array(
 			'result'   => 'success',
 			'redirect' => $this->get_return_url( $order ),
 		);
 	}
 
+	/**
+	 * Processes the Collector Payment and sets post metas.
+	 *
+	 * @param string $order_id The WooCommerce order id.
+	 * @return void
+	 */
+	public function process_collector_payment_in_order( $order_id ) {
 
-	public function collector_thankyou( $order_id ) {
-		$order = wc_get_order( $order_id );
-		if ( WC()->session->get( 'collector_private_id' ) ) {
+		$order         = wc_get_order( $order_id );
+		$private_id    = get_post_meta( $order_id, '_collector_private_id', true );
+		$customer_type = get_post_meta( $order_id, '_collector_customer_type', true );
 
-			$private_id = get_post_meta( $order_id, '_collector_private_id', true );
-			Collector_Checkout::log( 'collector_thankyou page hit for private_id ' . $private_id );
+		Collector_Checkout::log( 'Process Collector Payment for private_id ' . $private_id );
 
-			$customer_type  = get_post_meta( $order_id, '_collector_customer_type', true );
-			$payment_data   = new Collector_Checkout_Requests_Get_Checkout_Information( $private_id, $customer_type );
-			$payment_data   = $payment_data->request();
-			$payment_data   = json_decode( $payment_data );
-			$payment_status = $payment_data->data->purchase->result;
-			$payment_method = $payment_data->data->purchase->paymentName;
-			$payment_id     = $payment_data->data->purchase->purchaseIdentifier;
+		$payment_data   = new Collector_Checkout_Requests_Get_Checkout_Information( $private_id, $customer_type );
+		$payment_data   = $payment_data->request();
+		$payment_data   = json_decode( $payment_data );
+		$payment_status = $payment_data->data->purchase->result;
+		$payment_method = $payment_data->data->purchase->paymentName;
+		$payment_id     = $payment_data->data->purchase->purchaseIdentifier;
 
-			update_post_meta( $order_id, '_collector_payment_method', $payment_method );
-			update_post_meta( $order_id, '_collector_payment_id', $payment_id );
-			$this->save_shipping_reference_to_order( $order_id, $payment_data );
+		update_post_meta( $order_id, '_collector_payment_method', $payment_method );
+		update_post_meta( $order_id, '_collector_payment_id', $payment_id );
+		$this->save_shipping_reference_to_order( $order_id, $payment_data );
 
-			// Tie this order to a user if we have one.
-			if ( email_exists( $payment_data->data->customer->email ) ) {
-				$user    = get_user_by( 'email', $payment_data->data->customer->email );
-				$user_id = $user->ID;
-				update_post_meta( $order_id, '_customer_user', $user_id );
-			}
-
-			if ( ! $order->has_status( 'on-hold' ) ) {
-				if ( 'Preliminary' === $payment_status || 'Completed' === $payment_status ) {
-					$order->payment_complete( $payment_id );
-				} elseif ( 'Signing' == $payment_status ) {
-					$order->add_order_note( __( 'Order is waiting for electronic signing by customer. Payment ID: ', 'woocommerce-gateway-klarna' ) . $payment_id );
-					update_post_meta( $order_id, '_transaction_id', $payment_id );
-					$order->update_status( 'on-hold' );
-				} else {
-					$order->add_order_note( __( 'Order is PENDING APPROVAL by Collector. Payment ID: ', 'woocommerce-gateway-klarna' ) . $payment_id );
-					update_post_meta( $order_id, '_transaction_id', $payment_id );
-					$order->update_status( 'on-hold' );
-				}
-			}
-
-			$order->add_order_note( sprintf( __( 'Purchase via %s', 'collector-checkout-for-woocommerce' ), wc_collector_get_payment_method_name( $payment_method ) ) );
-
-			// Check if there where any empty fields, if so send mail.
-			if ( WC()->session->get( 'collector_empty_fields' ) ) {
-				$email   = get_option( 'admin_email' );
-				$subject = __( 'Order data was missing from Collector', 'collector-checkout-for-woocommerce' );
-				$message = '<p>' . __( 'The following fields had missing data from Collector, please verify the order with Collector.', 'collector-checkout-for-woocommerce' );
-				foreach ( WC()->session->get( 'collector_empty_fields' ) as $field ) {
-					$message = $message . '<br>' . $field;
-				}
-				$message = $message . '<br><a href="' . get_edit_post_link( $order_id ) . '">' . __( 'Link to the order', 'collector-checkout-for-woocommerce' ) . '</a></p>';
-				wp_mail( $email, $subject, $message );
-				WC()->session->__unset( 'collector_empty_fields' );
-			}
-			// Check if there is a org nr set, if so add post meta
-			if ( WC()->session->get( 'collector_org_nr' ) ) {
-				$org_nr = WC()->session->get( 'collector_org_nr' );
-				update_post_meta( $order_id, '_collector_org_nr', $org_nr );
-				WC()->session->__unset( 'collector_org_nr' );
-			}
-
-			// Check if there is a invoice refernce set, if so add post meta
-			if ( WC()->session->get( 'collector_invoice_reference' ) ) {
-				$invoice_reference = WC()->session->get( 'collector_invoice_reference' );
-				update_post_meta( $order_id, '_collector_invoice_reference', $invoice_reference );
-				WC()->session->__unset( 'collector_invoice_reference' );
-			}
-
-		} else {
-			// @todo - add logging here.
-			Collector_Checkout::log( 'collector_thankyou page hit but collector_private_id session not existing.' );
+		// Save shipping data.
+		if ( isset( $payment_data->data->shipping ) ) {
+			update_post_meta( $order_id, '_collector_delivery_module_data', wp_json_encode( $payment_data->data->shipping, JSON_UNESCAPED_UNICODE ) );
+			update_post_meta( $order_id, '_collector_delivery_module_reference', $payment_data->data->shipping->pendingShipment->id );
+			WC()->session->__unset( 'collector_delivery_module_enabled' );
+			WC()->session->__unset( 'collector_delivery_module_data' );
 		}
 
+		// Tie this order to a user if we have one.
+		if ( email_exists( $payment_data->data->customer->email ) ) {
+			$user    = get_user_by( 'email', $payment_data->data->customer->email );
+			$user_id = $user->ID;
+			update_post_meta( $order_id, '_customer_user', $user_id );
+		}
+
+		if ( ! $order->has_status( 'on-hold' ) ) {
+			if ( 'Preliminary' === $payment_status || 'Completed' === $payment_status ) {
+				$order->payment_complete( $payment_id );
+			} elseif ( 'Signing' === $payment_status ) {
+				$order->add_order_note( __( 'Order is waiting for electronic signing by customer. Payment ID: ', 'woocommerce-gateway-klarna' ) . $payment_id );
+				update_post_meta( $order_id, '_transaction_id', $payment_id );
+				$order->update_status( 'on-hold' );
+			} else {
+				$order->add_order_note( __( 'Order is PENDING APPROVAL by Collector. Payment ID: ', 'woocommerce-gateway-klarna' ) . $payment_id );
+				update_post_meta( $order_id, '_transaction_id', $payment_id );
+				$order->update_status( 'on-hold' );
+			}
+		}
+		// Translators: Collector Payment method.
+		$order->add_order_note( sprintf( __( 'Purchase via %s', 'collector-checkout-for-woocommerce' ), wc_collector_get_payment_method_name( $payment_method ) ) );
+
+		// Check if there where any empty fields, if so send mail.
+		if ( WC()->session->get( 'collector_empty_fields' ) ) {
+			$email   = get_option( 'admin_email' );
+			$subject = __( 'Order data was missing from Collector', 'collector-checkout-for-woocommerce' );
+			$message = '<p>' . __( 'The following fields had missing data from Collector, please verify the order with Collector.', 'collector-checkout-for-woocommerce' );
+			foreach ( WC()->session->get( 'collector_empty_fields' ) as $field ) {
+				$message = $message . '<br>' . $field;
+			}
+			$message = $message . '<br><a href="' . get_edit_post_link( $order_id ) . '">' . __( 'Link to the order', 'collector-checkout-for-woocommerce' ) . '</a></p>';
+			wp_mail( $email, $subject, $message );
+			WC()->session->__unset( 'collector_empty_fields' );
+		}
+		// Check if there is a org nr set, if so add post meta.
+		if ( WC()->session->get( 'collector_org_nr' ) ) {
+			$org_nr = WC()->session->get( 'collector_org_nr' );
+			update_post_meta( $order_id, '_collector_org_nr', $org_nr );
+			WC()->session->__unset( 'collector_org_nr' );
+		}
+
+		// Check if there is a invoice refernce set, if so add post meta.
+		if ( WC()->session->get( 'collector_invoice_reference' ) ) {
+			$invoice_reference = WC()->session->get( 'collector_invoice_reference' );
+			update_post_meta( $order_id, '_collector_invoice_reference', $invoice_reference );
+			WC()->session->__unset( 'collector_invoice_reference' );
+		}
+
+		// Remove database table row data.
+		remove_collector_db_row_data( $private_id );
 	}
 
 	/**
@@ -351,6 +395,10 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 
 			if ( 'collector_checkout' == $first_gateway ) {
 				$class[] = 'collector-checkout-selected';
+				// Add class if Collector delivery module is used.
+				if ( 'yes' === $this->delivery_module ) {
+					$class[] = 'collector-delivery-module';
+				}
 			}
 		}
 		return $class;
