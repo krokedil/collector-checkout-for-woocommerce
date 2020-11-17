@@ -39,6 +39,9 @@ For help setting up and configuring Collector Checkout for WooCommerce please re
 
 
 == CHANGELOG ==
+= 2020.11.17    - version 2.0.1 =
+* Fix           - Fixed PHP warning in plugin_action_links filter.
+
 = 2020.11.17    - version 2.0.0 =
 * Feature       - Add support for Collector Delivery Module.
 * Feature       - Add validation callback logic (as an optional feature). Checks for coupon validation, products in stock, user logged in (if needed) and order amount.
