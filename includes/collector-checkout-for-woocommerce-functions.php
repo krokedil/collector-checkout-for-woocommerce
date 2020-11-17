@@ -222,3 +222,13 @@ function get_collector_data_from_db( $private_id ) {
 	$result = Collector_Checkout_DB::get_data_entry( $private_id );
 	return $result;
 }
+
+/**
+ * Removes the database table row data.
+ *
+ * @param string $private_id Collector private id.
+ * @return void
+ */
+function remove_collector_db_row_data( $private_id ) {
+	Collector_Checkout_DB::delete_data_entry( $private_id );
+}

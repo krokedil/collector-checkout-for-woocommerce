@@ -104,8 +104,7 @@ class Collector_Api_Callbacks {
 		if ( $this->order_is_valid ) {
 			Collector_Checkout::log( 'Private id: ' . $private_id . ' Collector Validation Callback. Order is valid.' );
 			header( 'HTTP/1.0 200 OK' );
-			// Remove database table row data after the validation checks.
-			$this->remove_db_row_data( $private_id );
+			die();
 		} else {
 			$log_array = array(
 				'message'             => 'Private id: ' . $private_id . ' Collector Validation Callback. Order is NOT valid.',
@@ -367,6 +366,36 @@ class Collector_Api_Callbacks {
 				// Save shipping reference to order.
 				update_post_meta( $order->get_id(), '_collector_shipping_reference', $cart_item->id );
 
+			} elseif ( 'Frakt' === $cart_item->id ) {
+				// Collector Delivery Module Shipping.
+				$args = array(
+					'order_item_name' => $cart_item->description,
+					'order_item_type' => 'shipping',
+				);
+
+				$item_id = wc_add_order_item( $order->get_id(), $args );
+
+				if ( $item_id ) {
+					if ( $cart_item->unitPrice > 0 ) {
+						if ( $cart_item->vat > 0 ) {
+							$line_total_excl_vat = round( $cart_item->unitPrice / ( 1 + ( $cart_item->vat / 100 ) ), 2 );
+							$line_total_vat      = $cart_item->unitPrice - $line_total_excl_vat;
+						} else {
+							$line_total_excl_vat = round( $cart_item->unitPrice, 2 );
+							$line_total_vat      = 0;
+						}
+					} else {
+						$line_total_excl_vat = 0;
+						$line_total_vat      = 0;
+					}
+					wc_add_order_item_meta( $item_id, '_qty', 1 );
+					wc_add_order_item_meta( $item_id, 'cost', wc_format_decimal( $line_total_excl_vat ) );
+					wc_add_order_item_meta( $item_id, 'total_tax', wc_format_decimal( $line_total_vat ) );
+
+				}
+				// Save shipping reference to order.
+				update_post_meta( $order->get_id(), '_collector_shipping_reference', $cart_item->id );
+
 			} elseif ( strpos( $cart_item->id, 'invoicefee|' ) !== false ) {
 
 				// Invoice fee.
@@ -433,6 +462,13 @@ class Collector_Api_Callbacks {
 			$sequential = new WC_Seq_Order_Number();
 			$sequential->set_sequential_order_number( $order_id, get_post( $order_id ) );
 		}
+
+		// Save shipping data.
+		if ( isset( $collector_order->data->shipping ) ) {
+			update_post_meta( $order_id, '_collector_delivery_module_data', wp_json_encode( $collector_order->data->shipping, JSON_UNESCAPED_UNICODE ) );
+			update_post_meta( $order_id, '_collector_delivery_module_reference', $collector_order->data->shipping->pendingShipment->id );
+		}
+
 		update_post_meta( $order_id, '_collector_payment_method', $collector_order->data->purchase->paymentName );
 		update_post_meta( $order_id, '_collector_payment_id', $collector_order->data->purchase->purchaseIdentifier );
 		update_post_meta( $order_id, '_collector_customer_type', $customer_type );
@@ -442,11 +478,11 @@ class Collector_Api_Callbacks {
 		$order->calculate_totals();
 		$order->save();
 
-		// Set order status in Woo
+		// Set order status in Woo.
 		$this->set_order_status( $order, $collector_order );
 
-		// Check order total and compare it with Woo
-		$this->set_order_status( $order, $collector_order );
+		// Remove database table row data.
+		remove_collector_db_row_data( $private_id );
 
 		return $order;
 	}
@@ -623,16 +659,6 @@ class Collector_Api_Callbacks {
 		if ( isset( $this->db_session_id ) ) {
 			wp_set_current_user( $this->db_session_id );
 		}
-	}
-
-	/**
-	 * Removes the database table row data.
-	 *
-	 * @param string $private_id Collector private id.
-	 * @return void
-	 */
-	public function remove_db_row_data( $private_id ) {
-		Collector_Checkout_DB::delete_data_entry( $private_id );
 	}
 }
 Collector_Api_Callbacks::get_instance();

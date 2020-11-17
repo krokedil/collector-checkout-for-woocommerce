@@ -53,6 +53,12 @@ $settings = array(
 		'title' => __( 'Sweden', 'collector-checkout-for-woocommerce' ),
 		'type'  => 'title',
 	),
+	'collector_delivery_module_se'    => array(
+		'title'   => __( 'Delivery module Sweden', 'collector-checkout-for-woocommerce' ),
+		'type'    => 'checkbox',
+		'label'   => __( 'Activate Delivery module for Sweden', 'collector-checkout-for-woocommerce' ),
+		'default' => 'no',
+	),
 	'collector_merchant_id_se_b2c'    => array(
 		'title'       => __( 'Merchant ID Sweden B2C', 'collector-checkout-for-woocommerce' ),
 		'type'        => 'text',
@@ -70,6 +76,12 @@ $settings = array(
 	'no_settings_title'               => array(
 		'title' => __( 'Norway', 'collector-checkout-for-woocommerce' ),
 		'type'  => 'title',
+	),
+	'collector_delivery_module_no'    => array(
+		'title'   => __( 'Delivery module Norway', 'collector-checkout-for-woocommerce' ),
+		'type'    => 'checkbox',
+		'label'   => __( 'Activate Delivery module for Norway', 'collector-checkout-for-woocommerce' ),
+		'default' => 'no',
 	),
 	'collector_merchant_id_no_b2c'    => array(
 		'title'       => __( 'Merchant ID Norway B2C', 'collector-checkout-for-woocommerce' ),
@@ -89,6 +101,12 @@ $settings = array(
 		'title' => __( 'Finland', 'collector-checkout-for-woocommerce' ),
 		'type'  => 'title',
 	),
+	'collector_delivery_module_fi'    => array(
+		'title'   => __( 'Delivery module Finland', 'collector-checkout-for-woocommerce' ),
+		'type'    => 'checkbox',
+		'label'   => __( 'Activate Delivery module for Finland', 'collector-checkout-for-woocommerce' ),
+		'default' => 'no',
+	),
 	'collector_merchant_id_fi_b2c'    => array(
 		'title'       => __( 'Merchant ID Finland B2C', 'collector-checkout-for-woocommerce' ),
 		'type'        => 'text',
@@ -106,6 +124,12 @@ $settings = array(
 	'dk_settings_title'               => array(
 		'title' => __( 'Denmark', 'collector-checkout-for-woocommerce' ),
 		'type'  => 'title',
+	),
+	'collector_delivery_module_dk'    => array(
+		'title'   => __( 'Delivery module Denmark', 'collector-checkout-for-woocommerce' ),
+		'type'    => 'checkbox',
+		'label'   => __( 'Activate Delivery module for Denmark', 'collector-checkout-for-woocommerce' ),
+		'default' => 'no',
 	),
 	'collector_merchant_id_dk_b2c'    => array(
 		'title'       => __( 'Merchant ID Denmark B2C', 'collector-checkout-for-woocommerce' ),
@@ -141,6 +165,13 @@ $settings = array(
 		'description' => __( 'Background color of call to action buttons in Collector Checkout.', 'collector-checkout-for-woocommerce' ),
 		'default'     => '',
 		'desc_tip'    => true,
+	),
+	'activate_validation_callback'    => array(
+		'title'       => __( 'Validation Callback', 'collector-checkout-for-woocommerce' ),
+		'type'        => 'checkbox',
+		'label'       => __( 'Tick the checkbox to activate Collector Validation Callback.', 'collector-checkout-for-woocommerce' ),
+		'description' => sprintf( __( 'Triggered by Collector when customer clicks the Complete purchase button in Collector Checkout. <a href="%s" target="_blank">Read more about validation callback.</a>', 'collector-checkout-for-woocommerce' ), 'https://docs.krokedil.com/article/164-collector-checkout-introduction' ),
+		'default'     => 'yes',
 	),
 	'order_management_settings_title' => array(
 		'title' => __( 'Order management settings', 'collector-checkout-for-woocommerce' ),

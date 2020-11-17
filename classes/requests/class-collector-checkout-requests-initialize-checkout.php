@@ -16,29 +16,35 @@ class Collector_Checkout_Requests_Initialize_Checkout extends Collector_Checkout
 		$collector_settings = get_option( 'woocommerce_collector_checkout_settings' );
 		switch ( get_woocommerce_currency() ) {
 			case 'SEK':
-				$country_code   = 'SE';
-				$this->store_id = $collector_settings[ 'collector_merchant_id_se_' . $customer_type ];
+				$country_code          = 'SE';
+				$this->store_id        = $collector_settings[ 'collector_merchant_id_se_' . $customer_type ];
+				$this->delivery_module = isset( $collector_settings['collector_delivery_module_se'] ) ? $collector_settings['collector_delivery_module_se'] : 'no';
 				break;
 			case 'NOK':
-				$country_code   = 'NO';
-				$this->store_id = $collector_settings[ 'collector_merchant_id_no_' . $customer_type ];
+				$country_code          = 'NO';
+				$this->store_id        = $collector_settings[ 'collector_merchant_id_no_' . $customer_type ];
+				$this->delivery_module = isset( $collector_settings['collector_delivery_module_no'] ) ? $collector_settings['collector_delivery_module_no'] : 'no';
 				break;
 			case 'DKK':
-				$country_code   = 'DK';
-				$this->store_id = $collector_settings[ 'collector_merchant_id_dk_' . $customer_type ];
+				$country_code          = 'DK';
+				$this->store_id        = $collector_settings[ 'collector_merchant_id_dk_' . $customer_type ];
+				$this->delivery_module = isset( $collector_settings['collector_delivery_module_dk'] ) ? $collector_settings['collector_delivery_module_dk'] : 'no';
 				break;
 			case 'EUR':
-				$country_code   = 'FI';
-				$this->store_id = $collector_settings[ 'collector_merchant_id_fi_' . $customer_type ];
+				$country_code          = 'FI';
+				$this->store_id        = $collector_settings[ 'collector_merchant_id_fi_' . $customer_type ];
+				$this->delivery_module = isset( $collector_settings['collector_delivery_module_fi'] ) ? $collector_settings['collector_delivery_module_fi'] : 'no';
 				break;
 			default:
-				$country_code   = 'SE';
-				$this->store_id = $collector_settings[ 'collector_merchant_id_se_' . $customer_type ];
+				$country_code          = 'SE';
+				$this->store_id        = $collector_settings[ 'collector_merchant_id_se_' . $customer_type ];
+				$this->delivery_module = isset( $collector_settings['collector_delivery_module_se'] ) ? $collector_settings['collector_delivery_module_se'] : 'no';
 				break;
 		}
-		$this->customer_type = $customer_type;
-		$this->country_code  = $country_code;
-		$this->terms_page    = esc_url( get_permalink( wc_get_page_id( 'terms' ) ) );
+		$this->customer_type                = $customer_type;
+		$this->country_code                 = $country_code;
+		$this->terms_page                   = esc_url( get_permalink( wc_get_page_id( 'terms' ) ) );
+		$this->activate_validation_callback = isset( $collector_settings['activate_validation_callback'] ) ? $collector_settings['activate_validation_callback'] : 'no';
 	}
 
 	private function get_request_args() {
@@ -101,11 +107,15 @@ class Collector_Checkout_Requests_Initialize_Checkout extends Collector_Checkout
 				),
 				get_home_url() . '/wc-api/Collector_Checkout_Gateway/'
 			),
-			'validationUri'    => $validation_uri,
 			'cart'             => $this->cart(),
 			'fees'             => $this->fees(),
 		);
-
+		if ( 'yes' === $this->activate_validation_callback ) {
+			$formatted_request_body['validationUri'] = $validation_uri;
+		}
+		if ( 'yes' === $this->delivery_module ) {
+			$formatted_request_body['profileName'] = 'Shipping';
+		}
 		return wp_json_encode( $formatted_request_body );
 	}
 }

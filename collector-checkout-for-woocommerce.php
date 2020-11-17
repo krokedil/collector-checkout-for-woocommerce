@@ -74,6 +74,8 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-confirmation.php';
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-sessions.php';
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-db.php';
+			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-shipping-method.php';
+			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-delivery-module.php';
 
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/includes/collector-checkout-for-woocommerce-functions.php';
 
@@ -162,6 +164,24 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 				}
 				$collector_settings       = get_option( 'woocommerce_collector_checkout_settings' );
 				$data_action_color_button = isset( $collector_settings['checkout_button_color'] ) && ! empty( $collector_settings['checkout_button_color'] ) ? "data-action-color='" . $collector_settings['checkout_button_color'] . "'" : '';
+
+				switch ( get_woocommerce_currency() ) {
+					case 'SEK':
+						$delivery_module = isset( $collector_settings['collector_delivery_module_se'] ) ? $collector_settings['collector_delivery_module_se'] : 'no';
+						break;
+					case 'NOK':
+						$delivery_module = isset( $collector_settings['collector_delivery_module_no'] ) ? $collector_settings['collector_delivery_module_no'] : 'no';
+						break;
+					case 'DKK':
+						$delivery_module = isset( $collector_settings['collector_delivery_module_dk'] ) ? $collector_settings['collector_delivery_module_dk'] : 'no';
+						break;
+					case 'EUR':
+						$delivery_module = isset( $collector_settings['collector_delivery_module_fi'] ) ? $collector_settings['collector_delivery_module_fi'] : 'no';
+						break;
+					default:
+						$delivery_module = isset( $collector_settings['collector_delivery_module_se'] ) ? $collector_settings['collector_delivery_module_se'] : 'no';
+						break;
+				}
 				wp_localize_script(
 					'checkout',
 					'wc_collector_checkout',
@@ -178,6 +198,7 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 						'data_action_color_button'      => $data_action_color_button,
 						'default_customer_type'         => wc_collector_get_default_customer_type(),
 						'selected_customer_type'        => wc_collector_get_selected_customer_type(),
+						'delivery_module'               => $delivery_module,
 						'collector_nonce'               => wp_create_nonce( 'collector_nonce' ),
 						'refresh_checkout_fragment_url' => WC_AJAX::get_endpoint( 'update_fragment' ),
 						'get_public_token_url'          => WC_AJAX::get_endpoint( 'get_public_token' ),
@@ -187,6 +208,7 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 						'customer_adress_updated_url'   => WC_AJAX::get_endpoint( 'customer_adress_updated' ),
 						'update_checkout_url'           => WC_AJAX::get_endpoint( 'update_checkout' ),
 						'checkout_error'                => WC_AJAX::get_endpoint( 'checkout_error' ),
+						'update_delivery_module_shipping_url' => WC_AJAX::get_endpoint( 'update_delivery_module_shipping' ),
 					)
 				);
 				wp_enqueue_script( 'checkout' );
