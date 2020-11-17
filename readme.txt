@@ -2,11 +2,11 @@
 Contributors: collectorbank, krokedil, NiklasHogefjord
 Tags: ecommerce, e-commerce, woocommerce, collector, checkout
 Requires at least: 4.7
-Tested up to: 5.4.1
+Tested up to: 5.5.3
 Requires PHP: 5.6
 Stable tag: trunk
-WC requires at least: 3.0.0
-WC tested up to: 4.0.1
+WC requires at least: 3.8.0
+WC tested up to: 4.7.0
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -39,6 +39,20 @@ For help setting up and configuring Collector Checkout for WooCommerce please re
 
 
 == CHANGELOG ==
+= 2020.11.17    - version 2.0.0 =
+* Feature       - Add support for Collector Delivery Module.
+* Feature       - Add validation callback logic (as an optional feature). Checks for coupon validation, products in stock, user logged in (if needed) and order amount.
+* Feature       - Add support for order management for collector_invoice payment method.
+* Tweak         - Add separate db table to store data for validation callback handling.
+* Tweak         - Use Action scheduler instead of WP cron for queuing notification callback handling.
+* Tweak         - Add WC checkout form fields to Collector Checkout template + add email address to form during customer address update callback.
+* Tweak         - Trigger change/blur after updating email address field. Adds support with MailChimp abandoned cart functionality.
+* Tweak         - Run payment_complete process in process_payment (instead of woocommerce_thankyou).
+* Tweak         - Use Collector paymentName instead of paymentMethod to store the payment mehtod used for the purchase.
+* Tweak         - Add settings link on plugin page.
+* Fix           - Updated depricated add_fee to be using add_item instead for invoice fee.
+* Fix           - Remove double trigger of set_order_status function (could cause double order notes regarding "Payment via Collector Checkout...").
+
 = 2020.05.05    - version 1.5.3 =
 * Fix           - Correct amount is refunded when some order rows is partially and some completely refunded.
 
