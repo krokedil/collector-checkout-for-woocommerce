@@ -69,15 +69,61 @@
                     },
                     success: function(response) {
                         console.log('customer_adress_updated ' + response);
-                        if( 'yes' == response.data ) {
+                        // All good trigger update_checkout event
+						set_customer_data( response.data );
+                        // if( 'yes' == response.data ) {
                         jQuery(document.body).trigger('update_checkout'); 
-                        }
+                        // }
                     }
                 }
             );
             window.collector.checkout.api.resume();
         }
-	});
+    });
+    
+    document.addEventListener("collectorCheckoutShippingUpdated", function(listener){
+        console.log('collectorCheckoutShippingUpdated');
+        console.log(listener);
+
+        if ( wc_collector_checkout.is_thank_you_page === 'no' ) {
+
+            $( '.woocommerce-checkout-review-order-table' ).block({
+                message: null,
+                overlayCSS: {
+                    background: '#fff',
+                    opacity: 0.6
+                }
+            });
+
+            window.collector.checkout.api.suspend();
+            $.ajax(
+                wc_collector_checkout.update_delivery_module_shipping_url,
+                {
+                    type: 'POST',
+                    dataType: 'json',
+                    data: {
+                        action  : 'update_delivery_module_shipping',
+                        data : listener.detail,
+                        nonce: wc_collector_checkout.collector_nonce,
+                    },
+                    complete: function( response ) {
+                        console.log('update_delivery_module_shipping done');
+                        var currentCollectorShippingMethod = document.querySelector('[id*="collector_delivery_module"]');
+                        console.log('test');
+                        console.log(currentCollectorShippingMethod);
+                        
+                        if( currentCollectorShippingMethod.id ) {
+                            $( '#shipping_method #' + currentCollectorShippingMethod.id ).prop( 'checked', true );
+                            // $( 'body' ).trigger( 'collector_shipping_option_changed', [ data ]);
+                            $( 'body' ).trigger( 'update_checkout' );
+                        }
+                        $( '.woocommerce-checkout-review-order-table' ).unblock();
+                    }
+                }
+            );
+            window.collector.checkout.api.resume();
+        }
+    });
 	
 	// Customer change B2B / B2C
 	$(document).on('click', '.collector-checkout-tabs li',function() {
@@ -107,6 +153,8 @@
             console.log('Updated checkout event');
             //$('#place_order').remove();
         }
+        // Display shipping price if Delivery module is active.
+        maybeDisplayShippingPrice();
     });
     // Change from Collector Checkout payment method
     $(document).on( 'click', '#collector_change_payment_method', function () {
@@ -298,6 +346,58 @@
                     window.location.href = data.data.redirect_url;
                 }
             });
+        }
+    }
+
+    function set_customer_data( data ) {
+        console.log( data );
+        if (  null !== data.billing_country ) {
+            // Billing fields.
+            $( '#billing_postcode' ).val( ( ( data.billing_postcode ) ? data.billing_postcode : '' ) );
+            $( '#billing_country' ).val( ( ( data.billing_country ) ? data.billing_country.toUpperCase() : '' ) );
+            $( '#billing_email' ).val( ( ( data.billing_email ) ? data.billing_email : '' ) );
+        }
+        
+        if ( null !== data.shipping_country ) {
+            $( '#ship-to-different-address-checkbox' ).prop( 'checked', true);
+
+            // Shipping fields.
+            $( '#shipping_postcode' ).val( ( ( data.shipping_postcode ) ? data.shipping_postcode : '' ) );
+            $( '#shipping_country' ).val( ( ( data.shipping_country ) ? data.shipping_country.toUpperCase() : '' ) );
+        }
+
+        // Trigger changes.
+        $('#billing_email').change();
+        $('#billing_email').blur();
+    }
+
+    // Display Shipping Price in order review if Display shipping methods in iframe settings is active.
+    function maybeDisplayShippingPrice() {
+        // Check if we already have set the price. If we have, return.
+        if( $('.collector-shipping').length ) {
+            return;
+        }
+
+        var paymentMethod = $("input[name='payment_method']:checked").val()
+        
+        if ( 'collector_checkout' === paymentMethod && 'yes' === wc_collector_checkout.delivery_module && 'no' === wc_collector_checkout.is_collector_confirmation ) {
+            if ( $( '#shipping_method input[type=\'radio\']' ).length ) {
+                // Multiple shipping options available.
+                $( '#shipping_method input[type=\'radio\']:checked' ).each( function() {
+                    var idVal = $( this ).attr( 'id' );
+                    var shippingPrice = $( 'label[for=\'' + idVal + '\'] .amount' ).text();
+                    console.log(shippingPrice);
+                    $( '.woocommerce-shipping-totals td' ).append( shippingPrice );
+                    $( '.woocommerce-shipping-totals ul' ).hide();
+                    $( '.woocommerce-shipping-totals td' ).addClass( 'collector-shipping' );
+                });
+            } else {
+                // Only one shipping option available.
+                var idVal = $( '#shipping_method input[name=\'shipping_method[0]\']' ).attr( 'id' );
+                var shippingPrice = $( 'label[for=\'' + idVal + '\'] .amount' ).text();
+                $( '.woocommerce-shipping-totals td' ).html( shippingPrice );
+                $( '.woocommerce-shipping-totals td' ).addClass( 'collector-shipping' );
+            }
         }
     }
     

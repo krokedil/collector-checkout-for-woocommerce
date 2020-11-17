@@ -8,14 +8,14 @@
  * Plugin Name:     Collector Checkout for WooCommerce
  * Plugin URI:      https://krokedil.se/collector/
  * Description:     Extends WooCommerce. Provides a <a href="https://www.collector.se/" target="_blank">Collector Checkout</a> checkout for WooCommerce.
- * Version:         1.5.3
+ * Version:         2.0.0
  * Author:          Krokedil
  * Author URI:      https://krokedil.se/
  * Text Domain:     collector-checkout-for-woocommerce
  * Domain Path:     /languages
  *
- * WC requires at least: 3.0.0
- * WC tested up to: 4.0.1
+ * WC requires at least: 3.8.0
+ * WC tested up to: 4.7.0
  *
  * Copyright:       © 2017-2020 Krokedil.
  * License:         GNU General Public License v3.0
@@ -28,7 +28,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 define( 'COLLECTOR_BANK_PLUGIN_DIR', untrailingslashit( plugin_dir_path( __FILE__ ) ) );
 define( 'COLLECTOR_BANK_PLUGIN_URL', untrailingslashit( plugin_dir_url( __FILE__ ) ) );
-define( 'COLLECTOR_BANK_VERSION', '1.5.3' );
+define( 'COLLECTOR_BANK_VERSION', '2.0.0' );
+define( 'COLLECTOR_DB_VERSION', '1' );
 
 if ( ! class_exists( 'Collector_Checkout' ) ) {
 	class Collector_Checkout {
@@ -44,6 +45,13 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 
 			// CSS for settings page
 			add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_css' ) );
+
+			// Maybe create Collector db table.
+			add_action( 'init', array( $this, 'collector_maybe_create_db_table' ) );
+			// Maybe schedule action.
+			add_action( 'init', array( $this, 'collector_maybe_schedule_action' ) );
+			// Clean Collector db.
+			add_action( 'collector_clean_db', array( $this, 'collector_clean_db_callback' ) );
 
 		}
 
@@ -64,6 +72,10 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-templates.php';
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-gdpr.php';
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-confirmation.php';
+			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-sessions.php';
+			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-db.php';
+			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-shipping-method.php';
+			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-delivery-module.php';
 
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/includes/collector-checkout-for-woocommerce-functions.php';
 
@@ -101,6 +113,8 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 
 			// Translations
 			load_plugin_textdomain( 'collector-checkout-for-woocommerce', false, plugin_basename( dirname( __FILE__ ) ) . '/languages' );
+
+			add_filter( 'plugin_action_links_' . plugin_basename( __FILE__ ), array( $this, add_action_links ) );
 		}
 
 		public function load_scripts() {
@@ -152,6 +166,24 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 				}
 				$collector_settings       = get_option( 'woocommerce_collector_checkout_settings' );
 				$data_action_color_button = isset( $collector_settings['checkout_button_color'] ) && ! empty( $collector_settings['checkout_button_color'] ) ? "data-action-color='" . $collector_settings['checkout_button_color'] . "'" : '';
+
+				switch ( get_woocommerce_currency() ) {
+					case 'SEK':
+						$delivery_module = isset( $collector_settings['collector_delivery_module_se'] ) ? $collector_settings['collector_delivery_module_se'] : 'no';
+						break;
+					case 'NOK':
+						$delivery_module = isset( $collector_settings['collector_delivery_module_no'] ) ? $collector_settings['collector_delivery_module_no'] : 'no';
+						break;
+					case 'DKK':
+						$delivery_module = isset( $collector_settings['collector_delivery_module_dk'] ) ? $collector_settings['collector_delivery_module_dk'] : 'no';
+						break;
+					case 'EUR':
+						$delivery_module = isset( $collector_settings['collector_delivery_module_fi'] ) ? $collector_settings['collector_delivery_module_fi'] : 'no';
+						break;
+					default:
+						$delivery_module = isset( $collector_settings['collector_delivery_module_se'] ) ? $collector_settings['collector_delivery_module_se'] : 'no';
+						break;
+				}
 				wp_localize_script(
 					'checkout',
 					'wc_collector_checkout',
@@ -168,6 +200,7 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 						'data_action_color_button'      => $data_action_color_button,
 						'default_customer_type'         => wc_collector_get_default_customer_type(),
 						'selected_customer_type'        => wc_collector_get_selected_customer_type(),
+						'delivery_module'               => $delivery_module,
 						'collector_nonce'               => wp_create_nonce( 'collector_nonce' ),
 						'refresh_checkout_fragment_url' => WC_AJAX::get_endpoint( 'update_fragment' ),
 						'get_public_token_url'          => WC_AJAX::get_endpoint( 'get_public_token' ),
@@ -177,6 +210,7 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 						'customer_adress_updated_url'   => WC_AJAX::get_endpoint( 'customer_adress_updated' ),
 						'update_checkout_url'           => WC_AJAX::get_endpoint( 'update_checkout' ),
 						'checkout_error'                => WC_AJAX::get_endpoint( 'checkout_error' ),
+						'update_delivery_module_shipping_url' => WC_AJAX::get_endpoint( 'update_delivery_module_shipping' ),
 					)
 				);
 				wp_enqueue_script( 'checkout' );
@@ -233,6 +267,46 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 			$methods[] = 'Collector_Checkout_Gateway';
 
 			return $methods;
+		}
+
+
+		public function add_action_links( $links ) {
+			$settings_link = '<a href="admin.php?page=wc-settings&tab=checkout&section=collector_checkout">Settings</a>';
+			array_unshift( $links, $settings_link );
+			return $links;
+		}
+
+		/**
+		 * Maybe create collector database table.
+		 *
+		 * @return void
+		 */
+		public function collector_maybe_create_db_table() {
+			$current_db_version = get_option( 'collector_db_version' );
+			if ( $current_db_version < COLLECTOR_DB_VERSION ) {
+				Collector_Checkout_DB::setup_table();
+			}
+		}
+
+		/**
+		 * Maybe schedule action.
+		 *
+		 * @return void
+		 */
+		public function collector_maybe_schedule_action() {
+			if ( false === as_next_scheduled_action( 'collector_clean_db' ) ) {
+				as_schedule_recurring_action( strtotime( 'midnight tonight' ), DAY_IN_SECONDS, 'collector_clean_db' );
+			}
+		}
+
+		/**
+		 * Clean database of one week old data entries.
+		 *
+		 * @return void
+		 */
+		public function collector_clean_db_callback() {
+			$current_date = date( 'Y-m-d H:i:s', time() );
+			Collector_Checkout_DB::delete_old_data_entry( $current_date );
 		}
 	}
 }

@@ -16,14 +16,15 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 	 */
 	public static function add_ajax_events() {
 		$ajax_events = array(
-			'get_public_token'        => true,
-			'update_checkout'         => true,
-			'add_customer_order_note' => true,
-			'get_checkout_thank_you'  => true,
-			'get_customer_data'       => true,
-			'customer_adress_updated' => true,
-			'update_fragment'         => true,
-			'checkout_error'          => true,
+			'get_public_token'                => true,
+			'update_checkout'                 => true,
+			'add_customer_order_note'         => true,
+			'get_checkout_thank_you'          => true,
+			'get_customer_data'               => true,
+			'customer_adress_updated'         => true,
+			'update_fragment'                 => true,
+			'checkout_error'                  => true,
+			'update_delivery_module_shipping' => true,
 		);
 		foreach ( $ajax_events as $ajax_event => $nopriv ) {
 			add_action( 'wp_ajax_woocommerce_' . $ajax_event, array( __CLASS__, $ajax_event ) );
@@ -132,6 +133,17 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 			wp_die();
 		}
 
+		// Update database session id.
+		$collector_checkout_sessions = new Collector_Checkout_Sessions();
+		$collector_data              = array(
+			'session_id' => $collector_checkout_sessions->get_session_id(),
+		);
+		$args                        = array(
+			'private_id' => WC()->session->get( 'collector_private_id' ),
+			'data'       => $collector_data,
+		);
+		$result                      = Collector_Checkout_DB::update_data( $args );
+
 		wp_send_json_success();
 		wp_die();
 	}
@@ -150,43 +162,88 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 		$update_needed = 'no';
 
 		// Get customer data from Collector
-		$private_id    = WC()->session->get( 'collector_private_id' );
-		$customer_type = WC()->session->get( 'collector_customer_type' );
-		$customer_data = new Collector_Checkout_Requests_Get_Checkout_Information( $private_id, $customer_type );
-		$customer_data = $customer_data->request();
-		$customer_data = json_decode( $customer_data );
-		$country       = $customer_data->data->countryCode;
+		$private_id      = WC()->session->get( 'collector_private_id' );
+		$customer_type   = WC()->session->get( 'collector_customer_type' );
+		$collector_order = new Collector_Checkout_Requests_Get_Checkout_Information( $private_id, $customer_type );
+		$collector_order = $collector_order->request();
+		$collector_order = json_decode( $collector_order );
 
-		if ( 'BusinessCustomer' == $customer_data->data->customerType ) {
-			$billing_postcode  = $customer_data->data->businessCustomer->invoiceAddress->postalCode;
-			$shipping_postcode = $customer_data->data->businessCustomer->deliveryAddress->postalCode;
+		$customer_data                     = array();
+		$customer_data['billing_country']  = $collector_order->data->countryCode;
+		$customer_data['shipping_country'] = $collector_order->data->countryCode;
+		$customer_data['billing_email']    = $collector_order->data->customer->email;
+
+		if ( 'BusinessCustomer' == $collector_order->data->customerType ) {
+			$customer_data['billing_postcode']  = $collector_order->data->businessCustomer->invoiceAddress->postalCode;
+			$customer_data['shipping_postcode'] = $collector_order->data->businessCustomer->deliveryAddress->postalCode;
 		} else {
-			$billing_postcode  = $customer_data->data->customer->billingAddress->postalCode;
-			$shipping_postcode = $customer_data->data->customer->deliveryAddress->postalCode;
+			$customer_data['billing_postcode']  = $collector_order->data->customer->billingAddress->postalCode;
+			$customer_data['shipping_postcode'] = $collector_order->data->customer->deliveryAddress->postalCode;
 		}
 
-		if ( $country ) {
+		if ( $customer_data['billing_country'] ) {
 
 			// If country is changed then we need to trigger an cart update in the Collector Checkout
-			if ( WC()->customer->get_billing_country() !== $country ) {
+			if ( WC()->customer->get_billing_country() !== $customer_data['billing_country'] ) {
 				$update_needed = 'yes';
 			}
 
 			// If country is changed then we need to trigger an cart update in the Collector Checkout
-			if ( WC()->customer->get_shipping_postcode() !== $shipping_postcode ) {
+			if ( WC()->customer->get_shipping_postcode() !== $customer_data['shipping_postcode'] ) {
 				$update_needed = 'yes';
 			}
-			// Set customer data in Woo
-			WC()->customer->set_billing_country( $country );
-			WC()->customer->set_shipping_country( $country );
-			WC()->customer->set_billing_postcode( $billing_postcode );
-			WC()->customer->set_shipping_postcode( $shipping_postcode );
+			// Set customer data in Woo.
+			WC()->customer->set_billing_country( $customer_data['billing_country'] );
+			WC()->customer->set_shipping_country( $customer_data['shipping_country'] );
+			WC()->customer->set_billing_postcode( $customer_data['billing_postcode'] );
+			WC()->customer->set_shipping_postcode( $customer_data['shipping_postcode'] );
 			WC()->customer->save();
 			WC()->cart->calculate_totals();
 
 		}
 
-		wp_send_json_success( $update_needed );
+		wp_send_json_success( $customer_data );
+		wp_die();
+	}
+
+	/**
+	 * Collector Delivery Module shipping method update - triggered when collectorCheckoutShippingUpdated event is fired
+	 */
+	public static function update_delivery_module_shipping() {
+
+		if ( ! wp_verify_nonce( $_REQUEST['nonce'], 'collector_nonce' ) ) {
+			exit( 'Nonce can not be verified.' );
+		}
+
+		wc_maybe_define_constant( 'WOOCOMMERCE_CHECKOUT', true );
+
+		$private_id      = WC()->session->get( 'collector_private_id' );
+		$customer_type   = WC()->session->get( 'collector_customer_type' );
+		$collector_order = new Collector_Checkout_Requests_Get_Checkout_Information( $private_id, $customer_type );
+		$collector_order = $collector_order->request();
+		$collector_order = json_decode( $collector_order );
+		$shipping_title  = $collector_order->data->fees->shipping->description;
+		$shipping_id     = $collector_order->data->fees->shipping->id;
+		$shipping_price  = $collector_order->data->fees->shipping->unitPrice;
+		$shipping_vat    = $collector_order->data->fees->shipping->vat;
+
+		$shipping_data = array(
+			'label'        => $label,
+			'shipping_id'  => $shipping_id,
+			'cost'         => $cost,
+			'shipping_vat' => $shipping_vat,
+		);
+		WC()->session->set( 'collector_delivery_module_data', $shipping_data );
+
+		WC()->cart->calculate_shipping();
+		WC()->cart->calculate_fees();
+		WC()->cart->calculate_totals();
+
+		$data = array(
+			'shipping_title' => $shipping_title,
+			'shipping_price' => $shipping_price,
+		);
+		wp_send_json_success( $data );
 		wp_die();
 	}
 
@@ -299,7 +356,8 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 				array(
 					'purchase-status' => 'not-completed',
 					'public-token'    => sanitize_text_field( $_POST['public_token'] ),
-				), wc_get_endpoint_url( 'order-received', '', get_permalink( wc_get_page_id( 'checkout' ) ) )
+				),
+				wc_get_endpoint_url( 'order-received', '', get_permalink( wc_get_page_id( 'checkout' ) ) )
 			);
 			$return['redirect_url'] = $url;
 			Collector_Checkout::log( 'Payment complete triggered for private id ' . $private_id . ' but status is not PurchaseCompleted in Collectors system. Current status: ' . var_export( $decoded_json->data->status, true ) . '. Redirecting customer to simplified thankyou page.' );
