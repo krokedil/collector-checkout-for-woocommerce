@@ -68,18 +68,18 @@ class Collector_Checkout_SOAP_Requests_Cancel_Invoice {
 		} catch ( SoapFault $e ) {
 			$request = $e->getMessage();
 			$order->update_status( $order->get_status() );
-			$order->add_order_note( sprintf( __( 'Order failed to cancel with Collector Bank - ' . wp_json_encode( $request ), 'collector-checkout-for-woocommerce' ) ) );
+			$order->add_order_note( sprintf( __( 'X 1 Order failed to cancel with Collector Bank - ' . wp_json_encode( $request ), 'collector-checkout-for-woocommerce' ) ) );
 			$this->log( 'Order failed to cancel with Collector Bank. Request response: ' . var_export( $e, true ) );
 			$this->log( 'Cancel order headers: ' . var_export( $headers, true ) );
 			$this->log( 'Cancel order args: ' . var_export( $args, true ) );
 		}
 
-		if ( isset( $request->CorrelationId ) || $request->CorrelationId == null ) {
+		if ( property_exists( $request, 'CorrelationId' ) && $request->CorrelationId == null ) {
 			$order->add_order_note( sprintf( __( 'Order canceled with Collector Bank', 'collector-checkout-for-woocommerce' ) ) );
 			update_post_meta( $order_id, '_collector_order_cancelled', time() );
 		} else {
 			$order->update_status( $order->get_status() );
-			$order->add_order_note( sprintf( __( 'Order failed to cancel with Collector Bank - ' . wp_json_encode( $request ), 'collector-checkout-for-woocommerce' ) ) );
+			$order->add_order_note( sprintf( __( 'X 2 Order failed to cancel with Collector Bank - ' . wp_json_encode( $request ), 'collector-checkout-for-woocommerce' ) ) );
 			$this->log( 'Order failed to cancel with Collector Bank. Request response: ' . var_export( $e, true ) );
 			$this->log( 'Cancel order headers: ' . var_export( $headers, true ) );
 			$this->log( 'Cancel order args: ' . var_export( $args, true ) );
