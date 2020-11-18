@@ -114,7 +114,7 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 			// Translations
 			load_plugin_textdomain( 'collector-checkout-for-woocommerce', false, plugin_basename( dirname( __FILE__ ) ) . '/languages' );
 
-			add_filter( 'plugin_action_links_' . plugin_basename( __FILE__ ), array( $this, add_action_links ) );
+			add_filter( 'plugin_action_links_' . plugin_basename( __FILE__ ), array( $this, 'add_action_links' ) );
 		}
 
 		public function load_scripts() {
