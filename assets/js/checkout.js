@@ -1,6 +1,9 @@
 (function ($) {
     'use strict';
     var checkout_initiated = wc_collector_checkout.checkout_initiated;
+
+    // True or false if we need to update the Collector order. Set to true on initial page load.
+	var collectorUpdateNeeded = true;
     
     function get_new_checkout_iframe( customer ) {
 	    console.log( customer );
@@ -108,11 +111,12 @@
                     },
                     complete: function( response ) {
                         console.log('update_delivery_module_shipping done');
+                        collectorUpdateNeeded = false;
                         var currentCollectorShippingMethod = document.querySelector('[id*="collector_delivery_module"]');
-                        console.log('test');
+                        //console.log('test');
                         console.log(currentCollectorShippingMethod);
                         
-                        if( currentCollectorShippingMethod.id ) {
+                        if( currentCollectorShippingMethod ) {
                             $( '#shipping_method #' + currentCollectorShippingMethod.id ).prop( 'checked', true );
                             // $( 'body' ).trigger( 'collector_shipping_option_changed', [ data ]);
                             $( 'body' ).trigger( 'update_checkout' );
@@ -240,6 +244,12 @@
 
     function update_checkout() {
         if( checkout_initiated == 'yes' && wc_collector_checkout.payment_successful == 0 ) {
+
+            if( ! collectorUpdateNeeded ) {
+                collectorUpdateNeeded = true;
+                return;
+            }
+
             console.log( 'payment_successful' );
             console.log( wc_collector_checkout.payment_successful );
             //window.collector.checkout.api.suspend();
@@ -386,7 +396,6 @@
                 $( '#shipping_method input[type=\'radio\']:checked' ).each( function() {
                     var idVal = $( this ).attr( 'id' );
                     var shippingPrice = $( 'label[for=\'' + idVal + '\'] .amount' ).text();
-                    console.log(shippingPrice);
                     $( '.woocommerce-shipping-totals td' ).append( shippingPrice );
                     $( '.woocommerce-shipping-totals ul' ).hide();
                     $( '.woocommerce-shipping-totals td' ).addClass( 'collector-shipping' );
