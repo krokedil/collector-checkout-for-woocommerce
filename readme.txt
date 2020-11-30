@@ -39,7 +39,7 @@ For help setting up and configuring Collector Checkout for WooCommerce please re
 
 
 == CHANGELOG ==
-= 2020.11.17    - version 2.0.2 =
+= 2020.11.30    - version 2.0.2 =
 * Tweak         - Add separate cart shipping template if Delivery module is active. To avoid displaying fallback/standard Woo shipping methods.
 * Fix           - Reduce the amount of update requests sent to Collector when using Delivery module.
 * Fix           - Fix validation callback error that could happen when switching between B2B & B2C checkout.
