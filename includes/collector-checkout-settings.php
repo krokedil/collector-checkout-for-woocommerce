@@ -53,12 +53,6 @@ $settings = array(
 		'title' => __( 'Sweden', 'collector-checkout-for-woocommerce' ),
 		'type'  => 'title',
 	),
-	'collector_delivery_module_se'    => array(
-		'title'   => __( 'Delivery module Sweden', 'collector-checkout-for-woocommerce' ),
-		'type'    => 'checkbox',
-		'label'   => __( 'Activate Delivery module for Sweden', 'collector-checkout-for-woocommerce' ),
-		'default' => 'no',
-	),
 	'collector_merchant_id_se_b2c'    => array(
 		'title'       => __( 'Merchant ID Sweden B2C', 'collector-checkout-for-woocommerce' ),
 		'type'        => 'text',
@@ -73,15 +67,15 @@ $settings = array(
 		'default'     => '',
 		'desc_tip'    => true,
 	),
+	'collector_delivery_module_se'    => array(
+		'title'   => __( 'Delivery module Sweden', 'collector-checkout-for-woocommerce' ),
+		'type'    => 'checkbox',
+		'label'   => __( 'Activate Delivery module for Sweden', 'collector-checkout-for-woocommerce' ),
+		'default' => 'no',
+	),
 	'no_settings_title'               => array(
 		'title' => __( 'Norway', 'collector-checkout-for-woocommerce' ),
 		'type'  => 'title',
-	),
-	'collector_delivery_module_no'    => array(
-		'title'   => __( 'Delivery module Norway', 'collector-checkout-for-woocommerce' ),
-		'type'    => 'checkbox',
-		'label'   => __( 'Activate Delivery module for Norway', 'collector-checkout-for-woocommerce' ),
-		'default' => 'no',
 	),
 	'collector_merchant_id_no_b2c'    => array(
 		'title'       => __( 'Merchant ID Norway B2C', 'collector-checkout-for-woocommerce' ),
@@ -97,15 +91,15 @@ $settings = array(
 		'default'     => '',
 		'desc_tip'    => true,
 	),
+	'collector_delivery_module_no'    => array(
+		'title'   => __( 'Delivery module Norway', 'collector-checkout-for-woocommerce' ),
+		'type'    => 'checkbox',
+		'label'   => __( 'Activate Delivery module for Norway', 'collector-checkout-for-woocommerce' ),
+		'default' => 'no',
+	),
 	'fi_settings_title'               => array(
 		'title' => __( 'Finland', 'collector-checkout-for-woocommerce' ),
 		'type'  => 'title',
-	),
-	'collector_delivery_module_fi'    => array(
-		'title'   => __( 'Delivery module Finland', 'collector-checkout-for-woocommerce' ),
-		'type'    => 'checkbox',
-		'label'   => __( 'Activate Delivery module for Finland', 'collector-checkout-for-woocommerce' ),
-		'default' => 'no',
 	),
 	'collector_merchant_id_fi_b2c'    => array(
 		'title'       => __( 'Merchant ID Finland B2C', 'collector-checkout-for-woocommerce' ),
@@ -121,15 +115,15 @@ $settings = array(
 		'default'     => '',
 		'desc_tip'    => true,
 	),
+	'collector_delivery_module_fi'    => array(
+		'title'   => __( 'Delivery module Finland', 'collector-checkout-for-woocommerce' ),
+		'type'    => 'checkbox',
+		'label'   => __( 'Activate Delivery module for Finland', 'collector-checkout-for-woocommerce' ),
+		'default' => 'no',
+	),
 	'dk_settings_title'               => array(
 		'title' => __( 'Denmark', 'collector-checkout-for-woocommerce' ),
 		'type'  => 'title',
-	),
-	'collector_delivery_module_dk'    => array(
-		'title'   => __( 'Delivery module Denmark', 'collector-checkout-for-woocommerce' ),
-		'type'    => 'checkbox',
-		'label'   => __( 'Activate Delivery module for Denmark', 'collector-checkout-for-woocommerce' ),
-		'default' => 'no',
 	),
 	'collector_merchant_id_dk_b2c'    => array(
 		'title'       => __( 'Merchant ID Denmark B2C', 'collector-checkout-for-woocommerce' ),
@@ -137,6 +131,12 @@ $settings = array(
 		'description' => __( 'Enter your Collector Checkout Merchant ID for B2C purchases in Denmark', 'collector-checkout-for-woocommerce' ),
 		'default'     => '',
 		'desc_tip'    => true,
+	),
+	'collector_delivery_module_dk'    => array(
+		'title'   => __( 'Delivery module Denmark', 'collector-checkout-for-woocommerce' ),
+		'type'    => 'checkbox',
+		'label'   => __( 'Activate Delivery module for Denmark', 'collector-checkout-for-woocommerce' ),
+		'default' => 'no',
 	),
 	'checkout_settings_title'         => array(
 		'title' => __( 'Checkout settings', 'collector-checkout-for-woocommerce' ),
