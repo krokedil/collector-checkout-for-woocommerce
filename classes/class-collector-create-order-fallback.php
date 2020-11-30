@@ -99,9 +99,11 @@ class Collector_Create_Local_Order_Fallback {
 	public function add_customer_data_to_local_order( $order, $customer_type, $private_id ) {
 		$order_id = $order->get_id();
 
-		$customer_data_request          = new Collector_Checkout_Requests_Get_Checkout_Information( $private_id, $customer_type );
+		$response        = new Collector_Checkout_Requests_Get_Checkout_Information( $private_id, $customer_type );
+		$collector_order = json_decode( $response->request() );
+
 		$customer_data                  = array();
-		$customer_data['customer_data'] = json_decode( $customer_data_request->request() );
+		$customer_data['customer_data'] = $collector_order;
 		$formated_customer_data         = new Collector_Checkout_Ajax_Calls();
 		$formated_customer_data         = $formated_customer_data::verify_customer_data( $customer_data );
 
@@ -122,9 +124,19 @@ class Collector_Create_Local_Order_Fallback {
 		update_post_meta( $order_id, '_shipping_postcode', $formated_customer_data['shippingPostalCode'] );
 		update_post_meta( $order_id, '_shipping_country', $formated_customer_data['countryCode'] );
 
+		// Post meta.
 		update_post_meta( $order_id, '_created_via_collector_fallback', 'yes' );
 
+		update_post_meta( $order_id, '_collector_payment_method', $collector_order->data->purchase->paymentName );
+		update_post_meta( $order_id, '_collector_payment_id', $collector_order->data->purchase->purchaseIdentifier );
+		update_post_meta( $order_id, '_collector_customer_type', $customer_type );
+		update_post_meta( $order_id, '_collector_private_id', $private_id );
+		update_post_meta( $order_id, '_transaction_id', $collector_order->data->purchase->purchaseIdentifier );
+
 		$order->set_customer_id( apply_filters( 'woocommerce_checkout_customer_id', get_current_user_id() ) );
+
+		$public_token = WC()->session->get( 'collector_public_token' );
+		update_post_meta( $order_id, '_collector_public_token', $public_token );
 	}
 
 	public function calculate_order_totals( $order ) {
