@@ -6,7 +6,7 @@ Tested up to: 5.5.3
 Requires PHP: 5.6
 Stable tag: trunk
 WC requires at least: 3.8.0
-WC tested up to: 4.7.0
+WC tested up to: 4.7.1
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -39,6 +39,16 @@ For help setting up and configuring Collector Checkout for WooCommerce please re
 
 
 == CHANGELOG ==
+= 2020.11.30    - version 2.0.2 =
+* Tweak         - Add separate cart shipping template if Delivery module is active. To avoid displaying fallback/standard Woo shipping methods.
+* Fix           - Reduce the amount of update requests sent to Collector when using Delivery module.
+* Fix           - Fix validation callback error that could happen when switching between B2B & B2C checkout.
+* Fix           - Save Collector payment meta data correctly on order creation triggered during checkout_error event. Could cause duplicate orders in Woo.
+* Fix           - Tweak in order totals check (in callback from Collector to Woo) to avoid mismatch when there actually isn't one.
+
+= 2020.11.17    - version 2.0.1 =
+* Fix           - Fixed PHP warning in plugin_action_links filter.
+
 = 2020.11.17    - version 2.0.0 =
 * Feature       - Add support for Collector Delivery Module.
 * Feature       - Add validation callback logic (as an optional feature). Checks for coupon validation, products in stock, user logged in (if needed) and order amount.

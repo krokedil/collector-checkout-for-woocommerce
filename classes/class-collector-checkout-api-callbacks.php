@@ -508,8 +508,8 @@ class Collector_Api_Callbacks {
 	 */
 	public function check_order_totals( $order, $collector_order ) {
 		// Check order total and compare it with Woo
-		$woo_order_total       = intval( round( $order->get_total() ) );
-		$collector_order_total = $collector_order->data->order->totalAmount;
+		$woo_order_total       = intval( round( $order->get_total() * 100, 2 ) );
+		$collector_order_total = intval( round( $collector_order->data->order->totalAmount * 100, 2 ) );
 		if ( $woo_order_total > $collector_order_total && ( $woo_order_total - $collector_order_total ) > 3 ) {
 			$order->update_status( 'on-hold', sprintf( __( 'Order needs manual review. WooCommerce order total and Collector order total do not match. Collector order total: %s.', 'collector-checkout-for-woocommerce' ), $collector_order_total ) );
 			Collector_Checkout::log( 'Order total missmatch in order:' . $order->get_order_number() . '. Woo order total: ' . $woo_order_total . '. Collector order total: ' . $collector_order_total );

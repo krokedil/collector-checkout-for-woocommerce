@@ -38,6 +38,7 @@ class Collector_Delivery_Module {
 	public function __construct() {
 		add_action( 'woocommerce_checkout_update_order_review', array( $this, 'clear_shipping_and_recalculate' ) );
 		add_action( 'woocommerce_admin_order_data_after_shipping_address', array( $this, 'admin_order_meta' ), 10, 1 );
+		add_filter( 'wc_get_template', array( $this, 'override_shipping_template' ), 999, 2 );
 	}
 
 	/**
@@ -96,6 +97,38 @@ class Collector_Delivery_Module {
 			);
 		}
 
+	}
+
+	/**
+	 * Overrides the default cart shipping template.
+	 *
+	 * @param string $template The absolute template path.
+	 * @param string $template_name The name of the template.
+	 * @return string
+	 */
+	public function override_shipping_template( $template, $template_name ) {
+		// If its not the cart, return.
+		if ( ! is_cart() ) {
+			return $template;
+		}
+
+		// If its not the cart/cart-shipping.php file, return.
+		if ( 'cart/cart-shipping.php' !== $template_name ) {
+			return $template;
+		}
+
+		// If Delivery module is not used for the currency/country, return.
+		if ( 'yes' !== is_collector_delivery_module() ) {
+			return $template;
+		}
+
+		if ( locate_template( 'woocommerce/collector-cart-shipping.php' ) ) {
+			$template = locate_template( 'woocommerce/collector-cart-shipping.php' );
+		} else {
+			$template = COLLECTOR_BANK_PLUGIN_DIR . '/templates/collector-cart-shipping.php';
+		}
+
+		return $template;
 	}
 
 }

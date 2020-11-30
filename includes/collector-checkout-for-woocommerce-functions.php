@@ -232,3 +232,31 @@ function get_collector_data_from_db( $private_id ) {
 function remove_collector_db_row_data( $private_id ) {
 	Collector_Checkout_DB::delete_data_entry( $private_id );
 }
+
+/**
+ * Checking if Collector Delivery Module is active.
+ *
+ * @return boolean
+ */
+function is_collector_delivery_module( $currency = false ) {
+	$collector_settings = get_option( 'woocommerce_collector_checkout_settings' );
+	$currency           = ! false === $currency ? $currency : get_woocommerce_currency();
+	switch ( $currency ) {
+		case 'SEK':
+			$delivery_module = isset( $collector_settings['collector_delivery_module_se'] ) ? $collector_settings['collector_delivery_module_se'] : 'no';
+			break;
+		case 'NOK':
+			$delivery_module = isset( $collector_settings['collector_delivery_module_no'] ) ? $collector_settings['collector_delivery_module_no'] : 'no';
+			break;
+		case 'DKK':
+			$delivery_module = isset( $collector_settings['collector_delivery_module_dk'] ) ? $collector_settings['collector_delivery_module_dk'] : 'no';
+			break;
+		case 'EUR':
+			$delivery_module = isset( $collector_settings['collector_delivery_module_fi'] ) ? $collector_settings['collector_delivery_module_fi'] : 'no';
+			break;
+		default:
+			$delivery_module = 'no';
+			break;
+	}
+	return $delivery_module;
+}
