@@ -55,7 +55,7 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 
 		} else {
 
-			// Get a new public token from Collector
+			// Get a new public token from Collector.
 			$init_checkout = new Collector_Checkout_Requests_Initialize_Checkout( $customer_type );
 			$request       = $init_checkout->request();
 			$decode        = json_decode( $request );
@@ -73,11 +73,22 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 					'customer_type' => $customer_type,
 				);
 
-				// Set post metas so they can be used again later
+				// Set post metas so they can be used again later.
 				WC()->session->set( 'collector_public_token', $decode->data->publicToken );
 				WC()->session->set( 'collector_private_id', $decode->data->privateId );
 				WC()->session->set( 'collector_customer_type', $customer_type );
 				WC()->session->set( 'collector_currency', get_woocommerce_currency() );
+
+				// Save session ID and Private ID to DB.
+				$collector_checkout_sessions = new Collector_Checkout_Sessions();
+				$collector_data              = array(
+					'session_id' => $collector_checkout_sessions->get_session_id(),
+				);
+				$args                        = array(
+					'private_id' => $decode->data->privateId,
+					'data'       => $collector_data,
+				);
+				$result                      = Collector_Checkout_DB::create_data_entry( $args );
 
 				wp_send_json_success( $return );
 				wp_die();
