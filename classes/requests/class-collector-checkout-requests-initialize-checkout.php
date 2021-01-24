@@ -47,11 +47,11 @@ class Collector_Checkout_Requests_Initialize_Checkout extends Collector_Checkout
 		$this->activate_validation_callback = isset( $collector_settings['activate_validation_callback'] ) ? $collector_settings['activate_validation_callback'] : 'no';
 	}
 
-	private function get_request_args() {
+	private function get_request_args( $order_id ) {
 		$request_args = array(
 			'headers' => $this->request_header( $this->request_body(), $this->path ),
 			'timeout' => 10,
-			'body'    => $this->request_body(),
+			'body'    => $this->request_body( $order_id ),
 			'method'  => 'POST',
 		);
 		$this->log( 'Collector Init checkout request args: ' . stripslashes_deep( json_encode( $request_args ) ) );
@@ -59,9 +59,9 @@ class Collector_Checkout_Requests_Initialize_Checkout extends Collector_Checkout
 		return $request_args;
 	}
 
-	public function request() {
+	public function request( $order_id = null ) {
 		$request_url = $this->base_url . '/checkout';
-		$request     = wp_remote_request( $request_url, $this->get_request_args() );
+		$request     = wp_remote_request( $request_url, $this->get_request_args( $order_id ) );
 		if ( is_wp_error( $request ) ) {
 			$this->log( 'Collector init checkout request response ERROR: ' . stripslashes_deep( json_encode( $request->get_error_message() ) ) . ' (Request endpoint: ' . $request_url . ')' );
 		} elseif ( 200 !== $request['response']['code'] ) {
@@ -75,7 +75,7 @@ class Collector_Checkout_Requests_Initialize_Checkout extends Collector_Checkout
 		return $request;
 	}
 
-	protected function request_body() {
+	protected function request_body( $order_id ) {
 		// Set validation URI query args.
 		$validation_uri = add_query_arg(
 			array(
@@ -107,8 +107,8 @@ class Collector_Checkout_Requests_Initialize_Checkout extends Collector_Checkout
 				),
 				get_home_url() . '/wc-api/Collector_Checkout_Gateway/'
 			),
-			'cart'             => $this->cart(),
-			'fees'             => $this->fees(),
+			'cart'             => ( null === $order_id ) ? $this->cart() : CCO_WC()->order_items->get_order_lines( $order_id ),
+			'fees'             => ( null === $order_id ) ? $this->fees() : CCO_WC()->order_fees->get_order_fees( $order_id ),
 		);
 		if ( 'yes' === $this->activate_validation_callback ) {
 			$formatted_request_body['validationUri'] = $validation_uri;
