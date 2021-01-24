@@ -34,6 +34,47 @@ define( 'COLLECTOR_DB_VERSION', '1' );
 if ( ! class_exists( 'Collector_Checkout' ) ) {
 	class Collector_Checkout {
 
+		/**
+		 * The reference the *Singleton* instance of this class.
+		 *
+		 * @var $instance
+		 */
+		protected static $instance;
+
+
+		/**
+		 * Returns the *Singleton* instance of this class.
+		 *
+		 * @return self::$instance The *Singleton* instance.
+		 */
+		public static function get_instance() {
+			if ( null === self::$instance ) {
+				self::$instance = new self();
+			}
+			return self::$instance;
+		}
+
+		/**
+		 * Private clone method to prevent cloning of the instance of the
+		 * *Singleton* instance.
+		 *
+		 * @return void
+		 */
+		private function __clone() {
+			wc_doing_it_wrong( __FUNCTION__, __( 'Nope' ), '1.0' );
+		}
+
+		/**
+		 * Private unserialize method to prevent unserializing of the *Singleton*
+		 * instance.
+		 *
+		 * @return void
+		 */
+		private function __wakeup() {
+			wc_doing_it_wrong( __FUNCTION__, __( 'Nope' ), '1.0' );
+		}
+
+
 		public static $log = '';
 
 		public function __construct() {
@@ -105,6 +146,10 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/soap/class-collector-checkout-soap-requests-credit-payment.php';
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/soap/class-collector-checkout-soap-requests-adjust-invoice.php';
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/soap/class-collector-checkout-soap-requests-part-credit-invoice.php';
+
+			// Set variables for shorthand access to classes.
+			$this->order_items = new Collector_Checkout_Requests_Helper_Order();
+			$this->order_fees  = new Collector_Checkout_Requests_Helper_Order_Fees();
 
 			// Definitions
 			define( 'COLLECTOR_BANK_REST_LIVE', 'https://checkout-api.collector.se' );
@@ -310,8 +355,20 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 			Collector_Checkout_DB::delete_old_data_entry( $current_date );
 		}
 	}
+	Collector_Checkout::get_instance();
 }
-$collector_checkout = new Collector_Checkout();
+
+
+/**
+ * Main instance Collector_Checkout.
+ *
+ * Returns the main instance of Collector_Checkout.
+ *
+ * @return Collector_Checkout
+ */
+function CCO_WC() { // phpcs:ignore WordPress.NamingConventions.ValidFunctionName
+	return Collector_Checkout::get_instance();
+}
 
 function wc_collector_get_available_customer_types() {
 	$collector_settings = get_option( 'woocommerce_collector_checkout_settings' );
