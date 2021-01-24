@@ -12,7 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Class for processing order lines from a WooCommerce order.
  */
-class Collector_Checkout_Requests_Order {
+class Collector_Checkout_Requests_Helper_Order {
 
 	/**
 	 * Gets the order lines for the order.
