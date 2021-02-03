@@ -5,12 +5,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class Collector_Checkout_Requests {
 
-	static $log = '';
+	static $log      = '';
 	public $base_url = '';
 
 	public function __construct() {
 		$collector_settings = get_option( 'woocommerce_collector_checkout_settings' );
-		$test_mode = $collector_settings['test_mode'];
+		$test_mode          = $collector_settings['test_mode'];
 		if ( 'yes' === $test_mode ) {
 			$this->base_url = COLLECTOR_BANK_REST_TEST;
 		} else {
@@ -26,10 +26,11 @@ class Collector_Checkout_Requests {
 		$get_header = new Collector_Checkout_Requests_Header( $body, $path );
 		return $get_header->get();
 	}
-
-	protected function request_body() {
+	/*
+	protected function request_body( $order_id ) {
 		die( 'function Collector_Checkout_Requests::request_body() must be over-ridden in a sub-class.' );
 	}
+	*/
 
 	protected function cart() {
 		$collector_checkout_requests_cart = new Collector_Checkout_Requests_Cart();
