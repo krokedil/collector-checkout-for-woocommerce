@@ -32,12 +32,11 @@ class Collector_Checkout_Requests_Helper_Order_Fees {
 		}
 	}
 
-	public function get_order_fees() {
-		$fees = array();
-		if ( 'no' === $this->delivery_module ) {
-			$shipping         = $this->get_shipping();
-			$fees['shipping'] = $shipping;
-		}
+	public function get_order_fees( $order_id ) {
+		$order            = wc_get_order( $order_id );
+		$fees             = array();
+		$shipping         = $this->get_shipping( $order );
+		$fees['shipping'] = $shipping;
 
 		if ( $this->invoice_fee_id ) {
 			$_product = wc_get_product( $this->invoice_fee_id );
@@ -46,9 +45,7 @@ class Collector_Checkout_Requests_Helper_Order_Fees {
 				$fees['directinvoicenotification'] = $directinvoicenotification;
 			}
 		}
-
 		return $fees;
-
 	}
 
 	public function get_shipping( $order ) {
