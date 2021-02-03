@@ -49,7 +49,7 @@ class Collector_Checkout_Requests_Initialize_Checkout extends Collector_Checkout
 
 	private function get_request_args( $order_id ) {
 		$request_args = array(
-			'headers' => $this->request_header( $this->request_body(), $this->path ),
+			'headers' => $this->request_header( $this->request_body( $order_id ), $this->path ),
 			'timeout' => 10,
 			'body'    => $this->request_body( $order_id ),
 			'method'  => 'POST',
@@ -110,12 +110,17 @@ class Collector_Checkout_Requests_Initialize_Checkout extends Collector_Checkout
 			'cart'             => ( null === $order_id ) ? $this->cart() : CCO_WC()->order_items->get_order_lines( $order_id ),
 			'fees'             => ( null === $order_id ) ? $this->fees() : CCO_WC()->order_fees->get_order_fees( $order_id ),
 		);
-		if ( 'yes' === $this->activate_validation_callback ) {
-			$formatted_request_body['validationUri'] = $validation_uri;
+
+		// Only send validationUri & profileName if this is a purchase from the checkout.
+		if ( null === $order_id ) {
+			if ( 'yes' === $this->activate_validation_callback ) {
+				$formatted_request_body['validationUri'] = $validation_uri;
+			}
+			if ( 'yes' === $this->delivery_module ) {
+				$formatted_request_body['profileName'] = 'Shipping';
+			}
 		}
-		if ( 'yes' === $this->delivery_module ) {
-			$formatted_request_body['profileName'] = 'Shipping';
-		}
+
 		return wp_json_encode( $formatted_request_body );
 	}
 }

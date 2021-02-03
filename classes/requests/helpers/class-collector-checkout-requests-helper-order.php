@@ -32,7 +32,7 @@ class Collector_Checkout_Requests_Helper_Order {
 			array_push( $order_lines, self::get_order_line_fees( $fee ) );
 		}
 
-		return $order_lines;
+		return array( 'items' => $order_lines );
 
 	}
 
@@ -49,8 +49,8 @@ class Collector_Checkout_Requests_Helper_Order {
 			'id'          => self::get_article_number( $order_item ),
 			'description' => $order_item->get_name(),
 			'quantity'    => $order_item->get_quantity(),
-			'vat'         => intval( round( ( $order_item->get_total_tax() / $order_item->get_total() ) * 10000 ) ),
-			'unitPrice'   => intval( round( ( $order_item->get_total() / $order_item->get_quantity() ) * 100 ) ),
+			'vat'         => intval( round( ( $order_item->get_total_tax() / $order_item->get_total() ) * 100 ) ),
+			'unitPrice'   => intval( round( ( $order_item->get_total() / $order_item->get_quantity() ) ) ),
 		);
 	}
 
@@ -68,7 +68,7 @@ class Collector_Checkout_Requests_Helper_Order {
 			'id'          => 'fee|' . $order_fee->get_id(),
 			'description' => substr( $order_fee->get_name(), 0, 254 ),
 			'quantity'    => $order_fee->get_quantity(),
-			'unit_price'  => intval( round( ( $order_fee->get_total() / $order_fee->get_quantity() ) * 100 ) ),
+			'unit_price'  => intval( round( ( $order_fee->get_total() / $order_fee->get_quantity() ) ) ),
 			'vat'         => ( '0' !== $order->get_total_tax() ) ? self::get_order_line_tax_rate( $order, current( $order->get_items( 'fee' ) ) ) : 0,
 		);
 	}
