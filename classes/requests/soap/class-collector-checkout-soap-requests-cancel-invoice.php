@@ -74,7 +74,7 @@ class Collector_Checkout_SOAP_Requests_Cancel_Invoice {
 			$this->log( 'Cancel order args: ' . var_export( $args, true ) );
 		}
 
-		if ( isset( $request->CorrelationId ) || $request->CorrelationId == null ) {
+		if ( property_exists( $request, 'CorrelationId' ) && $request->CorrelationId == null ) {
 			$order->add_order_note( sprintf( __( 'Order canceled with Collector Bank', 'collector-checkout-for-woocommerce' ) ) );
 			update_post_meta( $order_id, '_collector_order_cancelled', time() );
 		} else {
