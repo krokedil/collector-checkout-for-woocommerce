@@ -1,4 +1,4 @@
-<?php
+<?php // phpcs:ignore
 /**
  * Collector Bank for WooCommerce
  *
@@ -23,7 +23,7 @@
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
-	exit; // Exit if accessed directly
+	exit; // Exit if accessed directly.
 }
 
 define( 'COLLECTOR_BANK_PLUGIN_DIR', untrailingslashit( plugin_dir_path( __FILE__ ) ) );
@@ -32,10 +32,54 @@ define( 'COLLECTOR_BANK_VERSION', '2.0.2' );
 define( 'COLLECTOR_DB_VERSION', '1' );
 
 if ( ! class_exists( 'Collector_Checkout' ) ) {
+	/**
+	 * Main class for the plugin.
+	 */
 	class Collector_Checkout {
 
 		public static $log = '';
 
+		/**
+		 * The reference the *Singleton* instance of this class.
+		 *
+		 * @var $instance
+		 */
+		protected static $instance;
+
+		/**
+		 * Returns the *Singleton* instance of this class.
+		 *
+		 * @return self::$instance The *Singleton* instance.
+		 */
+		public static function get_instance() {
+			if ( null === self::$instance ) {
+				self::$instance = new self();
+			}
+			return self::$instance;
+		}
+
+		/**
+		 * Public clone method to prevent cloning of the instance of the
+		 * *Singleton* instance.
+		 *
+		 * @return void
+		 */
+		public function __clone() {
+			wc_doing_it_wrong( __FUNCTION__, __( 'Nope' ), '1.0' );
+		}
+		/**
+		 * Public unserialize method to prevent unserializing of the *Singleton*
+		 * instance.
+		 *
+		 * @return void
+		 */
+		public function __wakeup() {
+			wc_doing_it_wrong( __FUNCTION__, __( 'Nope' ), '1.0' );
+		}
+
+		/**
+		 * Class constructor.
+		 */
 		public function __construct() {
 
 			// Initiate the gateway
@@ -55,6 +99,11 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 
 		}
 
+		/**
+		 * Initiates the plugin.
+		 *
+		 * @return void
+		 */
 		public function init() {
 
 			if ( ! class_exists( 'WC_Payment_Gateway' ) ) {
@@ -62,6 +111,7 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 			}
 
 			// Include the Classes
+			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-logger.php';
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-ajax-calls.php';
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-post-checkout.php';
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-admin-notices.php';
@@ -116,6 +166,9 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 			load_plugin_textdomain( 'collector-checkout-for-woocommerce', false, plugin_basename( dirname( __FILE__ ) ) . '/languages' );
 
 			add_filter( 'plugin_action_links_' . plugin_basename( __FILE__ ), array( $this, 'add_action_links' ) );
+
+			// Set class variables.
+			$this->logger = new Collector_Checkout_Logger();
 		}
 
 		public function load_scripts() {
@@ -217,7 +270,7 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 				wp_enqueue_script( 'checkout' );
 			}
 
-			// Load stylesheet for the checkout page
+			// Load stylesheet for the checkout page.
 			wp_register_style(
 				'collector_checkout',
 				plugin_dir_url( __FILE__ ) . 'assets/css/style.css',
@@ -310,8 +363,20 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 			Collector_Checkout_DB::delete_old_data_entry( $current_date );
 		}
 	}
+
+	Collector_Checkout::get_instance();
+
+	/**
+	 * Main instance Collector_Checkout.
+	 *
+	 * Returns the main instance of Collector_Checkout.
+	 *
+	 * @return Collector_Checkout
+	 */
+	function CCO_WC() { // phpcs:ignore
+		return Collector_Checkout::get_instance();
+	}
 }
-$collector_checkout = new Collector_Checkout();
 
 function wc_collector_get_available_customer_types() {
 	$collector_settings = get_option( 'woocommerce_collector_checkout_settings' );
