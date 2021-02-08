@@ -151,16 +151,22 @@ class Collector_Checkout_Confirmation {
 
 		<script>
 			var collector_text = '<?php echo __( 'Please wait while we process your order.', 'collector-checkout-for-woocommerce' ); ?>';
+			var submitted = false;
 			jQuery(function ($) {
 				$( 'body' ).append( $( '<div class="collector-modal"><div class="collector-modal-content">' + collector_text + '</div></div>' ) );
 				$('input#terms').prop('checked', true);
 				$('input#ship-to-different-address-checkbox').prop('checked', true);
 
 				$('.validate-required').removeClass('validate-required');
-				$('form.woocommerce-checkout').submit();
-				console.log('yes submitted');
-				$('form.woocommerce-checkout').addClass( 'processing' );
-				console.log('processing class added to form');
+				if( false === submitted ) {
+					$('form.woocommerce-checkout').submit();
+					console.log('yes submitted');
+					submitted = true;
+					$('form.woocommerce-checkout').addClass( 'processing' );
+					console.log('processing class added to form');
+				} else {
+					console.log('Already submitted');
+				}
 			});
 		</script>
 		<?php
