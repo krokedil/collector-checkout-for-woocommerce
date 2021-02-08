@@ -219,7 +219,8 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 		if ( ! empty( $private_id ) && ! empty( $customer_type ) ) {
 			$update_reference = new Collector_Checkout_Requests_Update_Reference( $order->get_order_number(), $private_id, $customer_type );
 			$update_reference->request();
-			Collector_Checkout::log( 'Update Collector order reference for order - ' . $order->get_order_number() );
+
+			CCO_WC()->logger->log( 'Update Collector order reference for order - ' . $order->get_order_number() );
 		}
 
 		$process_payment = $this->process_collector_payment_in_order( $order_id );
