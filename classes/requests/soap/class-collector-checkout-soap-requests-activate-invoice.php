@@ -85,14 +85,17 @@ class Collector_Checkout_SOAP_Requests_Activate_Invoice {
 
 			$order->add_order_note( sprintf( __( 'Order activated with Collector Bank.' . $due_date, 'collector-checkout-for-woocommerce' ) ) );
 			update_post_meta( $order_id, '_collector_order_activated', time() );
-			$this->log( 'Activate order response for order ID ' . $order_id . ': ' . var_export( $request, true ) );
+
+			$log = CCO_WC()->logger->format_log( '', 'SOAP', 'CCO Activate order for order ID ' . $order_id, $args, wp_json_encode( $request, true ), '' );
+			CCO_WC()->logger->log( $log );
 
 		} else {
 			$order->update_status( $order->get_status() );
 			$order->add_order_note( sprintf( __( 'Order failed to activate with Collector Bank - ' . var_export( $request, true ), 'collector-checkout-for-woocommerce' ) ) );
-			$this->log( 'Order failed to activate with Collector Bank. Request response: ' . var_export( $e, true ) );
+
+			$log = CCO_WC()->logger->format_log( '', 'SOAP', 'CCO FAILED Activate order for order ID ' . $order_id, $args, json_decode( $e, true ), '' );
+			CCO_WC()->logger->log( $log );
 			$this->log( 'Activate order headers: ' . var_export( $headers, true ) );
-			$this->log( 'Activate order args: ' . var_export( $args, true ) );
 		}
 	}
 

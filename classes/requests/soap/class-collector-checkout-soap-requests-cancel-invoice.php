@@ -77,6 +77,8 @@ class Collector_Checkout_SOAP_Requests_Cancel_Invoice {
 		if ( property_exists( $request, 'CorrelationId' ) && $request->CorrelationId == null ) {
 			$order->add_order_note( sprintf( __( 'Order canceled with Collector Bank', 'collector-checkout-for-woocommerce' ) ) );
 			update_post_meta( $order_id, '_collector_order_cancelled', time() );
+			$log = CCO_WC()->logger->format_log( '', 'SOAP', 'CCO Cancel order for order ID ' . $order_id, $args, json_decode( $request, true ), '' );
+			CCO_WC()->logger->log( $log );
 		} else {
 			$order->update_status( $order->get_status() );
 			$order->add_order_note( sprintf( __( 'Order failed to cancel with Collector Bank - ' . wp_json_encode( $request ), 'collector-checkout-for-woocommerce' ) ) );
