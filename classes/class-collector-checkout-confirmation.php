@@ -147,20 +147,27 @@ class Collector_Checkout_Confirmation {
 			wp_safe_redirect( $location );
 			exit;
 		}
+		CCO_WC()->logger->log( 'Confirmation page rendered for public token - ' . $collector_public_token );
 		?>
 
 		<script>
 			var collector_text = '<?php echo __( 'Please wait while we process your order.', 'collector-checkout-for-woocommerce' ); ?>';
+			var submitted = false;
 			jQuery(function ($) {
 				$( 'body' ).append( $( '<div class="collector-modal"><div class="collector-modal-content">' + collector_text + '</div></div>' ) );
 				$('input#terms').prop('checked', true);
 				$('input#ship-to-different-address-checkbox').prop('checked', true);
 
 				$('.validate-required').removeClass('validate-required');
-				$('form.woocommerce-checkout').submit();
-				console.log('yes submitted');
-				$('form.woocommerce-checkout').addClass( 'processing' );
-				console.log('processing class added to form');
+				if( false === submitted ) {
+					$('form.woocommerce-checkout').submit();
+					console.log('yes submitted');
+					submitted = true;
+					$('form.woocommerce-checkout').addClass( 'processing' );
+					console.log('processing class added to form');
+				} else {
+					console.log('Already submitted');
+				}
 			});
 		</script>
 		<?php
@@ -249,12 +256,12 @@ class Collector_Checkout_Confirmation {
 			$shipping_postal_code = isset( $customer_data['customer_data']->data->customer->deliveryAddress->postalCode ) ? $customer_data['customer_data']->data->customer->deliveryAddress->postalCode : $fallback_postcode;
 			$shipping_city        = isset( $customer_data['customer_data']->data->customer->deliveryAddress->city ) ? $customer_data['customer_data']->data->customer->deliveryAddress->city : '.';
 
-			$billing_first_name  = isset( $customer_data['customer_data']->data->customer->billingAddress->firstName ) ? $customer_data['customer_data']->data->customer->billingAddress->firstName : isset( $customer_data['customer_data']->data->customer->deliveryAddress->firstName ) ? $customer_data['customer_data']->data->customer->deliveryAddress->firstName : '.';
-			$billing_last_name   = isset( $customer_data['customer_data']->data->customer->billingAddress->lastName ) ? $customer_data['customer_data']->data->customer->billingAddress->lastName : isset( $customer_data['customer_data']->data->customer->deliveryAddress->lastName ) ? $customer_data['customer_data']->data->customer->deliveryAddress->lastName : '.';
-			$billing_address     = isset( $customer_data['customer_data']->data->customer->billingAddress->address ) ? $customer_data['customer_data']->data->customer->billingAddress->address : isset( $customer_data['customer_data']->data->customer->deliveryAddress->address ) ? $customer_data['customer_data']->data->customer->deliveryAddress->address : '.';
-			$billing_address2    = isset( $customer_data['customer_data']->data->customer->billingAddress->address2 ) ? $customer_data['customer_data']->data->customer->billingAddress->address2 : isset( $customer_data['customer_data']->data->customer->deliveryAddress->address2 ) ? $customer_data['customer_data']->data->customer->deliveryAddress->address2 : '';
-			$billing_postal_code = isset( $customer_data['customer_data']->data->customer->billingAddress->postalCode ) ? $customer_data['customer_data']->data->customer->billingAddress->postalCode : isset( $customer_data['customer_data']->data->customer->deliveryAddress->postalCode ) ? $customer_data['customer_data']->data->customer->deliveryAddress->postalCode : $fallback_postcode;
-			$billing_city        = isset( $customer_data['customer_data']->data->customer->billingAddress->city ) ? $customer_data['customer_data']->data->customer->billingAddress->city : isset( $customer_data['customer_data']->data->customer->deliveryAddress->city ) ? $customer_data['customer_data']->data->customer->deliveryAddress->city : '.';
+			$billing_first_name  = ( isset( $customer_data['customer_data']->data->customer->billingAddress->firstName ) ? $customer_data['customer_data']->data->customer->billingAddress->firstName : isset( $customer_data['customer_data']->data->customer->deliveryAddress->firstName ) ) ? $customer_data['customer_data']->data->customer->deliveryAddress->firstName : '.';
+			$billing_last_name   = ( isset( $customer_data['customer_data']->data->customer->billingAddress->lastName ) ? $customer_data['customer_data']->data->customer->billingAddress->lastName : isset( $customer_data['customer_data']->data->customer->deliveryAddress->lastName ) ) ? $customer_data['customer_data']->data->customer->deliveryAddress->lastName : '.';
+			$billing_address     = ( isset( $customer_data['customer_data']->data->customer->billingAddress->address ) ? $customer_data['customer_data']->data->customer->billingAddress->address : isset( $customer_data['customer_data']->data->customer->deliveryAddress->address ) ) ? $customer_data['customer_data']->data->customer->deliveryAddress->address : '.';
+			$billing_address2    = ( isset( $customer_data['customer_data']->data->customer->billingAddress->address2 ) ? $customer_data['customer_data']->data->customer->billingAddress->address2 : isset( $customer_data['customer_data']->data->customer->deliveryAddress->address2 ) ) ? $customer_data['customer_data']->data->customer->deliveryAddress->address2 : '';
+			$billing_postal_code = ( isset( $customer_data['customer_data']->data->customer->billingAddress->postalCode ) ? $customer_data['customer_data']->data->customer->billingAddress->postalCode : isset( $customer_data['customer_data']->data->customer->deliveryAddress->postalCode ) ) ? $customer_data['customer_data']->data->customer->deliveryAddress->postalCode : $fallback_postcode;
+			$billing_city        = ( isset( $customer_data['customer_data']->data->customer->billingAddress->city ) ? $customer_data['customer_data']->data->customer->billingAddress->city : isset( $customer_data['customer_data']->data->customer->deliveryAddress->city ) ) ? $customer_data['customer_data']->data->customer->deliveryAddress->city : '.';
 
 			$billing_company_name  = '';
 			$shipping_company_name = '';

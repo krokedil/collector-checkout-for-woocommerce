@@ -53,9 +53,12 @@ class Collector_Checkout_Requests_Update_Fees extends Collector_Checkout_Request
 
 	protected function request_body() {
 		$fees                   = $this->fees();
-		$formatted_request_body = array(
-			'directinvoicenotification' => $fees['directinvoicenotification'],
-		);
+		$formatted_request_body = array();
+
+		if ( isset( $fees['directinvoicenotification'] ) ) {
+			$formatted_request_body ['directinvoicenotification'] = $fees['directinvoicenotification'];
+		}
+
 		if ( isset( $fees['shipping'] ) && ! empty( $fees['shipping'] ) ) {
 			$formatted_request_body['shipping'] = $fees['shipping'];
 		}

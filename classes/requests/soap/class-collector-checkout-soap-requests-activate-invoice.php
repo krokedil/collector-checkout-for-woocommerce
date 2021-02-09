@@ -9,44 +9,44 @@ class Collector_Checkout_SOAP_Requests_Activate_Invoice {
 
 	public $endpoint = '';
 
-	public $username = '';
-	public $password = '';
-	public $store_id = '';
-	public $country_code = '';
+	public $username      = '';
+	public $password      = '';
+	public $store_id      = '';
+	public $country_code  = '';
 	public $customer_type = '';
 
 	public function __construct( $order_id ) {
 		$collector_settings = get_option( 'woocommerce_collector_checkout_settings' );
-		$this->username = $collector_settings['collector_username'];
-		$this->password = $collector_settings['collector_password'];
-		$order = wc_get_order( $order_id );
-		$currency = $order->get_currency();
-		$customer_type = get_post_meta( $order_id, '_collector_customer_type', true );
-		
+		$this->username     = $collector_settings['collector_username'];
+		$this->password     = $collector_settings['collector_password'];
+		$order              = wc_get_order( $order_id );
+		$currency           = $order->get_currency();
+		$customer_type      = get_post_meta( $order_id, '_collector_customer_type', true );
+
 		switch ( $currency ) {
-			case 'SEK' :
-				$country_code = 'SE';
-				$this->store_id = $collector_settings['collector_merchant_id_se_' . $customer_type];
+			case 'SEK':
+				$country_code   = 'SE';
+				$this->store_id = $collector_settings[ 'collector_merchant_id_se_' . $customer_type ];
 				break;
-			case 'NOK' :
-				$country_code = 'NO';
-				$this->store_id = $collector_settings['collector_merchant_id_no_' . $customer_type];
+			case 'NOK':
+				$country_code   = 'NO';
+				$this->store_id = $collector_settings[ 'collector_merchant_id_no_' . $customer_type ];
 				break;
-			case 'DKK' :
-				$country_code = 'DK';
-				$this->store_id = $collector_settings['collector_merchant_id_dk_' . $customer_type];
+			case 'DKK':
+				$country_code   = 'DK';
+				$this->store_id = $collector_settings[ 'collector_merchant_id_dk_' . $customer_type ];
 				break;
-			case 'EUR' :
-				$country_code = 'FI';
-				$this->store_id = $collector_settings['collector_merchant_id_fi_' . $customer_type];
+			case 'EUR':
+				$country_code   = 'FI';
+				$this->store_id = $collector_settings[ 'collector_merchant_id_fi_' . $customer_type ];
 				break;
-			default :
-				$country_code = 'SE';
-				$this->store_id = $collector_settings['collector_merchant_id_se_' . $customer_type];
+			default:
+				$country_code   = 'SE';
+				$this->store_id = $collector_settings[ 'collector_merchant_id_se_' . $customer_type ];
 				break;
 		}
 		$this->country_code = $country_code;
-		$test_mode = $collector_settings['test_mode'];
+		$test_mode          = $collector_settings['test_mode'];
 		if ( 'yes' === $test_mode ) {
 			$this->endpoint = COLLECTOR_BANK_SOAP_TEST;
 		} else {
@@ -55,24 +55,29 @@ class Collector_Checkout_SOAP_Requests_Activate_Invoice {
 	}
 
 	public function request( $order_id ) {
+
 		$soap = new SoapClient( $this->endpoint );
 		$args = $this->get_request_args( $order_id );
 
-		$headers = array();
+		$headers   = array();
 		$headers[] = new SoapHeader( 'http://schemas.ecommerce.collector.se/v30/InvoiceService', 'Username', $this->username );
 		$headers[] = new SoapHeader( 'http://schemas.ecommerce.collector.se/v30/InvoiceService', 'Password', $this->password );
 		$soap->__setSoapHeaders( $headers );
-		
+
+		$order    = wc_get_order( $order_id );
+		$due_date = '';
+
 		try {
 			$request = $soap->ActivateInvoice( $args );
-		}
-			catch( SoapFault $e ){
+		} catch ( SoapFault $e ) {
 			$request = $e->getMessage();
+			$order->set_status( 'on-hold' );
+			$order->save();
 		}
-		$order = wc_get_order( $order_id );
-		$due_date = '';
+
 		if ( isset( $request->TotalAmount ) ) {
-			if( isset( $request->InvoiceUrl ) ) {
+
+			if ( isset( $request->InvoiceUrl ) ) {
 				update_post_meta( $order_id, '_collector_invoice_url', wc_clean( $request->InvoiceUrl ) );
 				$due_date = date( get_option( 'date_format' ) . ' - ' . get_option( 'time_format' ), strtotime( $request->DueDate ) );
 				$due_date = ' ' . __( 'Invoice due date: ' . $due_date, 'collector-checkout-for-woocommerce' );
@@ -80,14 +85,17 @@ class Collector_Checkout_SOAP_Requests_Activate_Invoice {
 
 			$order->add_order_note( sprintf( __( 'Order activated with Collector Bank.' . $due_date, 'collector-checkout-for-woocommerce' ) ) );
 			update_post_meta( $order_id, '_collector_order_activated', time() );
-			$this->log( 'Activate order response for order ID ' . $order_id . ': ' . var_export( $request, true ) );
-			
+
+			$log = CCO_WC()->logger->format_log( '', 'SOAP', 'CCO Activate order for order ID ' . $order_id, $args, wp_json_encode( $request, true ), '' );
+			CCO_WC()->logger->log( $log );
+
 		} else {
 			$order->update_status( $order->get_status() );
-			$order->add_order_note( sprintf( __( 'Order failed to activate with Collector Bank - ' . var_export($request, true), 'collector-checkout-for-woocommerce' ) ) );
-			$this->log( 'Order failed to activate with Collector Bank. Request response: ' . var_export( $e, true ) );
+			$order->add_order_note( sprintf( __( 'Order failed to activate with Collector Bank - ' . var_export( $request, true ), 'collector-checkout-for-woocommerce' ) ) );
+
+			$log = CCO_WC()->logger->format_log( '', 'SOAP', 'CCO FAILED Activate order for order ID ' . $order_id, $args, json_decode( $e, true ), '' );
+			CCO_WC()->logger->log( $log );
 			$this->log( 'Activate order headers: ' . var_export( $headers, true ) );
-			$this->log( 'Activate order args: ' . var_export( $args, true ) );
 		}
 	}
 

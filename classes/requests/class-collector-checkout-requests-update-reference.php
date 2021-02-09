@@ -12,24 +12,24 @@ class Collector_Checkout_Requests_Update_Reference extends Collector_Checkout_Re
 		parent::__construct();
 		$collector_settings = get_option( 'woocommerce_collector_checkout_settings' );
 		switch ( get_woocommerce_currency() ) {
-			case 'SEK' :
-				$store_id = $collector_settings['collector_merchant_id_se_' . $customer_type];
+			case 'SEK':
+				$store_id = $collector_settings[ 'collector_merchant_id_se_' . $customer_type ];
 				break;
-			case 'NOK' :
-				$store_id = $collector_settings['collector_merchant_id_no_' . $customer_type];
+			case 'NOK':
+				$store_id = $collector_settings[ 'collector_merchant_id_no_' . $customer_type ];
 				break;
-			case 'DKK' :
-				$store_id = $collector_settings['collector_merchant_id_dk_' . $customer_type];
+			case 'DKK':
+				$store_id = $collector_settings[ 'collector_merchant_id_dk_' . $customer_type ];
 				break;
-			case 'EUR' :
-				$store_id = $collector_settings['collector_merchant_id_fi_' . $customer_type];
+			case 'EUR':
+				$store_id = $collector_settings[ 'collector_merchant_id_fi_' . $customer_type ];
 				break;
-			default :
-				$store_id = $collector_settings['collector_merchant_id_se_' . $customer_type];
+			default:
+				$store_id = $collector_settings[ 'collector_merchant_id_se_' . $customer_type ];
 				break;
 		}
 		$this->order_id = $order_id;
-		$this->path = '/merchants/' . $store_id . '/checkouts/' . $private_id . '/reference';
+		$this->path     = '/merchants/' . $store_id . '/checkouts/' . $private_id . '/reference';
 	}
 
 	private function get_request_args() {
@@ -39,19 +39,26 @@ class Collector_Checkout_Requests_Update_Reference extends Collector_Checkout_Re
 			'body'    => $this->request_body(),
 			'method'  => 'PUT',
 		);
-		$this->log( 'Collector update reference request args (to ' . $this->path . '): ' . json_encode( $request_args ) );
+
 		return $request_args;
 	}
 
 	public function request() {
-		$request_url = $this->base_url . $this->path;
-		$request = wp_remote_request( $request_url, $this->get_request_args() );
-		return $request;
+		$request_url  = $this->base_url . $this->path;
+		$request_args = $this->get_request_args();
+
+		$response = wp_remote_request( $request_url, $request_args );
+		$code     = wp_remote_retrieve_response_code( $response );
+
+		$log = CCO_WC()->logger->format_log( '', 'PUT', 'CCO update reference', $request_args, json_decode( wp_remote_retrieve_body( $response ), true ), $code );
+		CCO_WC()->logger->log( $log );
+
+		return $response;
 	}
 
 	protected function request_body() {
 		$formatted_request_body = array(
-			'Reference'         => $this->order_id,
+			'Reference' => $this->order_id,
 		);
 		return wp_json_encode( $formatted_request_body );
 	}

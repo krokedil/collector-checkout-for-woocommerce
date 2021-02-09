@@ -2,11 +2,11 @@
 Contributors: collectorbank, krokedil, NiklasHogefjord
 Tags: ecommerce, e-commerce, woocommerce, collector, checkout
 Requires at least: 4.7
-Tested up to: 5.5.3
+Tested up to: 5.6.1
 Requires PHP: 5.6
 Stable tag: trunk
-WC requires at least: 3.8.0
-WC tested up to: 4.7.1
+WC requires at least: 4.0.0
+WC tested up to: 4.9.2
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -39,6 +39,14 @@ For help setting up and configuring Collector Checkout for WooCommerce please re
 
 
 == CHANGELOG ==
+= 2021.02.09    - version 2.1.0 =
+* Feature       - Handle activations, cancelations and refunds for Swish orders directly from WooCommerce.
+* Tweak         - Adds WooCommerce order request class.
+* Tweak         - Introduces separate logger class.
+* Fix           - Save Delivery module shipping data correct in session in Woo.
+* Fix           - Handles Order management response better (activate & cancel order) when API keys are misconfigured.
+* Fix           - Fix ternary operators coding standard (for PHP 8.x).
+
 = 2020.11.30    - version 2.0.2 =
 * Tweak         - Add separate cart shipping template if Delivery module is active. To avoid displaying fallback/standard Woo shipping methods.
 * Fix           - Reduce the amount of update requests sent to Collector when using Delivery module.
