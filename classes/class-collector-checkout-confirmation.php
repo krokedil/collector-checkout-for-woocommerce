@@ -147,6 +147,7 @@ class Collector_Checkout_Confirmation {
 			wp_safe_redirect( $location );
 			exit;
 		}
+		CCO_WC()->logger->log( 'Confirmation page rendered for public token - ' . $collector_public_token );
 		?>
 
 		<script>
