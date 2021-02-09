@@ -239,9 +239,9 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 		$shipping_vat    = $collector_order->data->fees->shipping->vat;
 
 		$shipping_data = array(
-			'label'        => $label,
+			'label'        => $shipping_title,
 			'shipping_id'  => $shipping_id,
-			'cost'         => $cost,
+			'cost'         => $shipping_price,
 			'shipping_vat' => $shipping_vat,
 		);
 		WC()->session->set( 'collector_delivery_module_data', $shipping_data );
