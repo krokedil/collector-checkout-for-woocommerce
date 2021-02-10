@@ -58,11 +58,12 @@ class Collector_Checkout_Logger {
 	 * @param string $method The method.
 	 * @param string $title The title for the log.
 	 * @param array  $request_args The request args.
+	 * @param string $request_url The request url.
 	 * @param array  $response The response.
 	 * @param string $code The status code.
 	 * @return array
 	 */
-	public static function format_log( $checkout_id, $method, $title, $request_args, $response, $code ) {
+	public static function format_log( $checkout_id, $method, $title, $request_args, $request_url, $response, $code ) {
 		// Unset the snippet to prevent issues in the response.
 		// Add logic to remove any HTML snippets from the response.
 
@@ -73,6 +74,7 @@ class Collector_Checkout_Logger {
 			'id'             => $checkout_id,
 			'type'           => $method,
 			'title'          => $title,
+			'request_url'    => $request_url,
 			'request'        => $request_args,
 			'response'       => array(
 				'body' => $response,
