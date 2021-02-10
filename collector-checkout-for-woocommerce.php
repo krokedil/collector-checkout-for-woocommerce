@@ -265,6 +265,7 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 						'update_checkout_url'           => WC_AJAX::get_endpoint( 'update_checkout' ),
 						'checkout_error'                => WC_AJAX::get_endpoint( 'checkout_error' ),
 						'update_delivery_module_shipping_url' => WC_AJAX::get_endpoint( 'update_delivery_module_shipping' ),
+						'process_order_text'            => __( 'Please wait while we process your order.', 'collector-checkout-for-woocommerce' ),
 					)
 				);
 				wp_enqueue_script( 'checkout' );

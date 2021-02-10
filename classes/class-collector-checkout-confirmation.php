@@ -1,4 +1,9 @@
-<?php
+<?php  // phpcs:ignore
+/**
+ * Collector_Checkout_Confirmation class.
+ *
+ * @package CollectorCheckout/Classes
+ */
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
@@ -34,20 +39,59 @@ class Collector_Checkout_Confirmation {
 	 * Collector_Checkout_Confirmation constructor.
 	 */
 	public function __construct() {
+
+		add_action( 'init', array( $this, 'check_if_order_already_exist' ) );
+
 		add_action( 'wp_head', array( $this, 'maybe_hide_checkout_form' ) );
+
 		add_action( 'woocommerce_before_checkout_form', array( $this, 'maybe_populate_wc_checkout' ) );
-		add_action( 'wp_footer', array( $this, 'maybe_submit_wc_checkout' ), 999 );
 
 		// Set fields to not required.
 		add_filter( 'woocommerce_checkout_fields', array( $this, 'collector_set_not_required' ), 20 );
 
-		// Remove the storefront sticky checkout.
-		add_action( 'wp_enqueue_scripts', array( $this, 'jk_remove_sticky_checkout' ), 99 );
-
-		// add_filter( 'woocommerce_checkout_posted_data', array( $this, 'unrequire_posted_data' ), 99 );
 		// Save Collector data (private id) in WC order
 		add_action( 'woocommerce_new_order', array( $this, 'save_collector_order_data' ) );
 
+	}
+
+
+	/**
+	 * Populates WooCommerce checkout form in Collector confirmation page.
+	 */
+	public function check_if_order_already_exist() {
+		if ( ! $this->is_collector_confirmation() ) {
+			return;
+		}
+
+		// Prevent duplicate orders if confirmation page is reloaded manually by customer.
+		$collector_public_token = sanitize_key( $_GET['public-token'] );
+		$query                  = new WC_Order_Query(
+			array(
+				'limit'          => -1,
+				'orderby'        => 'date',
+				'order'          => 'DESC',
+				'return'         => 'ids',
+				'payment_method' => 'collector_checkout',
+				'date_created'   => '>' . ( time() - WEEK_IN_SECONDS ),
+			)
+		);
+		$orders                 = $query->get_orders();
+		$order_id_match         = null;
+		foreach ( $orders as $order_id ) {
+			$order_collector_public_token = get_post_meta( $order_id, '_collector_public_token', true );
+			if ( strtolower( $order_collector_public_token ) === strtolower( $collector_public_token ) ) {
+				$order_id_match = $order_id;
+				break;
+			}
+		}
+		// _collector_public_token already exist in an order. Let's redirect the customer to the thankyou page for that order.
+		if ( $order_id_match ) {
+			Collector_Checkout::log( 'Confirmation page rendered but _collector_public_token already exist in this order: ' . $order_id_match );
+			$order    = wc_get_order( $order_id_match );
+			$location = $order->get_checkout_order_received_url();
+            wp_redirect( $location ); // phpcs:ignore
+			exit;
+		}
 	}
 
 	/**
@@ -61,6 +105,7 @@ class Collector_Checkout_Confirmation {
 		echo '<style>form.woocommerce-checkout,div.woocommerce-info{display:none!important}</style>';
 	}
 
+
 	/**
 	 * Populates WooCommerce checkout form in Collector confirmation page.
 	 */
@@ -68,6 +113,9 @@ class Collector_Checkout_Confirmation {
 		if ( ! $this->is_collector_confirmation() ) {
 			return;
 		}
+
+		$collector_public_token = sanitize_key( $_GET['public-token'] );
+		CCO_WC()->logger->log( 'Confirmation page rendered for public token - ' . $collector_public_token );
 
 		echo '<div id="collector-confirm-loading"></div>';
 
@@ -111,67 +159,7 @@ class Collector_Checkout_Confirmation {
 
 	}
 
-	/**
-	 * Submits WooCommerce checkout form in Collector confirmation page.
-	 */
-	public function maybe_submit_wc_checkout() {
-		if ( ! $this->is_collector_confirmation() ) {
-			return;
-		}
-		// Prevent duplicate orders if confirmation page is reloaded manually by customer.
-		$collector_public_token = sanitize_key( $_GET['public-token'] );
-		$query                  = new WC_Order_Query(
-			array(
-				'limit'          => -1,
-				'orderby'        => 'date',
-				'order'          => 'DESC',
-				'return'         => 'ids',
-				'payment_method' => 'collector_checkout',
-				'date_created'   => '>' . ( time() - DAY_IN_SECONDS ),
-			)
-		);
-		$orders                 = $query->get_orders();
-		$order_id_match         = null;
-		foreach ( $orders as $order_id ) {
-			$order_collector_public_token = get_post_meta( $order_id, '_collector_public_token', true );
-			if ( strtolower( $order_collector_public_token ) === strtolower( $collector_public_token ) ) {
-				$order_id_match = $order_id;
-				break;
-			}
-		}
-		// _collector_public_token already exist in an order. Let's redirect the customer to the thankyou page for that order.
-		if ( $order_id_match ) {
-			Collector_Checkout::log( 'Confirmation page rendered but _collector_public_token already exist in this order: ' . $order_id_match );
-			$order    = wc_get_order( $order_id_match );
-			$location = $order->get_checkout_order_received_url();
-			wp_safe_redirect( $location );
-			exit;
-		}
-		CCO_WC()->logger->log( 'Confirmation page rendered for public token - ' . $collector_public_token );
-		?>
 
-		<script>
-			var collector_text = '<?php echo __( 'Please wait while we process your order.', 'collector-checkout-for-woocommerce' ); ?>';
-			var submitted = false;
-			jQuery(function ($) {
-				$( 'body' ).append( $( '<div class="collector-modal"><div class="collector-modal-content">' + collector_text + '</div></div>' ) );
-				$('input#terms').prop('checked', true);
-				$('input#ship-to-different-address-checkbox').prop('checked', true);
-
-				$('.validate-required').removeClass('validate-required');
-				if( false === submitted ) {
-					$('form.woocommerce-checkout').submit();
-					console.log('yes submitted');
-					submitted = true;
-					$('form.woocommerce-checkout').addClass( 'processing' );
-					console.log('processing class added to form');
-				} else {
-					console.log('Already submitted');
-				}
-			});
-		</script>
-		<?php
-	}
 
 	/**
 	 * Checks if in Collector confirmation page.
@@ -348,30 +336,6 @@ class Collector_Checkout_Confirmation {
 			}
 		}
 		return $checkout_fields;
-	}
-
-	public function jk_remove_sticky_checkout() {
-		wp_dequeue_script( 'storefront-sticky-payment' );
-	}
-
-
-	/**
-	 * Makes sure there's no empty data sent for validation.
-	 *
-	 * @param array $data Posted data.
-	 *
-	 * @return mixed
-	 */
-	public function unrequire_posted_data( $data ) {
-		if ( 'kco' === WC()->session->get( 'chosen_payment_method' ) ) {
-			foreach ( $data as $key => $value ) {
-				if ( '' === $value ) {
-					unset( $data[ $key ] );
-				}
-			}
-		}
-
-		return $data;
 	}
 
 
