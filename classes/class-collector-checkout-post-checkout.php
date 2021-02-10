@@ -23,26 +23,47 @@ class Collector_Checkout_Post_Checkout {
 
 	public function collector_order_completed( $order_id ) {
 		$order = wc_get_order( $order_id );
-		if ( in_array( $order->get_payment_method(), array( 'collector_checkout', 'collector_invoice' ), true ) ) {
-			if ( get_post_meta( $order_id, '_collector_order_activated', true ) ) {
-				$order->add_order_note( __( 'Could not activate Collector reservation, Collector reservation is already activated.', 'collector-checkout-for-woocommerce' ) );
-				return;
-			}
-			$activate_order = new Collector_Checkout_SOAP_Requests_Activate_Invoice( $order_id );
-			$activate_order->request( $order_id );
+
+		// If this order wasn't created using collector_checkout or collector_invoice payment method, bail.
+		if ( ! in_array( $order->get_payment_method(), array( 'collector_checkout', 'collector_invoice' ), true ) ) {
+			return;
 		}
+
+		// Check if the order has been paid.
+		if ( empty( $order->get_date_paid() ) ) {
+			return;
+		}
+
+		if ( get_post_meta( $order_id, '_collector_order_activated', true ) ) {
+			$order->add_order_note( __( 'Could not activate Collector reservation, Collector reservation is already activated.', 'collector-checkout-for-woocommerce' ) );
+			return;
+		}
+
+		$activate_order = new Collector_Checkout_SOAP_Requests_Activate_Invoice( $order_id );
+		$activate_order->request( $order_id );
 	}
 
 	public function collector_order_cancel( $order_id ) {
 		$order = wc_get_order( $order_id );
-		if ( in_array( $order->get_payment_method(), array( 'collector_checkout', 'collector_invoice' ), true ) ) {
-			if ( get_post_meta( $order_id, '_collector_order_cancelled', true ) ) {
-				$order->add_order_note( __( 'Could not cancel Collector reservation, Collector reservation is already cancelled.', 'collector-checkout-for-woocommerce' ) );
-				return;
-			}
-			$cancel_order = new Collector_Checkout_SOAP_Requests_Cancel_Invoice( $order_id );
-			$cancel_order->request( $order_id );
+
+		// If this order wasn't created using collector_checkout or collector_invoice payment method, bail.
+		if ( ! in_array( $order->get_payment_method(), array( 'collector_checkout', 'collector_invoice' ), true ) ) {
+			return;
 		}
+
+		// If the order has not been paid for, bail.
+		if ( empty( $order->get_date_paid() ) ) {
+			return;
+		}
+
+		// If this reservation was already cancelled, do nothing.
+		if ( get_post_meta( $order_id, '_collector_order_cancelled', true ) ) {
+			$order->add_order_note( __( 'Could not cancel Collector reservation, Collector reservation is already cancelled.', 'collector-checkout-for-woocommerce' ) );
+			return;
+		}
+
+		$cancel_order = new Collector_Checkout_SOAP_Requests_Cancel_Invoice( $order_id );
+		$cancel_order->request( $order_id );
 	}
 
 	/**
