@@ -41,16 +41,15 @@ function collector_wc_show_snippet() {
 	$collector_currency = WC()->session->get( 'collector_currency' );
 
 	if ( empty( $public_token ) || $collector_currency !== get_woocommerce_currency() ) {
-		// Get a new public token from Collector
-		$init_checkout = new Collector_Checkout_Requests_Initialize_Checkout( $customer_type );
-		$request       = $init_checkout->request();
+		// Get a new public token from Collector.
+		$init_checkout   = new Collector_Checkout_Requests_Initialize_Checkout( $customer_type );
+		$collector_order = $init_checkout->request();
 
-		if ( is_wp_error( $request ) || empty( $request ) ) {
-			$return = '<ul class="woocommerce-error"><li>' . sprintf( '%s <a href="%s" class="button wc-forward">%s</a>', __( 'Could not connect to Collector. Error message: ', 'collector-checkout-for-woocommerce' ) . $request->get_error_message(), wc_get_checkout_url(), __( 'Try again', 'collector-checkout-for-woocommerce' ) ) . '</li></ul>';
+		if ( is_wp_error( $collector_order ) ) {
+			$return = '<ul class="woocommerce-error"><li>' . sprintf( '%s <a href="%s" class="button wc-forward">%s</a>', __( 'Could not connect to Collector. Error message: ', 'collector-checkout-for-woocommerce' ) . $collector_order->get_error_message(), wc_get_checkout_url(), __( 'Try again', 'collector-checkout-for-woocommerce' ) ) . '</li></ul>';
 		} else {
-			$decode = json_decode( $request );
-			WC()->session->set( 'collector_public_token', $decode->data->publicToken );
-			WC()->session->set( 'collector_private_id', $decode->data->privateId );
+			WC()->session->set( 'collector_public_token', $collector_order['data']['publicToken'] );
+			WC()->session->set( 'collector_private_id', $collector_order['data']['privateId'] );
 			WC()->session->set( 'collector_currency', get_woocommerce_currency() );
 
 			$collector_checkout_sessions = new Collector_Checkout_Sessions();
@@ -58,12 +57,12 @@ function collector_wc_show_snippet() {
 				'session_id' => $collector_checkout_sessions->get_session_id(),
 			);
 			$args                        = array(
-				'private_id' => $decode->data->privateId,
+				'private_id' => $collector_order['data']['privateId'],
 				'data'       => $collector_data,
 			);
 			$result                      = Collector_Checkout_DB::create_data_entry( $args );
 
-			$public_token = $decode->data->publicToken;
+			$public_token = $collector_order['data']['publicToken'];
 			$output       = array(
 				'publicToken'   => $public_token,
 				'test_mode'     => $test_mode,
