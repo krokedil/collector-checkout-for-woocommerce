@@ -108,14 +108,13 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 		$private_id          = WC()->session->get( 'collector_private_id' );
 		$customer_type       = WC()->session->get( 'collector_customer_type' );
 		$update_fees         = new Collector_Checkout_Requests_Update_Fees( $private_id, $customer_type );
-		$update_fees_request = $update_fees->request();
-		$response_body       = json_decode( $update_fees_request['body'] );
+		$collector_order_fee = $update_fees->request();
 
 		// Check that update fees request was ok.
-		if ( is_wp_error( $update_fees_request ) || ! empty( $response_body->error ) || 200 !== $update_fees_request['response']['code'] ) {
+		if ( is_wp_error( $collector_order_fee ) ) {
 			// Check if purchase was completed, if it was dont redirect customer.
-			if ( 900 === $response_body->error->code ) {
-				foreach ( $response_body->error->errors as $error ) {
+			if ( 900 === $collector_order_fee->get_error_code() ) {
+				foreach ( $collector_order_fee->get_error_messages() as $error ) {
 					if ( 'Purchase_Completed' === $error->reason ) {
 						$return                 = array();
 						$return['redirect_url'] = '#';
@@ -131,12 +130,11 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 			wp_die();
 		}
 
-		$update_cart         = new Collector_Checkout_Requests_Update_Cart( $private_id, $customer_type );
-		$update_cart_request = $update_cart->request();
-		$response_body       = json_decode( $update_cart_request['body'] );
+		$update_cart          = new Collector_Checkout_Requests_Update_Cart( $private_id, $customer_type );
+		$collector_order_cart = $update_cart->request();
 
 		// Check that update cart request was ok
-		if ( is_wp_error( $update_cart_request ) || ! empty( $response_body->error || 200 !== $update_cart_request['response']['code'] ) ) {
+		if ( is_wp_error( $collector_order_cart ) ) {
 			wc_collector_unset_sessions();
 			$return                 = array();
 			$return['redirect_url'] = wc_get_checkout_url();
