@@ -65,19 +65,24 @@ class Collector_Checkout_SOAP_Requests_Adjust_Invoice {
 			$request = $soap->AdjustInvoice( $args );
 		} catch ( SoapFault $e ) {
 			$request = $e->getMessage();
-			$this->log( 'Order failed to be credited (AdjustInvoice) with Collector. Request response: ' . var_export( $e, true ) );
+
+			$log = CCO_WC()->logger->format_log( $order_id, 'SOAP', 'CCO FAILED credit (AdjustInvoice)', $args, '', wp_json_encode( $e ) . wp_json_encode( $headers ), '' );
+			CCO_WC()->logger->log( $log );
 			return false;
 		}
 		$order = wc_get_order( $order_id );
 		if ( isset( $request->CorrelationId ) || $request->CorrelationId == null ) {
 			$order->add_order_note( sprintf( __( 'Order credited with Collector Bank. CorrelationId ' . $request->CorrelationId, 'collector-checkout-for-woocommerce' ) ) );
+
+			$log = CCO_WC()->logger->format_log( $order_id, 'SOAP', 'CCO credit (AdjustInvoice)', $args, '', wp_json_encode( $request ), '' );
+			CCO_WC()->logger->log( $log );
 			return true;
 		} else {
 
 			$order->add_order_note( sprintf( __( 'Order failed to be credited with Collector Bank - ' . var_export( $request, true ), 'collector-checkout-for-woocommerce' ) ) );
-			$this->log( 'Order failed to be credited with Collector Bank. Request response: ' . var_export( $e, true ) );
-			$this->log( 'Credit Payment headers: ' . var_export( $headers, true ) );
-			$this->log( 'Credit Payment args: ' . var_export( $args, true ) );
+
+			$log = CCO_WC()->logger->format_log( $order_id, 'SOAP', 'CCO FAILED credit (AdjustInvoice)', $args, '', wp_json_encode( $e ) . wp_json_encode( $headers ), '' );
+			CCO_WC()->logger->log( $log );
 			return false;
 		}
 	}
@@ -95,15 +100,5 @@ class Collector_Checkout_SOAP_Requests_Adjust_Invoice {
 			),
 			'CorrelationId' => Collector_Checkout_Create_Refund_Data::get_refunded_order( $order_id ),
 		);
-	}
-
-	public static function log( $message ) {
-		$collector_settings = get_option( 'woocommerce_collector_checkout_settings' );
-		if ( 'yes' === $collector_settings['debug_mode'] ) {
-			if ( empty( self::$log ) ) {
-				self::$log = new WC_Logger();
-			}
-			self::$log->add( 'collector_checkout', $message );
-		}
 	}
 }

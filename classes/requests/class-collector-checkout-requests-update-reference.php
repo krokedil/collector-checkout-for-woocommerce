@@ -28,8 +28,9 @@ class Collector_Checkout_Requests_Update_Reference extends Collector_Checkout_Re
 				$store_id = $collector_settings[ 'collector_merchant_id_se_' . $customer_type ];
 				break;
 		}
-		$this->order_id = $order_id;
-		$this->path     = '/merchants/' . $store_id . '/checkouts/' . $private_id . '/reference';
+		$this->private_id = $private_id;
+		$this->order_id   = $order_id;
+		$this->path       = '/merchants/' . $store_id . '/checkouts/' . $private_id . '/reference';
 	}
 
 	private function get_request_args() {
@@ -46,14 +47,15 @@ class Collector_Checkout_Requests_Update_Reference extends Collector_Checkout_Re
 	public function request() {
 		$request_url  = $this->base_url . $this->path;
 		$request_args = $this->get_request_args();
+		$response     = wp_remote_request( $request_url, $request_args );
+		$code         = wp_remote_retrieve_response_code( $response );
 
-		$response = wp_remote_request( $request_url, $request_args );
-		$code     = wp_remote_retrieve_response_code( $response );
-
-		$log = CCO_WC()->logger->format_log( '', 'PUT', 'CCO update reference', $request_args, json_decode( wp_remote_retrieve_body( $response ), true ), $code );
+		// Log the request.
+		$log = CCO_WC()->logger->format_log( $this->private_id, 'PUT', 'CCO update reference', $request_args, $request_url, json_decode( wp_remote_retrieve_body( $response ), true ), $code );
 		CCO_WC()->logger->log( $log );
 
-		return $response;
+		$formated_response = $this->process_response( $response, $request_args, $request_url );
+		return $formated_response;
 	}
 
 	protected function request_body() {

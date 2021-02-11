@@ -66,20 +66,22 @@ class Collector_Checkout_SOAP_Requests_Part_Credit_Invoice {
 			$request = $soap->PartCreditInvoice( $args );
 		} catch ( SoapFault $e ) {
 			$request = $e->getMessage();
-			$this->log( 'Collector PartCreditInvoice request response ERROR: ' . $request              = $e->getMessage() . '. Request object: ' . stripslashes_deep( json_encode( $request ) ) );
 			$order->add_order_note( sprintf( __( 'Collector credit invoice request ERROR: ' . $request = $e->getMessage(), 'collector-checkout-for-woocommerce' ) ) );
+			$log = CCO_WC()->logger->format_log( $order_id, 'SOAP', 'CCO FAILED refund order (PartCreditInvoice)', $args, '', wp_json_encode( $e ) . wp_json_encode( $headers ), '' );
+			CCO_WC()->logger->log( $log );
 			return false;
 		}
 		if ( isset( $request->CorrelationId ) || $request->CorrelationId == null ) {
 			$order->add_order_note( sprintf( __( 'Order credited with Collector Bank. CorrelationId ' . $request->CorrelationId, 'collector-checkout-for-woocommerce' ) ) );
-			$this->log( 'Collector PartCreditInvoice request response: ' . stripslashes_deep( json_encode( $request ) ) );
+			$log = CCO_WC()->logger->format_log( $order_id, 'SOAP', 'CCO refund order (PartCreditInvoice)', $args, '', wp_json_encode( $request ), '' );
+			CCO_WC()->logger->log( $log );
 			return true;
 		} else {
 
 			$order->add_order_note( sprintf( __( 'Order failed to be credited with Collector Bank - ' . var_export( $request, true ), 'collector-checkout-for-woocommerce' ) ) );
-			$this->log( 'Collector PartCreditInvoice request response ERROR: ' . $request = $e->getMessage() . '. Request object: ' . stripslashes_deep( json_encode( $request ) ) );
-			$this->log( 'Order failed to be credited with Collector Bank. Request response: ' . var_export( $e, true ) );
-			$this->log( 'Credit Payment headers: ' . var_export( $headers, true ) );
+
+			$log = CCO_WC()->logger->format_log( $order_id, 'SOAP', 'CCO FAILED refund order (PartCreditInvoice)', $args, '', wp_json_encode( $e ) . wp_json_encode( $headers ), '' );
+			CCO_WC()->logger->log( $log );
 			return false;
 		}
 	}
@@ -96,18 +98,6 @@ class Collector_Checkout_SOAP_Requests_Part_Credit_Invoice {
 			'CreditDate'    => date( 'Y-m-d\TH:i:s', strtotime( 'now' ) ),
 			'CorrelationId' => Collector_Checkout_Create_Refund_Data::get_refunded_order( $order_id ),
 		);
-
-		$this->log( 'PartCreditInvoice request args: ' . stripslashes_deep( json_encode( $request_args ) ) );
 		return $request_args;
-	}
-
-	public static function log( $message ) {
-		$collector_settings = get_option( 'woocommerce_collector_checkout_settings' );
-		if ( 'yes' === $collector_settings['debug_mode'] ) {
-			if ( empty( self::$log ) ) {
-				self::$log = new WC_Logger();
-			}
-			self::$log->add( 'collector_checkout', $message );
-		}
 	}
 }
