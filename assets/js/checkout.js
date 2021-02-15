@@ -53,7 +53,7 @@
                 $('.validate-required').removeClass('validate-required');
                 
 				if( false === cco_submitted ) {
-					$('form.woocommerce-checkout').submit();
+                    $('form[name="checkout"]').submit();
 					console.log('yes submitted');
 					cco_submitted = true;
 					$('form.woocommerce-checkout').addClass( 'processing' );
