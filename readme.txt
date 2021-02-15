@@ -6,7 +6,7 @@ Tested up to: 5.6.1
 Requires PHP: 5.6
 Stable tag: trunk
 WC requires at least: 4.0.0
-WC tested up to: 4.9.2
+WC tested up to: 5.0.0
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -39,6 +39,13 @@ For help setting up and configuring Collector Checkout for WooCommerce please re
 
 
 == CHANGELOG ==
+= 2021.02.15    - version 2.2.0 =
+* Tweak         - Move confirmation JS to checkout.js file instead of inline rendering.
+* Tweak         - Request handling rewrite.
+* Tweak         - Log format rewrite.
+* Tweak         - Don't load WC checkout form with submit button during confirmation step.
+* Fix           - Don't try to make a cancel/activate request if the order hasn't been paid.
+
 = 2021.02.09    - version 2.1.0 =
 * Feature       - Handle activations, cancelations and refunds for Swish orders directly from WooCommerce.
 * Tweak         - Adds WooCommerce order request class.
