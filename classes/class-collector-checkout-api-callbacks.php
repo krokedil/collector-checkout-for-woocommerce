@@ -77,8 +77,7 @@ class Collector_Api_Callbacks {
 		$this->db_session_id = $collector_db_data->session_id;
 
 		$response              = new Collector_Checkout_Requests_Get_Checkout_Information( $private_id, $customer_type );
-		$response              = $response->request();
-		$this->collector_order = json_decode( $response );
+		$this->collector_order = $response->request();
 
 		// Check if we have a session id.
 		$this->check_session_id();
@@ -201,22 +200,21 @@ class Collector_Api_Callbacks {
 	 */
 	public function check_order_status( $private_id, $public_token, $customer_type, $order ) {
 		$response        = new Collector_Checkout_Requests_Get_Checkout_Information( $private_id, $customer_type, $order->get_currency() );
-		$response        = $response->request();
-		$collector_order = json_decode( $response );
+		$collector_order = $response->request();
 
 		if ( is_object( $order ) ) {
 
-			// Check order status
+			// Check order status.
 			if ( ! $order->has_status( array( 'on-hold', 'processing', 'completed' ) ) ) {
 				// Set order status in Woo
 				$this->set_order_status( $order, $collector_order );
 			}
 
-			// Compare order totals between the orders
+			// Compare order totals between the orders.
 			$this->check_order_totals( $order, $collector_order );
 
-			// Check if we need to update reference in collectors system
-			if ( empty( $collector_order->data->reference ) ) {
+			// Check if we need to update reference in collectors system.
+			if ( empty( $collector_order['data']['reference'] ) ) {
 				$this->update_order_reference_in_collector( $order, $customer_type, $private_id );
 			}
 		}
@@ -231,8 +229,7 @@ class Collector_Api_Callbacks {
 	 */
 	public function backup_order_creation( $private_id, $public_token, $customer_type ) {
 		$response        = new Collector_Checkout_Requests_Get_Checkout_Information( $private_id, $customer_type );
-		$response        = $response->request();
-		$collector_order = json_decode( $response );
+		$collector_order = $response->request();
 
 		// Process order.
 		$order = $this->process_order( $collector_order, $private_id, $public_token, $customer_type );
@@ -255,50 +252,9 @@ class Collector_Api_Callbacks {
 	 * @throws Exception WC_Data_Exception.
 	 */
 	private function process_order( $collector_order, $private_id, $public_token, $customer_type ) {
-		$fallback_postcode = '11111';
-		if ( 'BusinessCustomer' == $collector_order->data->customerType ) {
-			$billing_first_name   = isset( $collector_order->data->businessCustomer->firstName ) ? $collector_order->data->businessCustomer->firstName : '.';
-			$billing_last_name    = isset( $collector_order->data->businessCustomer->lastName ) ? $collector_order->data->businessCustomer->lastName : '.';
-			$billing_company      = isset( $collector_order->data->businessCustomer->companyName ) ? $collector_order->data->businessCustomer->companyName : '.';
-			$billing_address      = isset( $collector_order->data->businessCustomer->invoiceAddress->address ) ? $collector_order->data->businessCustomer->invoiceAddress->address : '.';
-			$billing_address2     = isset( $collector_order->data->businessCustomer->invoiceAddress->address2 ) ? $collector_order->data->businessCustomer->invoiceAddress->address2 : '';
-			$billing_postal_code  = isset( $collector_order->data->businessCustomer->invoiceAddress->postalCode ) ? $collector_order->data->businessCustomer->invoiceAddress->postalCode : $fallback_postcode;
-			$billing_city         = isset( $collector_order->data->businessCustomer->invoiceAddress->city ) ? $collector_order->data->businessCustomer->invoiceAddress->city : '.';
-			$billing_country      = isset( $collector_order->countryCode ) ? $collector_order->countryCode : WC()->countries->get_base_country();
-			$shipping_first_name  = isset( $collector_order->data->businessCustomer->firstName ) ? $collector_order->data->businessCustomer->firstName : '.';
-			$shipping_last_name   = isset( $collector_order->data->businessCustomer->lastName ) ? $collector_order->data->businessCustomer->lastName : '.';
-			$shipping_company     = ( isset( $collector_order->data->businessCustomer->deliveryAddress->companyName ) ? $collector_order->data->businessCustomer->deliveryAddress->companyName : isset( $collector_order->data->businessCustomer->companyName ) ) ? $collector_order->data->businessCustomer->companyName : '.';
-			$shipping_address     = isset( $collector_order->data->businessCustomer->deliveryAddress->address ) ? $collector_order->data->businessCustomer->deliveryAddress->address : '.';
-			$shipping_address2    = isset( $collector_order->data->businessCustomer->deliveryAddress->address2 ) ? $collector_order->data->businessCustomer->deliveryAddress->address2 : '';
-			$shipping_postal_code = ( isset( $collector_order->data->businessCustomer->deliveryAddress->postalCode ) ? $collector_order->data->businessCustomer->deliveryAddress->postalCode : isset( $collector_order->data->businessCustomer->invoiceAddress->postalCode ) ) ? $collector_order->data->businessCustomer->invoiceAddress->postalCode : $fallback_postcode;
-			$shipping_city        = ( isset( $collector_order->data->businessCustomer->deliveryAddress->city ) ? $collector_order->data->businessCustomer->deliveryAddress->city : isset( $collector_order->data->businessCustomer->invoiceAddress->city ) ) ? $collector_order->data->businessCustomer->invoiceAddress->city : '.';
-			$shipping_country     = isset( $collector_order->countryCode ) ? $collector_order->countryCode : WC()->countries->get_base_country();
 
-			$phone = isset( $collector_order->data->businessCustomer->mobilePhoneNumber ) ? $collector_order->data->businessCustomer->mobilePhoneNumber : '.';
-			$email = isset( $collector_order->data->businessCustomer->email ) ? $collector_order->data->businessCustomer->email : '.';
-
-			$org_nr = isset( $collector_order->data->businessCustomer->organizationNumber ) ? $collector_order->data->businessCustomer->organizationNumber : '.';
-		} else {
-			$shipping_first_name  = isset( $collector_order->data->customer->deliveryAddress->firstName ) ? $collector_order->data->customer->deliveryAddress->firstName : '.';
-			$shipping_last_name   = isset( $collector_order->data->customer->deliveryAddress->lastName ) ? $collector_order->data->customer->deliveryAddress->lastName : '.';
-			$shipping_address     = isset( $collector_order->data->customer->deliveryAddress->address ) ? $collector_order->data->customer->deliveryAddress->address : '.';
-			$shipping_address2    = isset( $collector_order->data->customer->deliveryAddress->address2 ) ? $collector_order->data->customer->deliveryAddress->address2 : '';
-			$shipping_postal_code = isset( $collector_order->data->customer->deliveryAddress->postalCode ) ? $collector_order->data->customer->deliveryAddress->postalCode : $fallback_postcode;
-			$shipping_city        = isset( $collector_order->data->customer->deliveryAddress->city ) ? $collector_order->data->customer->deliveryAddress->city : '.';
-			$shipping_country     = isset( $collector_order->countryCode ) ? $collector_order->countryCode : WC()->countries->get_base_country();
-			$billing_first_name   = ( isset( $collector_order->data->customer->billingAddress->firstName ) ? $collector_order->data->customer->billingAddress->firstName : isset( $collector_order->data->customer->deliveryAddress->firstName ) ) ? $collector_order->data->customer->deliveryAddress->firstName : '.';
-			$billing_last_name    = ( isset( $collector_order->data->customer->billingAddress->lastName ) ? $collector_order->data->customer->billingAddress->lastName : isset( $collector_order->data->customer->deliveryAddress->lastName ) ) ? $collector_order->data->customer->deliveryAddress->lastName : '.';
-			$billing_address      = ( isset( $collector_order->data->customer->billingAddress->address ) ? $collector_order->data->customer->billingAddress->address : isset( $collector_order->data->customer->deliveryAddress->address ) ) ? $collector_order->data->customer->deliveryAddress->address : '.';
-			$billing_address2     = ( isset( $collector_order->data->customer->billingAddress->address2 ) ? $collector_order->data->customer->billingAddress->address2 : isset( $collector_order->data->customer->deliveryAddress->address2 ) ) ? $collector_order->data->customer->deliveryAddress->address2 : '';
-			$billing_postal_code  = ( isset( $collector_order->data->customer->billingAddress->postalCode ) ? $collector_order->data->customer->billingAddress->postalCode : isset( $collector_order->data->customer->deliveryAddress->postalCode ) ) ? $collector_order->data->customer->deliveryAddress->postalCode : $fallback_postcode;
-			$billing_city         = ( isset( $collector_order->data->customer->billingAddress->city ) ? $collector_order->data->customer->billingAddress->city : isset( $collector_order->data->customer->deliveryAddress->city ) ) ? $collector_order->data->customer->deliveryAddress->city : '.';
-			$billing_country      = isset( $collector_order->countryCode ) ? $collector_order->countryCode : WC()->countries->get_base_country();
-
-			$phone = isset( $collector_order->data->customer->mobilePhoneNumber ) ? $collector_order->data->customer->mobilePhoneNumber : '.';
-			$email = isset( $collector_order->data->customer->email ) ? $collector_order->data->customer->email : '.';
-		}
-
-		$order = wc_create_order( array( 'status' => 'pending' ) );
+		$customer_data = wc_collector_verify_customer_data( $collector_order );
+		$order         = wc_create_order( array( 'status' => 'pending' ) );
 
 		if ( is_wp_error( $order ) ) {
 			Collector_Checkout::log( 'Backup order creation. Error - could not create order. ' . var_export( $order->get_error_message(), true ) );
@@ -308,28 +264,28 @@ class Collector_Api_Callbacks {
 
 		$order_id = $order->get_id();
 
-		$order->set_billing_first_name( sanitize_text_field( $billing_first_name ) );
-		$order->set_billing_last_name( sanitize_text_field( $billing_last_name ) );
-		$order->set_billing_country( sanitize_text_field( $billing_country ) );
-		$order->set_billing_address_1( sanitize_text_field( $billing_address ) );
-		$order->set_billing_address_2( sanitize_text_field( $billing_address2 ) );
-		$order->set_billing_city( sanitize_text_field( $billing_city ) );
-		$order->set_billing_postcode( sanitize_text_field( $billing_postal_code ) );
-		$order->set_billing_phone( sanitize_text_field( $phone ) );
-		$order->set_billing_email( sanitize_text_field( $email ) );
-		$order->set_shipping_first_name( sanitize_text_field( $shipping_first_name ) );
-		$order->set_shipping_last_name( sanitize_text_field( $shipping_last_name ) );
-		$order->set_shipping_country( sanitize_text_field( $shipping_country ) );
-		$order->set_shipping_address_1( sanitize_text_field( $shipping_address ) );
-		$order->set_shipping_address_2( sanitize_text_field( $shipping_address2 ) );
-		$order->set_shipping_city( sanitize_text_field( $shipping_city ) );
-		$order->set_shipping_postcode( sanitize_text_field( $shipping_postal_code ) );
+		$order->set_billing_first_name( sanitize_text_field( $customer_data['billingFirstName'] ) );
+		$order->set_billing_last_name( sanitize_text_field( $customer_data['billingLastName'] ) );
+		$order->set_billing_country( sanitize_text_field( $customer_data['countryCode'] ) );
+		$order->set_billing_address_1( sanitize_text_field( $customer_data['billingAddress'] ) );
+		$order->set_billing_address_2( sanitize_text_field( $customer_data['billingAddress2'] ) );
+		$order->set_billing_city( sanitize_text_field( $customer_data['billingCity'] ) );
+		$order->set_billing_postcode( sanitize_text_field( $customer_data['billingPostalCode'] ) );
+		$order->set_billing_phone( sanitize_text_field( $customer_data['phone'] ) );
+		$order->set_billing_email( sanitize_text_field( $customer_data['email'] ) );
+		$order->set_shipping_first_name( sanitize_text_field( $customer_data['shippingFirstName'] ) );
+		$order->set_shipping_last_name( sanitize_text_field( $customer_data['shippingLastName'] ) );
+		$order->set_shipping_country( sanitize_text_field( $customer_data['countryCode'] ) );
+		$order->set_shipping_address_1( sanitize_text_field( $customer_data['shippingAddress'] ) );
+		$order->set_shipping_address_2( sanitize_text_field( $customer_data['shippingAddress2'] ) );
+		$order->set_shipping_city( sanitize_text_field( $customer_data['shippingCity'] ) );
+		$order->set_shipping_postcode( sanitize_text_field( $customer_data['shippingPostalCode'] ) );
 
-		// Company specific info
-		if ( 'BusinessCustomer' == $collector_order->data->customerType ) {
-			$order->set_billing_company( sanitize_text_field( $billing_company ) );
-			$order->set_shipping_company( sanitize_text_field( $shipping_company ) );
-			update_post_meta( $order_id, '_collector_org_nr', $org_nr );
+		// Company specific info.
+		if ( 'BusinessCustomer' === $collector_order['data']['customerType'] ) {
+			$order->set_billing_company( sanitize_text_field( $customer_data['billingCompanyName'] ) );
+			$order->set_shipping_company( sanitize_text_field( $customer_data['shippingCompanyName'] ) );
+			update_post_meta( $order_id, '_collector_org_nr', $customer_data['orgNr'] );
 		}
 
 		$order->set_created_via( 'collector_checkout_api' );
@@ -341,17 +297,17 @@ class Collector_Api_Callbacks {
 		$order->set_payment_method( $payment_method );
 		$order->add_order_note( __( 'Order created via Collector Checkout API callback. Please verify the order in Collectors system.', 'collector-checkout-for-woocommerce' ) );
 
-		foreach ( $collector_order->data->order->items as $cart_item ) {
-			if ( strpos( $cart_item->id, 'shipping|' ) !== false ) {
+		foreach ( $collector_order['data']['order']['items'] as $cart_item ) {
+			if ( strpos( $cart_item['id'], 'shipping|' ) !== false ) {
 
-				// Shipping
-				$trimmed_cart_item_id = str_replace( 'shipping|', '', $cart_item->id );
-				if ( $cart_item->vat > 0 ) {
-					$price_excl_vat = $cart_item->unitPrice / ( ( $cart_item->vat * 0.01 ) + 1 );
+				// Shipping.
+				$trimmed_cart_item_id = str_replace( 'shipping|', '', $cart_item['id'] );
+				if ( $cart_item['vat'] > 0 ) {
+					$price_excl_vat = $cart_item['unitPrice'] / ( ( $cart_item['vat'] * 0.01 ) + 1 );
 				} else {
-					$price_excl_vat = $cart_item->unitPrice;
+					$price_excl_vat = $cart_item['unitPrice'];
 				}
-				$rate = new WC_Shipping_Rate( $trimmed_cart_item_id, $cart_item->description, $price_excl_vat, array(), 'flat_rate' );
+				$rate = new WC_Shipping_Rate( $trimmed_cart_item_id, $cart_item['description'], $price_excl_vat, array(), 'flat_rate' );
 				$item = new WC_Order_Item_Shipping();
 				$item->set_props(
 					array(
@@ -364,24 +320,24 @@ class Collector_Api_Callbacks {
 				);
 				$order->add_item( $item );
 				// Save shipping reference to order.
-				update_post_meta( $order->get_id(), '_collector_shipping_reference', $cart_item->id );
+				update_post_meta( $order->get_id(), '_collector_shipping_reference', $cart_item['id'] );
 
-			} elseif ( 'Frakt' === $cart_item->id ) {
+			} elseif ( 'Frakt' === $cart_item['id'] ) {
 				// Collector Delivery Module Shipping.
 				$args = array(
-					'order_item_name' => $cart_item->description,
+					'order_item_name' => $cart_item['description'],
 					'order_item_type' => 'shipping',
 				);
 
 				$item_id = wc_add_order_item( $order->get_id(), $args );
 
 				if ( $item_id ) {
-					if ( $cart_item->unitPrice > 0 ) {
-						if ( $cart_item->vat > 0 ) {
-							$line_total_excl_vat = round( $cart_item->unitPrice / ( 1 + ( $cart_item->vat / 100 ) ), 2 );
-							$line_total_vat      = $cart_item->unitPrice - $line_total_excl_vat;
+					if ( $cart_item['unitPrice'] > 0 ) {
+						if ( $cart_item['vat'] > 0 ) {
+							$line_total_excl_vat = round( $cart_item['unitPrice'] / ( 1 + ( $cart_item['vat'] / 100 ) ), 2 );
+							$line_total_vat      = $cart_item['unitPrice'] - $line_total_excl_vat;
 						} else {
-							$line_total_excl_vat = round( $cart_item->unitPrice, 2 );
+							$line_total_excl_vat = round( $cart_item['unitPrice'], 2 );
 							$line_total_vat      = 0;
 						}
 					} else {
@@ -394,12 +350,12 @@ class Collector_Api_Callbacks {
 
 				}
 				// Save shipping reference to order.
-				update_post_meta( $order->get_id(), '_collector_shipping_reference', $cart_item->id );
+				update_post_meta( $order->get_id(), '_collector_shipping_reference', $cart_item['id'] );
 
-			} elseif ( strpos( $cart_item->id, 'invoicefee|' ) !== false ) {
+			} elseif ( strpos( $cart_item['id'], 'invoicefee|' ) !== false ) {
 
 				// Invoice fee.
-				$trimmed_cart_item_id = str_replace( 'invoicefee|', '', $cart_item->id );
+				$trimmed_cart_item_id = str_replace( 'invoicefee|', '', $cart_item['id'] );
 				$id                   = wc_get_product_id_by_sku( $trimmed_cart_item_id );
 
 				if ( 0 == $id ) {
@@ -443,18 +399,18 @@ class Collector_Api_Callbacks {
 				}
 			} else {
 
-				// Product items
-				$id = wc_get_product_id_by_sku( $cart_item->id );
+				// Product items.
+				$id = wc_get_product_id_by_sku( $cart_item['id'] );
 
 				if ( 0 == $id ) {
-					$id = $cart_item->id;
+					$id = $cart_item['id'];
 				}
 				$product = wc_get_product( $id );
-				$order->add_product( $product, $cart_item->quantity );
+				$order->add_product( $product, $cart_item['quantity'] );
 			}
 		}
 
-		// Make sure to run Sequential Order numbers if plugin exsists
+		// Make sure to run Sequential Order numbers if plugin exsists.
 		if ( class_exists( 'WC_Seq_Order_Number_Pro' ) ) {
 			$sequential = new WC_Seq_Order_Number_Pro();
 			$sequential->set_sequential_order_number( $order_id );
@@ -464,17 +420,17 @@ class Collector_Api_Callbacks {
 		}
 
 		// Save shipping data.
-		if ( isset( $collector_order->data->shipping ) ) {
-			update_post_meta( $order_id, '_collector_delivery_module_data', wp_json_encode( $collector_order->data->shipping, JSON_UNESCAPED_UNICODE ) );
-			update_post_meta( $order_id, '_collector_delivery_module_reference', $collector_order->data->shipping->pendingShipment->id );
+		if ( isset( $collector_order['data']['shipping'] ) ) {
+			update_post_meta( $order_id, '_collector_delivery_module_data', wp_json_encode( $collector_order['data']['shipping'], JSON_UNESCAPED_UNICODE ) );
+			update_post_meta( $order_id, '_collector_delivery_module_reference', $collector_order['data']['shipping']['pendingShipment']['id'] );
 		}
 
-		update_post_meta( $order_id, '_collector_payment_method', $collector_order->data->purchase->paymentName );
-		update_post_meta( $order_id, '_collector_payment_id', $collector_order->data->purchase->purchaseIdentifier );
+		update_post_meta( $order_id, '_collector_payment_method', $collector_order['data']['purchase']['paymentName'] );
+		update_post_meta( $order_id, '_collector_payment_id', $collector_order['data']['purchase']['purchaseIdentifier'] );
 		update_post_meta( $order_id, '_collector_customer_type', $customer_type );
 		update_post_meta( $order_id, '_collector_public_token', $public_token );
 		update_post_meta( $order_id, '_collector_private_id', $private_id );
-		$order->add_order_note( sprintf( __( 'Purchase via %s', 'collector-checkout-for-woocommerce' ), wc_collector_get_payment_method_name( $collector_order->data->purchase->paymentName ) ) );
+		$order->add_order_note( sprintf( __( 'Purchase via %s', 'collector-checkout-for-woocommerce' ), wc_collector_get_payment_method_name( $collector_order['data']['purchase']['paymentName'] ) ) );
 		$order->calculate_totals();
 		$order->save();
 
@@ -492,12 +448,12 @@ class Collector_Api_Callbacks {
 	 * Set order status function
 	 */
 	public function set_order_status( $order, $collector_order ) {
-		if ( 'Preliminary' === $collector_order->data->purchase->result || 'Completed' === $collector_order->data->purchase->result ) {
-			$order->payment_complete( $collector_order->data->purchase->purchaseIdentifier );
-			$order->add_order_note( 'Payment via Collector Checkout. Payment ID: ' . sanitize_key( $collector_order->data->purchase->purchaseIdentifier ) );
+		if ( 'Preliminary' === $collector_order['data->purchase']['result'] || 'Completed' === $collector_order['data']['purchase']['result'] ) {
+			$order->payment_complete( $collector_order['data']['purchase']['purchaseIdentifier'] );
+			$order->add_order_note( 'Payment via Collector Checkout. Payment ID: ' . sanitize_key( $collector_order['data']['purchase']['purchaseIdentifier'] ) );
 			Collector_Checkout::log( 'Order status not set correctly for order ' . $order->get_order_number() . ' during checkout process. Setting order status to Processing/Completed.' );
 		} else {
-			$order->add_order_note( __( 'Order is PENDING APPROVAL by Collector. Payment ID: ', 'collector-checkout-for-woocommerce' ) . $collector_order->data->purchase->purchaseIdentifier );
+			$order->add_order_note( __( 'Order is PENDING APPROVAL by Collector. Payment ID: ', 'collector-checkout-for-woocommerce' ) . $collector_order['data']['purchase']['purchaseIdentifier'] );
 			$order->update_status( 'on-hold' );
 			Collector_Checkout::log( 'Order status not set correctly for order ' . $order->get_order_number() . ' during checkout process. Setting order status to On hold.' );
 		}
@@ -509,7 +465,7 @@ class Collector_Api_Callbacks {
 	public function check_order_totals( $order, $collector_order ) {
 		// Check order total and compare it with Woo
 		$woo_order_total       = intval( round( $order->get_total() * 100, 2 ) );
-		$collector_order_total = intval( round( $collector_order->data->order->totalAmount * 100, 2 ) );
+		$collector_order_total = intval( round( $collector_order['data']['order']['totalAmount'] * 100, 2 ) );
 		if ( $woo_order_total > $collector_order_total && ( $woo_order_total - $collector_order_total ) > 3 ) {
 			$order->update_status( 'on-hold', sprintf( __( 'Order needs manual review. WooCommerce order total and Collector order total do not match. Collector order total: %s.', 'collector-checkout-for-woocommerce' ), $collector_order_total ) );
 			Collector_Checkout::log( 'Order total missmatch in order:' . $order->get_order_number() . '. Woo order total: ' . $woo_order_total . '. Collector order total: ' . $collector_order_total );
@@ -612,10 +568,10 @@ class Collector_Api_Callbacks {
 	public function check_if_user_exists_and_logged_in() {
 		// Check customer type.
 		$collector_email = '';
-		if ( 'BusinessCustomer' === $this->collector_order->data->customerType ) {
-			$collector_email = $this->collector_order->data->businessCustomer->email;
-		} elseif ( 'PrivateCustomer' === $this->collector_order->data->customerType ) {
-			$collector_email = $this->collector_order->data->customer->email;
+		if ( 'BusinessCustomer' === $this->collector_order['data']['customerType'] ) {
+			$collector_email = $this->collector_order['data']['businessCustomer']['email'];
+		} elseif ( 'PrivateCustomer' === $this->collector_order['data']['customerType'] ) {
+			$collector_email = $this->collector_order['data']['customer']['email'];
 		}
 
 		// Check if the email exists as a user.
@@ -635,13 +591,13 @@ class Collector_Api_Callbacks {
 	 * @return int
 	 */
 	public function get_collector_total() {
-		$cart_total_amount = $this->collector_order->data->cart->totalAmount;
-		$cart_fees         = $this->collector_order->data->fees;
+		$cart_total_amount = $this->collector_order['data']['cart']['totalAmount'];
+		$cart_fees         = $this->collector_order['data']['fees'];
 		$fee_total_amount  = 0;
 		foreach ( $cart_fees as $cart_fee => $fee ) {
-			if ( false === strpos( $fee->id, 'invoicefee|' ) ) { // Invoice fee is not included in WC()->cart->get_total(). Therefore excluding it in this calculation.
-				if ( is_numeric( $fee->unitPrice ) ) {
-					$fee_total_amount += $fee->unitPrice;
+			if ( false === strpos( $fee['id'], 'invoicefee|' ) ) { // Invoice fee is not included in WC()->cart->get_total(). Therefore excluding it in this calculation.
+				if ( is_numeric( $fee['unitPrice'] ) ) {
+					$fee_total_amount += $fee['unitPrice'];
 				}
 			}
 		}

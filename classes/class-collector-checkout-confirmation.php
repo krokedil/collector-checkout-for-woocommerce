@@ -49,7 +49,7 @@ class Collector_Checkout_Confirmation {
 		// Set fields to not required.
 		add_filter( 'woocommerce_checkout_fields', array( $this, 'collector_set_not_required' ), 20 );
 
-		// Save Collector data (private id) in WC order
+		// Save Collector data (private id) in WC order.
 		add_action( 'woocommerce_new_order', array( $this, 'save_collector_order_data' ) );
 
 	}
@@ -91,6 +91,8 @@ class Collector_Checkout_Confirmation {
 			$location = $order->get_checkout_order_received_url();
             wp_redirect( $location ); // phpcs:ignore
 			exit;
+		} else {
+			Collector_Checkout::log( 'Confirmation page rendered. We could not find a corresponding order that already contains public token: ' . $collector_public_token . '. Proceeding with Woo order creation.' );
 		}
 	}
 
@@ -122,24 +124,19 @@ class Collector_Checkout_Confirmation {
 		$private_id    = WC()->session->get( 'collector_private_id' );
 		$customer_type = WC()->session->get( 'collector_customer_type' );
 
-		$customer_data = new Collector_Checkout_Requests_Get_Checkout_Information( $private_id, $customer_type );
-		$customer_data = $customer_data->request();
-		$decoded_json  = json_decode( $customer_data );
+		$customer_data   = new Collector_Checkout_Requests_Get_Checkout_Information( $private_id, $customer_type );
+		$collector_order = $customer_data->request();
 
-		if ( 'PurchaseCompleted' == $decoded_json->data->status ) {
+		if ( 'PurchaseCompleted' === $collector_order['data']['status'] ) {
 			// Save the payment method and payment id
-			$payment_method = $decoded_json->data->purchase->paymentName;
-			$payment_id     = $decoded_json->data->purchase->purchaseIdentifier;
+			$payment_method = $collector_order['data']['purchase']['paymentName'];
+			$payment_id     = $collector_order['data']['purchase']['purchaseIdentifier'];
 			WC()->session->set( 'collector_payment_method', $payment_method );
 			WC()->session->set( 'collector_payment_id', $payment_id );
 
-			// Return the data, customer note and create a nonce.
-			$return                  = array();
-			$return['customer_data'] = json_decode( $customer_data );
-			// Run return through helper function.
-			$return['customer_data'] = self::verify_customer_data( $return );
+			$customer_data = wc_collector_verify_customer_data( $collector_order );
 
-			$this->save_customer_data( $return );
+			$this->save_customer_data( $customer_data );
 
 		} else {
 			// We didn't get a status PurchaseCompleted from Collector (but the Collector redirectPageUri has been triggered) so we redirect the customer to thank you page
@@ -151,7 +148,7 @@ class Collector_Checkout_Confirmation {
 				wc_get_endpoint_url( 'order-received', '', get_permalink( wc_get_page_id( 'checkout' ) ) )
 			);
 
-			Collector_Checkout::log( 'Payment complete triggered for private id ' . $private_id . ' but status is not PurchaseCompleted in Collectors system. Current status: ' . var_export( $decoded_json->data->status, true ) . '. Redirecting customer to simplified thankyou page.' );
+			Collector_Checkout::log( 'Payment complete triggered for private id ' . $private_id . ' but status is not PurchaseCompleted in Collectors system. Current status: ' . var_export( $collector_order['data']['status'], true ) . '. Redirecting customer to simplified thankyou page.' );
 
 			wp_safe_redirect( $url );
 			exit;
@@ -179,152 +176,63 @@ class Collector_Checkout_Confirmation {
 	 *
 	 * @param $klarna_order
 	 */
-	private function save_customer_data( $formated_customer_data ) {
+	private function save_customer_data( $customer_data ) {
 		if ( is_user_logged_in() ) {
 			// Load customer object, if user is logged in.
 			WC()->customer = new WC_Customer( get_current_user_id() );
 		}
 		// First name.
-		WC()->customer->set_billing_first_name( sanitize_text_field( $formated_customer_data['customer_data']['billingFirstName'] ) );
-		WC()->customer->set_shipping_first_name( sanitize_text_field( $formated_customer_data['customer_data']['shippingFirstName'] ) );
+		WC()->customer->set_billing_first_name( sanitize_text_field( $customer_data['billingFirstName'] ) );
+		WC()->customer->set_shipping_first_name( sanitize_text_field( $customer_data['shippingFirstName'] ) );
 
 		// Last name.
-		WC()->customer->set_billing_last_name( sanitize_text_field( $formated_customer_data['customer_data']['billingLastName'] ) );
-		WC()->customer->set_shipping_last_name( sanitize_text_field( $formated_customer_data['customer_data']['shippingLastName'] ) );
+		WC()->customer->set_billing_last_name( sanitize_text_field( $customer_data['billingLastName'] ) );
+		WC()->customer->set_shipping_last_name( sanitize_text_field( $customer_data['shippingLastName'] ) );
 
 		// Country.
-		WC()->customer->set_billing_country( strtoupper( sanitize_text_field( $formated_customer_data['customer_data']['countryCode'] ) ) );
-		WC()->customer->set_shipping_country( strtoupper( sanitize_text_field( $formated_customer_data['customer_data']['countryCode'] ) ) );
+		WC()->customer->set_billing_country( strtoupper( sanitize_text_field( $customer_data['countryCode'] ) ) );
+		WC()->customer->set_shipping_country( strtoupper( sanitize_text_field( $customer_data['countryCode'] ) ) );
 
 		// Street address 1.
-		WC()->customer->set_billing_address_1( sanitize_text_field( $formated_customer_data['customer_data']['billingAddress'] ) );
-		WC()->customer->set_shipping_address_1( sanitize_text_field( $formated_customer_data['customer_data']['shippingAddress'] ) );
+		WC()->customer->set_billing_address_1( sanitize_text_field( $customer_data['billingAddress'] ) );
+		WC()->customer->set_shipping_address_1( sanitize_text_field( $customer_data['shippingAddress'] ) );
 
 		// Street address 2.
-		if ( isset( $formated_customer_data['customer_data']['billingAddress2'] ) ) {
-			WC()->customer->set_billing_address_2( sanitize_text_field( $formated_customer_data['customer_data']['billingAddress2'] ) );
-			WC()->customer->set_shipping_address_2( sanitize_text_field( $formated_customer_data['customer_data']['shippingAddress2'] ) );
+		if ( isset( $customer_data['billingAddress2'] ) ) {
+			WC()->customer->set_billing_address_2( sanitize_text_field( $customer_data['billingAddress2'] ) );
+			WC()->customer->set_shipping_address_2( sanitize_text_field( $customer_data['shippingAddress2'] ) );
 		}
 
 		// Company Name.
-		if ( isset( $formated_customer_data['customer_data']['billingCompanyName'] ) ) {
-			WC()->customer->set_billing_company( sanitize_text_field( $formated_customer_data['customer_data']['billingCompanyName'] ) );
-			WC()->customer->set_shipping_company( sanitize_text_field( $formated_customer_data['customer_data']['shippingCompanyName'] ) );
+		if ( isset( $customer_data['billingCompanyName'] ) ) {
+			WC()->customer->set_billing_company( sanitize_text_field( $customer_data['billingCompanyName'] ) );
+			WC()->customer->set_shipping_company( sanitize_text_field( $customer_data['shippingCompanyName'] ) );
 		}
 
 		// City.
-		WC()->customer->set_billing_city( sanitize_text_field( $formated_customer_data['customer_data']['billingCity'] ) );
-		WC()->customer->set_shipping_city( sanitize_text_field( $formated_customer_data['customer_data']['shippingCity'] ) );
+		WC()->customer->set_billing_city( sanitize_text_field( $customer_data['billingCity'] ) );
+		WC()->customer->set_shipping_city( sanitize_text_field( $customer_data['shippingCity'] ) );
 
 		// Postcode.
-		WC()->customer->set_billing_postcode( sanitize_text_field( $formated_customer_data['customer_data']['billingPostalCode'] ) );
-		WC()->customer->set_shipping_postcode( sanitize_text_field( $formated_customer_data['customer_data']['shippingPostalCode'] ) );
+		WC()->customer->set_billing_postcode( sanitize_text_field( $customer_data['billingPostalCode'] ) );
+		WC()->customer->set_shipping_postcode( sanitize_text_field( $customer_data['shippingPostalCode'] ) );
 
 		// Phone.
-		WC()->customer->set_billing_phone( sanitize_text_field( $formated_customer_data['customer_data']['phone'] ) );
+		WC()->customer->set_billing_phone( sanitize_text_field( $customer_data['phone'] ) );
 
 		// Email.
-		WC()->customer->set_billing_email( sanitize_text_field( $formated_customer_data['customer_data']['email'] ) );
+		WC()->customer->set_billing_email( sanitize_text_field( $customer_data['email'] ) );
 
 		WC()->customer->save();
-	}
-
-	public static function verify_customer_data( $customer_data ) {
-		$base_country = WC()->countries->get_base_country();
-		if ( 'SE' === $base_country || 'FI' === $base_country ) {
-			$fallback_postcode = 11111;
-		} elseif ( 'NO' === $base_country || 'DK' === $base_country ) {
-			$fallback_postcode = 1111;
-		}
-		if ( 'PrivateCustomer' === $customer_data['customer_data']->data->customerType ) {
-			$shipping_first_name  = isset( $customer_data['customer_data']->data->customer->deliveryAddress->firstName ) ? $customer_data['customer_data']->data->customer->deliveryAddress->firstName : '.';
-			$shipping_last_name   = isset( $customer_data['customer_data']->data->customer->deliveryAddress->lastName ) ? $customer_data['customer_data']->data->customer->deliveryAddress->lastName : '.';
-			$shipping_address     = isset( $customer_data['customer_data']->data->customer->deliveryAddress->address ) ? $customer_data['customer_data']->data->customer->deliveryAddress->address : '.';
-			$shipping_address2    = isset( $customer_data['customer_data']->data->customer->deliveryAddress->address2 ) ? $customer_data['customer_data']->data->customer->deliveryAddress->address2 : '';
-			$shipping_postal_code = isset( $customer_data['customer_data']->data->customer->deliveryAddress->postalCode ) ? $customer_data['customer_data']->data->customer->deliveryAddress->postalCode : $fallback_postcode;
-			$shipping_city        = isset( $customer_data['customer_data']->data->customer->deliveryAddress->city ) ? $customer_data['customer_data']->data->customer->deliveryAddress->city : '.';
-
-			$billing_first_name  = ( isset( $customer_data['customer_data']->data->customer->billingAddress->firstName ) ? $customer_data['customer_data']->data->customer->billingAddress->firstName : isset( $customer_data['customer_data']->data->customer->deliveryAddress->firstName ) ) ? $customer_data['customer_data']->data->customer->deliveryAddress->firstName : '.';
-			$billing_last_name   = ( isset( $customer_data['customer_data']->data->customer->billingAddress->lastName ) ? $customer_data['customer_data']->data->customer->billingAddress->lastName : isset( $customer_data['customer_data']->data->customer->deliveryAddress->lastName ) ) ? $customer_data['customer_data']->data->customer->deliveryAddress->lastName : '.';
-			$billing_address     = ( isset( $customer_data['customer_data']->data->customer->billingAddress->address ) ? $customer_data['customer_data']->data->customer->billingAddress->address : isset( $customer_data['customer_data']->data->customer->deliveryAddress->address ) ) ? $customer_data['customer_data']->data->customer->deliveryAddress->address : '.';
-			$billing_address2    = ( isset( $customer_data['customer_data']->data->customer->billingAddress->address2 ) ? $customer_data['customer_data']->data->customer->billingAddress->address2 : isset( $customer_data['customer_data']->data->customer->deliveryAddress->address2 ) ) ? $customer_data['customer_data']->data->customer->deliveryAddress->address2 : '';
-			$billing_postal_code = ( isset( $customer_data['customer_data']->data->customer->billingAddress->postalCode ) ? $customer_data['customer_data']->data->customer->billingAddress->postalCode : isset( $customer_data['customer_data']->data->customer->deliveryAddress->postalCode ) ) ? $customer_data['customer_data']->data->customer->deliveryAddress->postalCode : $fallback_postcode;
-			$billing_city        = ( isset( $customer_data['customer_data']->data->customer->billingAddress->city ) ? $customer_data['customer_data']->data->customer->billingAddress->city : isset( $customer_data['customer_data']->data->customer->deliveryAddress->city ) ) ? $customer_data['customer_data']->data->customer->deliveryAddress->city : '.';
-
-			$billing_company_name  = '';
-			$shipping_company_name = '';
-			$org_nr                = '';
-
-			$phone = isset( $customer_data['customer_data']->data->customer->mobilePhoneNumber ) ? $customer_data['customer_data']->data->customer->mobilePhoneNumber : '.';
-			$email = isset( $customer_data['customer_data']->data->customer->email ) ? $customer_data['customer_data']->data->customer->email : '.';
-		} elseif ( 'BusinessCustomer' === $customer_data['customer_data']->data->customerType ) {
-			$billing_address      = isset( $customer_data['customer_data']->data->businessCustomer->invoiceAddress->address ) ? $customer_data['customer_data']->data->businessCustomer->invoiceAddress->address : ',';
-			$billing_address2     = isset( $customer_data['customer_data']->data->businessCustomer->invoiceAddress->address2 ) ? $customer_data['customer_data']->data->businessCustomer->invoiceAddress->address2 : '';
-			$billing_postal_code  = isset( $customer_data['customer_data']->data->businessCustomer->invoiceAddress->postalCode ) ? $customer_data['customer_data']->data->businessCustomer->invoiceAddress->postalCode : $fallback_postcode;
-			$billing_city         = isset( $customer_data['customer_data']->data->businessCustomer->invoiceAddress->city ) ? $customer_data['customer_data']->data->businessCustomer->invoiceAddress->city : '.';
-			$shipping_address     = isset( $customer_data['customer_data']->data->businessCustomer->deliveryAddress->address ) ? $customer_data['customer_data']->data->businessCustomer->deliveryAddress->address : ',';
-			$shipping_address2    = isset( $customer_data['customer_data']->data->businessCustomer->deliveryAddress->address2 ) ? $customer_data['customer_data']->data->businessCustomer->deliveryAddress->address2 : '';
-			$shipping_postal_code = isset( $customer_data['customer_data']->data->businessCustomer->deliveryAddress->postalCode ) ? $customer_data['customer_data']->data->businessCustomer->deliveryAddress->postalCode : $fallback_postcode;
-			$shipping_city        = isset( $customer_data['customer_data']->data->businessCustomer->deliveryAddress->city ) ? $customer_data['customer_data']->data->businessCustomer->deliveryAddress->city : '.';
-
-			$billing_first_name    = isset( $customer_data['customer_data']->data->businessCustomer->firstName ) ? $customer_data['customer_data']->data->businessCustomer->firstName : '.';
-			$billing_last_name     = isset( $customer_data['customer_data']->data->businessCustomer->lastName ) ? $customer_data['customer_data']->data->businessCustomer->lastName : '.';
-			$billing_company_name  = isset( $customer_data['customer_data']->data->businessCustomer->companyName ) ? $customer_data['customer_data']->data->businessCustomer->companyName : '.';
-			$shipping_first_name   = isset( $customer_data['customer_data']->data->businessCustomer->firstName ) ? $customer_data['customer_data']->data->businessCustomer->firstName : '.';
-			$shipping_last_name    = isset( $customer_data['customer_data']->data->businessCustomer->lastName ) ? $customer_data['customer_data']->data->businessCustomer->lastName : '.';
-			$shipping_company_name = isset( $customer_data['customer_data']->data->businessCustomer->deliveryAddress->companyName ) ? $customer_data['customer_data']->data->businessCustomer->deliveryAddress->companyName : $customer_data['customer_data']->data->businessCustomer->companyName;
-			$phone                 = isset( $customer_data['customer_data']->data->businessCustomer->mobilePhoneNumber ) ? $customer_data['customer_data']->data->businessCustomer->mobilePhoneNumber : '.';
-			$email                 = isset( $customer_data['customer_data']->data->businessCustomer->email ) ? $customer_data['customer_data']->data->businessCustomer->email : '.';
-
-			$org_nr            = isset( $customer_data['customer_data']->data->businessCustomer->organizationNumber ) ? $customer_data['customer_data']->data->businessCustomer->organizationNumber : '.';
-			$invoice_reference = isset( $customer_data['customer_data']->data->businessCustomer->invoiceReference ) ? $customer_data['customer_data']->data->businessCustomer->invoiceReference : '.';
-
-			WC()->session->set( 'collector_org_nr', $org_nr );
-			WC()->session->set( 'collector_invoice_reference', $invoice_reference );
-		}
-		$countryCode = isset( $customer_data['customer_data']->data->countryCode ) ? $customer_data['customer_data']->data->countryCode : $base_country;
-
-		$customer_information = array(
-			'billingFirstName'    => $billing_first_name,
-			'billingLastName'     => $billing_last_name,
-			'billingCompanyName'  => $billing_company_name,
-			'billingAddress'      => $billing_address,
-			'billingAddress2'     => $billing_address2,
-			'billingPostalCode'   => $billing_postal_code,
-			'billingCity'         => $billing_city,
-			'shippingFirstName'   => $shipping_first_name,
-			'shippingLastName'    => $shipping_last_name,
-			'shippingCompanyName' => $shipping_company_name,
-			'shippingAddress'     => $shipping_address,
-			'shippingAddress2'    => $shipping_address2,
-			'shippingPostalCode'  => $shipping_postal_code,
-			'shippingCity'        => $shipping_city,
-			'phone'               => $phone,
-			'email'               => $email,
-			'countryCode'         => $countryCode,
-			'orgNr'               => $org_nr,
-		);
-		$empty_fields         = array();
-		$errors               = 0;
-		foreach ( $customer_information as $key => $value ) {
-			if ( '.' === $value ) {
-				array_push( $empty_fields, $key );
-				$errors = 1;
-			}
-		}
-		if ( 1 === $errors ) {
-			WC()->session->set( 'collector_empty_fields', $empty_fields );
-		}
-		return $customer_information;
 	}
 
 	/**
 	 * When checking out using Collector Checkout, we need to make sure none of the WooCommerce are required, in case Collector
 	 * does not return info for some of them.
 	 *
-	 * @param array $fields WooCommerce checkout fields.
+	 * @param array $checkout_fields WooCommerce checkout fields.
 	 *
-	 * @return mixed
+	 * @return array
 	 */
 	public function collector_set_not_required( $checkout_fields ) {
 		// Set fields to not required, to prevent orders from failing
@@ -362,7 +270,7 @@ class Collector_Checkout_Confirmation {
 				update_post_meta( $order_id, '_collector_private_id', WC()->session->get( 'collector_private_id' ) );
 			}
 
-			if ( null != WC()->session->get( 'collector_customer_order_note' ) ) {
+			if ( null !== WC()->session->get( 'collector_customer_order_note' ) ) {
 				$order->set_customer_note( sanitize_text_field( WC()->session->get( 'collector_customer_order_note' ) ) );
 				$order->save();
 			}

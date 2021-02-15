@@ -78,10 +78,9 @@ class Collector_Checkout_Requests {
 
 			if ( null !== json_decode( $response['body'], true ) ) {
 				$errors = json_decode( $response['body'], true );
-				foreach ( $errors as $error => $aco_error_messages ) {
-					foreach ( $aco_error_messages as $aco_error_message ) {
-						$error_message .= $aco_error_message . ' ';
-					}
+
+				foreach ( $errors as $key => $error ) {
+					$error_message .= $error['code'] . '. ' . $error['message'];
 				}
 			}
 			return new WP_Error( wp_remote_retrieve_response_code( $response ), $error_message, $data );

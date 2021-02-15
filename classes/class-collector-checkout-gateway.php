@@ -228,28 +228,27 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 
 		Collector_Checkout::log( 'Process Collector Payment for private_id ' . $private_id );
 
-		$payment_data   = new Collector_Checkout_Requests_Get_Checkout_Information( $private_id, $customer_type );
-		$payment_data   = $payment_data->request();
-		$payment_data   = json_decode( $payment_data );
-		$payment_status = $payment_data->data->purchase->result;
-		$payment_method = $payment_data->data->purchase->paymentName;
-		$payment_id     = $payment_data->data->purchase->purchaseIdentifier;
+		$collector_order = new Collector_Checkout_Requests_Get_Checkout_Information( $private_id, $customer_type );
+		$collector_order = $collector_order->request();
+		$payment_status  = $collector_order['data']['purchase']['result'];
+		$payment_method  = $collector_order['data']['purchase']['paymentName'];
+		$payment_id      = $collector_order['data']['purchase']['purchaseIdentifier'];
 
 		update_post_meta( $order_id, '_collector_payment_method', $payment_method );
 		update_post_meta( $order_id, '_collector_payment_id', $payment_id );
-		$this->save_shipping_reference_to_order( $order_id, $payment_data );
+		$this->save_shipping_reference_to_order( $order_id, $collector_order );
 
 		// Save shipping data.
-		if ( isset( $payment_data->data->shipping ) ) {
-			update_post_meta( $order_id, '_collector_delivery_module_data', wp_json_encode( $payment_data->data->shipping, JSON_UNESCAPED_UNICODE ) );
-			update_post_meta( $order_id, '_collector_delivery_module_reference', $payment_data->data->shipping->pendingShipment->id );
+		if ( isset( $collector_order['data']['shipping'] ) ) {
+			update_post_meta( $order_id, '_collector_delivery_module_data', wp_json_encode( $collector_order['data']['shipping'], JSON_UNESCAPED_UNICODE ) );
+			update_post_meta( $order_id, '_collector_delivery_module_reference', $collector_order['data']['shipping']['pendingShipment']['id'] );
 			WC()->session->__unset( 'collector_delivery_module_enabled' );
 			WC()->session->__unset( 'collector_delivery_module_data' );
 		}
 
 		// Tie this order to a user if we have one.
-		if ( email_exists( $payment_data->data->customer->email ) ) {
-			$user    = get_user_by( 'email', $payment_data->data->customer->email );
+		if ( email_exists( $collector_order['data']['customer']['email'] ) ) {
+			$user    = get_user_by( 'email', $collector_order['data']['customer']['email'] );
 			$user_id = $user->ID;
 			update_post_meta( $order_id, '_customer_user', $user_id );
 		}
@@ -314,15 +313,15 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 	/**
 	 * Saving shipping reference to order
 	 *
-	 * @param int    $order_id WooCommerce order id.
-	 * @param object $payment_data Collector payment data.
+	 * @param int   $order_id WooCommerce order id.
+	 * @param array $collector_order Collector payment data.
 	 * @return void
 	 */
-	public function save_shipping_reference_to_order( $order_id, $payment_data ) {
-		$order_items = $payment_data->data->order->items;
+	public function save_shipping_reference_to_order( $order_id, $collector_order ) {
+		$order_items = $collector_order['data']['order']['items'];
 		foreach ( $order_items as $item ) {
-			if ( strpos( $item->id, 'shipping|' ) !== false ) {
-				update_post_meta( $order_id, '_collector_shipping_reference', $item->id );
+			if ( strpos( $item['id'], 'shipping|' ) !== false ) {
+				update_post_meta( $order_id, '_collector_shipping_reference', $item['id'] );
 			}
 		}
 	}
