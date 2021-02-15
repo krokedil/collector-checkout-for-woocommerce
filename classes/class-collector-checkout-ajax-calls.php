@@ -1,8 +1,17 @@
 <?php
+/**
+ * Ajax class file.
+ *
+ * @package Collector_Checkout/Classes
+ */
+
 if ( ! defined( 'ABSPATH' ) ) {
-	exit; // Exit if accessed directly
+	exit; // Exit if accessed directly.
 }
 
+/**
+ * Ajax class.
+ */
 class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 
 	/**
@@ -36,14 +45,18 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 		}
 	}
 
-
+	/**
+	 * Gets the Public token from session.
+	 *
+	 * @return void
+	 */
 	public static function get_public_token() {
-		$customer_type      = wc_clean( $_REQUEST['customer_type'] );
+		$customer_type      = wc_clean( $_POST['customer_type'] );
 		$public_token       = WC()->session->get( 'collector_public_token' );
 		$collector_settings = get_option( 'woocommerce_collector_checkout_settings' );
 		$test_mode          = $collector_settings['test_mode'];
 
-		// Use current token if one is stored in session previously and we still have the same customer type
+		// Use current token if one is stored in session previously and we still have the same customer type.
 		if ( ! empty( $public_token ) && $customer_type == WC()->session->get( 'collector_customer_type' ) && get_woocommerce_currency() == WC()->session->get( 'collector_currency' ) ) {
 			$return = array(
 				'publicToken'   => WC()->session->get( 'collector_public_token' ),
@@ -97,6 +110,11 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 		}
 	}
 
+	/**
+	 * Update checkout.
+	 *
+	 * @return void
+	 */
 	public static function update_checkout() {
 
 		wc_maybe_define_constant( 'WOOCOMMERCE_CHECKOUT', true );
@@ -108,14 +126,13 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 		$private_id          = WC()->session->get( 'collector_private_id' );
 		$customer_type       = WC()->session->get( 'collector_customer_type' );
 		$update_fees         = new Collector_Checkout_Requests_Update_Fees( $private_id, $customer_type );
-		$update_fees_request = $update_fees->request();
-		$response_body       = json_decode( $update_fees_request['body'] );
+		$collector_order_fee = $update_fees->request();
 
 		// Check that update fees request was ok.
-		if ( is_wp_error( $update_fees_request ) || ! empty( $response_body->error ) || 200 !== $update_fees_request['response']['code'] ) {
+		if ( is_wp_error( $collector_order_fee ) ) {
 			// Check if purchase was completed, if it was dont redirect customer.
-			if ( 900 === $response_body->error->code ) {
-				foreach ( $response_body->error->errors as $error ) {
+			if ( 900 === $collector_order_fee->get_error_code() ) {
+				foreach ( $collector_order_fee->get_error_messages() as $error ) {
 					if ( 'Purchase_Completed' === $error->reason ) {
 						$return                 = array();
 						$return['redirect_url'] = '#';
@@ -131,12 +148,11 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 			wp_die();
 		}
 
-		$update_cart         = new Collector_Checkout_Requests_Update_Cart( $private_id, $customer_type );
-		$update_cart_request = $update_cart->request();
-		$response_body       = json_decode( $update_cart_request['body'] );
+		$update_cart          = new Collector_Checkout_Requests_Update_Cart( $private_id, $customer_type );
+		$collector_order_cart = $update_cart->request();
 
-		// Check that update cart request was ok
-		if ( is_wp_error( $update_cart_request ) || ! empty( $response_body->error || 200 !== $update_cart_request['response']['code'] ) ) {
+		// Check that update cart request was ok.
+		if ( is_wp_error( $collector_order_cart ) ) {
 			wc_collector_unset_sessions();
 			$return                 = array();
 			$return['redirect_url'] = wc_get_checkout_url();
@@ -172,34 +188,33 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 
 		$update_needed = 'no';
 
-		// Get customer data from Collector
+		// Get customer data from Collector.
 		$private_id      = WC()->session->get( 'collector_private_id' );
 		$customer_type   = WC()->session->get( 'collector_customer_type' );
 		$collector_order = new Collector_Checkout_Requests_Get_Checkout_Information( $private_id, $customer_type );
 		$collector_order = $collector_order->request();
-		$collector_order = json_decode( $collector_order );
 
 		$customer_data                     = array();
-		$customer_data['billing_country']  = $collector_order->data->countryCode;
-		$customer_data['shipping_country'] = $collector_order->data->countryCode;
-		$customer_data['billing_email']    = $collector_order->data->customer->email;
+		$customer_data['billing_country']  = $collector_order['data']['countryCode'];
+		$customer_data['shipping_country'] = $collector_order['data']['countryCode'];
+		$customer_data['billing_email']    = $collector_order['data']['customer']['email'];
 
-		if ( 'BusinessCustomer' == $collector_order->data->customerType ) {
-			$customer_data['billing_postcode']  = $collector_order->data->businessCustomer->invoiceAddress->postalCode;
-			$customer_data['shipping_postcode'] = $collector_order->data->businessCustomer->deliveryAddress->postalCode;
+		if ( 'BusinessCustomer' === $collector_order['data']['customerType'] ) {
+			$customer_data['billing_postcode']  = $collector_order['data']['businessCustomer']['invoiceAddress']['postalCode'];
+			$customer_data['shipping_postcode'] = $collector_order['data']['businessCustomer']['deliveryAddress']['postalCode'];
 		} else {
-			$customer_data['billing_postcode']  = $collector_order->data->customer->billingAddress->postalCode;
-			$customer_data['shipping_postcode'] = $collector_order->data->customer->deliveryAddress->postalCode;
+			$customer_data['billing_postcode']  = $collector_order['data']['customer']['billingAddress']['postalCode'];
+			$customer_data['shipping_postcode'] = $collector_order['data']['customer']['deliveryAddress']['postalCode'];
 		}
 
 		if ( $customer_data['billing_country'] ) {
 
-			// If country is changed then we need to trigger an cart update in the Collector Checkout
+			// If country is changed then we need to trigger an cart update in the Collector Checkout.
 			if ( WC()->customer->get_billing_country() !== $customer_data['billing_country'] ) {
 				$update_needed = 'yes';
 			}
 
-			// If country is changed then we need to trigger an cart update in the Collector Checkout
+			// If country is changed then we need to trigger an cart update in the Collector Checkout.
 			if ( WC()->customer->get_shipping_postcode() !== $customer_data['shipping_postcode'] ) {
 				$update_needed = 'yes';
 			}
@@ -232,11 +247,10 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 		$customer_type   = WC()->session->get( 'collector_customer_type' );
 		$collector_order = new Collector_Checkout_Requests_Get_Checkout_Information( $private_id, $customer_type );
 		$collector_order = $collector_order->request();
-		$collector_order = json_decode( $collector_order );
-		$shipping_title  = $collector_order->data->fees->shipping->description;
-		$shipping_id     = $collector_order->data->fees->shipping->id;
-		$shipping_price  = $collector_order->data->fees->shipping->unitPrice;
-		$shipping_vat    = $collector_order->data->fees->shipping->vat;
+		$shipping_title  = $collector_order['data']['fees']['shipping']['description'];
+		$shipping_id     = $collector_order['data']['fees']['shipping']['id'];
+		$shipping_price  = $collector_order['data']['fees']['shipping']['unitPrice'];
+		$shipping_vat    = $collector_order['data']['fees']['shipping']['vat'];
 
 		$shipping_data = array(
 			'label'        => $shipping_title,
@@ -258,6 +272,11 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 		wp_die();
 	}
 
+	/**
+	 * Save customer order note to session.
+	 *
+	 * @return void
+	 */
 	public static function add_customer_order_note() {
 		WC()->session->set( 'collector_customer_order_note', $_POST['order_note'] );
 
@@ -265,6 +284,11 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 		wp_die();
 	}
 
+	/**
+	 * Get thankyou iframe info.
+	 *
+	 * @return void
+	 */
 	public static function get_checkout_thank_you() {
 		$order_id           = '';
 		$order_id           = sanitize_text_field( $_POST['order_id'] );
@@ -272,7 +296,7 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 		$collector_settings = get_option( 'woocommerce_collector_checkout_settings' );
 		$test_mode          = $collector_settings['test_mode'];
 
-		// If something went wrong in get_customer_data() - display a "thank you page light"
+		// If something went wrong in get_customer_data() - display a "thank you page light".
 		if ( 'not-completed' == $purchase_status ) {
 			$public_token = sanitize_text_field( $_POST['public_token'] );
 			if ( WC()->session->get( 'collector_customer_type' ) ) {
@@ -302,7 +326,7 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 		$private_id    = WC()->session->get( 'collector_private_id' );
 		$customer_type = WC()->session->get( 'collector_customer_type' );
 
-		// Prevent duplicate orders if confirmation page is reloaded manually by customer
+		// Prevent duplicate orders if confirmation page is reloaded manually by customer.
 		$query          = new WC_Order_Query(
 			array(
 				'limit'          => -1,
@@ -335,24 +359,23 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 
 		Collector_Checkout::log( 'Payment complete triggered for private id ' . $private_id . '. Starting WooCommerce checkout form processing...' );
 
-		$customer_data = new Collector_Checkout_Requests_Get_Checkout_Information( $private_id, $customer_type );
-		$customer_data = $customer_data->request();
-		$decoded_json  = json_decode( $customer_data );
+		$customer_data   = new Collector_Checkout_Requests_Get_Checkout_Information( $private_id, $customer_type );
+		$collector_order = $customer_data->request();
 
-		if ( 'PurchaseCompleted' == $decoded_json->data->status ) {
-			// Save the payment method and payment id
-			$payment_method = $decoded_json->data->purchase->paymentName;
-			$payment_id     = $decoded_json->data->purchase->purchaseIdentifier;
+		if ( 'PurchaseCompleted' == $collector_order['data']['status'] ) {
+			// Save the payment method and payment id.
+			$payment_method = $collector_order['data']['purchase']['paymentName'];
+			$payment_id     = $collector_order['data']['purchase']['purchaseIdentifier'];
 			WC()->session->set( 'collector_payment_method', $payment_method );
 			WC()->session->set( 'collector_payment_id', $payment_id );
 
 			// Return the data, customer note and create a nonce.
-			$return                  = array();
-			$return['customer_data'] = json_decode( $customer_data );
-			// Run return through helper function.
-			$return['customer_data'] = self::verify_customer_data( $return );
+			$return = array();
+
+			// Run customer data through helper function.
+			$return['customer_data'] = wc_collector_verify_customer_data( $collector_order );
 			$return['nonce']         = wp_create_nonce( 'woocommerce-process_checkout' );
-			if ( null != WC()->session->get( 'collector_customer_order_note' ) ) {
+			if ( null !== WC()->session->get( 'collector_customer_order_note' ) ) {
 				$return['order_note'] = WC()->session->get( 'collector_customer_order_note' );
 			} else {
 				$return['order_note'] = '';
@@ -361,7 +384,7 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 			wp_send_json_success( $return );
 			wp_die();
 		} else {
-			// We didn't get a status PurchaseCompleted from Collector (but the Collector redirectPageUri has been triggered) so we redirect the customer to thank you page
+			// We didn't get a status PurchaseCompleted from Collector (but the Collector redirectPageUri has been triggered) so we redirect the customer to thank you page.
 			$return                 = array();
 			$url                    = add_query_arg(
 				array(
@@ -371,7 +394,7 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 				wc_get_endpoint_url( 'order-received', '', get_permalink( wc_get_page_id( 'checkout' ) ) )
 			);
 			$return['redirect_url'] = $url;
-			Collector_Checkout::log( 'Payment complete triggered for private id ' . $private_id . ' but status is not PurchaseCompleted in Collectors system. Current status: ' . var_export( $decoded_json->data->status, true ) . '. Redirecting customer to simplified thankyou page.' );
+			Collector_Checkout::log( 'Payment complete triggered for private id ' . $private_id . ' but status is not PurchaseCompleted in Collectors system. Current status: ' . var_export( $collector_order['data']['status'], true ) . '. Redirecting customer to simplified thankyou page.' );
 			wp_send_json_error( $return );
 			wp_die();
 		}
@@ -425,96 +448,6 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 		wp_die();
 	}
 
-
-	public static function verify_customer_data( $customer_data ) {
-		$base_country = WC()->countries->get_base_country();
-		if ( 'SE' === $base_country || 'FI' === $base_country ) {
-			$fallback_postcode = 11111;
-		} elseif ( 'NO' === $base_country || 'DK' === $base_country ) {
-			$fallback_postcode = 1111;
-		}
-		if ( 'PrivateCustomer' === $customer_data['customer_data']->data->customerType ) {
-			$shipping_first_name  = isset( $customer_data['customer_data']->data->customer->deliveryAddress->firstName ) ? $customer_data['customer_data']->data->customer->deliveryAddress->firstName : '.';
-			$shipping_last_name   = isset( $customer_data['customer_data']->data->customer->deliveryAddress->lastName ) ? $customer_data['customer_data']->data->customer->deliveryAddress->lastName : '.';
-			$shipping_address     = isset( $customer_data['customer_data']->data->customer->deliveryAddress->address ) ? $customer_data['customer_data']->data->customer->deliveryAddress->address : '.';
-			$shipping_address2    = isset( $customer_data['customer_data']->data->customer->deliveryAddress->address2 ) ? $customer_data['customer_data']->data->customer->deliveryAddress->address2 : '';
-			$shipping_postal_code = isset( $customer_data['customer_data']->data->customer->deliveryAddress->postalCode ) ? $customer_data['customer_data']->data->customer->deliveryAddress->postalCode : $fallback_postcode;
-			$shipping_city        = isset( $customer_data['customer_data']->data->customer->deliveryAddress->city ) ? $customer_data['customer_data']->data->customer->deliveryAddress->city : '.';
-
-			$billing_first_name  = isset( $customer_data['customer_data']->data->customer->billingAddress->firstName ) ? $customer_data['customer_data']->data->customer->billingAddress->firstName : $shipping_first_name;
-			$billing_last_name   = isset( $customer_data['customer_data']->data->customer->billingAddress->lastName ) ? $customer_data['customer_data']->data->customer->billingAddress->lastName : $shipping_last_name;
-			$billing_address     = isset( $customer_data['customer_data']->data->customer->billingAddress->address ) ? $customer_data['customer_data']->data->customer->billingAddress->address : $shipping_address;
-			$billing_address2    = isset( $customer_data['customer_data']->data->customer->billingAddress->address2 ) ? $customer_data['customer_data']->data->customer->billingAddress->address2 : '';
-			$billing_postal_code = isset( $customer_data['customer_data']->data->customer->billingAddress->postalCode ) ? $customer_data['customer_data']->data->customer->billingAddress->postalCode : $shipping_postal_code;
-			$billing_city        = isset( $customer_data['customer_data']->data->customer->billingAddress->city ) ? $customer_data['customer_data']->data->customer->billingAddress->city : $shipping_city;
-
-			$billing_company_name  = '';
-			$shipping_company_name = '';
-			$org_nr                = '';
-
-			$phone = isset( $customer_data['customer_data']->data->customer->mobilePhoneNumber ) ? $customer_data['customer_data']->data->customer->mobilePhoneNumber : '.';
-			$email = isset( $customer_data['customer_data']->data->customer->email ) ? $customer_data['customer_data']->data->customer->email : '.';
-		} elseif ( 'BusinessCustomer' === $customer_data['customer_data']->data->customerType ) {
-			$billing_address      = isset( $customer_data['customer_data']->data->businessCustomer->invoiceAddress->address ) ? $customer_data['customer_data']->data->businessCustomer->invoiceAddress->address : ',';
-			$billing_address2     = isset( $customer_data['customer_data']->data->businessCustomer->invoiceAddress->address2 ) ? $customer_data['customer_data']->data->businessCustomer->invoiceAddress->address2 : '';
-			$billing_postal_code  = isset( $customer_data['customer_data']->data->businessCustomer->invoiceAddress->postalCode ) ? $customer_data['customer_data']->data->businessCustomer->invoiceAddress->postalCode : $fallback_postcode;
-			$billing_city         = isset( $customer_data['customer_data']->data->businessCustomer->invoiceAddress->city ) ? $customer_data['customer_data']->data->businessCustomer->invoiceAddress->city : '.';
-			$shipping_address     = isset( $customer_data['customer_data']->data->businessCustomer->deliveryAddress->address ) ? $customer_data['customer_data']->data->businessCustomer->deliveryAddress->address : ',';
-			$shipping_address2    = isset( $customer_data['customer_data']->data->businessCustomer->deliveryAddress->address2 ) ? $customer_data['customer_data']->data->businessCustomer->deliveryAddress->address2 : '';
-			$shipping_postal_code = isset( $customer_data['customer_data']->data->businessCustomer->deliveryAddress->postalCode ) ? $customer_data['customer_data']->data->businessCustomer->deliveryAddress->postalCode : $fallback_postcode;
-			$shipping_city        = isset( $customer_data['customer_data']->data->businessCustomer->deliveryAddress->city ) ? $customer_data['customer_data']->data->businessCustomer->deliveryAddress->city : '.';
-
-			$billing_first_name    = isset( $customer_data['customer_data']->data->businessCustomer->firstName ) ? $customer_data['customer_data']->data->businessCustomer->firstName : '.';
-			$billing_last_name     = isset( $customer_data['customer_data']->data->businessCustomer->lastName ) ? $customer_data['customer_data']->data->businessCustomer->lastName : '.';
-			$billing_company_name  = isset( $customer_data['customer_data']->data->businessCustomer->companyName ) ? $customer_data['customer_data']->data->businessCustomer->companyName : '.';
-			$shipping_first_name   = isset( $customer_data['customer_data']->data->businessCustomer->firstName ) ? $customer_data['customer_data']->data->businessCustomer->firstName : '.';
-			$shipping_last_name    = isset( $customer_data['customer_data']->data->businessCustomer->lastName ) ? $customer_data['customer_data']->data->businessCustomer->lastName : '.';
-			$shipping_company_name = isset( $customer_data['customer_data']->data->businessCustomer->deliveryAddress->companyName ) ? $customer_data['customer_data']->data->businessCustomer->deliveryAddress->companyName : $customer_data['customer_data']->data->businessCustomer->companyName;
-			$phone                 = isset( $customer_data['customer_data']->data->businessCustomer->mobilePhoneNumber ) ? $customer_data['customer_data']->data->businessCustomer->mobilePhoneNumber : '.';
-			$email                 = isset( $customer_data['customer_data']->data->businessCustomer->email ) ? $customer_data['customer_data']->data->businessCustomer->email : '.';
-
-			$org_nr            = isset( $customer_data['customer_data']->data->businessCustomer->organizationNumber ) ? $customer_data['customer_data']->data->businessCustomer->organizationNumber : '.';
-			$invoice_reference = isset( $customer_data['customer_data']->data->businessCustomer->invoiceReference ) ? $customer_data['customer_data']->data->businessCustomer->invoiceReference : '.';
-
-			WC()->session->set( 'collector_org_nr', $org_nr );
-			WC()->session->set( 'collector_invoice_reference', $invoice_reference );
-		}
-		$countryCode = isset( $customer_data['customer_data']->data->countryCode ) ? $customer_data['customer_data']->data->countryCode : $base_country;
-
-		$customer_information = array(
-			'billingFirstName'    => $billing_first_name,
-			'billingLastName'     => $billing_last_name,
-			'billingCompanyName'  => $billing_company_name,
-			'billingAddress'      => $billing_address,
-			'billingAddress2'     => $billing_address2,
-			'billingPostalCode'   => $billing_postal_code,
-			'billingCity'         => $billing_city,
-			'shippingFirstName'   => $shipping_first_name,
-			'shippingLastName'    => $shipping_last_name,
-			'shippingCompanyName' => $shipping_company_name,
-			'shippingAddress'     => $shipping_address,
-			'shippingAddress2'    => $shipping_address2,
-			'shippingPostalCode'  => $shipping_postal_code,
-			'shippingCity'        => $shipping_city,
-			'phone'               => $phone,
-			'email'               => $email,
-			'countryCode'         => $countryCode,
-			'orgNr'               => $org_nr,
-		);
-		$empty_fields         = array();
-		$errors               = 0;
-		foreach ( $customer_information as $key => $value ) {
-			if ( '.' === $value ) {
-				array_push( $empty_fields, $key );
-				$errors = 1;
-			}
-		}
-		if ( 1 === $errors ) {
-			WC()->session->set( 'collector_empty_fields', $empty_fields );
-		}
-		return $customer_information;
-	}
-
 	public static function checkout_error() {
 		Collector_Checkout::log( 'Starting Create Order Fallback creation...' );
 		$customer_type = WC()->session->get( 'collector_customer_type' );
@@ -565,7 +498,7 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 		// Add fees to order.
 		$create_order->add_order_fees( $order );
 
-		// Maybe add invoice fee to order
+		// Maybe add invoice fee to order.
 		if ( 'DirectInvoice' == WC()->session->get( 'collector_payment_method' ) ) {
 			$collector_settings = get_option( 'woocommerce_collector_checkout_settings' );
 			$product_id         = $collector_settings['collector_invoice_fee'];
@@ -586,12 +519,12 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 		// Add customer to order.
 		$create_order->add_customer_data_to_local_order( $order, $customer_type, $private_id );
 
-		// Add payment method
+		// Add payment method.
 		$create_order->add_order_payment_method( $order );
 
-		// Make sure to run Sequential Order numbers if plugin exsists
-		// @Todo - Se i we can run action woocommerce_checkout_update_order_meta in this process
-		// so Sequential order numbers and other plugins can do their stuff themselves
+		// Make sure to run Sequential Order numbers if plugin exsists.
+		// @Todo - Se i we can run action woocommerce_checkout_update_order_meta in this process.
+		// so Sequential order numbers and other plugins can do their stuff themselves.
 		if ( class_exists( 'WC_Seq_Order_Number_Pro' ) ) {
 			$sequential = new WC_Seq_Order_Number_Pro();
 			$sequential->set_sequential_order_number( $order_id );
@@ -600,13 +533,13 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 			$sequential->set_sequential_order_number( $order_id, get_post( $order_id ) );
 		}
 
-		// Calculate order totals
+		// Calculate order totals.
 		$create_order->calculate_order_totals( $order );
 
-		// Update the Collector Order with the Order ID
+		// Update the Collector Order with the Order ID.
 		$create_order->update_order_reference_in_collector( $order, $customer_type, $private_id );
 
-		// Add order note
+		// Add order note.
 		if ( ! empty( $_POST['error_message'] ) ) { // Input var okay.
 			$error_message = 'Error message: ' . sanitize_text_field( trim( $_POST['error_message'] ) );
 		} else {

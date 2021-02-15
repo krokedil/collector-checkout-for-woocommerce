@@ -2,6 +2,9 @@
     'use strict';
     var checkout_initiated = wc_collector_checkout.checkout_initiated;
 
+    // Avoid duplicate form submissions.
+    var cco_submitted = false;
+
     // True or false if we need to update the Collector order. Set to true on initial page load.
 	var collectorUpdateNeeded = true;
     
@@ -43,14 +46,22 @@
     function maybe_post_form() {
         if ( wc_collector_checkout.payment_successful == 1 ) {
 
-            $('input#terms').prop('checked', true);
-            $('input#ship-to-different-address-checkbox').prop('checked', true);
-
-            $('.validate-required').removeClass('validate-required');
-            $('form.woocommerce-checkout').submit();
-            console.log('yes submitted');
-            $('form.woocommerce-checkout').addClass( 'processing' );
-            console.log('processing class added to form');
+			jQuery(function ($) {
+				$( 'body' ).append( $( '<div class="collector-modal"><div class="collector-modal-content">' + wc_collector_checkout.process_order_text + '</div></div>' ) );
+				$('input#terms').prop('checked', true);
+				$('input#ship-to-different-address-checkbox').prop('checked', true);
+                $('.validate-required').removeClass('validate-required');
+                
+				if( false === cco_submitted ) {
+                    $('form[name="checkout"]').submit();
+					console.log('yes submitted');
+					cco_submitted = true;
+					$('form.woocommerce-checkout').addClass( 'processing' );
+					console.log('processing class added to form');
+				} else {
+					console.log('Already submitted');
+				}
+			});
         }
     }
     
@@ -307,7 +318,7 @@
     $( document ).ready( function() {
 
         // Maybe submit WooCommerce checkout form        
-        //maybe_post_form();
+        maybe_post_form();
 
         // Saving order note to session
         $('#order_comments').focusout(function(){

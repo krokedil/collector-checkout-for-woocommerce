@@ -69,22 +69,22 @@ class Collector_Checkout_SOAP_Requests_Cancel_Invoice {
 			$request = $e->getMessage();
 			$order->update_status( $order->get_status() );
 			$order->add_order_note( sprintf( __( 'Order failed to cancel with Collector Bank - ' . wp_json_encode( $request ), 'collector-checkout-for-woocommerce' ) ) );
-			$this->log( 'Order failed to cancel with Collector Bank. Request response: ' . var_export( $e, true ) );
-			$this->log( 'Cancel order headers: ' . var_export( $headers, true ) );
-			$this->log( 'Cancel order args: ' . var_export( $args, true ) );
+
+			$log = CCO_WC()->logger->format_log( $order_id, 'SOAP', 'CCO FAILED cancel order', $args, '', wp_json_encode( $e ) . wp_json_encode( $headers ), '' );
+			CCO_WC()->logger->log( $log );
 		}
 
 		if ( property_exists( $request, 'CorrelationId' ) && $request->CorrelationId == null ) {
 			$order->add_order_note( sprintf( __( 'Order canceled with Collector Bank', 'collector-checkout-for-woocommerce' ) ) );
 			update_post_meta( $order_id, '_collector_order_cancelled', time() );
-			$log = CCO_WC()->logger->format_log( '', 'SOAP', 'CCO Cancel order for order ID ' . $order_id, $args, json_decode( $request, true ), '' );
+			$log = CCO_WC()->logger->format_log( $order_id, 'SOAP', 'CCO Cancel order', $args, '', wp_json_encode( $request ), '' );
 			CCO_WC()->logger->log( $log );
 		} else {
 			$order->update_status( $order->get_status() );
 			$order->add_order_note( sprintf( __( 'Order failed to cancel with Collector Bank - ' . wp_json_encode( $request ), 'collector-checkout-for-woocommerce' ) ) );
-			$this->log( 'Order failed to cancel with Collector Bank. Request response: ' . var_export( $e, true ) );
-			$this->log( 'Cancel order headers: ' . var_export( $headers, true ) );
-			$this->log( 'Cancel order args: ' . var_export( $args, true ) );
+
+			$log = CCO_WC()->logger->format_log( $order_id, 'SOAP', 'CCO FAILED cancel order', $args, '', wp_json_encode( $e ) . wp_json_encode( $headers ), '' );
+			CCO_WC()->logger->log( $log );
 		}
 	}
 
@@ -94,15 +94,5 @@ class Collector_Checkout_SOAP_Requests_Cancel_Invoice {
 			'CountryCode' => $this->country_code,
 			'InvoiceNo'   => get_post_meta( $order_id, '_collector_payment_id' )[0],
 		);
-	}
-
-	public static function log( $message ) {
-		$collector_settings = get_option( 'woocommerce_collector_checkout_settings' );
-		if ( 'yes' === $collector_settings['debug_mode'] ) {
-			if ( empty( self::$log ) ) {
-				self::$log = new WC_Logger();
-			}
-			self::$log->add( 'collector_checkout', $message );
-		}
 	}
 }

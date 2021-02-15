@@ -86,16 +86,15 @@ class Collector_Checkout_SOAP_Requests_Activate_Invoice {
 			$order->add_order_note( sprintf( __( 'Order activated with Collector Bank.' . $due_date, 'collector-checkout-for-woocommerce' ) ) );
 			update_post_meta( $order_id, '_collector_order_activated', time() );
 
-			$log = CCO_WC()->logger->format_log( '', 'SOAP', 'CCO Activate order for order ID ' . $order_id, $args, wp_json_encode( $request, true ), '' );
+			$log = CCO_WC()->logger->format_log( $order_id, 'SOAP', 'CCO Activate order ', $args, '', wp_json_encode( $request ), '' );
 			CCO_WC()->logger->log( $log );
 
 		} else {
 			$order->update_status( $order->get_status() );
-			$order->add_order_note( sprintf( __( 'Order failed to activate with Collector Bank - ' . var_export( $request, true ), 'collector-checkout-for-woocommerce' ) ) );
+			$order->add_order_note( sprintf( __( 'Order failed to activate with Collector Bank - ' . wp_json_encode( $request ), 'collector-checkout-for-woocommerce' ) ) );
 
-			$log = CCO_WC()->logger->format_log( '', 'SOAP', 'CCO FAILED Activate order for order ID ' . $order_id, $args, json_decode( $e, true ), '' );
+			$log = CCO_WC()->logger->format_log( $order_id, 'SOAP', 'CCO FAILED Activate order', $args, '', wp_json_encode( $e ) . wp_json_encode( $headers ), '' );
 			CCO_WC()->logger->log( $log );
-			$this->log( 'Activate order headers: ' . var_export( $headers, true ) );
 		}
 	}
 
@@ -105,15 +104,5 @@ class Collector_Checkout_SOAP_Requests_Activate_Invoice {
 			'CountryCode' => $this->country_code,
 			'InvoiceNo'   => get_post_meta( $order_id, '_collector_payment_id' )[0],
 		);
-	}
-
-	public static function log( $message ) {
-		$collector_settings = get_option( 'woocommerce_collector_checkout_settings' );
-		if ( 'yes' === $collector_settings['debug_mode'] ) {
-			if ( empty( self::$log ) ) {
-				self::$log = new WC_Logger();
-			}
-			self::$log->add( 'collector_checkout', $message );
-		}
 	}
 }

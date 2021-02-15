@@ -52,7 +52,7 @@ class Collector_Checkout_Templates {
 	 * @return string
 	 */
 	public function override_template( $template, $template_name ) {
-		if ( is_checkout() && ! isset( $_GET['payment_successful'] ) ) {
+		if ( is_checkout() ) {
 
 			// Don't display Collector Checkout template if we have a cart that doesn't needs payment
 			if ( ! WC()->cart->needs_payment() ) {
@@ -95,14 +95,23 @@ class Collector_Checkout_Templates {
 	public function add_wc_form() {
 		?>
 		<div aria-hidden="true" id="collector-wc-form" style="position:absolute; top:0; left:-99999px;">
-		<?php do_action( 'woocommerce_checkout_billing' ); ?>
-		<?php do_action( 'woocommerce_checkout_shipping' ); ?>
-		<?php wp_nonce_field( 'woocommerce-process_checkout', 'woocommerce-process-checkout-nonce' ); ?>
-			<input id="payment_method_collector_checkout" type="radio" class="input-radio" name="payment_method" value="collector_checkout" checked="checked"/>
+			<?php do_action( 'woocommerce_checkout_billing' ); ?>
+			<?php do_action( 'woocommerce_checkout_shipping' ); ?>
+			<?php
+			if ( isset( $_GET['payment_successful'] ) ) {
+				// On confirmation page - render woocommerce_checkout_payment() to get the woocommerce-process-checkout-nonce correct.
+				woocommerce_checkout_payment();
+			} else {
+				// On regular Collector checkout page - use our own woocommerce-process-checkout-nonce (so we don't render the checkout form submit button).
+				?>
+				<div id="collector-nonce-wrapper">
+					<?php wp_nonce_field( 'woocommerce-process_checkout', 'woocommerce-process-checkout-nonce' ); ?>
+				</div>
+				<input id="payment_method_collector_checkout" type="radio" class="input-radio" name="payment_method" value="collector_checkout" checked="checked" />
+			<?php }; ?>
 		</div>
 		<?php
 	}
-
 }
 
 Collector_Checkout_Templates::get_instance();
