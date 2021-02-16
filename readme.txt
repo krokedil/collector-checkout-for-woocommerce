@@ -39,6 +39,11 @@ For help setting up and configuring Collector Checkout for WooCommerce please re
 
 
 == CHANGELOG ==
+= 2021.02.16    - version 2.2.1 =
+* Tweak         - Improved logging.
+* Fix           - Set correct product price in backup order creation sequence if coupon is used for purchase.
+* Fix           - Set correct WC order status in callback for orders with status Preliminary.
+
 = 2021.02.15    - version 2.2.0 =
 * Tweak         - Move confirmation JS to checkout.js file instead of inline rendering.
 * Tweak         - Request handling rewrite.

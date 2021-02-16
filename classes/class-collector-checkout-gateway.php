@@ -208,6 +208,8 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 
 		$process_payment = $this->process_collector_payment_in_order( $order_id );
 
+		Collector_Checkout::log( 'Process Collector Payment for private_id ' . $private_id . '. WC order ID ' . $order_id . '. Redirecting customer to ' . $this->get_return_url( $order ) );
+
 		return array(
 			'result'   => 'success',
 			'redirect' => $this->get_return_url( $order ),
@@ -225,8 +227,6 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 		$order         = wc_get_order( $order_id );
 		$private_id    = get_post_meta( $order_id, '_collector_private_id', true );
 		$customer_type = get_post_meta( $order_id, '_collector_customer_type', true );
-
-		Collector_Checkout::log( 'Process Collector Payment for private_id ' . $private_id );
 
 		$collector_order = new Collector_Checkout_Requests_Get_Checkout_Information( $private_id, $customer_type );
 		$collector_order = $collector_order->request();

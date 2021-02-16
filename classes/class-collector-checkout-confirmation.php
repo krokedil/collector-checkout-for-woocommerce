@@ -92,7 +92,7 @@ class Collector_Checkout_Confirmation {
             wp_redirect( $location ); // phpcs:ignore
 			exit;
 		} else {
-			Collector_Checkout::log( 'Confirmation page rendered. We could not find a corresponding order that already contains public token: ' . $collector_public_token . '. Proceeding with Woo order creation.' );
+			CCO_WC()->logger->log( 'Confirmation page rendered for public token - ' . $collector_public_token );
 		}
 	}
 
@@ -117,7 +117,6 @@ class Collector_Checkout_Confirmation {
 		}
 
 		$collector_public_token = sanitize_key( $_GET['public-token'] );
-		CCO_WC()->logger->log( 'Confirmation page rendered for public token - ' . $collector_public_token );
 
 		echo '<div id="collector-confirm-loading"></div>';
 
