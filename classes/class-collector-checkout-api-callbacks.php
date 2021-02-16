@@ -406,7 +406,26 @@ class Collector_Api_Callbacks {
 					$id = $cart_item['id'];
 				}
 				$product = wc_get_product( $id );
-				$order->add_product( $product, $cart_item['quantity'] );
+
+				// Product price.
+				if ( $cart_item['unitPrice'] > 0 ) {
+					if ( $cart_item['vat'] > 0 ) {
+						$line_total_excl_vat = round( ( $cart_item['unitPrice'] / ( 1 + ( $cart_item['vat'] / 100 ) ) * $cart_item['quantity'] ), 2 );
+						$line_total_vat      = $cart_item['unitPrice'] - $line_total_excl_vat;
+					} else {
+						$line_total_excl_vat = round( ( $cart_item['unitPrice'] * $cart_item['quantity'] ), 2 );
+						$line_total_vat      = 0;
+					}
+				} else {
+					$line_total_excl_vat = 0;
+					$line_total_vat      = 0;
+				}
+
+				$args = array(
+					'subtotal' => $line_total_excl_vat,
+					'total'    => $line_total_excl_vat,
+				);
+				$order->add_product( $product, $cart_item['quantity'], $args );
 			}
 		}
 
@@ -448,7 +467,7 @@ class Collector_Api_Callbacks {
 	 * Set order status function
 	 */
 	public function set_order_status( $order, $collector_order ) {
-		if ( 'Preliminary' === $collector_order['data->purchase']['result'] || 'Completed' === $collector_order['data']['purchase']['result'] ) {
+		if ( 'Preliminary' === $collector_order['data']['purchase']['result'] || 'Completed' === $collector_order['data']['purchase']['result'] ) {
 			$order->payment_complete( $collector_order['data']['purchase']['purchaseIdentifier'] );
 			$order->add_order_note( 'Payment via Collector Checkout. Payment ID: ' . sanitize_key( $collector_order['data']['purchase']['purchaseIdentifier'] ) );
 			Collector_Checkout::log( 'Order status not set correctly for order ' . $order->get_order_number() . ' during checkout process. Setting order status to Processing/Completed.' );
