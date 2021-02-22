@@ -39,6 +39,9 @@ For help setting up and configuring Collector Checkout for WooCommerce please re
 
 
 == CHANGELOG ==
+= 2021.02.22    - version 2.2.2 =
+* Fix           - Do not try to make a update fees request to Collector if not needed. Could cause Could cause multiple init requests and constant reloading of checkout page.
+
 = 2021.02.16    - version 2.2.1 =
 * Tweak         - Improved logging.
 * Fix           - Set correct product price in backup order creation sequence if coupon is used for purchase.
