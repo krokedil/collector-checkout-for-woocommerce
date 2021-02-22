@@ -45,6 +45,11 @@ class Collector_Checkout_Requests_Update_Fees extends Collector_Checkout_Request
 		$request_url  = $this->base_url . $this->path;
 		$request_args = $this->get_request_args();
 
+		// Do not make an update fee request if there is nothing to update.
+		if ( empty( $request_args['body'] ) ) {
+			return true;
+		}
+
 		$response = wp_remote_request( $request_url, $request_args );
 		$code     = wp_remote_retrieve_response_code( $response );
 
@@ -67,6 +72,12 @@ class Collector_Checkout_Requests_Update_Fees extends Collector_Checkout_Request
 		if ( isset( $fees['shipping'] ) && ! empty( $fees['shipping'] ) ) {
 			$formatted_request_body['shipping'] = $fees['shipping'];
 		}
-		return wp_json_encode( $formatted_request_body );
+
+		if ( ! empty( $formatted_request_body ) ) {
+			return wp_json_encode( $formatted_request_body );
+		} else {
+			return false;
+		}
+
 	}
 }
