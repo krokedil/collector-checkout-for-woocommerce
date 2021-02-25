@@ -70,6 +70,7 @@ class Collector_Checkout_Requests {
 			$data          = 'URL: ' . $request_url . ' - ' . wp_json_encode( $request_args );
 			$error_message = '';
 			// Get the error messages.
+			// @todo - remove this if?
 			if ( null !== $response['response'] ) {
 				$aco_error_code    = isset( $response['response']['code'] ) ? $response['response']['code'] . ' ' : '';
 				$aco_error_message = isset( $response['response']['message'] ) ? $response['response']['message'] . ' ' : '';
@@ -77,13 +78,14 @@ class Collector_Checkout_Requests {
 			}
 
 			if ( null !== json_decode( $response['body'], true ) ) {
-				$errors = json_decode( $response['body'], true );
-
-				foreach ( $errors as $key => $error ) {
-					$error_message .= $error['code'] . '. ' . $error['message'];
+				$response_body = json_decode( $response['body'], true );
+				$error         = new WP_Error();
+				$error->add( wp_remote_retrieve_response_code( $response ), $response_body['error']['message'] );
+				foreach ( $response_body['error']['errors'] as $key => $collector_error ) {
+					$error->add( $collector_error['reason'], $collector_error['message'] );
 				}
 			}
-			return new WP_Error( wp_remote_retrieve_response_code( $response ), $error_message, $data );
+			return $error;
 		}
 		return json_decode( wp_remote_retrieve_body( $response ), true );
 	}
