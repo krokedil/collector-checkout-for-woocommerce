@@ -2,7 +2,7 @@
 Contributors: collectorbank, krokedil, NiklasHogefjord
 Tags: ecommerce, e-commerce, woocommerce, collector, checkout
 Requires at least: 4.7
-Tested up to: 5.6.1
+Tested up to: 5.6.2
 Requires PHP: 5.6
 Stable tag: trunk
 WC requires at least: 4.0.0
@@ -39,6 +39,11 @@ For help setting up and configuring Collector Checkout for WooCommerce please re
 
 
 == CHANGELOG ==
+= 2021.02.25    - version 2.2.3 =
+* Tweak         - Improved error response handling in requests. Don't try to create a new Collector session if we get 900, 400 or 423 http responses during update requests.
+* Tweak         - Try to redirect to thankyou page if response is Purchase_Completed from Collector and we find a matching order in WooCommerce.
+* Fix           - Fix B2B / B2C switcher bug in checkout. 
+
 = 2021.02.22    - version 2.2.2 =
 * Fix           - Do not try to make a update fees request to Collector if not needed. Could cause multiple init requests and constant reloading of checkout page.
 
