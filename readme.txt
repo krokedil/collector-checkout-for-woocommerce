@@ -2,11 +2,11 @@
 Contributors: collectorbank, krokedil, NiklasHogefjord
 Tags: ecommerce, e-commerce, woocommerce, collector, checkout
 Requires at least: 4.7
-Tested up to: 5.5.3
+Tested up to: 5.6.2
 Requires PHP: 5.6
 Stable tag: trunk
-WC requires at least: 3.8.0
-WC tested up to: 4.7.1
+WC requires at least: 4.0.0
+WC tested up to: 5.0.0
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -39,6 +39,34 @@ For help setting up and configuring Collector Checkout for WooCommerce please re
 
 
 == CHANGELOG ==
+= 2021.02.25    - version 2.2.3 =
+* Tweak         - Improved error response handling in requests. Don't try to create a new Collector session if we get 900, 400 or 423 http responses during update requests.
+* Tweak         - Try to redirect to thankyou page if response is Purchase_Completed from Collector and we find a matching order in WooCommerce.
+* Fix           - Fix B2B / B2C switcher bug in checkout. 
+
+= 2021.02.22    - version 2.2.2 =
+* Fix           - Do not try to make a update fees request to Collector if not needed. Could cause multiple init requests and constant reloading of checkout page.
+
+= 2021.02.16    - version 2.2.1 =
+* Tweak         - Improved logging.
+* Fix           - Set correct product price in backup order creation sequence if coupon is used for purchase.
+* Fix           - Set correct WC order status in callback for orders with status Preliminary.
+
+= 2021.02.15    - version 2.2.0 =
+* Tweak         - Move confirmation JS to checkout.js file instead of inline rendering.
+* Tweak         - Request handling rewrite.
+* Tweak         - Log format rewrite.
+* Tweak         - Don't load WC checkout form with submit button during confirmation step.
+* Fix           - Don't try to make a cancel/activate request if the order hasn't been paid.
+
+= 2021.02.09    - version 2.1.0 =
+* Feature       - Handle activations, cancelations and refunds for Swish orders directly from WooCommerce.
+* Tweak         - Adds WooCommerce order request class.
+* Tweak         - Introduces separate logger class.
+* Fix           - Save Delivery module shipping data correct in session in Woo.
+* Fix           - Handles Order management response better (activate & cancel order) when API keys are misconfigured.
+* Fix           - Fix ternary operators coding standard (for PHP 8.x).
+
 = 2020.11.30    - version 2.0.2 =
 * Tweak         - Add separate cart shipping template if Delivery module is active. To avoid displaying fallback/standard Woo shipping methods.
 * Fix           - Reduce the amount of update requests sent to Collector when using Delivery module.

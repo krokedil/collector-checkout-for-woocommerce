@@ -26,7 +26,8 @@ class Collector_Checkout_Requests_Update_Fees extends Collector_Checkout_Request
 				$store_id = $collector_settings[ 'collector_merchant_id_se_' . $customer_type ];
 				break;
 		}
-		$this->path = '/merchants/' . $store_id . '/checkouts/' . $private_id . '/fees';
+		$this->private_id = $private_id;
+		$this->path       = '/merchants/' . $store_id . '/checkouts/' . $private_id . '/fees';
 	}
 
 	private function get_request_args() {
@@ -36,29 +37,47 @@ class Collector_Checkout_Requests_Update_Fees extends Collector_Checkout_Request
 			'body'    => $this->request_body(),
 			'method'  => 'PUT',
 		);
-		$this->log( 'Collector update fees request args (to ' . $this->path . '): ' . stripslashes_deep( json_encode( $request_args ) ) );
 		return $request_args;
 	}
 
 	public function request() {
-		$request_url = $this->base_url . $this->path;
-		$request     = wp_remote_request( $request_url, $this->get_request_args() );
-		if ( is_wp_error( $request ) ) {
-			$this->log( 'Collector update fees request response ERROR: ' . stripslashes_deep( json_encode( $request ) ) . ' (Request endpoint: ' . $request_url . ')' );
-		} else {
-			$this->log( 'Collector update fees request response: ' . stripslashes_deep( json_encode( $request ) ) . ' (Request endpoint: ' . $request_url . ')' );
+
+		$request_url  = $this->base_url . $this->path;
+		$request_args = $this->get_request_args();
+
+		// Do not make an update fee request if there is nothing to update.
+		if ( empty( $request_args['body'] ) ) {
+			return true;
 		}
-		return $request;
+
+		$response = wp_remote_request( $request_url, $request_args );
+		$code     = wp_remote_retrieve_response_code( $response );
+
+		// Log the request.
+		$log = CCO_WC()->logger->format_log( $this->private_id, 'PUT', 'CCO update fees', $request_args, $request_url, json_decode( wp_remote_retrieve_body( $response ), true ), $code );
+		CCO_WC()->logger->log( $log );
+
+		$formated_response = $this->process_response( $response, $request_args, $request_url );
+		return $formated_response;
 	}
 
 	protected function request_body() {
 		$fees                   = $this->fees();
-		$formatted_request_body = array(
-			'directinvoicenotification' => $fees['directinvoicenotification'],
-		);
+		$formatted_request_body = array();
+
+		if ( isset( $fees['directinvoicenotification'] ) ) {
+			$formatted_request_body ['directinvoicenotification'] = $fees['directinvoicenotification'];
+		}
+
 		if ( isset( $fees['shipping'] ) && ! empty( $fees['shipping'] ) ) {
 			$formatted_request_body['shipping'] = $fees['shipping'];
 		}
-		return wp_json_encode( $formatted_request_body );
+
+		if ( ! empty( $formatted_request_body ) ) {
+			return wp_json_encode( $formatted_request_body );
+		} else {
+			return false;
+		}
+
 	}
 }

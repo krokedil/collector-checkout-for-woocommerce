@@ -81,14 +81,13 @@ if ( class_exists( 'WC_Shipping_Method' ) ) {
 				} else {
 					$collector_order = new Collector_Checkout_Requests_Get_Checkout_Information( $private_id, $customer_type );
 					$collector_order = $collector_order->request();
-					$collector_order = json_decode( $collector_order );
 
-					if ( isset( $collector_order->data->fees->shipping ) ) {
+					if ( isset( $collector_order['data']['fees']['shipping'] ) ) {
 						$shipping_data = array(
-							'label'        => $collector_order->data->fees->shipping->description,
-							'shipping_id'  => $collector_order->data->fees->shipping->id,
-							'cost'         => $collector_order->data->fees->shipping->unitPrice,
-							'shipping_vat' => $collector_order->data->fees->shipping->vat,
+							'label'        => $collector_order['data']['fees']['shipping']['description'],
+							'shipping_id'  => $collector_order['data']['fees']['shipping']['id'],
+							'cost'         => $collector_order['data']['fees']['shipping']['unitPrice'],
+							'shipping_vat' => $collector_order['data']['fees']['shipping']['vat'],
 						);
 						WC()->session->set( 'collector_delivery_module_data', $shipping_data );
 					} else {

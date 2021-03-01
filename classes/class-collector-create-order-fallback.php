@@ -100,12 +100,9 @@ class Collector_Create_Local_Order_Fallback {
 		$order_id = $order->get_id();
 
 		$response        = new Collector_Checkout_Requests_Get_Checkout_Information( $private_id, $customer_type );
-		$collector_order = json_decode( $response->request() );
+		$collector_order = $response->request();
 
-		$customer_data                  = array();
-		$customer_data['customer_data'] = $collector_order;
-		$formated_customer_data         = new Collector_Checkout_Ajax_Calls();
-		$formated_customer_data         = $formated_customer_data::verify_customer_data( $customer_data );
+		$formated_customer_data = wc_collector_verify_customer_data( $collector_order );
 
 		update_post_meta( $order_id, '_billing_first_name', $formated_customer_data['billingFirstName'] );
 		update_post_meta( $order_id, '_billing_last_name', $formated_customer_data['billingLastName'] );
@@ -127,11 +124,11 @@ class Collector_Create_Local_Order_Fallback {
 		// Post meta.
 		update_post_meta( $order_id, '_created_via_collector_fallback', 'yes' );
 
-		update_post_meta( $order_id, '_collector_payment_method', $collector_order->data->purchase->paymentName );
-		update_post_meta( $order_id, '_collector_payment_id', $collector_order->data->purchase->purchaseIdentifier );
+		update_post_meta( $order_id, '_collector_payment_method', $collector_order['data']['purchase']['paymentName'] );
+		update_post_meta( $order_id, '_collector_payment_id', $collector_order['data']['purchase']['purchaseIdentifier'] );
 		update_post_meta( $order_id, '_collector_customer_type', $customer_type );
 		update_post_meta( $order_id, '_collector_private_id', $private_id );
-		update_post_meta( $order_id, '_transaction_id', $collector_order->data->purchase->purchaseIdentifier );
+		update_post_meta( $order_id, '_transaction_id', $collector_order['data']['purchase']['purchaseIdentifier'] );
 
 		$order->set_customer_id( apply_filters( 'woocommerce_checkout_customer_id', get_current_user_id() ) );
 
