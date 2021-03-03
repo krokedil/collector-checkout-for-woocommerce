@@ -49,6 +49,11 @@ class Collector_Checkout_Requests_Helper_Order_Fees {
 	}
 
 	public function get_shipping( $order ) {
+
+		if ( empty( $order->get_shipping_method() ) ) {
+			return;
+		}
+
 		if ( $order->get_shipping_total() > 0 ) {
 			$shipping_items     = $order->get_items( 'shipping' );
 			$shipping_method_id = reset( $shipping_items )->get_method_id();
