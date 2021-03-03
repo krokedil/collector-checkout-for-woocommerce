@@ -89,13 +89,6 @@ class Collector_Checkout_Requests_Initialize_Checkout extends Collector_Checkout
 			'storeId'          => $this->store_id,
 			'countryCode'      => $this->country_code,
 			'reference'        => '',
-			'redirectPageUri'  => add_query_arg(
-				array(
-					'payment_successful' => '1',
-					'public-token'       => '{checkout.publictoken}',
-				),
-				wc_get_checkout_url()
-			),
 			'merchantTermsUri' => $this->terms_page,
 			'notificationUri'  => add_query_arg(
 				array(
@@ -118,6 +111,23 @@ class Collector_Checkout_Requests_Initialize_Checkout extends Collector_Checkout
 			if ( 'yes' === $this->delivery_module ) {
 				$formatted_request_body['profileName'] = 'Shipping';
 			}
+
+			$formatted_request_body['redirectPageUri'] = add_query_arg(
+				array(
+					'payment_successful' => '1',
+					'public-token'       => '{checkout.publictoken}',
+				),
+				wc_get_checkout_url()
+			);
+		} else {
+			$order                                     = wc_get_order( $order_id );
+			$formatted_request_body['redirectPageUri'] = add_query_arg(
+				array(
+					'collector_confirm_order_pay' => '1',
+					'public-token'                => '{checkout.publictoken}',
+				),
+				$order->get_checkout_order_received_url()
+			);
 		}
 
 		return wp_json_encode( $formatted_request_body );
