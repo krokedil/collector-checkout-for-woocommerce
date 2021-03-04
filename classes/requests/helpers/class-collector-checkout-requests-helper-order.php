@@ -86,14 +86,18 @@ class Collector_Checkout_Requests_Helper_Order {
 			$article_number = $order_item->get_id();
 		} else {
 			$product = $order_item->get_product();
-			if ( $product->get_sku() ) {
-				$article_number = $product->get_sku();
+
+			if ( $product ) {
+				if ( $product->get_sku() ) {
+					$article_number = $product->get_sku();
+				} else {
+					$article_number = $product->get_id();
+				}
 			} else {
-				$article_number = $product->get_id();
+				$article_number = $order_item->get_id();
 			}
 		}
-
-		return substr( (string) $article_number, 0, 32 );
+		return substr( apply_filters( 'collector_checkout_sku', $article_number, $order_item ), 0, 32 );
 	}
 
 	/**
