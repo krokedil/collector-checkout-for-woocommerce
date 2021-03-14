@@ -184,7 +184,20 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 	}
 
 	public function process_payment( $order_id, $retry = false ) {
-		$order = wc_get_order( $order_id );
+		$order      = wc_get_order( $order_id );
+		$private_id = get_post_meta( $order_id, '_collector_private_id', true );
+
+		// Make sure that we don't proceed with a duplicate order.
+		$order_ids = wc_collector_get_orders_by_private_id( $private_id );
+		if ( is_array( $order_ids ) && count( $order_ids ) > 1 ) {
+			$order->add_order_note( sprintf( __( 'Private ID %1$s found in multiple orders (%2$s). Setting the order to On hold.', 'collector-checkout-for-woocommerce' ), $private_id, wp_json_encode( $order_ids ) ) );
+			$order->update_status( 'on-hold' );
+
+			return array(
+				'result'   => 'success',
+				'redirect' => $this->get_return_url( $order ),
+			);
+		}
 
 		// Maybe add invoice fee to order.
 		if ( 'DirectInvoice' == WC()->session->get( 'collector_payment_method' ) ) {
@@ -196,8 +209,7 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 
 		WC()->session->__unset( 'collector_customer_order_note' );
 
-		// Update the Collector Order with the Order number
-		$private_id    = get_post_meta( $order_id, '_collector_private_id', true );
+		// Update the Collector Order with the Order number.
 		$customer_type = get_post_meta( $order_id, '_collector_customer_type', true );
 		if ( ! empty( $private_id ) && ! empty( $customer_type ) ) {
 			$update_reference = new Collector_Checkout_Requests_Update_Reference( $order->get_order_number(), $private_id, $customer_type );

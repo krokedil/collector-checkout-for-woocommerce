@@ -392,6 +392,36 @@ function wc_collector_get_order_id_by_private_id( $private_id = null ) {
 }
 
 /**
+ * Finds all Orders based on a private ID (the Collector session id during purchase).
+ *
+ * @param string $private_id Collector session id saved as _collector_private_id ID in WC order.
+ * @return array WC orders that have the specific private id saved as meta.
+ */
+function wc_collector_get_orders_by_private_id( $private_id = null ) {
+
+	if ( empty( $private_id ) ) {
+		return array();
+	}
+
+	$query_args = array(
+		'fields'      => 'ids',
+		'post_type'   => wc_get_order_types(),
+		'post_status' => array_keys( wc_get_order_statuses() ),
+		'meta_key'    => '_collector_private_id', // phpcs:ignore WordPress.DB.SlowDBQuery -- Slow DB Query is ok here, we need to limit to our meta key.
+		'meta_value'  => sanitize_text_field( wp_unslash( $private_id ) ), // phpcs:ignore WordPress.DB.SlowDBQuery -- Slow DB Query is ok here, we need to limit to our meta key.
+		'date_query'  => array(
+			array(
+				'after' => '120 day ago',
+			),
+		),
+	);
+
+	$order_ids = get_posts( $query_args );
+
+	return $order_ids;
+}
+
+/**
  * Confirm order
  */
 function wc_collector_confirm_order( $order_id, $private_id = null ) {
