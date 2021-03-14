@@ -361,7 +361,12 @@ function wc_collector_verify_customer_data( $collector_order ) {
  * @param string $private_id Collector session id saved as _collector_private_id ID in WC order.
  * @return int The ID of an order, or 0 if the order could not be found.
  */
-function wc_collector_get_order_id_by_private_id( $private_id ) {
+function wc_collector_get_order_id_by_private_id( $private_id = null ) {
+
+	if ( empty( $private_id ) ) {
+		return false;
+	}
+
 	$query_args = array(
 		'fields'      => 'ids',
 		'post_type'   => wc_get_order_types(),
