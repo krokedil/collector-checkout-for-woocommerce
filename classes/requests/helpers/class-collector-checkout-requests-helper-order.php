@@ -12,7 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Class for processing order lines from a WooCommerce order.
  */
-class Collector_Checkout_Requests_Order {
+class Collector_Checkout_Requests_Helper_Order {
 
 	/**
 	 * Gets the order lines for the order.
@@ -32,7 +32,7 @@ class Collector_Checkout_Requests_Order {
 			array_push( $order_lines, self::get_order_line_fees( $fee ) );
 		}
 
-		return $order_lines;
+		return array( 'items' => $order_lines );
 
 	}
 
@@ -49,8 +49,8 @@ class Collector_Checkout_Requests_Order {
 			'id'          => self::get_article_number( $order_item ),
 			'description' => $order_item->get_name(),
 			'quantity'    => $order_item->get_quantity(),
-			'vat'         => intval( round( ( $order_item->get_total_tax() / $order_item->get_total() ) * 10000 ) ),
-			'unitPrice'   => intval( round( ( $order_item->get_total() / $order_item->get_quantity() ) * 100 ) ),
+			'vat'         => intval( round( ( $order_item->get_total_tax() / $order_item->get_total() ), 2 ) * 100 ),
+			'unitPrice'   => round( ( ( $order_item->get_total() + $order_item->get_total_tax() ) / $order_item->get_quantity() ), 2 ),
 		);
 	}
 
@@ -68,8 +68,8 @@ class Collector_Checkout_Requests_Order {
 			'id'          => 'fee|' . $order_fee->get_id(),
 			'description' => substr( $order_fee->get_name(), 0, 254 ),
 			'quantity'    => $order_fee->get_quantity(),
-			'unit_price'  => intval( round( ( $order_fee->get_total() / $order_fee->get_quantity() ) * 100 ) ),
 			'vat'         => ( '0' !== $order->get_total_tax() ) ? self::get_order_line_tax_rate( $order, current( $order->get_items( 'fee' ) ) ) : 0,
+			'unitPrice'   => round( ( ( $order_fee->get_total() + $order_fee->get_total_tax() ) / $order_fee->get_quantity() ), 2 ),
 		);
 	}
 
@@ -86,14 +86,18 @@ class Collector_Checkout_Requests_Order {
 			$article_number = $order_item->get_id();
 		} else {
 			$product = $order_item->get_product();
-			if ( $product->get_sku() ) {
-				$article_number = $product->get_sku();
+
+			if ( $product ) {
+				if ( $product->get_sku() ) {
+					$article_number = $product->get_sku();
+				} else {
+					$article_number = $product->get_id();
+				}
 			} else {
-				$article_number = $product->get_id();
+				$article_number = $order_item->get_id();
 			}
 		}
-
-		return substr( (string) $article_number, 0, 32 );
+		return substr( apply_filters( 'collector_checkout_sku', $article_number, $order_item ), 0, 32 );
 	}
 
 	/**
@@ -139,7 +143,7 @@ class Collector_Checkout_Requests_Order {
 			foreach ( $order_item->get_taxes()['total'] as $key => $value ) {
 				if ( '' !== $value ) {
 					if ( $rate_id === $key ) {
-						return round( WC_Tax::_get_tax_rate( $rate_id )['tax_rate'] * 100 );
+						return round( WC_Tax::_get_tax_rate( $rate_id )['tax_rate'] );
 					}
 				}
 			}
