@@ -2,11 +2,11 @@
 Contributors: collectorbank, krokedil, NiklasHogefjord
 Tags: ecommerce, e-commerce, woocommerce, collector, checkout
 Requires at least: 4.7
-Tested up to: 5.6.2
+Tested up to: 5.7
 Requires PHP: 5.6
 Stable tag: trunk
 WC requires at least: 4.0.0
-WC tested up to: 5.0.0
+WC tested up to: 5.1.0
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -39,6 +39,13 @@ For help setting up and configuring Collector Checkout for WooCommerce please re
 
 
 == CHANGELOG ==
+= 2021.03.22    - version 2.3.0 =
+* Tweak         - Adds wc_collector_confirm_order function.
+* Tweak         - Adds Pay for order request logic.
+* Tweak         - Adds filter collector_checkout_sku.
+* Fix           - Improved control in wc_collector_get_order_id_by_private_id to avoid returning wrong order id.
+* Fix           - Add check - do not trigger payment_complete if private id already exist in another order.
+
 = 2021.02.25    - version 2.2.3 =
 * Tweak         - Improved error response handling in requests. Don't try to create a new Collector session if we get 900, 400 or 423 http responses during update requests.
 * Tweak         - Try to redirect to thankyou page if response is Purchase_Completed from Collector and we find a matching order in WooCommerce.
