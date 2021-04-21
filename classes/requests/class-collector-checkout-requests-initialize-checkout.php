@@ -47,19 +47,19 @@ class Collector_Checkout_Requests_Initialize_Checkout extends Collector_Checkout
 		$this->activate_validation_callback = isset( $collector_settings['activate_validation_callback'] ) ? $collector_settings['activate_validation_callback'] : 'no';
 	}
 
-	private function get_request_args() {
+	private function get_request_args( $order_id ) {
 		$request_args = array(
-			'headers' => $this->request_header( $this->request_body(), $this->path ),
+			'headers' => $this->request_header( $this->request_body( $order_id ), $this->path ),
 			'timeout' => 10,
-			'body'    => $this->request_body(),
+			'body'    => $this->request_body( $order_id ),
 			'method'  => 'POST',
 		);
 		return $request_args;
 	}
 
-	public function request() {
+	public function request( $order_id = null ) {
 		$request_url  = $this->base_url . '/checkout';
-		$request_args = $this->get_request_args();
+		$request_args = $this->get_request_args( $order_id );
 
 		$request = wp_remote_request( $request_url, $request_args );
 
@@ -74,7 +74,7 @@ class Collector_Checkout_Requests_Initialize_Checkout extends Collector_Checkout
 		return $formated_response;
 	}
 
-	protected function request_body() {
+	protected function request_body( $order_id ) {
 		// Set validation URI query args.
 		$validation_uri = add_query_arg(
 			array(
@@ -89,13 +89,6 @@ class Collector_Checkout_Requests_Initialize_Checkout extends Collector_Checkout
 			'storeId'          => $this->store_id,
 			'countryCode'      => $this->country_code,
 			'reference'        => '',
-			'redirectPageUri'  => add_query_arg(
-				array(
-					'payment_successful' => '1',
-					'public-token'       => '{checkout.publictoken}',
-				),
-				wc_get_checkout_url()
-			),
 			'merchantTermsUri' => $this->terms_page,
 			'notificationUri'  => add_query_arg(
 				array(
@@ -106,15 +99,37 @@ class Collector_Checkout_Requests_Initialize_Checkout extends Collector_Checkout
 				),
 				get_home_url() . '/wc-api/Collector_Checkout_Gateway/'
 			),
-			'cart'             => $this->cart(),
-			'fees'             => $this->fees(),
+			'cart'             => ( null === $order_id ) ? $this->cart() : CCO_WC()->order_items->get_order_lines( $order_id ),
+			'fees'             => ( null === $order_id ) ? $this->fees() : CCO_WC()->order_fees->get_order_fees( $order_id ),
 		);
-		if ( 'yes' === $this->activate_validation_callback ) {
-			$formatted_request_body['validationUri'] = $validation_uri;
+
+		// Only send validationUri & profileName if this is a purchase from the checkout.
+		if ( null === $order_id ) {
+			if ( 'yes' === $this->activate_validation_callback ) {
+				$formatted_request_body['validationUri'] = $validation_uri;
+			}
+			if ( 'yes' === $this->delivery_module ) {
+				$formatted_request_body['profileName'] = 'Shipping';
+			}
+
+			$formatted_request_body['redirectPageUri'] = add_query_arg(
+				array(
+					'payment_successful' => '1',
+					'public-token'       => '{checkout.publictoken}',
+				),
+				wc_get_checkout_url()
+			);
+		} else {
+			$order                                     = wc_get_order( $order_id );
+			$formatted_request_body['redirectPageUri'] = add_query_arg(
+				array(
+					'collector_confirm_order_pay' => '1',
+					'public-token'                => '{checkout.publictoken}',
+				),
+				$order->get_checkout_order_received_url()
+			);
 		}
-		if ( 'yes' === $this->delivery_module ) {
-			$formatted_request_body['profileName'] = 'Shipping';
-		}
+
 		return wp_json_encode( $formatted_request_body );
 	}
 }

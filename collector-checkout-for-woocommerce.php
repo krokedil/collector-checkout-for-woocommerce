@@ -2,20 +2,20 @@
 /**
  * Collector Bank for WooCommerce
  *
- * @package WC_Dibs_Easy
+ * @package Collector_Checkout
  *
  * @wordpress-plugin
  * Plugin Name:     Collector Checkout for WooCommerce
  * Plugin URI:      https://krokedil.se/collector/
  * Description:     Extends WooCommerce. Provides a <a href="https://www.collector.se/" target="_blank">Collector Checkout</a> checkout for WooCommerce.
- * Version:         2.2.3
+ * Version:         2.3.1
  * Author:          Krokedil
  * Author URI:      https://krokedil.se/
  * Text Domain:     collector-checkout-for-woocommerce
  * Domain Path:     /languages
  *
  * WC requires at least: 4.0.0
- * WC tested up to: 5.0.0
+ * WC tested up to: 5.2.2
  *
  * Copyright:       © 2017-2021 Krokedil.
  * License:         GNU General Public License v3.0
@@ -28,7 +28,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 define( 'COLLECTOR_BANK_PLUGIN_DIR', untrailingslashit( plugin_dir_path( __FILE__ ) ) );
 define( 'COLLECTOR_BANK_PLUGIN_URL', untrailingslashit( plugin_dir_url( __FILE__ ) ) );
-define( 'COLLECTOR_BANK_VERSION', '2.2.3' );
+define( 'COLLECTOR_BANK_VERSION', '2.3.1' );
 define( 'COLLECTOR_DB_VERSION', '1' );
 
 if ( ! class_exists( 'Collector_Checkout' ) ) {
@@ -46,6 +46,7 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 		 */
 		protected static $instance;
 
+
 		/**
 		 * Returns the *Singleton* instance of this class.
 		 *
@@ -59,21 +60,22 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 		}
 
 		/**
-		 * Public clone method to prevent cloning of the instance of the
+		 * Private clone method to prevent cloning of the instance of the
 		 * *Singleton* instance.
 		 *
 		 * @return void
 		 */
-		public function __clone() {
+		private function __clone() {
 			wc_doing_it_wrong( __FUNCTION__, __( 'Nope' ), '1.0' );
 		}
+
 		/**
-		 * Public unserialize method to prevent unserializing of the *Singleton*
+		 * Private unserialize method to prevent unserializing of the *Singleton*
 		 * instance.
 		 *
 		 * @return void
 		 */
-		public function __wakeup() {
+		private function __wakeup() {
 			wc_doing_it_wrong( __FUNCTION__, __( 'Nope' ), '1.0' );
 		}
 
@@ -110,7 +112,7 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 				return;
 			}
 
-			// Include the Classes
+			// Include the Classes.
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-logger.php';
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-ajax-calls.php';
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-post-checkout.php';
@@ -122,47 +124,55 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-templates.php';
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-gdpr.php';
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-confirmation.php';
+			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-pay-for-order-confirmation.php';
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-sessions.php';
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-db.php';
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-shipping-method.php';
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-delivery-module.php';
 
+			// Functions.
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/includes/collector-checkout-for-woocommerce-functions.php';
 
-			// Include and add the Gateway
+			// Include and add the Gateway.
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-gateway.php';
 			add_filter( 'woocommerce_payment_gateways', array( $this, 'add_collector_checkout_gateway' ) );
 
-			// Include the Request Classes
+			// Include the Request Classes.
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/class-collector-checkout-requests.php';
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/class-collector-checkout-requests-initialize-checkout.php';
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/class-collector-checkout-requests-update-fees.php';
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/class-collector-checkout-requests-update-cart.php';
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/class-collector-checkout-requests-get-checkout-information.php';
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/class-collector-checkout-requests-update-reference.php';
+			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/class-collector-checkout-requests-paylink.php';
 
-			// Include the Request Helpers
+			// Include the Request Helpers.
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/helpers/class-collector-checkout-requests-cart.php';
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/helpers/class-collector-checkout-requests-fees.php';
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/helpers/class-collector-checkout-requests-header.php';
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/helpers/class-collector-checkout-requests-calculate-auth.php';
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/helpers/class-collector-checkout-create-refund-data.php';
-			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/helpers/class-collector-checkout-requests-order.php';
+			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/helpers/class-collector-checkout-requests-helper-order.php';
+			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/helpers/class-collector-checkout-requests-helper-order-fees.php';
 
-			// Include the Soap Request Classes
+			// Include the Soap Request Classes.
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/soap/class-collector-checkout-soap-requests-activate-invoice.php';
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/soap/class-collector-checkout-soap-requests-cancel-invoice.php';
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/soap/class-collector-checkout-soap-requests-credit-payment.php';
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/soap/class-collector-checkout-soap-requests-adjust-invoice.php';
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/soap/class-collector-checkout-soap-requests-part-credit-invoice.php';
 
-			// Definitions
+			// Set variables for shorthand access to classes.
+			$this->order_items = new Collector_Checkout_Requests_Helper_Order();
+			$this->order_fees  = new Collector_Checkout_Requests_Helper_Order_Fees();
+
+			// Definitions.
 			define( 'COLLECTOR_BANK_REST_LIVE', 'https://checkout-api.collector.se' );
 			define( 'COLLECTOR_BANK_REST_TEST', 'https://checkout-api-uat.collector.se' );
 			define( 'COLLECTOR_BANK_SOAP_LIVE', 'https://ecommerce.collector.se/v3.0/InvoiceServiceV33.svc?wsdl' );
 			define( 'COLLECTOR_BANK_SOAP_TEST', 'https://ecommercetest.collector.se/v3.0/InvoiceServiceV33.svc?wsdl' );
 
-			// Translations
+			// Translations.
 			load_plugin_textdomain( 'collector-checkout-for-woocommerce', false, plugin_basename( dirname( __FILE__ ) ) . '/languages' );
 
 			add_filter( 'plugin_action_links_' . plugin_basename( __FILE__ ), array( $this, 'add_action_links' ) );

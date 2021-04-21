@@ -184,9 +184,22 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 	}
 
 	public function process_payment( $order_id, $retry = false ) {
-		$order = wc_get_order( $order_id );
+		$order      = wc_get_order( $order_id );
+		$private_id = get_post_meta( $order_id, '_collector_private_id', true );
 
-		// Maybe add invoice fee to order
+		// Make sure that we don't proceed with a duplicate order.
+		$order_ids = wc_collector_get_orders_by_private_id( $private_id );
+		if ( is_array( $order_ids ) && count( $order_ids ) > 1 ) {
+			$order->add_order_note( sprintf( __( 'Private ID %1$s found in multiple orders (%2$s). Setting the order to On hold.', 'collector-checkout-for-woocommerce' ), $private_id, wp_json_encode( $order_ids ) ) );
+			$order->update_status( 'on-hold' );
+
+			return array(
+				'result'   => 'success',
+				'redirect' => $this->get_return_url( $order ),
+			);
+		}
+
+		// Maybe add invoice fee to order.
 		if ( 'DirectInvoice' == WC()->session->get( 'collector_payment_method' ) ) {
 			$product_id = $this->get_option( 'collector_invoice_fee' );
 			if ( $product_id ) {
@@ -196,8 +209,7 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 
 		WC()->session->__unset( 'collector_customer_order_note' );
 
-		// Update the Collector Order with the Order number
-		$private_id    = get_post_meta( $order_id, '_collector_private_id', true );
+		// Update the Collector Order with the Order number.
 		$customer_type = get_post_meta( $order_id, '_collector_customer_type', true );
 		if ( ! empty( $private_id ) && ! empty( $customer_type ) ) {
 			$update_reference = new Collector_Checkout_Requests_Update_Reference( $order->get_order_number(), $private_id, $customer_type );
@@ -236,7 +248,7 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 
 		update_post_meta( $order_id, '_collector_payment_method', $payment_method );
 		update_post_meta( $order_id, '_collector_payment_id', $payment_id );
-		$this->save_shipping_reference_to_order( $order_id, $collector_order );
+		wc_collector_save_shipping_reference_to_order( $order_id, $collector_order );
 
 		// Save shipping data.
 		if ( isset( $collector_order['data']['shipping'] ) ) {
@@ -308,22 +320,6 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 	public function maybe_delete_collector_sessions( $order_id ) {
 		// Unset Collector token and id.
 		wc_collector_unset_sessions();
-	}
-
-	/**
-	 * Saving shipping reference to order
-	 *
-	 * @param int   $order_id WooCommerce order id.
-	 * @param array $collector_order Collector payment data.
-	 * @return void
-	 */
-	public function save_shipping_reference_to_order( $order_id, $collector_order ) {
-		$order_items = $collector_order['data']['order']['items'];
-		foreach ( $order_items as $item ) {
-			if ( strpos( $item['id'], 'shipping|' ) !== false ) {
-				update_post_meta( $order_id, '_collector_shipping_reference', $item['id'] );
-			}
-		}
 	}
 
 	/**

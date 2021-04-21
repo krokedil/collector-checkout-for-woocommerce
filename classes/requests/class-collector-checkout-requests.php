@@ -26,10 +26,11 @@ class Collector_Checkout_Requests {
 		$get_header = new Collector_Checkout_Requests_Header( $body, $path );
 		return $get_header->get();
 	}
-
-	protected function request_body() {
+	/*
+	protected function request_body( $order_id ) {
 		die( 'function Collector_Checkout_Requests::request_body() must be over-ridden in a sub-class.' );
 	}
+	*/
 
 	protected function cart() {
 		$collector_checkout_requests_cart = new Collector_Checkout_Requests_Cart();
