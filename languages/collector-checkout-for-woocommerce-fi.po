@@ -3,9 +3,9 @@ msgstr ""
 "Project-Id-Version: Collector Checkout for WooCommerce\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-04-21 06:06+0000\n"
-"PO-Revision-Date: 2021-04-21 06:15+0000\n"
+"PO-Revision-Date: 2021-04-21 06:20+0000\n"
 "Last-Translator: Elkrokedilo Admin\n"
-"Language-Team: Finnish\n"
+"Language-Team: Suomi\n"
 "Language: fi\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 "MIME-Version: 1.0\n"
@@ -449,7 +449,7 @@ msgstr ""
 
 #: includes/collector-checkout-for-woocommerce-functions.php:122
 msgid "Select another payment method"
-msgstr ""
+msgstr "Valitse toinen maksutapa"
 
 #: includes/collector-checkout-settings.php:220
 msgid ""
