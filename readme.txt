@@ -2,11 +2,11 @@
 Contributors: collectorbank, krokedil, NiklasHogefjord
 Tags: ecommerce, e-commerce, woocommerce, collector, checkout
 Requires at least: 4.7
-Tested up to: 5.7
+Tested up to: 5.7.1
 Requires PHP: 5.6
 Stable tag: trunk
 WC requires at least: 4.0.0
-WC tested up to: 5.1.0
+WC tested up to: 5.2.2
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -39,6 +39,9 @@ For help setting up and configuring Collector Checkout for WooCommerce please re
 
 
 == CHANGELOG ==
+= 2021.04.21    - version 2.3.1 =
+* Tweak         - Adds first version of Finnish translation files. Only a few strings translated.
+
 = 2021.03.22    - version 2.3.0 =
 * Tweak         - Adds wc_collector_confirm_order function.
 * Tweak         - Adds Pay for order request logic.
