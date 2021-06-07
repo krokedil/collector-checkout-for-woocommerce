@@ -205,8 +205,8 @@ class Collector_Api_Callbacks {
 		if ( is_object( $order ) ) {
 
 			// Check order status.
-			if ( ! $order->has_status( array( 'on-hold', 'processing', 'completed' ) ) ) {
-				// Set order status in Woo
+			if ( empty( $order->get_date_paid() ) ) {
+				// Set order status in Woo.
 				$this->set_order_status( $order, $collector_order );
 			}
 
@@ -471,6 +471,11 @@ class Collector_Api_Callbacks {
 			$order->payment_complete( $collector_order['data']['purchase']['purchaseIdentifier'] );
 			$order->add_order_note( 'Payment via Collector Checkout. Payment ID: ' . sanitize_key( $collector_order['data']['purchase']['purchaseIdentifier'] ) );
 			Collector_Checkout::log( 'Order status not set correctly for order ' . $order->get_order_number() . ' during checkout process. Setting order status to Processing/Completed.' );
+		} elseif ( 'Signing' === $collector_order['data']['purchase']['result'] ) {
+			$order->add_order_note( __( 'Order is waiting for electronic signing by customer. Payment ID: ', 'woocommerce-gateway-klarna' ) . $collector_order['data']['purchase']['purchaseIdentifier'] );
+			update_post_meta( $order_id, '_transaction_id', $collector_order['data']['purchase']['purchaseIdentifier'] );
+			$order->update_status( 'on-hold' );
+			Collector_Checkout::log( 'Order status not set correctly for order ' . $order->get_order_number() . ' during checkout process. Setting order status to On hold.' );
 		} else {
 			$order->add_order_note( __( 'Order is PENDING APPROVAL by Collector. Payment ID: ', 'collector-checkout-for-woocommerce' ) . $collector_order['data']['purchase']['purchaseIdentifier'] );
 			$order->update_status( 'on-hold' );
