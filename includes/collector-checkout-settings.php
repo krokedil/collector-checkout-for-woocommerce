@@ -173,6 +173,13 @@ $settings = array(
 		'description' => sprintf( __( 'Triggered by Collector when customer clicks the Complete purchase button in Collector Checkout. <a href="%s" target="_blank">Read more about validation callback.</a>', 'collector-checkout-for-woocommerce' ), 'https://docs.krokedil.com/article/164-collector-checkout-introduction' ),
 		'default'     => 'yes',
 	),
+	'requires_electronic_id_fields'   => array(
+		'title'       => __( 'Electronic ID fields', 'collector-checkout-for-woocommerce' ),
+		'type'        => 'checkbox',
+		'label'       => __( 'Tick the checkbox to activate Requires Electronic ID Fields settings in product pages.', 'collector-checkout-for-woocommerce' ),
+		'description' => sprintf( __( '<a href="%s" target="_blank">Read more about this.</a>', 'collector-checkout-for-woocommerce' ), 'https://docs.krokedil.com/article/164-collector-checkout-introduction' ),
+		'default'     => 'no',
+	),
 	'order_management_settings_title' => array(
 		'title' => __( 'Order management settings', 'collector-checkout-for-woocommerce' ),
 		'type'  => 'title',

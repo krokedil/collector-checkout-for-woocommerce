@@ -129,6 +129,7 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-db.php';
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-shipping-method.php';
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-delivery-module.php';
+			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-product-fields.php';
 
 			// Functions.
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/includes/collector-checkout-for-woocommerce-functions.php';
