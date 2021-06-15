@@ -119,6 +119,12 @@ class Collector_Checkout_Requests_Initialize_Checkout extends Collector_Checkout
 				),
 				wc_get_checkout_url()
 			);
+
+			// Customer.
+			if ( WC()->customer->get_billing_email() && WC()->customer->get_billing_phone() ) {
+				$formatted_request_body['customer']['email']             = WC()->customer->get_billing_email();
+				$formatted_request_body['customer']['mobilePhoneNumber'] = WC()->customer->get_billing_phone();
+			}
 		} else {
 			$order                                     = wc_get_order( $order_id );
 			$formatted_request_body['redirectPageUri'] = add_query_arg(
@@ -128,6 +134,12 @@ class Collector_Checkout_Requests_Initialize_Checkout extends Collector_Checkout
 				),
 				$order->get_checkout_order_received_url()
 			);
+
+			// Customer.
+			if ( $order->get_billing_email() && $order->get_billing_phone() ) {
+				$formatted_request_body['customer']['email']             = $order->get_billing_email();
+				$formatted_request_body['customer']['mobilePhoneNumber'] = $order->get_billing_phone();
+			}
 		}
 
 		return wp_json_encode( $formatted_request_body );

@@ -40,7 +40,7 @@ class Collector_Checkout_Requests_Cart {
 			}
 			$item_name = wc_get_product( $product_id );
 			$item_name = $item_name->get_name();
-			$item_line = self::create_item( self::get_sku( $product, $product_id ), $item_name, $item['line_total'], $item['quantity'], $item['line_tax'] );
+			$item_line = self::create_item( self::get_sku( $product, $product_id ), $item_name, $item['line_total'], $item['quantity'], $item['line_tax'], $product );
 			array_push( $items, $item_line );
 		}
 
@@ -73,14 +73,23 @@ class Collector_Checkout_Requests_Cart {
 	 * @param float  $line_tax Line tax.
 	 * @return array
 	 */
-	public static function create_item( $sku, $product_name, $line_total, $quantity, $line_tax ) {
-		return array(
+	public static function create_item( $sku, $product_name, $line_total, $quantity, $line_tax, $product = null ) {
+		$configured_item = array(
 			'id'          => $sku,
 			'description' => $product_name,
 			'unitPrice'   => round( ( $line_total + $line_tax ) / $quantity, 2 ), // Total price per unit including VAT.
 			'quantity'    => $quantity,
 			'vat'         => round( $line_tax / $line_total, 2 ) * 100,
 		);
+
+		// Only check this on product line items.
+		if ( $product && 'yes' === self::get_add_product_electronic_id_fields() ) {
+			$product_id                              = $product->is_type( 'variation' ) ? $product->get_parent_id() : $product->get_id();
+			$collector_requires_electronic_id        = 'yes' === get_post_meta( $product_id, '_collector_requires_electronic_id', true ) ? true : false;
+			$configured_item['requiresElectronicId'] = $collector_requires_electronic_id;
+		}
+
+		return $configured_item;
 	}
 
 	/**
@@ -160,5 +169,16 @@ class Collector_Checkout_Requests_Cart {
 			}
 		}
 		return $items;
+	}
+
+	/**
+	 * See if product Require electronic id fields should be sent to Collector.
+	 *
+	 * @return string
+	 */
+	public static function get_add_product_electronic_id_fields() {
+		$collector_settings = get_option( 'woocommerce_collector_checkout_settings' );
+		$add_product_fields = ! empty( $collector_settings['requires_electronic_id_fields'] ) ? $collector_settings['requires_electronic_id_fields'] : 'no';
+		return $add_product_fields;
 	}
 }
