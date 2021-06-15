@@ -35,7 +35,7 @@ class Collector_Checkout_Product_Fields {
 		$product = wc_get_product( $post_id );
 		$args    = array(
 			'id'          => '_collector_requires_electronic_id',
-			'label'       => __( 'Collector Requires Electronic ID', 'kroconnect-extra-fields' ),
+			'label'       => __( 'Collector Electronic ID required', 'kroconnect-extra-fields' ),
 			'class'       => 'collector-requires-electronic-id',
 			'desc_tip'    => false,
 			'description' => __( 'If this product requires Electronic ID signing in Collector Checkout.', 'kroconnect-extra-fields' ),
