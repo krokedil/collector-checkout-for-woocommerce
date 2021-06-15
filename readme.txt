@@ -2,11 +2,11 @@
 Contributors: collectorbank, krokedil, NiklasHogefjord
 Tags: ecommerce, e-commerce, woocommerce, collector, checkout
 Requires at least: 4.7
-Tested up to: 5.7.1
+Tested up to: 5.7.2
 Requires PHP: 5.6
 Stable tag: trunk
 WC requires at least: 4.0.0
-WC tested up to: 5.2.2
+WC tested up to: 5.4.1
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -39,6 +39,11 @@ For help setting up and configuring Collector Checkout for WooCommerce please re
 
 
 == CHANGELOG ==
+= 2021.06.15    - version 2.4.0 =
+* Feature       - Add Require Electronic ID signing setting. Possible to require electronic signing in Collector Checkout on a per order line basis.
+* Tweak         - Add email & phone number in initialize request to Collector if they exist.
+* Tweak         - Improve callback handling. Adds support for (future) pending order notifications.
+
 = 2021.04.21    - version 2.3.1 =
 * Tweak         - Adds first version of Finnish translation files. Only a few strings translated.
 
