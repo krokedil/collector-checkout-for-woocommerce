@@ -47,6 +47,11 @@ class Collector_Checkout_Requests_Fees {
 			}
 		}
 
+		// Don't return an array if it's empty.
+		if ( empty( $fees ) ) {
+			$fees = '';
+		}
+
 		return $fees;
 
 	}
