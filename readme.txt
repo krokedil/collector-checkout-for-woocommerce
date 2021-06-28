@@ -39,6 +39,9 @@ For help setting up and configuring Collector Checkout for WooCommerce please re
 
 
 == CHANGELOG ==
+= 2021.06.28    - version 2.4.1 =
+* Fix           - Fix issue when using Delivery module but not having an invoice fee. Resulted in formatting issue in payload sent to Collector.
+
 = 2021.06.15    - version 2.4.0 =
 * Feature       - Add Require Electronic ID signing setting. Possible to require electronic signing in Collector Checkout on a per order line basis.
 * Tweak         - Add email & phone number in initialize request to Collector if they exist.
