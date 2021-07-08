@@ -89,6 +89,10 @@ class Collector_Checkout_Requests_Cart {
 			$configured_item['requiresElectronicId'] = $collector_requires_electronic_id;
 		}
 
+		if ( $product && ! empty( $product->get_weight() ) ) {
+			$configured_item['unitWeight'] = round( wc_get_weight( $product->get_weight(), 'kg' ), 2 );
+		}
+
 		return $configured_item;
 	}
 
