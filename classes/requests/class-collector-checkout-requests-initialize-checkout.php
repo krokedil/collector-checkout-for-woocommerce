@@ -142,6 +142,6 @@ class Collector_Checkout_Requests_Initialize_Checkout extends Collector_Checkout
 			}
 		}
 
-		return wp_json_encode( $formatted_request_body );
+		return wp_json_encode( apply_filters( 'coc_request_body', $formatted_request_body ) );
 	}
 }

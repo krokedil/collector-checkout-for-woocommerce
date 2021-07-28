@@ -57,6 +57,6 @@ class Collector_Checkout_Requests_Update_Cart extends Collector_Checkout_Request
 
 	protected function request_body() {
 		$formatted_request_body = $this->cart();
-		return wp_json_encode( $formatted_request_body );
+		return wp_json_encode( apply_filters( 'coc_request_body', $formatted_request_body ) );
 	}
 }
