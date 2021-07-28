@@ -94,6 +94,7 @@ class Collector_Checkout_Requests_Cart {
 		}
 
 		return $configured_item;
+		return apply_filters( 'coc_cart_item', $configured_item );
 	}
 
 	/**
