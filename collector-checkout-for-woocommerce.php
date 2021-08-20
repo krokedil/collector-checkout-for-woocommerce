@@ -231,7 +231,7 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 				}
 				$collector_settings       = get_option( 'woocommerce_collector_checkout_settings' );
 				$data_action_color_button = isset( $collector_settings['checkout_button_color'] ) && ! empty( $collector_settings['checkout_button_color'] ) ? "data-action-color='" . $collector_settings['checkout_button_color'] . "'" : '';
-
+				$checkout_version         = isset( $collector_settings['checkout_version'] ) ? $collector_settings['checkout_version'] : 'v1';
 				switch ( get_woocommerce_currency() ) {
 					case 'SEK':
 						$delivery_module = isset( $collector_settings['collector_delivery_module_se'] ) ? $collector_settings['collector_delivery_module_se'] : 'no';
@@ -263,6 +263,7 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 						'payment_successful'            => $payment_successful,
 						'purchase_status'               => $purchase_status,
 						'data_action_color_button'      => $data_action_color_button,
+						'checkout_version'              => $checkout_version,
 						'default_customer_type'         => wc_collector_get_default_customer_type(),
 						'selected_customer_type'        => wc_collector_get_selected_customer_type(),
 						'delivery_module'               => $delivery_module,
