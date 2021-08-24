@@ -236,7 +236,7 @@ class Collector_Checkout_Confirmation {
 	public function collector_set_not_required( $checkout_fields ) {
 
 		// Short-circuit if there is no WooCommerce session.
-		if ( ! method_exists( WC()->session, 'get' ) ) {
+		if ( null === WC()->session || ! method_exists( WC()->session, 'get' ) ) {
 			return $checkout_fields;
 		}
 
