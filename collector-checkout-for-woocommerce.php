@@ -65,7 +65,7 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 		 *
 		 * @return void
 		 */
-		private function __clone() {
+		public function __clone() {
 			wc_doing_it_wrong( __FUNCTION__, __( 'Nope' ), '1.0' );
 		}
 
@@ -75,7 +75,7 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 		 *
 		 * @return void
 		 */
-		private function __wakeup() {
+		public function __wakeup() {
 			wc_doing_it_wrong( __FUNCTION__, __( 'Nope' ), '1.0' );
 		}
 
@@ -378,17 +378,17 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 	}
 
 	Collector_Checkout::get_instance();
+}
 
-	/**
-	 * Main instance Collector_Checkout.
-	 *
-	 * Returns the main instance of Collector_Checkout.
-	 *
-	 * @return Collector_Checkout
-	 */
-	function CCO_WC() { // phpcs:ignore
-		return Collector_Checkout::get_instance();
-	}
+/**
+ * Main instance Collector_Checkout.
+ *
+ * Returns the main instance of Collector_Checkout.
+ *
+ * @return Collector_Checkout
+ */
+function CCO_WC() { // phpcs:ignore
+	return Collector_Checkout::get_instance();
 }
 
 function wc_collector_get_available_customer_types() {
