@@ -45,6 +45,7 @@ class Collector_Checkout_Requests_Initialize_Checkout extends Collector_Checkout
 		$this->country_code                 = $country_code;
 		$this->terms_page                   = esc_url( get_permalink( wc_get_page_id( 'terms' ) ) );
 		$this->activate_validation_callback = isset( $collector_settings['activate_validation_callback'] ) ? $collector_settings['activate_validation_callback'] : 'no';
+		$this->checkout_version             = isset( $collector_settings['checkout_version'] ) ? $collector_settings['checkout_version'] : 'v1';
 	}
 
 	private function get_request_args( $order_id ) {
@@ -108,7 +109,7 @@ class Collector_Checkout_Requests_Initialize_Checkout extends Collector_Checkout
 			if ( 'yes' === $this->activate_validation_callback ) {
 				$formatted_request_body['validationUri'] = $validation_uri;
 			}
-			if ( 'yes' === $this->delivery_module ) {
+			if ( 'yes' === $this->delivery_module && 'v1' === $this->checkout_version ) {
 				$formatted_request_body['profileName'] = 'Shipping';
 			}
 
