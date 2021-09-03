@@ -184,7 +184,9 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 	}
 
 	public function process_payment( $order_id, $retry = false ) {
-		$order      = wc_get_order( $order_id );
+
+		$order = wc_get_order( $order_id );
+		CCO_WC()->logger->log( 'Process payment triggered for order ID ' . $order_id . ' (order number ' . $order->get_order_number() . ').' );
 		$private_id = get_post_meta( $order_id, '_collector_private_id', true );
 
 		// Make sure that we don't proceed with a duplicate order.
