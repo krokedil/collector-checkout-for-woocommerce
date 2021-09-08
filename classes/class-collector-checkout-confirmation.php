@@ -59,7 +59,7 @@ class Collector_Checkout_Confirmation {
 	 * Populates WooCommerce checkout form in Collector confirmation page.
 	 */
 	public function check_if_order_already_exist() {
-		if ( ! $this->is_collector_confirmation() ) {
+		if ( ! is_collector_confirmation() ) {
 			return;
 		}
 
@@ -100,7 +100,7 @@ class Collector_Checkout_Confirmation {
 	 * Hides WooCommerce checkout form in confirmation page.
 	 */
 	public function maybe_hide_checkout_form() {
-		if ( ! $this->is_collector_confirmation() ) {
+		if ( ! is_collector_confirmation() ) {
 			return;
 		}
 
@@ -112,7 +112,7 @@ class Collector_Checkout_Confirmation {
 	 * Populates WooCommerce checkout form in Collector confirmation page.
 	 */
 	public function maybe_populate_wc_checkout( $checkout ) {
-		if ( ! $this->is_collector_confirmation() ) {
+		if ( ! is_collector_confirmation() ) {
 			return;
 		}
 
@@ -153,21 +153,6 @@ class Collector_Checkout_Confirmation {
 			exit;
 		}
 
-	}
-
-
-
-	/**
-	 * Checks if in Collector confirmation page.
-	 *
-	 * @return bool
-	 */
-	private function is_collector_confirmation() {
-		if ( isset( $_GET['payment_successful'] ) && 1 == $_GET['payment_successful'] && isset( $_GET['public-token'] ) ) {
-			return true;
-		}
-
-		return false;
 	}
 
 	/**

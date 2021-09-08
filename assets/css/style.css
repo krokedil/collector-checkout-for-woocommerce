@@ -98,3 +98,27 @@ ul.collector-checkout-tabs li.current:after {
     top: -9999px;
     left: -9999px;
 }
+
+/* Checkout design */
+@media only screen and (min-width : 769px) {
+
+    .cco-two-column-right #collector-wrapper {
+        display: grid;
+        grid-template-columns: 4fr 6fr;	
+        grid-column-gap: 70px;
+    }
+
+    .cco-two-column-left #collector-wrapper {
+        display: grid;
+        grid-template-columns: 6fr 4fr;	
+        grid-column-gap: 70px;
+    }
+
+    .cco-two-column-left #collector-order-review {
+        order: 2;
+    }
+
+    .cco-two-column-left #collector-iframe {
+        order: 1;
+    }
+}

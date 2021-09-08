@@ -30,8 +30,10 @@ class Collector_Checkout_Templates {
 	 * Plugin actions.
 	 */
 	public function __construct() {
+		$cco_settings          = get_option( 'woocommerce_collector_checkout_settings' );
+		$this->checkout_layout = ( isset( $cco_settings['checkout_layout'] ) ) ? $cco_settings['checkout_layout'] : 'one_column_checkout';
 
-		// Override the checkout template
+		// Override the checkout template.
 		add_filter( 'wc_get_template', array( $this, 'override_template' ), 10, 2 );
 
 		// Template hooks.
@@ -41,6 +43,9 @@ class Collector_Checkout_Templates {
 		add_action( 'collector_wc_after_order_review', 'collector_wc_show_another_gateway_button', 20 );
 		add_action( 'collector_wc_before_iframe', 'collector_wc_show_customer_type_switcher', 20 );
 		add_action( 'collector_wc_after_iframe', array( $this, 'add_wc_form' ), 10 );
+
+		// Body class. For checkout layout setting.
+		add_filter( 'body_class', array( $this, 'add_body_class' ) );
 	}
 
 	/**
@@ -111,6 +116,40 @@ class Collector_Checkout_Templates {
 			<?php }; ?>
 		</div>
 		<?php
+	}
+
+	/**
+	 * Add cco-two-column-checkout body class.
+	 *
+	 * @param array $class CSS classes used in body tag.
+	 *
+	 * @return array
+	 */
+	public function add_body_class( $class ) {
+		if ( is_checkout() && ! is_wc_endpoint_url( 'order-received' ) ) {
+			// Don't display Collector body classes if we have a cart that doesn't needs payment.
+			if ( method_exists( WC()->cart, 'needs_payment' ) && ! WC()->cart->needs_payment() ) {
+				return $class;
+			}
+
+			$first_gateway = '';
+			if ( WC()->session->get( 'chosen_payment_method' ) ) {
+				$first_gateway = WC()->session->get( 'chosen_payment_method' );
+			} else {
+				$available_payment_gateways = WC()->payment_gateways->get_available_payment_gateways();
+				reset( $available_payment_gateways );
+				$first_gateway = key( $available_payment_gateways );
+			}
+
+			if ( 'collector_checkout' === $first_gateway && 'two_column_left' === $this->checkout_layout ) {
+				$class[] = 'cco-two-column-left';
+			}
+
+			if ( 'collector_checkout' === $first_gateway && 'two_column_right' === $this->checkout_layout ) {
+				$class[] = 'cco-two-column-right';
+			}
+		}
+		return $class;
 	}
 }
 

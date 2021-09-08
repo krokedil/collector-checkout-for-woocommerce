@@ -6,6 +6,12 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Echoes Collector Checkout iframe snippet.
  */
 function collector_wc_show_snippet() {
+
+	// Don't display the checkout on confirmation page.
+	if ( is_collector_confirmation() ) {
+		return;
+	}
+
 	if ( 'NOK' == get_woocommerce_currency() ) {
 		$locale = 'nb-NO';
 	} elseif ( 'DKK' == get_woocommerce_currency() ) {

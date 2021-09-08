@@ -152,6 +152,18 @@ $settings = array(
 		),
 		'default'     => 'v1',
 	),
+	'checkout_layout'                 => array(
+		'title'       => __( 'Checkout layout', 'collector-checkout-for-woocommerce' ),
+		'type'        => 'select',
+		'options'     => array(
+			'one_column_checkout' => __( 'One column checkout', 'collector-checkout-for-woocommerce' ),
+			'two_column_right'    => __( 'Two column checkout (Walley Checkout in right column)', 'collector-checkout-for-woocommerce' ),
+			'two_column_left'     => __( 'Two column checkout (Walley Checkout in left column)', 'collector-checkout-for-woocommerce' ),
+		),
+		'description' => __( 'Select the Checkout layout.', 'collector-checkout-for-woocommerce' ),
+		'default'     => 'one_column_checkout',
+		'desc_tip'    => false,
+	),
 	'collector_invoice_fee'           => array(
 		'title'       => __( 'Invoice fee ID', 'collector-checkout-for-woocommerce' ),
 		'type'        => 'text',

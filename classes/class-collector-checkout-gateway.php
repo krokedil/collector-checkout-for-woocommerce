@@ -11,6 +11,7 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 		$this->description        = $this->get_option( 'description' );
 		$this->title              = $this->get_option( 'title' );
 		$this->enabled            = $this->get_option( 'enabled' );
+		$this->checkout_version   = $this->get_option( 'checkout_version' );
 
 		switch ( get_woocommerce_currency() ) {
 			case 'SEK':
@@ -335,14 +336,18 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 	public function collector_thankyou_order_received_text( $text, $order ) {
 		if ( is_object( $order ) && 'collector_checkout' == $order->get_payment_method() ) {
 			CCO_WC()->logger->log( 'Thankyou page rendered for order ID - ' . $order->get_id() );
-			return '<div class="collector-checkout-thankyou"></div>';
+			if ( 'v2' !== $this->checkout_version ) {
+				return '<div class="collector-checkout-thankyou"></div>';
+			}
 		}
 		if ( isset( $_GET['purchase-status'] ) && 'not-completed' == $_GET['purchase-status'] ) {
 			// Unset Collector token and id
 			wc_collector_unset_sessions();
 			WC()->cart->empty_cart();
 			Collector_Checkout::log( 'Rendering simplified thankyou page (only display Collector thank you iframe).' );
-			return '<div class="collector-checkout-thankyou"></div>';
+			if ( 'v2' !== $this->checkout_version ) {
+				return '<div class="collector-checkout-thankyou"></div>';
+			}
 		}
 
 		return $text;
