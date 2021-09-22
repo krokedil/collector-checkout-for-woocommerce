@@ -105,7 +105,7 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 		$image_url = COLLECTOR_BANK_PLUGIN_URL . '/assets/images/collector_bank_logo_blackgrey.png';
 		?>
 		<p><img src="<?php echo $image_url; ?>" width="280px"/></p>
-		<h3><?php _e( 'Collector Checkout', 'collector-checkout-for-woocommerce' ); ?></h3>
+		<h3><?php _e( 'Walley Checkout (Collector)', 'collector-checkout-for-woocommerce' ); ?></h3>
 		<div class="collector-settings">
 			<div class="collector-settings-content">
 				<table class="form-table">

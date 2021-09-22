@@ -10,14 +10,14 @@ $settings = array(
 	'enabled'                         => array(
 		'title'   => __( 'Enable/Disable', 'collector-checkout-for-woocommerce' ),
 		'type'    => 'checkbox',
-		'label'   => __( 'Enable Collector Checkout', 'collector-checkout-for-woocommerce' ),
+		'label'   => __( 'Enable Walley Checkout (Collector)', 'collector-checkout-for-woocommerce' ),
 		'default' => 'no',
 	),
 	'title'                           => array(
 		'title'       => __( 'Title', 'collector-checkout-for-woocommerce' ),
 		'type'        => 'text',
-		'description' => __( 'This is the title that the user sees on the checkout page for Collector Checkout.', 'collector-checkout-for-woocommerce' ),
-		'default'     => __( 'Collector Checkout', 'collector-checkout-for-woocommerce' ),
+		'description' => __( 'This is the title that the user sees on the checkout page for Walley Checkout (Collector).', 'collector-checkout-for-woocommerce' ),
+		'default'     => __( 'Walley Checkout', 'collector-checkout-for-woocommerce' ),
 	),
 	/*
 	'description' => array(
