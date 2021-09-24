@@ -3,7 +3,7 @@ Contributors: collectorbank, krokedil, NiklasHogefjord
 Tags: ecommerce, e-commerce, woocommerce, collector, checkout
 Requires at least: 4.7
 Tested up to: 5.7.2
-Requires PHP: 5.6
+Requires PHP: 7.0
 Stable tag: trunk
 WC requires at least: 4.0.0
 WC tested up to: 5.4.1
