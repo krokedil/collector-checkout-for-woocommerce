@@ -144,6 +144,9 @@ class Collector_Checkout_Templates {
 			if ( 'collector_checkout' === $first_gateway && 'two_column_left' === $this->checkout_layout ) {
 				$class[] = 'cco-two-column-left';
 			}
+			if ( 'collector_checkout' === $first_gateway && 'two_column_left_sf' === $this->checkout_layout ) {
+				$class[] = 'cco-two-column-left-sf';
+			}
 
 			if ( 'collector_checkout' === $first_gateway && 'two_column_right' === $this->checkout_layout ) {
 				$class[] = 'cco-two-column-right';

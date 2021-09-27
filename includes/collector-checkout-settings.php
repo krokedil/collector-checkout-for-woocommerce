@@ -159,6 +159,7 @@ $settings = array(
 			'one_column_checkout' => __( 'One column checkout', 'collector-checkout-for-woocommerce' ),
 			'two_column_right'    => __( 'Two column checkout (Walley Checkout in right column)', 'collector-checkout-for-woocommerce' ),
 			'two_column_left'     => __( 'Two column checkout (Walley Checkout in left column)', 'collector-checkout-for-woocommerce' ),
+			'two_column_left_sf'  => __( 'Two column checkout (Walley Checkout in left column) - Storefront light', 'collector-checkout-for-woocommerce' ),
 		),
 		'description' => __( 'Select the Checkout layout.', 'collector-checkout-for-woocommerce' ),
 		'default'     => 'one_column_checkout',
