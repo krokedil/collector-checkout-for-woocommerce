@@ -78,14 +78,13 @@ class Collector_Delivery_Module {
 		$order_id                = $order->get_id();
 		$collector_delivery_data = json_decode( get_post_meta( $order_id, '_collector_delivery_module_data', true ), true );
 
-		if ( ! empty( $collector_delivery_data['servicePointName'] ) ) {
-			$pickup_service = $collector_delivery_data['carrierName'];
-			$pickup_name    = $collector_delivery_data['servicePointName'];
+		if ( ! empty( $collector_delivery_data ) ) {
+			$pickup_service = isset( $collector_delivery_data['carrierName'] ) ? $collector_delivery_data['carrierName'] : '';
+			$pickup_name    = isset( $collector_delivery_data['servicePointName'] ) ? $collector_delivery_data['servicePointName'] : '';
+			$shipment_id    = $collector_delivery_data['pendingShipment']['id'];
 
-			$shipment_id = $collector_delivery_data['pendingShipment']['id'];
-
-			$pickup_service_text = sprintf( '<strong>%1$s</strong> %2$s<br>', __( 'Service:', 'krokedil-shipping-connector' ), wc_clean( $pickup_service ) );
-			$pickup_name_text    = sprintf( '<strong>%1$s</strong> %2$s<br>', __( 'Pickup Point:', 'krokedil-shipping-connector' ), wc_clean( $pickup_name ) );
+			$pickup_service_text = ! empty( $pickup_service ) ? sprintf( '<strong>%1$s</strong> %2$s<br>', __( 'Service:', 'krokedil-shipping-connector' ), wc_clean( $pickup_service ) ) : '';
+			$pickup_name_text    = ! empty( $pickup_name ) ? sprintf( '<strong>%1$s</strong> %2$s<br>', __( 'Pickup Point:', 'krokedil-shipping-connector' ), wc_clean( $pickup_name ) ) : '';
 			$shipment_id_text    = sprintf( '<strong>%1$s</strong> %2$s<br>', __( 'Shipment ID:', 'krokedil-shipping-connector' ), wc_clean( $shipment_id ) );
 
 			printf(
