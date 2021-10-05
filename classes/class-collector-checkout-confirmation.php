@@ -219,7 +219,13 @@ class Collector_Checkout_Confirmation {
 	 * @return array
 	 */
 	public function collector_set_not_required( $checkout_fields ) {
-		// Set fields to not required, to prevent orders from failing
+
+		// Short-circuit if there is no WooCommerce session.
+		if ( null === WC()->session || ! method_exists( WC()->session, 'get' ) ) {
+			return $checkout_fields;
+		}
+
+		// Set fields to not required, to prevent orders from failing.
 		if ( 'collector_checkout' === WC()->session->get( 'chosen_payment_method' ) ) {
 			foreach ( $checkout_fields as $fieldset_key => $fieldset ) {
 				foreach ( $fieldset as $field_key => $field ) {

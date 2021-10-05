@@ -1,12 +1,12 @@
 === Collector Checkout for WooCommerce ===
 Contributors: collectorbank, krokedil, NiklasHogefjord
 Tags: ecommerce, e-commerce, woocommerce, collector, checkout
-Requires at least: 4.7
-Tested up to: 5.7.2
-Requires PHP: 5.6
+Requires at least: 5.0
+Tested up to: 5.8.1
+Requires PHP: 7.0
 Stable tag: trunk
 WC requires at least: 4.0.0
-WC tested up to: 5.4.1
+WC tested up to: 5.7.1
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -39,6 +39,14 @@ For help setting up and configuring Collector Checkout for WooCommerce please re
 
 
 == CHANGELOG ==
+= 2021.09.27    - version 2.5.0 =
+* Feature       - Add unitWeight if it exist on product data sent to Collector.
+* Feature       - Add coc_request_body filter to request body for init and update calls.
+* Feature       - Add coc_cart_item filter to cart items sent to Collector.
+* Tweak         - Bumped required PHP version to 7.0.
+* Fix           - Display Delivery Module shipping info in order even if shipping method isn't a pickup location shipping method.
+* Fix           - Check if we can retreive WC()->session to avoid potential error in collector_set_not_required function.
+
 = 2021.06.28    - version 2.4.1 =
 * Fix           - Fix issue when using Delivery module but not having an invoice fee. Resulted in formatting issue in payload sent to Collector.
 
