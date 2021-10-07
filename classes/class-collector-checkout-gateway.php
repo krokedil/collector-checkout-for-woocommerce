@@ -336,9 +336,7 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 	public function collector_thankyou_order_received_text( $text, $order ) {
 		if ( is_object( $order ) && 'collector_checkout' == $order->get_payment_method() ) {
 			CCO_WC()->logger->log( 'Thankyou page rendered for order ID - ' . $order->get_id() );
-			if ( 'v2' !== $this->checkout_version ) {
-				return '<div class="collector-checkout-thankyou"></div>';
-			}
+			return '<div class="collector-checkout-thankyou"></div>';
 		}
 		if ( isset( $_GET['purchase-status'] ) && 'not-completed' == $_GET['purchase-status'] ) {
 			// Unset Collector token and id
