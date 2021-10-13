@@ -6,6 +6,12 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Echoes Collector Checkout iframe snippet.
  */
 function collector_wc_show_snippet() {
+
+	// Don't display the checkout on confirmation page.
+	if ( is_collector_confirmation() ) {
+		return;
+	}
+
 	if ( 'NOK' == get_woocommerce_currency() ) {
 		$locale = 'nb-NO';
 	} elseif ( 'DKK' == get_woocommerce_currency() ) {
@@ -23,6 +29,7 @@ function collector_wc_show_snippet() {
 	$collector_settings       = get_option( 'woocommerce_collector_checkout_settings' );
 	$test_mode                = $collector_settings['test_mode'];
 	$data_action_color_button = isset( $collector_settings['checkout_button_color'] ) && ! empty( $collector_settings['checkout_button_color'] ) ? ' data-action-color="' . $collector_settings['checkout_button_color'] . '"' : '';
+	$checkout_version         = isset( $collector_settings['checkout_version'] ) ? $collector_settings['checkout_version'] : 'v1';
 
 	if ( 'yes' == $test_mode ) {
 		$url = 'https://checkout-uat.collector.se/collector-checkout-loader.js';
@@ -70,7 +77,7 @@ function collector_wc_show_snippet() {
 			);
 
 			echo( "<script>console.log('Collector: " . json_encode( $output ) . "');</script>" );
-			$return = '<div id="collector-container"><script src="' . $url . '" data-lang="' . $locale . '" data-token="' . $public_token . '" data-variant="' . $customer_type . '"' . $data_action_color_button . ' ></script></div>';
+			$return = '<div id="collector-container"><script src="' . $url . '" data-lang="' . $locale . '" data-version="' . $checkout_version . '" data-token="' . $public_token . '" data-variant="' . $customer_type . '"' . $data_action_color_button . ' ></script></div>';
 		}
 	} else {
 
@@ -80,7 +87,7 @@ function collector_wc_show_snippet() {
 			'customer_type' => $customer_type,
 		);
 		echo( "<script>console.log('Collector: " . json_encode( $output ) . "');</script>" );
-		$return = '<div id="collector-container"><script src="' . $url . '" data-lang="' . $locale . '" data-token="' . $public_token . '" data-variant="' . $customer_type . '"' . $data_action_color_button . ' ></script></div>';
+		$return = '<div id="collector-container"><script src="' . $url . '" data-lang="' . $locale . '" data-version="' . $checkout_version . '" data-token="' . $public_token . '" data-variant="' . $customer_type . '"' . $data_action_color_button . ' ></script></div>';
 	}
 
 	echo $return;
@@ -126,16 +133,15 @@ function collector_wc_show_another_gateway_button() {
 
 /**
  * Shows B2C/B2B switcher in Collector Checkout page.
+ * Only available for Checkout version 1.0.
  */
 function collector_wc_show_customer_type_switcher() {
-	if ( 'collector-b2c-b2b' === wc_collector_get_available_customer_types() ) {
-		?>
-		<ul class="collector-checkout-tabs">
-			<li class="tab-link current" data-tab="b2c"><?php _e( 'Person', 'collector-checkout-for-woocommerce' ); ?></li>
-			<li class="tab-link" data-tab="b2b"><?php _e( 'Company', 'collector-checkout-for-woocommerce' ); ?></li>
-		</ul>
-		<?php
-	}
+	?>
+	<ul class="collector-checkout-tabs">
+		<li class="tab-link current" data-tab="b2c"><?php _e( 'Person', 'collector-checkout-for-woocommerce' ); ?></li>
+		<li class="tab-link" data-tab="b2b"><?php _e( 'Company', 'collector-checkout-for-woocommerce' ); ?></li>
+	</ul>
+	<?php
 }
 
 /**

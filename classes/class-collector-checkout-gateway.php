@@ -6,11 +6,12 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 
 	public function __construct() {
 		$this->id                 = 'collector_checkout';
-		$this->method_title       = __( 'Collector Checkout', 'collector-checkout-for-woocommerce' );
-		$this->method_description = __( 'Collector Checkout payment solution for WooCommerce.', 'collector-checkout-for-woocommerce' );
+		$this->method_title       = __( 'Walley Checkout', 'collector-checkout-for-woocommerce' );
+		$this->method_description = __( 'Walley Checkout payment solution for WooCommerce.', 'collector-checkout-for-woocommerce' );
 		$this->description        = $this->get_option( 'description' );
 		$this->title              = $this->get_option( 'title' );
 		$this->enabled            = $this->get_option( 'enabled' );
+		$this->checkout_version   = $this->get_option( 'checkout_version' );
 
 		switch ( get_woocommerce_currency() ) {
 			case 'SEK':
@@ -103,8 +104,8 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 	public function admin_options() {
 		$image_url = COLLECTOR_BANK_PLUGIN_URL . '/assets/images/collector_bank_logo_blackgrey.png';
 		?>
-		<p><img src="<?php echo $image_url; ?>" width="280px"/></p>
-		<h3><?php _e( 'Collector Checkout', 'collector-checkout-for-woocommerce' ); ?></h3>
+		<p><img src="https://cdn.walleypay.com/logo/walley-black.svg" width="200px"/></p>
+		<h3><?php _e( 'Walley Checkout (Collector)', 'collector-checkout-for-woocommerce' ); ?></h3>
 		<div class="collector-settings">
 			<div class="collector-settings-content">
 				<table class="form-table">
@@ -115,7 +116,7 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 			</div>	
 			<div class="collector-settings-sidebar">
 				<h4>Kom igång</h4><p><ul>
-					<li><a href="http://docs.krokedil.com/documentation/collector-checkout-for-woocommerce/" target="_blank">Dokumentation</a></li>
+					<li><a href="https://docs.krokedil.com/walley-checkout-for-woocommerce/" target="_blank">Dokumentation</a></li>
 					<li><a href="https://wordpress.org/plugins/collector-checkout-for-woocommerce" target="_blank">Pluginsida</a></li>
 				</ul></p>
 				<h4>Support</h4><p>Har du frågor kring ditt konto eller kring specifika köp är du välkommen att <a href="https://www.collector.se/kundservice/" target="_blank">kontakta Collector</a>. Har du tekniska frågor eller funderingar kring konfigurationen av modulen så kan du <a href="https://krokedil.se/support/" target="_blank">kontakta Krokedil</a>.</p>
@@ -184,7 +185,9 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 	}
 
 	public function process_payment( $order_id, $retry = false ) {
-		$order      = wc_get_order( $order_id );
+
+		$order = wc_get_order( $order_id );
+		CCO_WC()->logger->log( 'Process payment triggered for order ID ' . $order_id . ' (order number ' . $order->get_order_number() . ').' );
 		$private_id = get_post_meta( $order_id, '_collector_private_id', true );
 
 		// Make sure that we don't proceed with a duplicate order.
@@ -340,7 +343,9 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 			wc_collector_unset_sessions();
 			WC()->cart->empty_cart();
 			Collector_Checkout::log( 'Rendering simplified thankyou page (only display Collector thank you iframe).' );
-			return '<div class="collector-checkout-thankyou"></div>';
+			if ( 'v2' !== $this->checkout_version ) {
+				return '<div class="collector-checkout-thankyou"></div>';
+			}
 		}
 
 		return $text;

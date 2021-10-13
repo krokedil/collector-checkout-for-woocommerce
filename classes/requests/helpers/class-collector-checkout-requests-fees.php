@@ -9,9 +9,10 @@ class Collector_Checkout_Requests_Fees {
 	public $price          = 0;
 
 	public function __construct() {
-		$collector_settings   = get_option( 'woocommerce_collector_checkout_settings' );
-		$invoice_fee_id       = $collector_settings['collector_invoice_fee'];
-		$this->invoice_fee_id = $invoice_fee_id;
+		$collector_settings     = get_option( 'woocommerce_collector_checkout_settings' );
+		$invoice_fee_id         = $collector_settings['collector_invoice_fee'];
+		$this->invoice_fee_id   = $invoice_fee_id;
+		$this->checkout_version = isset( $collector_settings['checkout_version'] ) ? $collector_settings['checkout_version'] : 'v1';
 
 		switch ( get_woocommerce_currency() ) {
 			case 'SEK':
@@ -34,7 +35,7 @@ class Collector_Checkout_Requests_Fees {
 
 	public function fees() {
 		$fees = array();
-		if ( 'no' === $this->delivery_module ) {
+		if ( 'no' === $this->delivery_module || 'v2' === $this->checkout_version ) {
 			$shipping         = $this->get_shipping();
 			$fees['shipping'] = $shipping;
 		}
