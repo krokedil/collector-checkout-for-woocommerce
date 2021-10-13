@@ -6,8 +6,8 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 
 	public function __construct() {
 		$this->id                 = 'collector_checkout';
-		$this->method_title       = __( 'Collector Checkout', 'collector-checkout-for-woocommerce' );
-		$this->method_description = __( 'Collector Checkout payment solution for WooCommerce.', 'collector-checkout-for-woocommerce' );
+		$this->method_title       = __( 'Walley Checkout', 'collector-checkout-for-woocommerce' );
+		$this->method_description = __( 'Walley Checkout payment solution for WooCommerce.', 'collector-checkout-for-woocommerce' );
 		$this->description        = $this->get_option( 'description' );
 		$this->title              = $this->get_option( 'title' );
 		$this->enabled            = $this->get_option( 'enabled' );
@@ -104,7 +104,7 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 	public function admin_options() {
 		$image_url = COLLECTOR_BANK_PLUGIN_URL . '/assets/images/collector_bank_logo_blackgrey.png';
 		?>
-		<p><img src="<?php echo $image_url; ?>" width="280px"/></p>
+		<p><img src="https://cdn.walleypay.com/logo/walley-black.svg" width="200px"/></p>
 		<h3><?php _e( 'Walley Checkout (Collector)', 'collector-checkout-for-woocommerce' ); ?></h3>
 		<div class="collector-settings">
 			<div class="collector-settings-content">
@@ -116,7 +116,7 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 			</div>	
 			<div class="collector-settings-sidebar">
 				<h4>Kom igång</h4><p><ul>
-					<li><a href="http://docs.krokedil.com/documentation/collector-checkout-for-woocommerce/" target="_blank">Dokumentation</a></li>
+					<li><a href="https://docs.krokedil.com/walley-checkout-for-woocommerce/" target="_blank">Dokumentation</a></li>
 					<li><a href="https://wordpress.org/plugins/collector-checkout-for-woocommerce" target="_blank">Pluginsida</a></li>
 				</ul></p>
 				<h4>Support</h4><p>Har du frågor kring ditt konto eller kring specifika köp är du välkommen att <a href="https://www.collector.se/kundservice/" target="_blank">kontakta Collector</a>. Har du tekniska frågor eller funderingar kring konfigurationen av modulen så kan du <a href="https://krokedil.se/support/" target="_blank">kontakta Krokedil</a>.</p>
