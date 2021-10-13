@@ -100,6 +100,9 @@ ul.collector-checkout-tabs li.current:after {
 }
 
 /* Checkout design */
+.collector-checkout-selected textarea[name="order_comments"] { 
+    resize: vertical; 
+}
 
 /* Storefront light */
 .cco-two-column-left-sf .woocommerce-info {
@@ -138,7 +141,7 @@ ul.collector-checkout-tabs li.current:after {
     padding-top: 1.5rem;
 }
 
-
+/* Desktop view / multi columns */
 @media only screen and (min-width : 769px) {
 
     .cco-two-column-right #collector-wrapper {
