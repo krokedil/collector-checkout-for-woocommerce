@@ -5,17 +5,17 @@
  * @package Collector_Checkout
  *
  * @wordpress-plugin
- * Plugin Name:     Collector Checkout for WooCommerce
+ * Plugin Name:     Walley Checkout for WooCommerce
  * Plugin URI:      https://krokedil.se/collector/
- * Description:     Extends WooCommerce. Provides a <a href="https://www.collector.se/" target="_blank">Collector Checkout</a> checkout for WooCommerce.
- * Version:         2.5.0
+ * Description:     Extends WooCommerce. Provides a <a href="https://www.collector.se/" target="_blank">Walley Checkout</a> checkout for WooCommerce.
+ * Version:         3.0.0
  * Author:          Krokedil
  * Author URI:      https://krokedil.se/
  * Text Domain:     collector-checkout-for-woocommerce
  * Domain Path:     /languages
  *
  * WC requires at least: 4.0.0
- * WC tested up to: 5.7.1
+ * WC tested up to: 5.8.0
  *
  * Copyright:       © 2017-2021 Krokedil.
  * License:         GNU General Public License v3.0
@@ -28,7 +28,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 define( 'COLLECTOR_BANK_PLUGIN_DIR', untrailingslashit( plugin_dir_path( __FILE__ ) ) );
 define( 'COLLECTOR_BANK_PLUGIN_URL', untrailingslashit( plugin_dir_url( __FILE__ ) ) );
-define( 'COLLECTOR_BANK_VERSION', '2.5.0' );
+define( 'COLLECTOR_BANK_VERSION', '3.0.0' );
 define( 'COLLECTOR_DB_VERSION', '1' );
 
 if ( ! class_exists( 'Collector_Checkout' ) ) {
@@ -65,7 +65,7 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 		 *
 		 * @return void
 		 */
-		private function __clone() {
+		public function __clone() {
 			wc_doing_it_wrong( __FUNCTION__, __( 'Nope' ), '1.0' );
 		}
 
@@ -75,7 +75,7 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 		 *
 		 * @return void
 		 */
-		private function __wakeup() {
+		public function __wakeup() {
 			wc_doing_it_wrong( __FUNCTION__, __( 'Nope' ), '1.0' );
 		}
 
@@ -231,7 +231,7 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 				}
 				$collector_settings       = get_option( 'woocommerce_collector_checkout_settings' );
 				$data_action_color_button = isset( $collector_settings['checkout_button_color'] ) && ! empty( $collector_settings['checkout_button_color'] ) ? "data-action-color='" . $collector_settings['checkout_button_color'] . "'" : '';
-
+				$checkout_version         = isset( $collector_settings['checkout_version'] ) ? $collector_settings['checkout_version'] : 'v1';
 				switch ( get_woocommerce_currency() ) {
 					case 'SEK':
 						$delivery_module = isset( $collector_settings['collector_delivery_module_se'] ) ? $collector_settings['collector_delivery_module_se'] : 'no';
@@ -263,6 +263,7 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 						'payment_successful'            => $payment_successful,
 						'purchase_status'               => $purchase_status,
 						'data_action_color_button'      => $data_action_color_button,
+						'checkout_version'              => $checkout_version,
 						'default_customer_type'         => wc_collector_get_default_customer_type(),
 						'selected_customer_type'        => wc_collector_get_selected_customer_type(),
 						'delivery_module'               => $delivery_module,
@@ -377,17 +378,17 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 	}
 
 	Collector_Checkout::get_instance();
+}
 
-	/**
-	 * Main instance Collector_Checkout.
-	 *
-	 * Returns the main instance of Collector_Checkout.
-	 *
-	 * @return Collector_Checkout
-	 */
-	function CCO_WC() { // phpcs:ignore
-		return Collector_Checkout::get_instance();
-	}
+/**
+ * Main instance Collector_Checkout.
+ *
+ * Returns the main instance of Collector_Checkout.
+ *
+ * @return Collector_Checkout
+ */
+function CCO_WC() { // phpcs:ignore
+	return Collector_Checkout::get_instance();
 }
 
 function wc_collector_get_available_customer_types() {

@@ -1,23 +1,23 @@
-=== Collector Checkout for WooCommerce ===
+=== Walley Checkout for WooCommerce ===
 Contributors: collectorbank, krokedil, NiklasHogefjord
-Tags: ecommerce, e-commerce, woocommerce, collector, checkout
+Tags: ecommerce, e-commerce, woocommerce, collector, checkout, walley
 Requires at least: 5.0
 Tested up to: 5.8.1
 Requires PHP: 7.0
 Stable tag: trunk
 WC requires at least: 4.0.0
-WC tested up to: 5.7.1
+WC tested up to: 5.8.0
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
 
 == DESCRIPTION ==
-Collector Checkout for WooCommerce is a plugin that extends WooCommerce, allowing you to take payments via Collector Banks payment method Collector Checkout.
+Walley Checkout for WooCommerce is a plugin that extends WooCommerce, allowing you to take payments via Collector Banks payment method Walley Checkout.
 
 = Get started =
-To get started with Collector Checkout you need to [sign up](https://www.collector.se/foretag/betallosningar/kontakta-oss/offert/) for an account.
+To get started with Walley Checkout you need to [sign up](https://www.collector.se/foretag/betallosningar/kontakta-oss/offert/) for an account.
 
-More information on how to get started can be found in the [plugin documentation](http://docs.krokedil.com/documentation/collector-checkout-for-woocommerce/).
+More information on how to get started can be found in the [plugin documentation](https://docs.krokedil.com/walley-checkout-for-woocommerce/).
 
 
 == INSTALLATION	 ==
@@ -25,8 +25,8 @@ More information on how to get started can be found in the [plugin documentation
 2. If you use the WordPress plugin uploader to install this plugin skip to step 4.
 3. Unzip and upload the entire plugin directory to your /wp-content/plugins/ directory.
 4. Activate the plugin through the 'Plugins' menu in WordPress Administration.
-5. Go WooCommerce Settings --> Payment Gateways and configure your Collector Checkout settings.
-6. Read more about the configuration process in the [plugin documentation](http://docs.krokedil.com/documentation/collector-checkout-for-woocommerce/).
+5. Go WooCommerce Settings --> Payment Gateways and configure your Walley Checkout settings.
+6. Read more about the configuration process in the [plugin documentation](https://docs.krokedil.com/walley-checkout-for-woocommerce/).
 
 
 == Frequently Asked Questions ==
@@ -34,11 +34,18 @@ More information on how to get started can be found in the [plugin documentation
 Collector Checkout is available for merchants and customers in Sweden (B2C & B2B), Norway (B2C & B2B), Finland (B2C & B2B) & Denmark (B2C).
 
 = Where can I find Collector Checkout for WooCommerce documentation? =
-For help setting up and configuring Collector Checkout for WooCommerce please refer to our [documentation](http://docs.krokedil.com/documentation/collector-checkout-for-woocommerce/).
+For help setting up and configuring Walley Checkout for WooCommerce please refer to our [documentation](https://docs.krokedil.com/walley-checkout-for-woocommerce/).
 
 
 
 == CHANGELOG ==
+= 2021.10.13    - version 3.0.0 =
+* Feature       - Add support for Walley checkout design v2.0.
+* Feature       - Add settings for different checkout layouts.
+* Tweak         - Rename Collector to Walley in plugin settings and other backend locations.
+* Tweak         - Logging improvements.
+* Fix           - Don't try to display checkout iframe on confirmation page.
+
 = 2021.09.27    - version 2.5.0 =
 * Feature       - Add unitWeight if it exist on product data sent to Collector.
 * Feature       - Add coc_request_body filter to request body for init and update calls.

@@ -153,7 +153,7 @@ class Collector_Api_Callbacks {
 			array(
 				'limit'          => -1,
 				'orderby'        => 'date',
-				'order'          => 'DESC',
+				'order'          => 'ASC',
 				'return'         => 'ids',
 				'payment_method' => 'collector_checkout',
 				'date_created'   => '>' . ( time() - MONTH_IN_SECONDS ),

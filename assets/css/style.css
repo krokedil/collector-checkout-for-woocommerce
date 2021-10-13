@@ -98,3 +98,72 @@ ul.collector-checkout-tabs li.current:after {
     top: -9999px;
     left: -9999px;
 }
+
+/* Checkout design */
+.collector-checkout-selected textarea[name="order_comments"] { 
+    resize: vertical; 
+}
+
+/* Storefront light */
+.cco-two-column-left-sf .woocommerce-info {
+    background-color: #eeeeee;
+    color: #6d6d6d;
+}
+.cco-two-column-left-sf .woocommerce-info:before {
+    color: #6d6d6d;
+}
+.cco-two-column-left-sf .woocommerce-info a,
+.cco-two-column-left-sf .woocommerce-info a:hover {
+    color: #6d6d6d;
+}
+
+.cco-two-column-left-sf .woocommerce-checkout-review-order-table th,
+.cco-two-column-left-sf .woocommerce-checkout-review-order-table td {
+    padding: 1em 0.41575em;
+}
+
+.cco-two-column-left-sf .woocommerce-checkout-review-order-table thead {
+    display: none;
+}
+.cco-two-column-left-sf .woocommerce-checkout-review-order-table:not( .has-background ) th, 
+.cco-two-column-left-sf .woocommerce-checkout-review-order-table:not( .has-background ) tbody td {
+    background-color: #fdfdfd;
+}
+.cco-two-column-left-sf .cart-subtotal th,
+.cco-two-column-left-sf .cart-subtotal td {
+    border-top: .0625rem solid #e6e6e6;
+}
+.cco-two-column-left-sf textarea {
+    background-color: transparent;
+    border: .0625rem solid #e6e6e6;
+}
+.cco-two-column-left-sf .woocommerce-checkout-review-order-table {
+    padding-top: 1.5rem;
+}
+
+/* Desktop view / multi columns */
+@media only screen and (min-width : 769px) {
+
+    .cco-two-column-right #collector-wrapper {
+        display: grid;
+        grid-template-columns: 4fr 6fr;	
+        grid-column-gap: 70px;
+    }
+
+    .cco-two-column-left #collector-wrapper,
+    .cco-two-column-left-sf #collector-wrapper {
+        display: grid;
+        grid-template-columns: 6fr 4fr;	
+        grid-column-gap: 70px;
+    }
+
+    .cco-two-column-left #collector-order-review,
+    .cco-two-column-left-sf #collector-order-review {
+        order: 2;
+    }
+
+    .cco-two-column-left #collector-iframe,
+    .cco-two-column-left-sf #collector-iframe {
+        order: 1;
+    }
+}
