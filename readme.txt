@@ -2,11 +2,11 @@
 Contributors: collectorbank, krokedil, NiklasHogefjord
 Tags: ecommerce, e-commerce, woocommerce, collector, checkout, walley
 Requires at least: 5.0
-Tested up to: 5.8.1
+Tested up to: 5.8.2
 Requires PHP: 7.0
 Stable tag: trunk
 WC requires at least: 4.0.0
-WC tested up to: 5.8.0
+WC tested up to: 5.9.0
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -39,6 +39,10 @@ For help setting up and configuring Walley Checkout for WooCommerce please refer
 
 
 == CHANGELOG ==
+= 2021.11.17    - version 3.0.1 =
+* Tweak         - Updated links to the Krokedil Docs.
+* Tweak         - Changing Collector Electronic ID to Walley Electronic ID & Collector Delivery Module to Walley Shipping Module.
+
 = 2021.10.13    - version 3.0.0 =
 * Feature       - Add support for Walley checkout design v2.0.
 * Feature       - Add settings for different checkout layouts.

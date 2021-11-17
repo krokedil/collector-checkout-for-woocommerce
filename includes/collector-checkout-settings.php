@@ -68,9 +68,9 @@ $settings = array(
 		'desc_tip'    => true,
 	),
 	'collector_delivery_module_se'    => array(
-		'title'   => __( 'Delivery module Sweden', 'collector-checkout-for-woocommerce' ),
+		'title'   => __( 'Shipping Module Sweden', 'collector-checkout-for-woocommerce' ),
 		'type'    => 'checkbox',
-		'label'   => __( 'Activate Delivery module for Sweden', 'collector-checkout-for-woocommerce' ),
+		'label'   => __( 'Activate Shipping Module for Sweden', 'collector-checkout-for-woocommerce' ),
 		'default' => 'no',
 	),
 	'no_settings_title'               => array(
@@ -92,9 +92,9 @@ $settings = array(
 		'desc_tip'    => true,
 	),
 	'collector_delivery_module_no'    => array(
-		'title'   => __( 'Delivery module Norway', 'collector-checkout-for-woocommerce' ),
+		'title'   => __( 'Shipping Module Norway', 'collector-checkout-for-woocommerce' ),
 		'type'    => 'checkbox',
-		'label'   => __( 'Activate Delivery module for Norway', 'collector-checkout-for-woocommerce' ),
+		'label'   => __( 'Activate Shipping Module for Norway', 'collector-checkout-for-woocommerce' ),
 		'default' => 'no',
 	),
 	'fi_settings_title'               => array(
@@ -116,9 +116,9 @@ $settings = array(
 		'desc_tip'    => true,
 	),
 	'collector_delivery_module_fi'    => array(
-		'title'   => __( 'Delivery module Finland', 'collector-checkout-for-woocommerce' ),
+		'title'   => __( 'Shipping Module Finland', 'collector-checkout-for-woocommerce' ),
 		'type'    => 'checkbox',
-		'label'   => __( 'Activate Delivery module for Finland', 'collector-checkout-for-woocommerce' ),
+		'label'   => __( 'Activate Shipping Module for Finland', 'collector-checkout-for-woocommerce' ),
 		'default' => 'no',
 	),
 	'dk_settings_title'               => array(
@@ -133,9 +133,9 @@ $settings = array(
 		'desc_tip'    => true,
 	),
 	'collector_delivery_module_dk'    => array(
-		'title'   => __( 'Delivery module Denmark', 'collector-checkout-for-woocommerce' ),
+		'title'   => __( 'Shipping Module Denmark', 'collector-checkout-for-woocommerce' ),
 		'type'    => 'checkbox',
-		'label'   => __( 'Activate Delivery module for Denmark', 'collector-checkout-for-woocommerce' ),
+		'label'   => __( 'Activate Shipping Module for Denmark', 'collector-checkout-for-woocommerce' ),
 		'default' => 'no',
 	),
 	'checkout_settings_title'         => array(
@@ -168,7 +168,7 @@ $settings = array(
 	'collector_invoice_fee'           => array(
 		'title'       => __( 'Invoice fee ID', 'collector-checkout-for-woocommerce' ),
 		'type'        => 'text',
-		'description' => sprintf( __( 'Create a hidden (simple) product that acts as the invoice fee. Enter the product <strong>ID</strong> number in this textfield. Leave blank to disable. <a href="%s" target="_blank">Read more</a>.', 'collector-checkout-for-woocommerce' ), 'http://docs.krokedil.com/documentation/collector-checkout-for-woocommerce/#8' ),
+		'description' => sprintf( __( 'Create a hidden (simple) product that acts as the invoice fee. Enter the product <strong>ID</strong> number in this textfield. Leave blank to disable. <a href="%s" target="_blank">Read more</a>.', 'collector-checkout-for-woocommerce' ), 'https://docs.krokedil.com/walley-checkout-for-woocommerce/' ),
 		'default'     => '',
 		'desc_tip'    => false,
 	),
@@ -193,14 +193,14 @@ $settings = array(
 		'title'       => __( 'Validation Callback', 'collector-checkout-for-woocommerce' ),
 		'type'        => 'checkbox',
 		'label'       => __( 'Tick the checkbox to activate Walley Validation Callback.', 'collector-checkout-for-woocommerce' ),
-		'description' => sprintf( __( 'Triggered by Collector when customer clicks the Complete purchase button in Walley Checkout. <a href="%s" target="_blank">Read more about validation callback.</a>', 'collector-checkout-for-woocommerce' ), 'https://docs.krokedil.com/article/164-collector-checkout-introduction' ),
+		'description' => sprintf( __( 'Triggered by Collector when customer clicks the Complete purchase button in Walley Checkout. <a href="%s" target="_blank">Read more about validation callback.</a>', 'collector-checkout-for-woocommerce' ), 'https://docs.krokedil.com/walley-checkout-for-woocommerce/get-started/introduction/' ),
 		'default'     => 'yes',
 	),
 	'requires_electronic_id_fields'   => array(
 		'title'       => __( 'Electronic ID fields', 'collector-checkout-for-woocommerce' ),
 		'type'        => 'checkbox',
 		'label'       => __( 'Tick the checkbox to activate Requires Electronic ID Fields settings in product pages.', 'collector-checkout-for-woocommerce' ),
-		'description' => sprintf( __( '<a href="%s" target="_blank">Read more about this.</a>', 'collector-checkout-for-woocommerce' ), 'https://docs.krokedil.com/article/164-collector-checkout-introduction' ),
+		'description' => sprintf( __( '<a href="%s" target="_blank">Read more about this.</a>', 'collector-checkout-for-woocommerce' ), 'https://docs.krokedil.com/walley-checkout-for-woocommerce/get-started/introduction/' ),
 		'default'     => 'no',
 	),
 	'order_management_settings_title' => array(
