@@ -24,8 +24,8 @@ if ( class_exists( 'WC_Shipping_Method' ) ) {
 		public function __construct( $instance_id = 0 ) {
 			$this->id                   = 'collector_delivery_module';
 			$this->instance_id          = absint( $instance_id );
-			$this->title                = 'Collector Delivery Module';
-			$this->method_title         = __( 'Collector Delivery Module', 'collector-checkout-for-woocommerce' );
+			$this->title                = 'Walley Shipping Module';
+			$this->method_title         = __( 'Walley Shipping Module', 'collector-checkout-for-woocommerce' );
 			$this->method_description   = __( 'Enables Collector Checkout Delivery Module', 'collector-checkout-for-woocommerce' );
 			$this->supports             = array(
 				'shipping-zones',
@@ -42,9 +42,9 @@ if ( class_exists( 'WC_Shipping_Method' ) ) {
 		public function init_form_fields() {
 			$this->instance_form_fields = array(
 				'title' => array(
-					'title'       => __( 'Collector Delivery Module', 'collector-checkout-for-woocommerce' ),
+					'title'       => __( 'Walley Shipping Module', 'collector-checkout-for-woocommerce' ),
 					'type'        => 'title',
-					'description' => __( 'There are currently no settings for Collector Delivery Module since this is controlled by the TMS-provider. If other plugins adds settings, these are shown below.', 'collector-checkout-for-woocommerce' ),
+					'description' => __( 'There are currently no settings for Walley Shipping Module since this is controlled by the TMS-provider. If other plugins adds settings, these are shown below.', 'collector-checkout-for-woocommerce' ),
 				),
 			);
 		}
@@ -70,7 +70,7 @@ if ( class_exists( 'WC_Shipping_Method' ) ) {
 		 * @return void
 		 */
 		public function calculate_shipping( $package = array() ) {
-			$label = 'Collector Delivery Module';
+			$label = 'Walley Shipping Module';
 			$cost  = 0;
 			if ( null !== WC()->session->get( 'collector_private_id' ) ) {
 				$private_id    = WC()->session->get( 'collector_private_id' );

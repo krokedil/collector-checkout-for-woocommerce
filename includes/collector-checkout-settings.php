@@ -68,9 +68,9 @@ $settings = array(
 		'desc_tip'    => true,
 	),
 	'collector_delivery_module_se'    => array(
-		'title'   => __( 'Delivery module Sweden', 'collector-checkout-for-woocommerce' ),
+		'title'   => __( 'Shipping Module Sweden', 'collector-checkout-for-woocommerce' ),
 		'type'    => 'checkbox',
-		'label'   => __( 'Activate Delivery module for Sweden', 'collector-checkout-for-woocommerce' ),
+		'label'   => __( 'Activate Shipping Module for Sweden', 'collector-checkout-for-woocommerce' ),
 		'default' => 'no',
 	),
 	'no_settings_title'               => array(
@@ -92,9 +92,9 @@ $settings = array(
 		'desc_tip'    => true,
 	),
 	'collector_delivery_module_no'    => array(
-		'title'   => __( 'Delivery module Norway', 'collector-checkout-for-woocommerce' ),
+		'title'   => __( 'Shipping Module Norway', 'collector-checkout-for-woocommerce' ),
 		'type'    => 'checkbox',
-		'label'   => __( 'Activate Delivery module for Norway', 'collector-checkout-for-woocommerce' ),
+		'label'   => __( 'Activate Shipping Module for Norway', 'collector-checkout-for-woocommerce' ),
 		'default' => 'no',
 	),
 	'fi_settings_title'               => array(
@@ -116,9 +116,9 @@ $settings = array(
 		'desc_tip'    => true,
 	),
 	'collector_delivery_module_fi'    => array(
-		'title'   => __( 'Delivery module Finland', 'collector-checkout-for-woocommerce' ),
+		'title'   => __( 'Shipping Module Finland', 'collector-checkout-for-woocommerce' ),
 		'type'    => 'checkbox',
-		'label'   => __( 'Activate Delivery module for Finland', 'collector-checkout-for-woocommerce' ),
+		'label'   => __( 'Activate Shipping Module for Finland', 'collector-checkout-for-woocommerce' ),
 		'default' => 'no',
 	),
 	'dk_settings_title'               => array(
@@ -133,9 +133,9 @@ $settings = array(
 		'desc_tip'    => true,
 	),
 	'collector_delivery_module_dk'    => array(
-		'title'   => __( 'Delivery module Denmark', 'collector-checkout-for-woocommerce' ),
+		'title'   => __( 'Shipping Module Denmark', 'collector-checkout-for-woocommerce' ),
 		'type'    => 'checkbox',
-		'label'   => __( 'Activate Delivery module for Denmark', 'collector-checkout-for-woocommerce' ),
+		'label'   => __( 'Activate Shipping Module for Denmark', 'collector-checkout-for-woocommerce' ),
 		'default' => 'no',
 	),
 	'checkout_settings_title'         => array(
