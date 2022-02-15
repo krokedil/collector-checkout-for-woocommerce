@@ -1,4 +1,10 @@
 <?php
+/**
+ * Functions file for the plugin.
+ *
+ * @package  Collector_Checkout/Includes
+ */
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
@@ -12,11 +18,11 @@ function collector_wc_show_snippet() {
 		return;
 	}
 
-	if ( 'NOK' == get_woocommerce_currency() ) {
+	if ( 'NOK' === get_woocommerce_currency() ) {
 		$locale = 'nb-NO';
-	} elseif ( 'DKK' == get_woocommerce_currency() ) {
+	} elseif ( 'DKK' === get_woocommerce_currency() ) {
 		$locale = 'da-DK';
-	} elseif ( 'EUR' == get_woocommerce_currency() ) {
+	} elseif ( 'EUR' === get_woocommerce_currency() ) {
 		$locale = 'fi-FI';
 	} else {
 		if ( 'sv_SE' === get_locale() ) {
@@ -31,7 +37,7 @@ function collector_wc_show_snippet() {
 	$data_action_color_button = isset( $collector_settings['checkout_button_color'] ) && ! empty( $collector_settings['checkout_button_color'] ) ? ' data-action-color="' . $collector_settings['checkout_button_color'] . '"' : '';
 	$checkout_version         = isset( $collector_settings['checkout_version'] ) ? $collector_settings['checkout_version'] : 'v1';
 
-	if ( 'yes' == $test_mode ) {
+	if ( 'yes' === $test_mode ) {
 		$url = 'https://checkout-uat.collector.se/collector-checkout-loader.js';
 	} else {
 		$url = 'https://checkout.collector.se/collector-checkout-loader.js';
@@ -47,7 +53,7 @@ function collector_wc_show_snippet() {
 	$public_token       = WC()->session->get( 'collector_public_token' );
 	$collector_currency = WC()->session->get( 'collector_currency' );
 
-	if ( empty( $public_token ) || $collector_currency !== get_woocommerce_currency() ) {
+	if ( empty( $public_token ) || get_woocommerce_currency() !== $collector_currency ) {
 		// Get a new public token from Collector.
 		$init_checkout   = new Collector_Checkout_Requests_Initialize_Checkout( $customer_type );
 		$collector_order = $init_checkout->request();
@@ -76,8 +82,8 @@ function collector_wc_show_snippet() {
 				'customer_type' => $customer_type,
 			);
 
-			echo( "<script>console.log('Collector: " . json_encode( $output ) . "');</script>" );
-			$return = '<div id="collector-container"><script src="' . $url . '" data-lang="' . $locale . '" data-version="' . $checkout_version . '" data-token="' . $public_token . '" data-variant="' . $customer_type . '"' . $data_action_color_button . ' ></script></div>';
+			echo( "<script>console.log('Collector: " . wp_json_encode( $output ) . "');</script>" );
+			$return = '<div id="collector-container"><script src="' . $url . '" data-lang="' . $locale . '" data-version="' . $checkout_version . '" data-token="' . $public_token . '" data-variant="' . $customer_type . '"' . $data_action_color_button . ' ></script></div>'; // phpcs:ignore
 		}
 	} else {
 
@@ -86,11 +92,11 @@ function collector_wc_show_snippet() {
 			'test_mode'     => $test_mode,
 			'customer_type' => $customer_type,
 		);
-		echo( "<script>console.log('Collector: " . json_encode( $output ) . "');</script>" );
-		$return = '<div id="collector-container"><script src="' . $url . '" data-lang="' . $locale . '" data-version="' . $checkout_version . '" data-token="' . $public_token . '" data-variant="' . $customer_type . '"' . $data_action_color_button . ' ></script></div>';
+		echo( "<script>console.log('Collector: " . wp_json_encode( $output ) . "');</script>" );
+		$return = '<div id="collector-container"><script src="' . $url . '" data-lang="' . $locale . '" data-version="' . $checkout_version . '" data-token="' . $public_token . '" data-variant="' . $customer_type . '"' . $data_action_color_button . ' ></script></div>'; // phpcs:ignore
 	}
 
-	echo $return;
+	echo $return; // phpcs:ignore
 }
 
 /**
@@ -126,7 +132,7 @@ function collector_wc_show_another_gateway_button() {
 	$available_payment_gateways = WC()->payment_gateways->get_available_payment_gateways();
 	if ( count( $available_payment_gateways ) > 1 ) {
 		?>
-		<a class="button" id="collector_change_payment_method" href="#"><?php echo __( 'Select another payment method', 'collector-checkout-for-woocommerce' ); ?></a>
+		<a class="button" id="collector_change_payment_method" href="#"><?php esc_html_e( 'Select another payment method', 'collector-checkout-for-woocommerce' ); ?></a>
 		<?php
 	}
 }
@@ -138,8 +144,8 @@ function collector_wc_show_another_gateway_button() {
 function collector_wc_show_customer_type_switcher() {
 	?>
 	<ul class="collector-checkout-tabs">
-		<li class="tab-link current" data-tab="b2c"><?php _e( 'Person', 'collector-checkout-for-woocommerce' ); ?></li>
-		<li class="tab-link" data-tab="b2b"><?php _e( 'Company', 'collector-checkout-for-woocommerce' ); ?></li>
+		<li class="tab-link current" data-tab="b2c"><?php esc_html_e( 'Person', 'collector-checkout-for-woocommerce' ); ?></li>
+		<li class="tab-link" data-tab="b2b"><?php esc_html_e( 'Company', 'collector-checkout-for-woocommerce' ); ?></li>
 	</ul>
 	<?php
 }
@@ -156,6 +162,9 @@ function collector_wc_show_customer_order_notes() {
 
 /**
  * Unset Collector public token and private id
+ *
+ * @param string $order_id WooCommerce order id.
+ * @param string $product_id WooCommerce product id.
  */
 function wc_collector_add_invoice_fee_to_order( $order_id, $product_id ) {
 	$result  = false;
@@ -175,11 +184,11 @@ function wc_collector_add_invoice_fee_to_order( $order_id, $product_id ) {
 		$_tax      = new WC_Tax();
 		$tmp_rates = $_tax->get_base_tax_rates( $product->get_tax_class() );
 		$_vat      = array_shift( $tmp_rates );// Get the rate
-		// Check what kind of tax rate we have
+		// Check what kind of tax rate we have.
 		if ( $product->is_taxable() && isset( $_vat['rate'] ) ) {
 			$vat_rate = round( $_vat['rate'] );
 		} else {
-			// if empty, set 0% as rate
+			// if empty, set 0% as rate.
 			$vat_rate = 0;
 		}
 
@@ -210,7 +219,9 @@ function wc_collector_add_invoice_fee_to_order( $order_id, $product_id ) {
  * @return boolean
  */
 function is_collector_confirmation() {
-	if ( isset( $_GET['payment_successful'] ) && '1' === $_GET['payment_successful'] && isset( $_GET['public-token'] ) ) {
+	$payment_successful = filter_input( INPUT_GET, 'payment_successful', FILTER_SANITIZE_STRING );
+	$public_token       = filter_input( INPUT_GET, 'payment_successful', FILTER_SANITIZE_STRING );
+	if ( '1' === $payment_successful && ! empty( $public_token ) ) {
 		return true;
 	}
 	return false;
@@ -240,6 +251,8 @@ function remove_collector_db_row_data( $private_id ) {
 
 /**
  * Checking if Collector Delivery Module is active.
+ *
+ * @param string $currency selected currency.
  *
  * @return boolean
  */
@@ -325,7 +338,7 @@ function wc_collector_verify_customer_data( $collector_order ) {
 		WC()->session->set( 'collector_org_nr', $org_nr );
 		WC()->session->set( 'collector_invoice_reference', $invoice_reference );
 	}
-	$countryCode = isset( $collector_order['data']['countryCode'] ) ? $collector_order['data']['countryCode'] : $base_country;
+	$country_code = isset( $collector_order['data']['countryCode'] ) ? $collector_order['data']['countryCode'] : $base_country;
 
 	$customer_information = array(
 		'billingFirstName'    => $billing_first_name,
@@ -344,7 +357,7 @@ function wc_collector_verify_customer_data( $collector_order ) {
 		'shippingCity'        => $shipping_city,
 		'phone'               => $phone,
 		'email'               => $email,
-		'countryCode'         => $countryCode,
+		'countryCode'         => $country_code,
 		'orgNr'               => $org_nr,
 	);
 	$empty_fields         = array();
@@ -429,6 +442,9 @@ function wc_collector_get_orders_by_private_id( $private_id = null ) {
 
 /**
  * Confirm order
+ *
+ * @param string $order_id WC order id.
+ * @param string $private_id Collector session id saved as _collector_private_id ID in WC order.
  */
 function wc_collector_confirm_order( $order_id, $private_id = null ) {
 	$order = wc_get_order( $order_id );
