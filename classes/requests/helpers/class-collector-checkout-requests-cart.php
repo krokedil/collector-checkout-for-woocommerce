@@ -28,7 +28,7 @@ class Collector_Checkout_Requests_Cart {
 		// Loop through cart items and make an item line for each.
 		foreach ( $wc_cart as $item ) {
 			// Don't send items with a price of 0.
-			if ( 0 == $item['line_total'] ) {
+			if ( 0 == $item['line_total'] ) { // TODO Use strict comparisons === !
 				continue;
 			}
 			if ( $item['variation_id'] ) {
@@ -41,7 +41,7 @@ class Collector_Checkout_Requests_Cart {
 			$item_name = wc_get_product( $product_id );
 			$item_name = $item_name->get_name();
 			$item_line = self::create_item( self::get_sku( $product, $product_id ), $item_name, $item['line_total'], $item['quantity'], $item['line_tax'], $product );
-			array_push( $items, $item_line );
+			array_push( $items, $item_line );// TODO use faster way $items[] = $item_line !
 		}
 
 		if ( ! empty( WC()->cart->get_fees() ) ) {
@@ -52,7 +52,7 @@ class Collector_Checkout_Requests_Cart {
 		foreach ( $wc_cart_coupons as $coupon ) {
 			if ( 'smart_coupon' === $coupon->get_discount_type() ) {
 				$item_line = self::create_item( $coupon->get_id(), __( 'Gift Card', 'collector-checkout-for-woocommerce' ), $coupon->get_amount() * -1, 1, 0 );
-				array_push( $items, $item_line );
+				array_push( $items, $item_line );// TODO use faster way $items[] = $item_line !
 			}
 		}
 
@@ -66,11 +66,12 @@ class Collector_Checkout_Requests_Cart {
 	/**
 	 * Creates line item for collector.
 	 *
-	 * @param string $sku Product SKU.
-	 * @param string $product_name Product name.
-	 * @param int    $line_total Line total.
-	 * @param int    $quantity Line quantity.
-	 * @param float  $line_tax Line tax.
+	 * @param string     $sku Product SKU.
+	 * @param string     $product_name Product name.
+	 * @param int        $line_total Line total.
+	 * @param int        $quantity Line quantity.
+	 * @param float      $line_tax Line tax.
+	 * @param WC_Product $product The WooCommerce product.
 	 * @return array
 	 */
 	public static function create_item( $sku, $product_name, $line_total, $quantity, $line_tax, $product = null ) {
@@ -141,7 +142,7 @@ class Collector_Checkout_Requests_Cart {
 				'vat'         => $fee_tax_rate,
 			);
 
-			array_push( $items, $fee_item );
+			array_push( $items, $fee_item );// TODO use faster way $items[] = $fee_item !
 		} // End foreach().
 		return $items;
 	}
@@ -165,7 +166,7 @@ class Collector_Checkout_Requests_Cart {
 				$i = 0;
 				// Loop trough all ids that appeare more than 1 time.
 				foreach ( $items as $key => $item ) {
-					if ( $id_name == $item['id'] ) {
+					if ( $id_name == $item['id'] ) {// TODO Use strict comparisons === !
 						$items[ $key ]['id'] = $item['id'] . '_' . $i;
 						$i++;
 					}
@@ -182,6 +183,7 @@ class Collector_Checkout_Requests_Cart {
 	 */
 	public static function get_add_product_electronic_id_fields() {
 		$collector_settings = get_option( 'woocommerce_collector_checkout_settings' );
+		// TODO inline variable.
 		$add_product_fields = ! empty( $collector_settings['requires_electronic_id_fields'] ) ? $collector_settings['requires_electronic_id_fields'] : 'no';
 		return $add_product_fields;
 	}
