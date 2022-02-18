@@ -1,13 +1,43 @@
 <?php
+/**
+ * The class represents helpers functions for requests fees.
+ *
+ * @package Collector_Checkout/Classes/Requests/Helpers
+ */
+
 if ( ! defined( 'ABSPATH' ) ) {
-	exit; // Exit if accessed directly
+	exit; // Exit if accessed directly.
 }
 
+/**
+ * Class Collector_Checkout_Requests_Fees.
+ */
 class Collector_Checkout_Requests_Fees {
 
+	/**
+	 * Invoice fee ID
+	 *
+	 * @var string
+	 */
 	public $invoice_fee_id = '';
-	public $price          = 0;
 
+	/**
+	 * Price with tax included, based on store settings or an empty string if price calculation failed.
+	 *
+	 * @var float|string
+	 */
+	public $price = 0;
+
+	/**
+	 * Checkout version
+	 *
+	 * @var string
+	 */
+	public $checkout_version;
+
+	/**
+	 * Class constructor
+	 */
 	public function __construct() {
 		$collector_settings     = get_option( 'woocommerce_collector_checkout_settings' );
 		$invoice_fee_id         = $collector_settings['collector_invoice_fee'];
@@ -33,6 +63,11 @@ class Collector_Checkout_Requests_Fees {
 		}
 	}
 
+	/**
+	 * Gets the fees.
+	 *
+	 * @return array|string
+	 */
 	public function fees() {
 		$fees = array();
 		if ( 'no' === $this->delivery_module || 'v2' === $this->checkout_version ) {
@@ -57,6 +92,11 @@ class Collector_Checkout_Requests_Fees {
 
 	}
 
+	/**
+	 * Gets the shipping.
+	 *
+	 * @return array|void
+	 */
 	public function get_shipping() {
 		if ( WC()->cart->needs_shipping() ) {
 			WC()->cart->calculate_shipping();
@@ -90,6 +130,13 @@ class Collector_Checkout_Requests_Fees {
 		}
 	}
 
+	/**
+	 * Gets the invoice fee for the WooCommerce product.
+	 *
+	 * @param WC_Product $_product The WooCommerce product.
+	 *
+	 * @return array
+	 */
 	public function get_invoice_fee( $_product ) {
 
 		$price = wc_get_price_including_tax( $_product );
@@ -101,7 +148,7 @@ class Collector_Checkout_Requests_Fees {
 		if ( $_product->is_taxable() && isset( $_vat['rate'] ) ) {
 			$vat_rate = round( $_vat['rate'] );
 		} else {
-			// if empty, set 0% as rate
+			// if empty, set 0% as rate.
 			$vat_rate = 0;
 		}
 
