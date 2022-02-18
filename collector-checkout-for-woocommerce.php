@@ -327,7 +327,7 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 		/**
 		 * Add payment gateway.
 		 *
-		 * @param string $methods The array of regitered gateways.
+		 * @param array $methods The array of registered gateways.
 		 **/
 		public function add_collector_checkout_gateway( $methods ) {
 			$methods[] = 'Collector_Checkout_Gateway';
@@ -338,7 +338,7 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 		/**
 		 * Add plugin page links.
 		 *
-		 * @param string $links The links displayed on plugin page.
+		 * @param array $links The links displayed on plugin page.
 		 **/
 		public function add_action_links( $links ) {
 			$settings_link = '<a href="admin.php?page=wc-settings&tab=checkout&section=collector_checkout">Settings</a>';
