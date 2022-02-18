@@ -28,7 +28,7 @@ class Collector_Checkout_Requests_Cart {
 		// Loop through cart items and make an item line for each.
 		foreach ( $wc_cart as $item ) {
 			// Don't send items with a price of 0.
-			if ( 0 == $item['line_total'] ) { // TODO Use strict comparisons === !
+			if ( 0 === $item['line_total'] ) { // TODO Use strict comparisons === !
 				continue;
 			}
 			if ( $item['variation_id'] ) {
@@ -41,7 +41,7 @@ class Collector_Checkout_Requests_Cart {
 			$item_name = wc_get_product( $product_id );
 			$item_name = $item_name->get_name();
 			$item_line = self::create_item( self::get_sku( $product, $product_id ), $item_name, $item['line_total'], $item['quantity'], $item['line_tax'], $product );
-			array_push( $items, $item_line );// TODO use faster way $items[] = $item_line !
+			array_push( $items, $item_line );
 		}
 
 		if ( ! empty( WC()->cart->get_fees() ) ) {
@@ -52,7 +52,7 @@ class Collector_Checkout_Requests_Cart {
 		foreach ( $wc_cart_coupons as $coupon ) {
 			if ( 'smart_coupon' === $coupon->get_discount_type() ) {
 				$item_line = self::create_item( $coupon->get_id(), __( 'Gift Card', 'collector-checkout-for-woocommerce' ), $coupon->get_amount() * -1, 1, 0 );
-				array_push( $items, $item_line );// TODO use faster way $items[] = $item_line !
+				array_push( $items, $item_line );
 			}
 		}
 
@@ -142,8 +142,8 @@ class Collector_Checkout_Requests_Cart {
 				'vat'         => $fee_tax_rate,
 			);
 
-			array_push( $items, $fee_item );// TODO use faster way $items[] = $fee_item !
-		} // End foreach().
+			array_push( $items, $fee_item );
+		} // End foreach(). phpcs:ignore Squiz.PHP.CommentedOutCode.Found
 		return $items;
 	}
 
@@ -166,7 +166,7 @@ class Collector_Checkout_Requests_Cart {
 				$i = 0;
 				// Loop trough all ids that appeare more than 1 time.
 				foreach ( $items as $key => $item ) {
-					if ( $id_name == $item['id'] ) {// TODO Use strict comparisons === !
+					if ( $id_name === $item['id'] ) {// TODO Use strict comparisons === !
 						$items[ $key ]['id'] = $item['id'] . '_' . $i;
 						$i++;
 					}
