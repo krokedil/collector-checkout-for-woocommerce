@@ -1,9 +1,16 @@
 <?php
+/**
+ * Creates Collector refund data.
+ *
+ * @class    Collector_Checkout_Create_Refund_Data
+ * @package  Collector/Classes/Requests/Helpers
+ */
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 /**
- * Creates Collector refund data.
+ * Class Collector_Checkout_Create_Refund_Data
  *
  * @class    Collector_Checkout_Create_Refund_Data
  * @package  Collector/Classes/Requests/Helpers
