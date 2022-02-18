@@ -1,4 +1,11 @@
 <?php
+/**
+ * Calculates Auth.
+ *
+ * @class    Collector_Checkout_Requests_Calculate_Auth
+ * @package  Collector/Classes/Requests/Helpers
+ */
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
