@@ -48,8 +48,8 @@ class Collector_Checkout_Requests_Update_Cart extends Collector_Checkout_Request
 		$code     = wp_remote_retrieve_response_code( $response );
 
 		// Log the request.
-		$log = CCO_WC()->logger->format_log( $this->private_id, 'PUT', 'CCO update cart', $request_args, $request_url, json_decode( wp_remote_retrieve_body( $response ), true ), $code );
-		CCO_WC()->logger->log( $log );
+		$log = CCO_WC()->logger::format_log( $this->private_id, 'PUT', 'CCO update cart', $request_args, $request_url, json_decode( wp_remote_retrieve_body( $response ), true ), $code );
+		CCO_WC()->logger::log( $log );
 
 		$formated_response = $this->process_response( $response, $request_args, $request_url );
 		return $formated_response;

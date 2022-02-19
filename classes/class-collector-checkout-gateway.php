@@ -187,7 +187,7 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 	public function process_payment( $order_id, $retry = false ) {
 
 		$order = wc_get_order( $order_id );
-		CCO_WC()->logger->log( 'Process payment triggered for order ID ' . $order_id . ' (order number ' . $order->get_order_number() . ').' );
+		CCO_WC()->logger::log( 'Process payment triggered for order ID ' . $order_id . ' (order number ' . $order->get_order_number() . ').' );
 		$private_id = get_post_meta( $order_id, '_collector_private_id', true );
 
 		// Make sure that we don't proceed with a duplicate order.
@@ -218,7 +218,7 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 			$update_reference = new Collector_Checkout_Requests_Update_Reference( $order->get_order_number(), $private_id, $customer_type );
 			$update_reference->request();
 
-			CCO_WC()->logger->log( 'Update Collector order reference for order - ' . $order->get_order_number() );
+			CCO_WC()->logger::log( 'Update Collector order reference for order - ' . $order->get_order_number() );
 		}
 
 		$process_payment = $this->process_collector_payment_in_order( $order_id );
@@ -335,7 +335,7 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 	 */
 	public function collector_thankyou_order_received_text( $text, $order ) {
 		if ( is_object( $order ) && 'collector_checkout' == $order->get_payment_method() ) {
-			CCO_WC()->logger->log( 'Thankyou page rendered for order ID - ' . $order->get_id() );
+			CCO_WC()->logger::log( 'Thankyou page rendered for order ID - ' . $order->get_id() );
 			return '<div class="collector-checkout-thankyou"></div>';
 		}
 		if ( isset( $_GET['purchase-status'] ) && 'not-completed' == $_GET['purchase-status'] ) {

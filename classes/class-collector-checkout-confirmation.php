@@ -92,7 +92,7 @@ class Collector_Checkout_Confirmation {
             wp_redirect( $location ); // phpcs:ignore
 			exit;
 		} else {
-			CCO_WC()->logger->log( 'Confirmation page rendered for public token - ' . $collector_public_token );
+			CCO_WC()->logger::log( 'Confirmation page rendered for public token - ' . $collector_public_token );
 		}
 	}
 

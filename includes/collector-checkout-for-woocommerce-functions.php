@@ -468,7 +468,7 @@ function wc_collector_confirm_order( $order_id, $private_id = null ) {
 	if ( empty( $collector_order['data']['reference'] ) ) {
 		$update_reference = new Collector_Checkout_Requests_Update_Reference( $order->get_order_number(), $private_id, $customer_type );
 		$update_reference->request();
-		CCO_WC()->logger->log( 'Update Collector order reference for order - ' . $order->get_order_number() );
+		CCO_WC()->logger::log( 'Update Collector order reference for order - ' . $order->get_order_number() );
 	}
 
 	// Maybe add invoice fee to order.

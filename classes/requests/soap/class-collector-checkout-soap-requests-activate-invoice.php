@@ -1,20 +1,70 @@
 <?php
+/**
+ * Creates Collector refund data.
+ *
+ * @class    Collector_Checkout_SOAP_Requests_Activate_Invoice
+ * @package  Collector/Classes/Requests/Soap
+ */
+
 if ( ! defined( 'ABSPATH' ) ) {
-	exit; // Exit if accessed directly
+	exit; // Exit if accessed directly.
 }
 
+
+/**
+ * Class Collector_Checkout_SOAP_Requests_Activate_Invoice
+ */
 class Collector_Checkout_SOAP_Requests_Activate_Invoice {
 
-	static $log = '';
 
+	/**
+	 * The Collector endpoint.
+	 *
+	 * @var string
+	 */
 	public $endpoint = '';
 
-	public $username      = '';
-	public $password      = '';
-	public $store_id      = '';
-	public $country_code  = '';
+	/**
+	 * Walley checkout username
+	 *
+	 * @var string
+	 */
+	public $username = '';
+
+	/**
+	 * Walley checkout password
+	 *
+	 * @var string
+	 */
+	public $password = '';
+
+	/**
+	 * The store id.
+	 *
+	 * @var mixed|string
+	 */
+	public $store_id = '';
+
+	/**
+	 * The country code.
+	 *
+	 * @var string
+	 */
+	public $country_code = '';
+
+	/**
+	 * Customer type
+	 *
+	 * @var string
+	 */
 	public $customer_type = '';
 
+
+	/**
+	 * Class constructor.
+	 *
+	 * @param int $order_id The WooCommerce order id.
+	 */
 	public function __construct( $order_id ) {
 		$collector_settings = get_option( 'woocommerce_collector_checkout_settings' );
 		$this->username     = $collector_settings['collector_username'];
@@ -54,6 +104,14 @@ class Collector_Checkout_SOAP_Requests_Activate_Invoice {
 		}
 	}
 
+	/**
+	 * Make the request.
+	 *
+	 * @param int $order_id The WooCommerce order id.
+	 *
+	 * @return void
+	 * @throws SoapFault SOAP Fault.
+	 */
 	public function request( $order_id ) {
 
 		$soap = new SoapClient( $this->endpoint );
@@ -75,29 +133,41 @@ class Collector_Checkout_SOAP_Requests_Activate_Invoice {
 			$order->save();
 		}
 
-		if ( isset( $request->TotalAmount ) ) {
+		// todo maybe : solution for snake case errors is to cast response to key-value array??!
+		if ( isset( $request->TotalAmount ) ) { // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
 
-			if ( isset( $request->InvoiceUrl ) ) {
-				update_post_meta( $order_id, '_collector_invoice_url', wc_clean( $request->InvoiceUrl ) );
-				$due_date = date( get_option( 'date_format' ) . ' - ' . get_option( 'time_format' ), strtotime( $request->DueDate ) );
-				$due_date = ' ' . __( 'Invoice due date: ' . $due_date, 'collector-checkout-for-woocommerce' );
+			if ( isset( $request->InvoiceUrl ) ) { // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
+				update_post_meta( $order_id, '_collector_invoice_url', wc_clean( $request->InvoiceUrl ) );// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
+				$due_date = gmdate( get_option( 'date_format' ) . ' - ' . get_option( 'time_format' ), strtotime( $request->DueDate ) ); // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
+				$due_date = sprintf( __( 'Invoice due date: $s', 'collector-checkout-for-woocommerce' ), $due_date );
 			}
 
-			$order->add_order_note( sprintf( __( 'Order activated with Collector Bank.' . $due_date, 'collector-checkout-for-woocommerce' ) ) );
+			// translators: 1. Due date.
+			$order->add_order_note( sprintf( __( 'Order activated with Collector Bank. %s', 'collector-checkout-for-woocommerce' ), $due_date ) );
 			update_post_meta( $order_id, '_collector_order_activated', time() );
 
-			$log = CCO_WC()->logger->format_log( $order_id, 'SOAP', 'CCO Activate order ', $args, '', wp_json_encode( $request ), '' );
-			CCO_WC()->logger->log( $log );
+			$log = CCO_WC()->logger::format_log( $order_id, 'SOAP', 'CCO Activate order ', $args, '', wp_json_encode( $request ), '' );
+			CCO_WC()->logger::log( $log );
 
 		} else {
 			$order->update_status( $order->get_status() );
-			$order->add_order_note( sprintf( __( 'Order failed to activate with Collector Bank - ' . wp_json_encode( $request ), 'collector-checkout-for-woocommerce' ) ) );
+			$failed_request = wp_json_encode( $request );
+			// translators: 1. Failed request.
+			$order->add_order_note( sprintf( __( 'Order failed to activate with Collector Bank - %s', 'collector-checkout-for-woocommerce' ), $failed_request ) );
 
-			$log = CCO_WC()->logger->format_log( $order_id, 'SOAP', 'CCO FAILED Activate order', $args, '', wp_json_encode( $e ) . wp_json_encode( $headers ), '' );
-			CCO_WC()->logger->log( $log );
+			// TODO $e is not defined.
+			$log = CCO_WC()->logger::format_log( $order_id, 'SOAP', 'CCO FAILED Activate order', $args, '', wp_json_encode( $e ) . wp_json_encode( $headers ), '' );
+			CCO_WC()->logger::log( $log );
 		}
 	}
 
+	/**
+	 * Get the request args.
+	 *
+	 * @param int $order_id The WooCommerce order id.
+	 *
+	 * @return array
+	 */
 	public function get_request_args( $order_id ) {
 		return array(
 			'StoreId'     => $this->store_id,

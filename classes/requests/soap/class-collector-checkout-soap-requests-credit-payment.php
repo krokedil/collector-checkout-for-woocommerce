@@ -1,19 +1,57 @@
 <?php
+/**
+ * Credit_Payment.
+ *
+ * @package  Collector/Classes/Requests/Soap
+ */
+
 if ( ! defined( 'ABSPATH' ) ) {
-	exit; // Exit if accessed directly
+	exit; // Exit if accessed directly.
 }
 
+/**
+ * Class Collector_Checkout_SOAP_Requests_Credit_Payment
+ */
 class Collector_Checkout_SOAP_Requests_Credit_Payment {
 
-	static $log = '';
-
+	/**
+	 * The Collector endpoint.
+	 *
+	 * @var string
+	 */
 	public $endpoint = '';
 
-	public $username     = '';
-	public $password     = '';
-	public $store_id     = '';
+	/**
+	 * Walley checkout username
+	 *
+	 * @var string
+	 */
+	public $username = '';
+
+	/**
+	 * Walley checkout password
+	 *
+	 * @var string
+	 */
+	public $password = '';
+	/**
+	 * The store id.
+	 *
+	 * @var mixed|string
+	 */
+	public $store_id = '';
+	/**
+	 * The country code.
+	 *
+	 * @var string
+	 */
 	public $country_code = '';
 
+	/**
+	 * Class constructor.
+	 *
+	 * @param int $order_id The WooCommerce order id.
+	 */
 	public function __construct( $order_id ) {
 		$collector_settings = get_option( 'woocommerce_collector_checkout_settings' );
 		$this->username     = $collector_settings['collector_username'];
@@ -52,6 +90,14 @@ class Collector_Checkout_SOAP_Requests_Credit_Payment {
 		}
 	}
 
+	/**
+	 * Make the request.
+	 *
+	 * @param int $order_id The WooCommerce order id.
+	 *
+	 * @return bool|void
+	 * @throws SoapFault SOAP Fault.
+	 */
 	public function request( $order_id ) {
 		$soap = new SoapClient( $this->endpoint );
 		$args = $this->get_request_args( $order_id );
@@ -68,19 +114,31 @@ class Collector_Checkout_SOAP_Requests_Credit_Payment {
 		}
 
 		$order = wc_get_order( $order_id );
-		if ( isset( $request->CorrelationId ) || $request->CorrelationId == null ) {
+		if ( isset( $request->CorrelationId ) || null === $request->CorrelationId ) { // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
 			$order->add_order_note( sprintf( __( 'Order credited with Collector Bank', 'collector-checkout-for-woocommerce' ) ) );
-			$log = CCO_WC()->logger->format_log( $order_id, 'SOAP', 'CCO refund order (CreditInvoice)', $args, '', wp_json_encode( $request ), '' );
-			CCO_WC()->logger->log( $log );
+			$log = CCO_WC()->logger::format_log( $order_id, 'SOAP', 'CCO refund order (CreditInvoice)', $args, '', wp_json_encode( $request ), '' );
+			CCO_WC()->logger::log( $log );
 			return true;
 		} else {
 			$order->update_status( 'completed' );
-			$order->add_order_note( sprintf( __( 'Order failed to be credited with Collector Bank - ' . $request, 'collector-checkout-for-woocommerce' ) ) );
-			$log = CCO_WC()->logger->format_log( $order_id, 'SOAP', 'CCO FAILED refund order (CreditInvoice)', $args, '', wp_json_encode( $e ) . wp_json_encode( $headers ), '' );
-			CCO_WC()->logger->log( $log );
+			// TODO check this!
+			// translators: The request.
+			$order->add_order_note( sprintf( __( 'Order failed to be credited with Collector Bank - %s', 'collector-checkout-for-woocommerce' ), wp_json_encode( $request ) ) );
+			$log = CCO_WC()->logger::format_log( $order_id, 'SOAP', 'CCO FAILED refund order (CreditInvoice)', $args, '', wp_json_encode( $e ) . wp_json_encode( $headers ), '' );
+			CCO_WC()->logger::log( $log );
 		}
 	}
 
+	/**
+	 * Make the request.
+	 *
+	 * @param int    $order_id The WooCommerce order id.
+	 * @param float  $amount Refund amount.
+	 * @param string $reason Refund reason.
+	 *
+	 * @return bool|void
+	 * @throws SoapFault SOAP Fault.
+	 */
 	public function request_part_credit( $order_id, $amount, $reason ) {
 		$soap = new SoapClient( $this->endpoint );
 		$args = $this->get_request_args( $order_id );
@@ -98,19 +156,27 @@ class Collector_Checkout_SOAP_Requests_Credit_Payment {
 		}
 
 		$order = wc_get_order( $order_id );
-		if ( isset( $request->CorrelationId ) || $request->CorrelationId == null ) {
+		if ( isset( $request->CorrelationId ) || null === $request->CorrelationId ) { // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
 			$order->add_order_note( sprintf( __( 'Order credited with Collector Bank', 'collector-checkout-for-woocommerce' ) ) );
-			$log = CCO_WC()->logger->format_log( $order_id, 'SOAP', 'CCO refund order (PartCreditInvoice)', $args, '', wp_json_encode( $request ), '' );
-			CCO_WC()->logger->log( $log );
+			$log = CCO_WC()->logger::format_log( $order_id, 'SOAP', 'CCO refund order (PartCreditInvoice)', $args, '', wp_json_encode( $request ), '' );
+			CCO_WC()->logger::log( $log );
 			return true;
 		} else {
 			$order->update_status( 'completed' );
-			$order->add_order_note( sprintf( __( 'Order failed to be credited with Collector Bank - ' . $request, 'collector-checkout-for-woocommerce' ) ) );
-			$log = CCO_WC()->logger->format_log( $order_id, 'SOAP', 'CCO FAILED refund order (PartCreditInvoice)', $args, '', wp_json_encode( $e ) . wp_json_encode( $headers ), '' );
-			CCO_WC()->logger->log( $log );
+			// translators: The request.
+			$order->add_order_note( sprintf( __( 'Order failed to be credited with Collector Bank - %s', 'collector-checkout-for-woocommerce' ), wp_json_encode( $request ) ) );
+			$log = CCO_WC()->logger::format_log( $order_id, 'SOAP', 'CCO FAILED refund order (PartCreditInvoice)', $args, '', wp_json_encode( $e ) . wp_json_encode( $headers ), '' );
+			CCO_WC()->logger::log( $log );
 		}
 	}
 
+	/**
+	 * Get the request args.
+	 *
+	 * @param int $order_id The WooCommerce order id.
+	 *
+	 * @return array
+	 */
 	public function get_request_args( $order_id ) {
 		return array(
 			'StoreId'     => $this->store_id,

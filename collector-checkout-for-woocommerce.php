@@ -38,6 +38,13 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 	class Collector_Checkout {
 
 		/**
+		 * Reference to logging class.
+		 *
+		 * @var Collector_Checkout_Logger
+		 */
+		public $logger;
+
+		/**
 		 * The reference the *Singleton* instance of this class.
 		 *
 		 * @var $instance

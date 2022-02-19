@@ -1,19 +1,58 @@
 <?php
+/**
+ * Cancel a pending invoice
+ *
+ * @package  Collector/Classes/Requests/Soap
+ */
+
 if ( ! defined( 'ABSPATH' ) ) {
-	exit; // Exit if accessed directly
+	exit; // Exit if accessed directly.
 }
 
+/**
+ * Class Collector_Checkout_SOAP_Requests_Cancel_Invoice
+ */
 class Collector_Checkout_SOAP_Requests_Cancel_Invoice {
 
-	static $log = '';
 
+	/**
+	 * The Collector endpoint.
+	 *
+	 * @var string
+	 */
 	public $endpoint = '';
 
-	public $username     = '';
-	public $password     = '';
-	public $store_id     = '';
+	/**
+	 * Walley checkout username
+	 *
+	 * @var string
+	 */
+	public $username = '';
+
+	/**
+	 * Walley checkout password
+	 *
+	 * @var string
+	 */
+	public $password = '';
+	/**
+	 * The store id.
+	 *
+	 * @var mixed|string
+	 */
+	public $store_id = '';
+	/**
+	 * The country code.
+	 *
+	 * @var string
+	 */
 	public $country_code = '';
 
+	/**
+	 * Class constructor.
+	 *
+	 * @param int $order_id The WooCommerce order id.
+	 */
 	public function __construct( $order_id ) {
 		$collector_settings = get_option( 'woocommerce_collector_checkout_settings' );
 		$this->username     = $collector_settings['collector_username'];
@@ -53,6 +92,14 @@ class Collector_Checkout_SOAP_Requests_Cancel_Invoice {
 		}
 	}
 
+	/**
+	 * Make the request.
+	 *
+	 * @param int $order_id The WooCommerce order id.
+	 *
+	 * @return void
+	 * @throws SoapFault Soap Fault.
+	 */
 	public function request( $order_id ) {
 		$order = wc_get_order( $order_id );
 		$soap  = new SoapClient( $this->endpoint );
@@ -68,26 +115,35 @@ class Collector_Checkout_SOAP_Requests_Cancel_Invoice {
 		} catch ( SoapFault $e ) {
 			$request = $e->getMessage();
 			$order->update_status( $order->get_status() );
-			$order->add_order_note( sprintf( __( 'Order failed to cancel with Collector Bank - ' . wp_json_encode( $request ), 'collector-checkout-for-woocommerce' ) ) );
+			// translators: The error message.
+			$order->add_order_note( sprintf( __( 'Order failed to cancel with Collector Bank - %s', 'collector-checkout-for-woocommerce' ), $e->getMessage() ) );
 
-			$log = CCO_WC()->logger->format_log( $order_id, 'SOAP', 'CCO FAILED cancel order', $args, '', wp_json_encode( $e ) . wp_json_encode( $headers ), '' );
-			CCO_WC()->logger->log( $log );
+			$log = CCO_WC()->logger::format_log( $order_id, 'SOAP', 'CCO FAILED cancel order', $args, '', wp_json_encode( $e ) . wp_json_encode( $headers ), '' );
+			CCO_WC()->logger::log( $log );
 		}
 
-		if ( property_exists( $request, 'CorrelationId' ) && $request->CorrelationId == null ) {
+		if ( property_exists( $request, 'CorrelationId' ) && null === $request->CorrelationId ) {// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
 			$order->add_order_note( sprintf( __( 'Order canceled with Collector Bank', 'collector-checkout-for-woocommerce' ) ) );
 			update_post_meta( $order_id, '_collector_order_cancelled', time() );
-			$log = CCO_WC()->logger->format_log( $order_id, 'SOAP', 'CCO Cancel order', $args, '', wp_json_encode( $request ), '' );
-			CCO_WC()->logger->log( $log );
+			$log = CCO_WC()->logger::format_log( $order_id, 'SOAP', 'CCO Cancel order', $args, '', wp_json_encode( $request ), '' );
+			CCO_WC()->logger::log( $log );
 		} else {
 			$order->update_status( $order->get_status() );
-			$order->add_order_note( sprintf( __( 'Order failed to cancel with Collector Bank - ' . wp_json_encode( $request ), 'collector-checkout-for-woocommerce' ) ) );
+			// translators: Cancel request.
+			$order->add_order_note( sprintf( __( 'Order failed to cancel with Collector Bank - %s', 'collector-checkout-for-woocommerce' ), wp_json_encode( $request ) ) );
 
-			$log = CCO_WC()->logger->format_log( $order_id, 'SOAP', 'CCO FAILED cancel order', $args, '', wp_json_encode( $e ) . wp_json_encode( $headers ), '' );
-			CCO_WC()->logger->log( $log );
+			$log = CCO_WC()->logger::format_log( $order_id, 'SOAP', 'CCO FAILED cancel order', $args, '', wp_json_encode( $e ) . wp_json_encode( $headers ), '' );
+			CCO_WC()->logger::log( $log );
 		}
 	}
 
+	/**
+	 * Get the request args.
+	 *
+	 * @param int $order_id The WooCommerce order id.
+	 *
+	 * @return array
+	 */
 	public function get_request_args( $order_id ) {
 		return array(
 			'StoreId'     => $this->store_id,
