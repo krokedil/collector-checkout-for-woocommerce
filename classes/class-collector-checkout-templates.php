@@ -1,4 +1,10 @@
 <?php
+/**
+ * Collector checkout template.
+ *
+ * @package Collector_Checkout/Classes
+ */
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
@@ -59,7 +65,7 @@ class Collector_Checkout_Templates {
 	public function override_template( $template, $template_name ) {
 		if ( is_checkout() ) {
 
-			// Don't display Collector Checkout template if we have a cart that doesn't needs payment
+			// Don't display Collector Checkout template if we have a cart that doesn't needs payment.
 			if ( ! WC()->cart->needs_payment() ) {
 				return $template;
 			}
@@ -103,7 +109,7 @@ class Collector_Checkout_Templates {
 			<?php do_action( 'woocommerce_checkout_billing' ); ?>
 			<?php do_action( 'woocommerce_checkout_shipping' ); ?>
 			<?php
-			if ( isset( $_GET['payment_successful'] ) ) {
+			if ( isset( $_GET['payment_successful'] ) ) {//phpcs:ignore
 				// On confirmation page - render woocommerce_checkout_payment() to get the woocommerce-process-checkout-nonce correct.
 				woocommerce_checkout_payment();
 			} else {

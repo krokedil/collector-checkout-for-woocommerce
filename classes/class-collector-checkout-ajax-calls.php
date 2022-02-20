@@ -51,13 +51,13 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 	 * @return void
 	 */
 	public static function get_public_token() {
-		$customer_type      = wc_clean( $_POST['customer_type'] );
+		$customer_type      = filter_input( INPUT_POST, 'customer_type', FILTER_SANITIZE_STRING );
 		$public_token       = WC()->session->get( 'collector_public_token' );
 		$collector_settings = get_option( 'woocommerce_collector_checkout_settings' );
 		$test_mode          = $collector_settings['test_mode'];
 
 		// Use current token if one is stored in session previously and we still have the same customer type.
-		if ( ! empty( $public_token ) && $customer_type == WC()->session->get( 'collector_customer_type' ) && get_woocommerce_currency() == WC()->session->get( 'collector_currency' ) ) {
+		if ( ! empty( $public_token ) && WC()->session->get( 'collector_customer_type' ) === $customer_type && get_woocommerce_currency() === WC()->session->get( 'collector_currency' ) ) {
 			$return = array(
 				'publicToken'   => WC()->session->get( 'collector_public_token' ),
 				'test_mode'     => $test_mode,
@@ -73,7 +73,7 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 			$collector_order = $init_checkout->request();
 
 			if ( is_wp_error( $collector_order ) || empty( $collector_order ) ) {
-					$return = sprintf( '%s <a href="%s" class="button wc-forward">%s</a>', __( 'Could not connect to Collector. Error message: ', 'collector-checkout-for-woocommerce' ) . $request->get_error_message(), wc_get_checkout_url(), __( 'Try again', 'collector-checkout-for-woocommerce' ) );
+					$return = sprintf( '%s <a href="%s" class="button wc-forward">%s</a>', __( 'Could not connect to Collector. Error message: ', 'collector-checkout-for-woocommerce' ) . $collector_order->get_error_message(), wc_get_checkout_url(), __( 'Try again', 'collector-checkout-for-woocommerce' ) );
 				wp_send_json_error( $return );
 				wp_die();
 
@@ -225,7 +225,8 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 			'private_id' => WC()->session->get( 'collector_private_id' ),
 			'data'       => $collector_data,
 		);
-		$result                      = Collector_Checkout_DB::update_data( $args );
+		// TODO unused variable.
+		$result = Collector_Checkout_DB::update_data( $args );
 
 		wp_send_json_success();
 		wp_die();
@@ -236,7 +237,7 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 	 */
 	public static function customer_adress_updated() {
 
-		if ( ! wp_verify_nonce( $_REQUEST['nonce'], 'collector_nonce' ) ) {
+		if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( wp_unslash( sanitize_key( $_REQUEST['nonce'] ) ), 'collector_nonce' ) ) {
 			exit( 'Nonce can not be verified.' );
 		}
 
@@ -293,7 +294,7 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 	 */
 	public static function update_delivery_module_shipping() {
 
-		if ( ! wp_verify_nonce( $_REQUEST['nonce'], 'collector_nonce' ) ) {
+		if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( wp_unslash( sanitize_key( $_REQUEST['nonce'] ) ), 'collector_nonce' ) ) {
 			exit( 'Nonce can not be verified.' );
 		}
 
@@ -334,7 +335,7 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 	 * @return void
 	 */
 	public static function add_customer_order_note() {
-		WC()->session->set( 'collector_customer_order_note', $_POST['order_note'] );
+		WC()->session->set( 'collector_customer_order_note', $_POST['order_note'] );//phpcs:ignore
 
 		wp_send_json_success();
 		wp_die();
@@ -346,15 +347,14 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 	 * @return void
 	 */
 	public static function get_checkout_thank_you() {
-		$order_id           = '';
-		$order_id           = sanitize_text_field( $_POST['order_id'] );
-		$purchase_status    = sanitize_text_field( $_POST['purchase_status'] );
+		$order_id           = filter_input( INPUT_POST, 'order_id', FILTER_SANITIZE_STRING );
+		$purchase_status    = filter_input( INPUT_POST, 'purchase_status', FILTER_SANITIZE_STRING );
 		$collector_settings = get_option( 'woocommerce_collector_checkout_settings' );
 		$test_mode          = $collector_settings['test_mode'];
 
 		// If something went wrong in get_customer_data() - display a "thank you page light".
-		if ( 'not-completed' == $purchase_status ) {
-			$public_token = sanitize_text_field( $_POST['public_token'] );
+		if ( 'not-completed' === $purchase_status ) {
+			$public_token = filter_input( INPUT_POST, 'public_token', FILTER_SANITIZE_STRING );
 			if ( WC()->session->get( 'collector_customer_type' ) ) {
 				$customer_type = WC()->session->get( 'collector_customer_type' );
 			} else {
@@ -418,7 +418,7 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 		$customer_data   = new Collector_Checkout_Requests_Get_Checkout_Information( $private_id, $customer_type );
 		$collector_order = $customer_data->request();
 
-		if ( 'PurchaseCompleted' == $collector_order['data']['status'] ) {
+		if ( 'PurchaseCompleted' === $collector_order['data']['status'] ) {
 			// Save the payment method and payment id.
 			$payment_method = $collector_order['data']['purchase']['paymentName'];
 			$payment_id     = $collector_order['data']['purchase']['purchaseIdentifier'];
@@ -445,17 +445,22 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 			$url                    = add_query_arg(
 				array(
 					'purchase-status' => 'not-completed',
-					'public-token'    => sanitize_text_field( $_POST['public_token'] ),
+					'public-token'    => sanitize_text_field( $_POST['public_token'] ),//phpcs:ignore
 				),
 				wc_get_endpoint_url( 'order-received', '', get_permalink( wc_get_page_id( 'checkout' ) ) )
 			);
 			$return['redirect_url'] = $url;
-			Collector_Checkout::log( 'Payment complete triggered for private id ' . $private_id . ' but status is not PurchaseCompleted in Collectors system. Current status: ' . var_export( $collector_order['data']['status'], true ) . '. Redirecting customer to simplified thankyou page.' );
+			CCO_WC()->logger::log( 'Payment complete triggered for private id ' . $private_id . ' but status is not PurchaseCompleted in Collectors system. Current status: ' . var_export( $collector_order['data']['status'], true ) . '. Redirecting customer to simplified thankyou page.' ); //phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
 			wp_send_json_error( $return );
 			wp_die();
 		}
 	}
 
+	/**
+	 * WC Ajax updates fragment.
+	 *
+	 * @return void
+	 */
 	public static function update_fragment() {
 
 		WC()->cart->calculate_shipping();
@@ -463,7 +468,7 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 		WC()->cart->calculate_totals();
 
 		$available_gateways = WC()->payment_gateways()->get_available_payment_gateways();
-		if ( 'false' === $_POST['collector'] ) {
+		if ( 'false' === $_POST['collector'] ) { //phpcs:ignore
 			// Set chosen payment method to first gateway that is not Klarna Checkout for WooCommerce.
 			$first_gateway = reset( $available_gateways );
 			if ( 'collector_checkout' !== $first_gateway->id ) {
@@ -476,7 +481,7 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 			WC()->session->set( 'chosen_payment_method', 'collector_checkout' );
 		}
 		WC()->payment_gateways()->set_current_gateway( $available_gateways );
-		/*
+		/* phpcs:ignore
 		ob_start();
 		if ( 'collector_checkout' !== WC()->session->get( 'chosen_payment_method' ) ) {
 
@@ -493,7 +498,7 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 		$data     = array(
 			'redirect' => $redirect,
 		);
-		/*
+		/* phpcs:ignore
 		$data = array(
 			'fragments' => array(
 				'checkout' => $checkout_output,
@@ -504,13 +509,19 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 		wp_die();
 	}
 
+	/**
+	 * Checkout error.
+	 *
+	 * @return void
+	 * @throws Exception If something goes wrong.
+	 */
 	public static function checkout_error() {
 		Collector_Checkout::log( 'Starting Create Order Fallback creation...' );
 		$customer_type = WC()->session->get( 'collector_customer_type' );
 		$private_id    = WC()->session->get( 'collector_private_id' );
 
 		// Prevent duplicate orders if confirmation page is reloaded manually by customer.
-		$collector_public_token = sanitize_key( $_POST['public_token'] );
+		$collector_public_token = sanitize_key( $_POST['public_token'] );//phpcs:ignore
 		$query                  = new WC_Order_Query(
 			array(
 				'limit'          => -1,
@@ -555,7 +566,7 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 		$create_order->add_order_fees( $order );
 
 		// Maybe add invoice fee to order.
-		if ( 'DirectInvoice' == WC()->session->get( 'collector_payment_method' ) ) {
+		if ( 'DirectInvoice' === WC()->session->get( 'collector_payment_method' ) ) {
 			$collector_settings = get_option( 'woocommerce_collector_checkout_settings' );
 			$product_id         = $collector_settings['collector_invoice_fee'];
 			if ( $product_id ) {
@@ -596,11 +607,12 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 		$create_order->update_order_reference_in_collector( $order, $customer_type, $private_id );
 
 		// Add order note.
-		if ( ! empty( $_POST['error_message'] ) ) { // Input var okay.
-			$error_message = 'Error message: ' . sanitize_text_field( trim( $_POST['error_message'] ) );
+		if ( isset( $_POST['error_message'] ) && ! empty( $_POST['error_message'] ) ) { //phpcs:ignore
+			$error_message = 'Error message: ' . wp_unslash( sanitize_text_field( sanitize_text_field( trim( $_POST['error_message'] ) ) ) );//phpcs:ignore
 		} else {
 			$error_message = 'Error message could not be retreived';
 		}
+		// translators: The error message.
 		$note = sprintf( __( 'This order was made as a fallback due to an error in the checkout (%s). Please verify the order with Collector.', 'collector-checkout-for-woocommerce' ), $error_message );
 		$order->add_order_note( $note );
 		$order->set_status( 'on-hold' );

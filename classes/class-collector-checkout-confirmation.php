@@ -64,7 +64,7 @@ class Collector_Checkout_Confirmation {
 		}
 
 		// Prevent duplicate orders if confirmation page is reloaded manually by customer.
-		$collector_public_token = sanitize_key( $_GET['public-token'] );
+		$collector_public_token = sanitize_key( $_GET['public-token'] );// phpcs:ignore
 		$query                  = new WC_Order_Query(
 			array(
 				'limit'          => -1,
@@ -109,14 +109,18 @@ class Collector_Checkout_Confirmation {
 
 
 	/**
+	 *
 	 * Populates WooCommerce checkout form in Collector confirmation page.
+	 *
+	 * @return void
+	 * @throws Exception If customer cannot be read/found and $data is set.
 	 */
-	public function maybe_populate_wc_checkout( $checkout ) {
+	public function maybe_populate_wc_checkout() {
 		if ( ! is_collector_confirmation() ) {
 			return;
 		}
 
-		$collector_public_token = sanitize_key( $_GET['public-token'] );
+		$collector_public_token = sanitize_key( $_GET['public-token'] );//phpcs:ignore
 
 		echo '<div id="collector-confirm-loading"></div>';
 
@@ -127,7 +131,7 @@ class Collector_Checkout_Confirmation {
 		$collector_order = $customer_data->request();
 
 		if ( 'PurchaseCompleted' === $collector_order['data']['status'] ) {
-			// Save the payment method and payment id
+			// Save the payment method and payment id.
 			$payment_method = $collector_order['data']['purchase']['paymentName'];
 			$payment_id     = $collector_order['data']['purchase']['purchaseIdentifier'];
 			WC()->session->set( 'collector_payment_method', $payment_method );
@@ -138,16 +142,16 @@ class Collector_Checkout_Confirmation {
 			$this->save_customer_data( $customer_data );
 
 		} else {
-			// We didn't get a status PurchaseCompleted from Collector (but the Collector redirectPageUri has been triggered) so we redirect the customer to thank you page
+			// We didn't get a status PurchaseCompleted from Collector (but the Collector redirectPageUri has been triggered) so we redirect the customer to thank you page.
 			$url = add_query_arg(
 				array(
 					'purchase-status' => 'not-completed',
-					'public-token'    => sanitize_text_field( $_POST['public_token'] ),
+					'public-token'    => sanitize_text_field( $_POST['public_token'] ),//phpcs:ignore
 				),
 				wc_get_endpoint_url( 'order-received', '', get_permalink( wc_get_page_id( 'checkout' ) ) )
 			);
 
-			Collector_Checkout::log( 'Payment complete triggered for private id ' . $private_id . ' but status is not PurchaseCompleted in Collectors system. Current status: ' . var_export( $collector_order['data']['status'], true ) . '. Redirecting customer to simplified thankyou page.' );
+			Collector_Checkout::log( 'Payment complete triggered for private id ' . $private_id . ' but status is not PurchaseCompleted in Collectors system. Current status: ' . var_export( $collector_order['data']['status'], true ) . '. Redirecting customer to simplified thankyou page.' );//phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
 
 			wp_safe_redirect( $url );
 			exit;
@@ -158,7 +162,9 @@ class Collector_Checkout_Confirmation {
 	/**
 	 * Saves customer data from Collector order into WC()->customer.
 	 *
-	 * @param $klarna_order
+	 * @param array $customer_data The customer data.
+	 *
+	 * @throws Exception If customer cannot be read/found and $data is set.
 	 */
 	private function save_customer_data( $customer_data ) {
 		if ( is_user_logged_in() ) {

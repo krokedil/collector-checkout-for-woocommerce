@@ -1,9 +1,22 @@
 <?php
+/**
+ * Gateway class.
+ *
+ * @package CollectorCheckout/Classes
+ */
+
 if ( ! defined( 'ABSPATH' ) ) {
-	exit; // Exit if accessed directly
+	exit; // Exit if accessed directly.
 }
+
+/**
+ * Class Collector_Checkout_Gateway
+ */
 class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 
+	/**
+	 * Class constructor.
+	 */
 	public function __construct() {
 		$this->id                 = 'collector_checkout';
 		$this->method_title       = __( 'Walley Checkout', 'collector-checkout-for-woocommerce' );
@@ -51,7 +64,7 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 		add_filter( 'woocommerce_thankyou_order_received_text', array( $this, 'collector_thankyou_order_received_text' ), 10, 2 );
 		add_action( 'woocommerce_thankyou', array( $this, 'maybe_delete_collector_sessions' ), 100, 1 );
 
-		// Body class
+		// Body class.
 		add_filter( 'body_class', array( $this, 'add_body_class' ) );
 
 		// Add org nr after address on company order.
@@ -65,11 +78,11 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 	 * Schedule order status check on notificationUri callback from Collector
 	 */
 	public function notification_listener() {
-		Collector_Checkout::log( 'Notification Listener hit: ' . json_encode( $_GET ) . ' URL: ' . $_SERVER['REQUEST_URI'] );
-		if ( isset( $_GET['private-id'] ) && isset( $_GET['public-token'] ) ) {
-			$private_id    = $_GET['private-id'];
-			$public_token  = $_GET['public-token'];
-			$customer_type = $_GET['customer-type'];
+		Collector_Checkout::log( 'Notification Listener hit: ' . json_encode( $_GET ) . ' URL: ' . $_SERVER['REQUEST_URI'] );//phpcs:ignore
+		if ( isset( $_GET['private-id'], $_GET['public-token'], $_GET['customer-type'] ) ) { //phpcs:ignore
+			$private_id    = filter_input( INPUT_GET, 'private-id', FILTER_SANITIZE_STRING );
+			$public_token  = filter_input( INPUT_GET, 'public-token', FILTER_SANITIZE_STRING );
+			$customer_type = filter_input( INPUT_GET, 'customer-type', FILTER_SANITIZE_STRING );
 
 			$scheduled_actions = as_get_scheduled_actions(
 				array(
@@ -92,6 +105,11 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 
 	}
 
+	/**
+	 * Initialise settings fields.
+	 *
+	 * @return void
+	 */
 	public function init_form_fields() {
 		$this->form_fields = include COLLECTOR_BANK_PLUGIN_DIR . '/includes/collector-checkout-settings.php';
 	}
@@ -105,7 +123,7 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 		$image_url = COLLECTOR_BANK_PLUGIN_URL . '/assets/images/collector_bank_logo_blackgrey.png';
 		?>
 		<p><img src="https://cdn.walleypay.com/logo/walley-black.svg" width="200px"/></p>
-		<h3><?php _e( 'Walley Checkout (Collector)', 'collector-checkout-for-woocommerce' ); ?></h3>
+		<h3><?php _e( 'Walley Checkout (Collector)', 'collector-checkout-for-woocommerce' );//phpcs:ignore ?></h3>
 		<div class="collector-settings">
 			<div class="collector-settings-content">
 				<table class="form-table">
@@ -146,20 +164,20 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 				$collector_b2b_fi   = ( isset( $collector_settings['collector_merchant_id_fi_b2b'] ) ) ? $collector_settings['collector_merchant_id_fi_b2b'] : '';
 
 				// Currency check.
-				if ( ! in_array( get_woocommerce_currency(), array( 'NOK', 'SEK', 'DKK', 'EUR' ) ) ) {
+				if ( ! in_array( get_woocommerce_currency(), array( 'NOK', 'SEK', 'DKK', 'EUR' ), true ) ) {
 					return false;
 				}
-				// Store ID check
-				if ( 'NOK' == get_woocommerce_currency() && ( ! $collector_b2c_no && ! $collector_b2b_no ) ) {
+				// Store ID check.
+				if ( 'NOK' === get_woocommerce_currency() && ( ! $collector_b2c_no && ! $collector_b2b_no ) ) {
 					return false;
 				}
-				if ( 'SEK' == get_woocommerce_currency() && ( ! $collector_b2c_se && ! $collector_b2b_se ) ) {
+				if ( 'SEK' === get_woocommerce_currency() && ( ! $collector_b2c_se && ! $collector_b2b_se ) ) {
 					return false;
 				}
-				if ( 'DKK' == get_woocommerce_currency() && ( ! $collector_b2c_dk ) ) {
+				if ( 'DKK' === get_woocommerce_currency() && ( ! $collector_b2c_dk ) ) {
 					return false;
 				}
-				if ( 'EUR' == get_woocommerce_currency() && ( ! $collector_b2c_fi && ! $collector_b2b_fi ) ) {
+				if ( 'EUR' === get_woocommerce_currency() && ( ! $collector_b2c_fi && ! $collector_b2b_fi ) ) {
 					return false;
 				}
 			}
@@ -176,7 +194,7 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 	 * @return string transaction URL, or empty string.
 	 */
 	public function get_transaction_url( $order ) {
-		// Check if order is completed
+		// Check if order is completed.
 		$invoice_url = get_post_meta( $order->get_id(), '_collector_invoice_url', true );
 		if ( $invoice_url ) {
 			$this->view_transaction_url = $invoice_url;
@@ -184,6 +202,14 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 		return parent::get_transaction_url( $order );
 	}
 
+	/**
+	 * Process the payment and return the result.
+	 *
+	 * @param int  $order_id WooCommerce order ID.
+	 * @param bool $retry The retry.
+	 *
+	 * @return array
+	 */
 	public function process_payment( $order_id, $retry = false ) {
 
 		$order = wc_get_order( $order_id );
@@ -193,6 +219,7 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 		// Make sure that we don't proceed with a duplicate order.
 		$order_ids = wc_collector_get_orders_by_private_id( $private_id );
 		if ( is_array( $order_ids ) && count( $order_ids ) > 1 ) {
+			// translators: 1. Private id. 2. Order ids.
 			$order->add_order_note( sprintf( __( 'Private ID %1$s found in multiple orders (%2$s). Setting the order to On hold.', 'collector-checkout-for-woocommerce' ), $private_id, wp_json_encode( $order_ids ) ) );
 			$order->update_status( 'on-hold' );
 
@@ -203,7 +230,7 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 		}
 
 		// Maybe add invoice fee to order.
-		if ( 'DirectInvoice' == WC()->session->get( 'collector_payment_method' ) ) {
+		if ( 'DirectInvoice' === WC()->session->get( 'collector_payment_method' ) ) {
 			$product_id = $this->get_option( 'collector_invoice_fee' );
 			if ( $product_id ) {
 				wc_collector_add_invoice_fee_to_order( $order_id, $product_id );
@@ -328,18 +355,18 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 	/**
 	 * Remove thank you page order received text if Collector is the selected payment method.
 	 *
-	 * @param $text
-	 * @param $order
+	 * @param string   $text The received bank.
+	 * @param WC_Order $order The WooCommerce order id.
 	 *
 	 * @return string
 	 */
 	public function collector_thankyou_order_received_text( $text, $order ) {
-		if ( is_object( $order ) && 'collector_checkout' == $order->get_payment_method() ) {
+		if ( is_object( $order ) && 'collector_checkout' === $order->get_payment_method() ) {
 			CCO_WC()->logger::log( 'Thankyou page rendered for order ID - ' . $order->get_id() );
 			return '<div class="collector-checkout-thankyou"></div>';
 		}
-		if ( isset( $_GET['purchase-status'] ) && 'not-completed' == $_GET['purchase-status'] ) {
-			// Unset Collector token and id
+		if ( isset( $_GET['purchase-status'] ) && 'not-completed' === $_GET['purchase-status'] ) {// phpcs:ignore
+			// Unset Collector token and id.
 			wc_collector_unset_sessions();
 			WC()->cart->empty_cart();
 			Collector_Checkout::log( 'Rendering simplified thankyou page (only display Collector thank you iframe).' );
@@ -354,14 +381,14 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 	/**
 	 * Add collector-b2c/b2b body class.
 	 *
-	 * @param $class
+	 * @param array $class Css class.
 	 *
 	 * @return array
 	 */
 	public function add_body_class( $class ) {
 		if ( is_checkout() ) {
 
-			// Don't display Collector body classes if we have a cart that doesn't needs payment
+			// Don't display Collector body classes if we have a cart that doesn't needs payment.
 			if ( method_exists( WC()->cart, 'needs_payment' ) && ! WC()->cart->needs_payment() ) {
 				return $class;
 			}
@@ -377,7 +404,7 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 				$first_gateway = key( $available_payment_gateways );
 			}
 
-			if ( 'collector_checkout' == $first_gateway ) {
+			if ( 'collector_checkout' === $first_gateway ) {
 				$class[] = 'collector-checkout-selected';
 				// Add class if Collector delivery module is used.
 				if ( 'yes' === $this->delivery_module ) {
@@ -388,10 +415,21 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 		return $class;
 	}
 
+	/**
+	 *
+	 *  Process refund request.
+	 *
+	 * @param int    $order_id Thw WooCommerce order id.
+	 * @param float  $amount Refund amount.
+	 * @param string $reason Refund reason.
+	 *
+	 * @return bool
+	 * @throws SoapFault Soap Fault.
+	 */
 	public function process_refund( $order_id, $amount = null, $reason = '' ) {
 		// Check if amount equals total order.
 		$order = wc_get_order( $order_id );
-		if ( $amount == $order->get_total() ) {
+		if ( $amount === $order->get_total() ) {
 			$credit_order = new Collector_Checkout_SOAP_Requests_Credit_Payment( $order_id );
 			if ( $credit_order->request( $order_id ) === true ) {
 				return true;
@@ -430,18 +468,18 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 	/**
 	 * Add org nr and invoice reference to order for
 	 *
-	 * @param $title
+	 * @param WC_Order $order The WoCommerce order.
 	 *
-	 * @return string
+	 * @return void
 	 */
 	public function add_org_nr_to_order( $order ) {
 		if ( 'collector_checkout' === $order->get_payment_method() ) {
 			$order_id = $order->get_id();
 			if ( get_post_meta( $order_id, '_collector_org_nr' ) ) {
-				echo '<p class="form-field form-field-wide"><strong>' . __( 'Org Nr', 'collector-checkout-for-woocommerce' ) . ':</strong> ' . get_post_meta( $order_id, '_collector_org_nr', true ) . '</p>';
+				echo '<p class="form-field form-field-wide"><strong>' . __( 'Org Nr', 'collector-checkout-for-woocommerce' ) . ':</strong> ' . get_post_meta( $order_id, '_collector_org_nr', true ) . '</p>';// phpcs:ignore
 			}
 			if ( get_post_meta( $order_id, '_collector_invoice_reference' ) ) {
-				echo '<p class="form-field form-field-wide"><strong>' . __( 'Invoice reference', 'collector-checkout-for-woocommerce' ) . ':</strong> ' . get_post_meta( $order_id, '_collector_invoice_reference', true ) . '</p>';
+				echo '<p class="form-field form-field-wide"><strong>' . __( 'Invoice reference', 'collector-checkout-for-woocommerce' ) . ':</strong> ' . get_post_meta( $order_id, '_collector_invoice_reference', true ) . '</p>';//phpcs:ignore
 			}
 		}
 	}
