@@ -165,7 +165,7 @@ class Collector_Checkout_SOAP_Requests_Credit_Payment {
 			$order->update_status( 'completed' );
 			// translators: The request.
 			$order->add_order_note( sprintf( __( 'Order failed to be credited with Collector Bank - %s', 'collector-checkout-for-woocommerce' ), wp_json_encode( $request ) ) );
-			$log = CCO_WC()->logger::format_log( $order_id, 'SOAP', 'CCO FAILED refund order (PartCreditInvoice)', $args, '', wp_json_encode( $e ) . wp_json_encode( $headers ), '' );
+			$log = CCO_WC()->logger::format_log( $order_id, 'SOAP', 'CCO FAILED refund order (PartCreditInvoice)', $args, '', wp_json_encode( $request ) . wp_json_encode( $headers ), '' );
 			CCO_WC()->logger::log( $log );
 		}
 	}

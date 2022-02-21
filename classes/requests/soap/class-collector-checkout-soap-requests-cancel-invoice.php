@@ -132,7 +132,7 @@ class Collector_Checkout_SOAP_Requests_Cancel_Invoice {
 			// translators: Cancel request.
 			$order->add_order_note( sprintf( __( 'Order failed to cancel with Collector Bank - %s', 'collector-checkout-for-woocommerce' ), wp_json_encode( $request ) ) );
 
-			$log = CCO_WC()->logger::format_log( $order_id, 'SOAP', 'CCO FAILED cancel order', $args, '', wp_json_encode( $e ) . wp_json_encode( $headers ), '' );
+			$log = CCO_WC()->logger::format_log( $order_id, 'SOAP', 'CCO FAILED cancel order', $args, '', wp_json_encode( $request ) . wp_json_encode( $headers ), '' );
 			CCO_WC()->logger::log( $log );
 		}
 	}

@@ -152,7 +152,7 @@ class Collector_Checkout_SOAP_Requests_Adjust_Invoice {
 			);
 			// TODO $e is not defined.
 			// TODO Add errors from Collector response.
-			$log = CCO_WC()->logger::format_log( $order_id, 'SOAP', 'CCO FAILED credit (AdjustInvoice)', $args, '', wp_json_encode( $e ) . wp_json_encode( $headers ), '' );
+			$log = CCO_WC()->logger::format_log( $order_id, 'SOAP', 'CCO FAILED credit (AdjustInvoice)', $args, '', wp_json_encode( $request ) . wp_json_encode( $headers ), '' );
 			CCO_WC()->logger::log( $log );
 			return false;
 		}
