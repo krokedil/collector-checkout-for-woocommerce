@@ -75,7 +75,7 @@ class Collector_Api_Callbacks {
 	 * Handles validation callbacks.
 	 */
 	public function validation_cb() {
-		Collector_Checkout::log( 'Validation Callback hit: ' . json_encode( $_GET ) . ' URL: ' . $_SERVER['REQUEST_URI'] );//phpcs:ignore
+		CCO_WC()->logger::log( 'Validation Callback hit: ' . json_encode( $_GET ) . ' URL: ' . $_SERVER['REQUEST_URI'] );//phpcs:ignore
 
 		$private_id          = isset( $_GET['private-id'] ) ? sanitize_text_field( wp_unslash( $_GET['private-id'] ) ) : null;//phpcs:ignore
 		$customer_type       = isset( $_GET['customer-type'] ) ? sanitize_text_field( wp_unslash( $_GET['customer-type'] ) ) : null;//phpcs:ignore
@@ -107,7 +107,7 @@ class Collector_Api_Callbacks {
 
 		// Check if order is still valid.
 		if ( $this->order_is_valid ) {
-			Collector_Checkout::log( 'Private id: ' . $private_id . ' Collector Validation Callback. Order is valid.' );
+			CCO_WC()->logger::log( 'Private id: ' . $private_id . ' Collector Validation Callback. Order is valid.' );
 			header( 'HTTP/1.0 200 OK' );
 			die();
 		} else {
@@ -116,7 +116,7 @@ class Collector_Api_Callbacks {
 				'validation_messages' => $this->validation_messages,
 			);
 			$log       = wp_json_encode( $log_array );
-			Collector_Checkout::log( $log );
+			CCO_WC()->logger::log( $log );
 			if ( isset( $this->validation_messages['amount_error_totals'] ) ) {
 				unset( $this->validation_messages['amount_error_totals'] );
 			}
@@ -156,7 +156,7 @@ class Collector_Api_Callbacks {
 	 * @throws Exception When WC_Data_Store validation fails.
 	 */
 	public function collector_check_for_order_callback( $private_id, $public_token, $customer_type = 'b2c' ) {
-		Collector_Checkout::log( 'Check for order in API-callback. Private id: ' . $private_id . '. Public token: ' . $public_token );
+		CCO_WC()->logger::log( 'Check for order in API-callback. Private id: ' . $private_id . '. Public token: ' . $public_token );
 		$query          = new WC_Order_Query(
 			array(
 				'limit'          => -1,
@@ -185,15 +185,15 @@ class Collector_Api_Callbacks {
 
 			if ( $order ) {
 				// Check order status & order total.
-				Collector_Checkout::log( 'API-callback hit. Private id ' . $private_id . '. already exist in order ID ' . $order_id_match . ' Checking order status...' );
+				CCO_WC()->logger::log( 'API-callback hit. Private id ' . $private_id . '. already exist in order ID ' . $order_id_match . ' Checking order status...' );
 				$this->check_order_status( $private_id, $public_token, $customer_type, $order );
 			} else {
 				// No order, why?
-				Collector_Checkout::log( 'API-callback hit. Private id ' . $private_id . '. already exist in order ID ' . $order_id_match . '. But we could not instantiate an order object' );
+				CCO_WC()->logger::log( 'API-callback hit. Private id ' . $private_id . '. already exist in order ID ' . $order_id_match . '. But we could not instantiate an order object' );
 			}
 		} else {
 			// No order found - create a new.
-			Collector_Checkout::log( 'API-callback hit. We could NOT find Private id ' . $private_id . '(with public token ' . $public_token . ' & customer type ' . $customer_type . '). Starting backup order creation...' );
+			CCO_WC()->logger::log( 'API-callback hit. We could NOT find Private id ' . $private_id . '(with public token ' . $public_token . ' & customer type ' . $customer_type . '). Starting backup order creation...' );
 			$this->backup_order_creation( $private_id, $public_token, $customer_type );
 		}
 
@@ -275,9 +275,9 @@ class Collector_Api_Callbacks {
 		$order         = wc_create_order( array( 'status' => 'pending' ) );
 
 		if ( is_wp_error( $order ) ) {
-			Collector_Checkout::log( 'Backup order creation. Error - could not create order. ' . var_export( $order->get_error_message(), true ) );//phpcs:ignore
+			CCO_WC()->logger::log( 'Backup order creation. Error - could not create order. ' . var_export( $order->get_error_message(), true ) );//phpcs:ignore
 		} else {
-			Collector_Checkout::log( 'Backup order creation - order ID - ' . $order->get_id() . ' - created.' );
+			CCO_WC()->logger::log( 'Backup order creation - order ID - ' . $order->get_id() . ' - created.' );
 		}
 
 		$order_id = $order->get_id();
@@ -494,16 +494,16 @@ class Collector_Api_Callbacks {
 		if ( 'Preliminary' === $collector_order['data']['purchase']['result'] || 'Completed' === $collector_order['data']['purchase']['result'] ) {
 			$order->payment_complete( $collector_order['data']['purchase']['purchaseIdentifier'] );
 			$order->add_order_note( 'Payment via Collector Checkout. Payment ID: ' . sanitize_key( $collector_order['data']['purchase']['purchaseIdentifier'] ) );
-			Collector_Checkout::log( 'Order status not set correctly for order ' . $order->get_order_number() . ' during checkout process. Setting order status to Processing/Completed.' );
+			CCO_WC()->logger::log( 'Order status not set correctly for order ' . $order->get_order_number() . ' during checkout process. Setting order status to Processing/Completed.' );
 		} elseif ( 'Signing' === $collector_order['data']['purchase']['result'] ) {
 			$order->add_order_note( __( 'Order is waiting for electronic signing by customer. Payment ID: ', 'woocommerce-gateway-klarna' ) . $collector_order['data']['purchase']['purchaseIdentifier'] );
 			update_post_meta( $order->get_id(), '_transaction_id', $collector_order['data']['purchase']['purchaseIdentifier'] );
 			$order->update_status( 'on-hold' );
-			Collector_Checkout::log( 'Order status not set correctly for order ' . $order->get_order_number() . ' during checkout process. Setting order status to On hold.' );
+			CCO_WC()->logger::log( 'Order status not set correctly for order ' . $order->get_order_number() . ' during checkout process. Setting order status to On hold.' );
 		} else {
 			$order->add_order_note( __( 'Order is PENDING APPROVAL by Collector. Payment ID: ', 'collector-checkout-for-woocommerce' ) . $collector_order['data']['purchase']['purchaseIdentifier'] );
 			$order->update_status( 'on-hold' );
-			Collector_Checkout::log( 'Order status not set correctly for order ' . $order->get_order_number() . ' during checkout process. Setting order status to On hold.' );
+			CCO_WC()->logger::log( 'Order status not set correctly for order ' . $order->get_order_number() . ' during checkout process. Setting order status to On hold.' );
 		}
 	}
 
@@ -522,11 +522,11 @@ class Collector_Api_Callbacks {
 		if ( $woo_order_total > $collector_order_total && ( $woo_order_total - $collector_order_total ) > 3 ) {
 			// translators: Order total.
 			$order->update_status( 'on-hold', sprintf( __( 'Order needs manual review. WooCommerce order total and Collector order total do not match. Collector order total: %s.', 'collector-checkout-for-woocommerce' ), $collector_order_total ) );
-			Collector_Checkout::log( 'Order total missmatch in order:' . $order->get_order_number() . '. Woo order total: ' . $woo_order_total . '. Collector order total: ' . $collector_order_total );
+			CCO_WC()->logger::log( 'Order total missmatch in order:' . $order->get_order_number() . '. Woo order total: ' . $woo_order_total . '. Collector order total: ' . $collector_order_total );
 		} elseif ( $collector_order_total > $woo_order_total && ( $collector_order_total - $woo_order_total ) > 3 ) {
 			// translators: Order total notice..
 			$order->update_status( 'on-hold', sprintf( __( 'Order needs manual review. WooCommerce order total and Collector order total do not match. Collector order total: %s.', 'collector-checkout-for-woocommerce' ), $collector_order_total ) );
-			Collector_Checkout::log( 'Order total mismatch in order:' . $order->get_order_number() . '. Woo order total: ' . $woo_order_total . '. Collector order total: ' . $collector_order_total );
+			CCO_WC()->logger::log( 'Order total mismatch in order:' . $order->get_order_number() . '. Woo order total: ' . $woo_order_total . '. Collector order total: ' . $collector_order_total );
 		}
 	}
 
@@ -544,7 +544,7 @@ class Collector_Api_Callbacks {
 	public function update_order_reference_in_collector( $order, $customer_type, $private_id ) {
 		$update_reference = new Collector_Checkout_Requests_Update_Reference( $order->get_order_number(), $private_id, $customer_type );
 		$update_reference->request();
-		Collector_Checkout::log( 'Update Collector order reference for order - ' . $order->get_order_number() );
+		CCO_WC()->logger::log( 'Update Collector order reference for order - ' . $order->get_order_number() );
 	}
 
 	/**

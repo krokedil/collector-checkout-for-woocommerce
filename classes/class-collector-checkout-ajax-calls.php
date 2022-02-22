@@ -406,14 +406,14 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 		}
 		if ( $order_id_match ) {
 			$order = wc_get_order( $order_id_match );
-			Collector_Checkout::log( 'Payment complete triggered for private id ' . $private_id . ' but _collector_private_id already exist in this order. Redirecting customer to thankyou page.' );
+			CCO_WC()->logger::log( 'Payment complete triggered for private id ' . $private_id . ' but _collector_private_id already exist in this order. Redirecting customer to thankyou page.' );
 			$return                 = array();
 			$return['redirect_url'] = $order->get_checkout_order_received_url();
 			wp_send_json_error( $return );
 			wp_die();
 		}
 
-		Collector_Checkout::log( 'Payment complete triggered for private id ' . $private_id . '. Starting WooCommerce checkout form processing...' );
+		CCO_WC()->logger::log( 'Payment complete triggered for private id ' . $private_id . '. Starting WooCommerce checkout form processing...' );
 
 		$customer_data   = new Collector_Checkout_Requests_Get_Checkout_Information( $private_id, $customer_type );
 		$collector_order = $customer_data->request();
@@ -516,7 +516,7 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 	 * @throws Exception If something goes wrong.
 	 */
 	public static function checkout_error() {
-		Collector_Checkout::log( 'Starting Create Order Fallback creation...' );
+		CCO_WC()->logger::log( 'Starting Create Order Fallback creation...' );
 		$customer_type = WC()->session->get( 'collector_customer_type' );
 		$private_id    = WC()->session->get( 'collector_private_id' );
 
@@ -543,7 +543,7 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 		}
 		// _collector_public_token already exist in an order. Let's redirect the customer to the thankyou page for that order.
 		if ( $order_id_match ) {
-			Collector_Checkout::log( 'Checkout error triggered but _collector_public_token already exist in this order: ' . $order_id_match );
+			CCO_WC()->logger::log( 'Checkout error triggered but _collector_public_token already exist in this order: ' . $order_id_match );
 			$order        = wc_get_order( $order_id_match );
 			$redirect_url = $order->get_checkout_order_received_url();
 			$return       = array( 'redirect_url' => $redirect_url );

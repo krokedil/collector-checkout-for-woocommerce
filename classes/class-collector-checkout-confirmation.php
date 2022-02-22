@@ -86,7 +86,7 @@ class Collector_Checkout_Confirmation {
 		}
 		// _collector_public_token already exist in an order. Let's redirect the customer to the thankyou page for that order.
 		if ( $order_id_match ) {
-			Collector_Checkout::log( 'Confirmation page rendered but _collector_public_token already exist in this order: ' . $order_id_match );
+			CCO_WC()->logger::log( 'Confirmation page rendered but _collector_public_token already exist in this order: ' . $order_id_match );
 			$order    = wc_get_order( $order_id_match );
 			$location = $order->get_checkout_order_received_url();
             wp_redirect( $location ); // phpcs:ignore
@@ -151,7 +151,7 @@ class Collector_Checkout_Confirmation {
 				wc_get_endpoint_url( 'order-received', '', get_permalink( wc_get_page_id( 'checkout' ) ) )
 			);
 
-			Collector_Checkout::log( 'Payment complete triggered for private id ' . $private_id . ' but status is not PurchaseCompleted in Collectors system. Current status: ' . var_export( $collector_order['data']['status'], true ) . '. Redirecting customer to simplified thankyou page.' );//phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
+			CCO_WC()->logger::log( 'Payment complete triggered for private id ' . $private_id . ' but status is not PurchaseCompleted in Collectors system. Current status: ' . var_export( $collector_order['data']['status'], true ) . '. Redirecting customer to simplified thankyou page.' );//phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
 
 			wp_safe_redirect( $url );
 			exit;
@@ -259,7 +259,7 @@ class Collector_Checkout_Confirmation {
 
 			if ( WC()->session->get( 'collector_private_id' ) ) {
 
-				Collector_Checkout::log( 'Saving Collector meta data for private id ' . WC()->session->get( 'collector_private_id' ) . ' in order id ' . $order_id );
+				CCO_WC()->logger::log( 'Saving Collector meta data for private id ' . WC()->session->get( 'collector_private_id' ) . ' in order id ' . $order_id );
 
 				update_post_meta( $order_id, '_collector_customer_type', WC()->session->get( 'collector_customer_type' ) );
 				update_post_meta( $order_id, '_collector_public_token', WC()->session->get( 'collector_public_token' ) );

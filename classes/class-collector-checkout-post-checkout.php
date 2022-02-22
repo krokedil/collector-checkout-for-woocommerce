@@ -103,7 +103,7 @@ class Collector_Checkout_Post_Checkout {
 			$invoice_no     = filter_input( INPUT_GET, 'InvoiceNo', FILTER_SANITIZE_STRING );
 			$invoice_status = filter_input( INPUT_GET, 'InvoiceStatus', FILTER_SANITIZE_STRING );
 			if ( ! empty( $invoice_no ) && ! empty( $invoice_status ) ) {
-				Collector_Checkout::log( 'Collector Invoice Status Change callback hit' );
+				CCO_WC()->logger::log( 'Collector Invoice Status Change callback hit' );
 				$collector_payment_id = $invoice_no;
 				$query_args           = array(
 					'post_type'   => wc_get_order_types(),
@@ -129,11 +129,11 @@ class Collector_Checkout_Post_Checkout {
 				} else {
 					$collector_info = sprintf( 'Invoice status callback from Collector but we could not find the corresponding order in WC. Collector InvoiceNo: %s InvoiceStatus: %s', $invoice_no, $invoice_status );
 					// TODO log function not found in Collector_Checkout!
-					Collector_Checkout::log( $collector_info );
+					CCO_WC()->logger::log( $collector_info );
 					header( 'HTTP/1.0 404 Not Found' );
 				}
 			} else {
-				Collector_Checkout::log( 'HTTP Request from Collector is missing parameters' );
+				CCO_WC()->logger::log( 'HTTP Request from Collector is missing parameters' );
 				header( 'HTTP/1.0 400 Bad Request' );
 			}
 			die();

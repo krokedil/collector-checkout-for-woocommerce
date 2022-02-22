@@ -78,7 +78,7 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 	 * Schedule order status check on notificationUri callback from Collector
 	 */
 	public function notification_listener() {
-		Collector_Checkout::log( 'Notification Listener hit: ' . json_encode( $_GET ) . ' URL: ' . $_SERVER['REQUEST_URI'] );//phpcs:ignore
+		CCO_WC()->logger::log( 'Notification Listener hit: ' . json_encode( $_GET ) . ' URL: ' . $_SERVER['REQUEST_URI'] );//phpcs:ignore
 		if ( isset( $_GET['private-id'], $_GET['public-token'], $_GET['customer-type'] ) ) { //phpcs:ignore
 			$private_id    = filter_input( INPUT_GET, 'private-id', FILTER_SANITIZE_STRING );
 			$public_token  = filter_input( INPUT_GET, 'public-token', FILTER_SANITIZE_STRING );
@@ -97,7 +97,7 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 				as_schedule_single_action( time() + 120, 'collector_check_for_order', array( $private_id, $public_token, $customer_type ) );
 				header( 'HTTP/1.1 200 OK' );
 			} else {
-				Collector_Checkout::log( 'collector_check_for_order callback already scheduled. ' . wp_json_encode( $scheduled_actions ) ); // Input var okay.
+				CCO_WC()->logger::log( 'collector_check_for_order callback already scheduled. ' . wp_json_encode( $scheduled_actions ) ); // Input var okay.
 				header( 'HTTP/1.1 400 Bad Request' );
 			}
 			die();
@@ -250,7 +250,7 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 
 		$process_payment = $this->process_collector_payment_in_order( $order_id );
 
-		Collector_Checkout::log( 'Process Collector Payment for private_id ' . $private_id . '. WC order ID ' . $order_id . '. Redirecting customer to ' . $this->get_return_url( $order ) );
+		CCO_WC()->logger::log( 'Process Collector Payment for private_id ' . $private_id . '. WC order ID ' . $order_id . '. Redirecting customer to ' . $this->get_return_url( $order ) );
 
 		return array(
 			'result'   => 'success',
@@ -369,7 +369,7 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 			// Unset Collector token and id.
 			wc_collector_unset_sessions();
 			WC()->cart->empty_cart();
-			Collector_Checkout::log( 'Rendering simplified thankyou page (only display Collector thank you iframe).' );
+			CCO_WC()->logger::log( 'Rendering simplified thankyou page (only display Collector thank you iframe).' );
 			if ( 'v2' !== $this->checkout_version ) {
 				return '<div class="collector-checkout-thankyou"></div>';
 			}

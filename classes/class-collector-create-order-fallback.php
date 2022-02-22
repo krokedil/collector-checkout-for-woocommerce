@@ -52,7 +52,7 @@ class Collector_Create_Local_Order_Fallback {
 				)
 			);
 			if ( ! $item_id ) {
-				Collector_Checkout::log( 'Error: Unable to add cart items in Create Local Order Fallback.' );
+				CCO_WC()->logger::log( 'Error: Unable to add cart items in Create Local Order Fallback.' );
 				// translators: The error message.
 				throw new Exception( sprintf( __( 'Error %d: Unable to create order. Please try again.', 'woocommerce' ), 525 ) );
 			}
@@ -74,7 +74,7 @@ class Collector_Create_Local_Order_Fallback {
 		foreach ( WC()->cart->get_fees() as $fee_key => $fee ) {
 			$item_id = $order->add_fee( $fee );
 			if ( ! $item_id ) {
-				Collector_Checkout::log( 'Error: Unable to add order fees in Create Local Order Fallback.' );
+				CCO_WC()->logger::log( 'Error: Unable to add order fees in Create Local Order Fallback.' );
 				throw new Exception( __( 'Error: Unable to create order. Please try again.', 'woocommerce' ) );
 			}
 			// Allow plugins to add order item meta to fees.
@@ -102,7 +102,7 @@ class Collector_Create_Local_Order_Fallback {
 			if ( isset( $package['rates'][ $this_shipping_methods[ $package_key ] ] ) ) {
 				$item_id = $order->add_shipping( $package['rates'][ $this_shipping_methods[ $package_key ] ] );
 				if ( ! $item_id ) {
-					Collector_Checkout::log( 'Error: Unable to add shipping item in Create Local Order Fallback.' );
+					CCO_WC()->logger::log( 'Error: Unable to add shipping item in Create Local Order Fallback.' );
 					throw new Exception( __( 'Error: Unable to add shipping item. Please try again.', 'woocommerce' ) );
 				}
 				// Allows plugins to add order item meta to shipping.
@@ -123,7 +123,7 @@ class Collector_Create_Local_Order_Fallback {
 		// Store tax rows.
 		foreach ( array_keys( WC()->cart->taxes + WC()->cart->shipping_taxes ) as $tax_rate_id ) {
 			if ( $tax_rate_id && ! $order->add_tax( $tax_rate_id, WC()->cart->get_tax_amount( $tax_rate_id ), WC()->cart->get_shipping_tax_amount( $tax_rate_id ) ) && apply_filters( 'woocommerce_cart_remove_taxes_zero_rate_id', 'zero-rated' ) !== $tax_rate_id ) {
-				Collector_Checkout::log( 'Error: Unable to add order tax rows in Create Local Order Fallback.' );
+				CCO_WC()->logger::log( 'Error: Unable to add order tax rows in Create Local Order Fallback.' );
 				// translators: The Error code.
 				throw new Exception( sprintf( __( 'Error %d: Unable to create order. Please try again.', 'woocommerce' ), 405 ) );
 			}
@@ -141,7 +141,7 @@ class Collector_Create_Local_Order_Fallback {
 	public function add_order_coupons( $order ) {
 		foreach ( WC()->cart->get_coupons() as $code => $coupon ) {
 			if ( ! $order->add_coupon( $code, WC()->cart->get_coupon_discount_amount( $code ) ) ) {
-				Collector_Checkout::log( 'Error: Unable to add coupons in Create Local Order Fallback.' );
+				CCO_WC()->logger::log( 'Error: Unable to add coupons in Create Local Order Fallback.' );
 				throw new Exception( __( 'Error: Unable to add coupons. Please try again.', 'woocommerce' ) );
 			}
 		}
@@ -235,6 +235,6 @@ class Collector_Create_Local_Order_Fallback {
 	public function update_order_reference_in_collector( $order, $customer_type, $private_id ) {
 		$update_reference = new Collector_Checkout_Requests_Update_Reference( $order->get_order_number(), $private_id, $customer_type );
 		$update_reference->request();
-		Collector_Checkout::log( 'Update Collector order reference in Create Local Order Fallback - ' . $order->get_order_number() );
+		CCO_WC()->logger::log( 'Update Collector order reference in Create Local Order Fallback - ' . $order->get_order_number() );
 	}
 }
