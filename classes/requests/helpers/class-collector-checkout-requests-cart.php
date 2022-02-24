@@ -28,7 +28,7 @@ class Collector_Checkout_Requests_Cart {
 		// Loop through cart items and make an item line for each.
 		foreach ( $wc_cart as $item ) {
 			// Don't send items with a price of 0.
-			if ( 0 == $item['line_total'] ) {
+			if ( 0 === $item['line_total'] ) { // TODO Use strict comparisons === !
 				continue;
 			}
 			if ( $item['variation_id'] ) {
@@ -66,11 +66,12 @@ class Collector_Checkout_Requests_Cart {
 	/**
 	 * Creates line item for collector.
 	 *
-	 * @param string $sku Product SKU.
-	 * @param string $product_name Product name.
-	 * @param int    $line_total Line total.
-	 * @param int    $quantity Line quantity.
-	 * @param float  $line_tax Line tax.
+	 * @param string     $sku Product SKU.
+	 * @param string     $product_name Product name.
+	 * @param int        $line_total Line total.
+	 * @param int        $quantity Line quantity.
+	 * @param float      $line_tax Line tax.
+	 * @param WC_Product $product The WooCommerce product.
 	 * @return array
 	 */
 	public static function create_item( $sku, $product_name, $line_total, $quantity, $line_tax, $product = null ) {
@@ -142,7 +143,7 @@ class Collector_Checkout_Requests_Cart {
 			);
 
 			array_push( $items, $fee_item );
-		} // End foreach().
+		} // End foreach(). phpcs:ignore Squiz.PHP.CommentedOutCode.Found
 		return $items;
 	}
 
@@ -165,7 +166,7 @@ class Collector_Checkout_Requests_Cart {
 				$i = 0;
 				// Loop trough all ids that appeare more than 1 time.
 				foreach ( $items as $key => $item ) {
-					if ( $id_name == $item['id'] ) {
+					if ( $id_name === $item['id'] ) {// TODO Use strict comparisons === !
 						$items[ $key ]['id'] = $item['id'] . '_' . $i;
 						$i++;
 					}
@@ -182,6 +183,7 @@ class Collector_Checkout_Requests_Cart {
 	 */
 	public static function get_add_product_electronic_id_fields() {
 		$collector_settings = get_option( 'woocommerce_collector_checkout_settings' );
+		// TODO inline variable.
 		$add_product_fields = ! empty( $collector_settings['requires_electronic_id_fields'] ) ? $collector_settings['requires_electronic_id_fields'] : 'no';
 		return $add_product_fields;
 	}

@@ -119,7 +119,7 @@ class Collector_Checkout_Requests_Helper_Order {
 				$i = 0;
 				// Loop trough all ids that appeare more than 1 time.
 				foreach ( $items as $key => $item ) {
-					if ( $id_name == $item['id'] ) {
+					if ( $id_name === $item['id'] ) {
 						$items[ $key ]['id'] = $item['id'] . '_' . $i;
 						$i++;
 					}

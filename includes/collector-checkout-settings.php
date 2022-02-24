@@ -1,6 +1,12 @@
 <?php
+/**
+ * Settings file for the plugin.
+ *
+ * @package  Collector_Checkout/Includes
+ */
+
 if ( ! defined( 'ABSPATH' ) ) {
-	exit; // Exit if accessed directly
+	exit; // Exit if accessed directly.
 }
 
 /**
@@ -19,15 +25,6 @@ $settings = array(
 		'description' => __( 'This is the title that the user sees on the checkout page for Walley Checkout (Collector).', 'collector-checkout-for-woocommerce' ),
 		'default'     => __( 'Walley Checkout', 'collector-checkout-for-woocommerce' ),
 	),
-	/*
-	'description' => array(
-		'title'         => __( 'Description', 'collector-checkout-for-woocommerce' ),
-		'type'          => 'text',
-		'description'   => __( 'This controls the description which the user sees during checkout.', 'krokedil-ecster-pay-for-woocommerce' ),
-		'default'       => __( 'Pay using Collector Checkout.', 'collector-checkout-for-woocommerce' ),
-		'desc_tip'      => true,
-	),
-	*/
 	'collector_username'              => array(
 		'title'       => __( 'Username', 'collector-checkout-for-woocommerce' ),
 		'type'        => 'text',
@@ -168,6 +165,7 @@ $settings = array(
 	'collector_invoice_fee'           => array(
 		'title'       => __( 'Invoice fee ID', 'collector-checkout-for-woocommerce' ),
 		'type'        => 'text',
+		/* Translators: link to docs */
 		'description' => sprintf( __( 'Create a hidden (simple) product that acts as the invoice fee. Enter the product <strong>ID</strong> number in this textfield. Leave blank to disable. <a href="%s" target="_blank">Read more</a>.', 'collector-checkout-for-woocommerce' ), 'https://docs.krokedil.com/walley-checkout-for-woocommerce/' ),
 		'default'     => '',
 		'desc_tip'    => false,
@@ -193,6 +191,7 @@ $settings = array(
 		'title'       => __( 'Validation Callback', 'collector-checkout-for-woocommerce' ),
 		'type'        => 'checkbox',
 		'label'       => __( 'Tick the checkbox to activate Walley Validation Callback.', 'collector-checkout-for-woocommerce' ),
+		/* Translators: link to docs */
 		'description' => sprintf( __( 'Triggered by Collector when customer clicks the Complete purchase button in Walley Checkout. <a href="%s" target="_blank">Read more about validation callback.</a>', 'collector-checkout-for-woocommerce' ), 'https://docs.krokedil.com/walley-checkout-for-woocommerce/get-started/introduction/' ),
 		'default'     => 'yes',
 	),
@@ -200,6 +199,7 @@ $settings = array(
 		'title'       => __( 'Electronic ID fields', 'collector-checkout-for-woocommerce' ),
 		'type'        => 'checkbox',
 		'label'       => __( 'Tick the checkbox to activate Requires Electronic ID Fields settings in product pages.', 'collector-checkout-for-woocommerce' ),
+		/* Translators: link to docs */
 		'description' => sprintf( __( '<a href="%s" target="_blank">Read more about this.</a>', 'collector-checkout-for-woocommerce' ), 'https://docs.krokedil.com/walley-checkout-for-woocommerce/get-started/introduction/' ),
 		'default'     => 'no',
 	),
@@ -233,6 +233,7 @@ $settings = array(
 		'title'       => __( 'Debug', 'collector-checkout-for-woocommerce' ),
 		'type'        => 'checkbox',
 		'label'       => __( 'Enable logging.', 'collector-checkout-for-woocommerce' ),
+		/* Translators: link to logs */
 		'description' => sprintf( __( 'Log Walley events, in <code>%s</code>', 'collector-checkout-for-woocommerce' ), wc_get_log_file_path( 'collector_checkout' ) ),
 		'default'     => 'no',
 	),

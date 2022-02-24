@@ -1,16 +1,56 @@
 <?php
+/**
+ * To initialize a Checkout session
+ *
+ * @package  Collector/Classes/Requests
+ */
+
 if ( ! defined( 'ABSPATH' ) ) {
-	exit; // Exit if accessed directly
+	exit; // Exit if accessed directly.
 }
 
+/**
+ * Class Collector_Checkout_Requests_Initialize_Checkout
+ */
 class Collector_Checkout_Requests_Initialize_Checkout extends Collector_Checkout_Requests {
 
-	public $path          = '/checkout';
-	public $store_id      = '';
-	public $country_code  = '';
-	public $terms_page    = '';
+	/**
+	 * The endpoint path
+	 *
+	 * @var string
+	 */
+	public $path = '/checkout';
+	/**
+	 * The store id.
+	 *
+	 * @var mixed|string
+	 */
+	public $store_id = '';
+
+	/**
+	 * The country code.
+	 *
+	 * @var string
+	 */
+	public $country_code = '';
+	/**
+	 * Term page
+	 *
+	 * @var string
+	 */
+	public $terms_page = '';
+	/**
+	 * Customer type
+	 *
+	 * @var string
+	 */
 	public $customer_type = '';
 
+	/**
+	 * Class constructor.
+	 *
+	 * @param string $customer_type The customer type.
+	 */
 	public function __construct( $customer_type = 'b2c' ) {
 		parent::__construct();
 		$collector_settings = get_option( 'woocommerce_collector_checkout_settings' );
@@ -48,6 +88,13 @@ class Collector_Checkout_Requests_Initialize_Checkout extends Collector_Checkout
 		$this->checkout_version             = isset( $collector_settings['checkout_version'] ) ? $collector_settings['checkout_version'] : 'v1';
 	}
 
+	/**
+	 * Get the request args.
+	 *
+	 * @param int $order_id The WooCommerce order id.
+	 *
+	 * @return array
+	 */
 	private function get_request_args( $order_id ) {
 		$request_args = array(
 			'headers' => $this->request_header( $this->request_body( $order_id ), $this->path ),
@@ -58,6 +105,13 @@ class Collector_Checkout_Requests_Initialize_Checkout extends Collector_Checkout
 		return $request_args;
 	}
 
+	/**
+	 * Make the request.
+	 *
+	 * @param int $order_id The WooCommerce order id.
+	 *
+	 * @return array|object|void|WP_Error
+	 */
 	public function request( $order_id = null ) {
 		$request_url  = $this->base_url . '/checkout';
 		$request_args = $this->get_request_args( $order_id );
@@ -68,13 +122,20 @@ class Collector_Checkout_Requests_Initialize_Checkout extends Collector_Checkout
 		$code     = wp_remote_retrieve_response_code( $response );
 
 		// Log the request.
-		$log = CCO_WC()->logger->format_log( '', 'POST', 'CCO initialize payment', $request_args, $request_url, json_decode( wp_remote_retrieve_body( $response ), true ), $code );
-		CCO_WC()->logger->log( $log );
+		$log = CCO_WC()->logger::format_log( '', 'POST', 'CCO initialize payment', $request_args, $request_url, json_decode( wp_remote_retrieve_body( $response ), true ), $code );
+		CCO_WC()->logger::log( $log );
 
 		$formated_response = $this->process_response( $response, $request_args, $request_url );
 		return $formated_response;
 	}
 
+	/**
+	 * Get the request body.
+	 *
+	 * @param int $order_id The WooCommerce order id.
+	 *
+	 * @return false|string
+	 */
 	protected function request_body( $order_id ) {
 		// Set validation URI query args.
 		$validation_uri = add_query_arg(

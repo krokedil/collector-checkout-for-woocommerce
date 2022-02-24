@@ -1,19 +1,59 @@
 <?php
+/**
+ * A class for adjusting the total invoice amount. The adjusted amount can be both negative and positive.
+ *
+ * @package  Collector/Classes/Requests/Soap
+ */
+
 if ( ! defined( 'ABSPATH' ) ) {
-	exit; // Exit if accessed directly
+	exit; // Exit if accessed directly.
 }
 
+/**
+ * Class Collector_Checkout_SOAP_Requests_Adjust_Invoice.
+ */
 class Collector_Checkout_SOAP_Requests_Adjust_Invoice {
 
-	static $log = '';
 
+	/**
+	 * The Collector endpoint.
+	 *
+	 * @var string
+	 */
 	public $endpoint = '';
 
-	public $username     = '';
-	public $password     = '';
-	public $store_id     = '';
+	/**
+	 * Walley checkout username
+	 *
+	 * @var string
+	 */
+	public $username = '';
+
+	/**
+	 * Walley checkout password
+	 *
+	 * @var string
+	 */
+	public $password = '';
+	/**
+	 * The store id.
+	 *
+	 * @var mixed|string
+	 */
+	public $store_id = '';
+	/**
+	 * The country code.
+	 *
+	 * @var string
+	 */
 	public $country_code = '';
 
+
+	/**
+	 * Class constructor.
+	 *
+	 * @param int $order_id The WooCommerce order id.
+	 */
 	public function __construct( $order_id ) {
 		$collector_settings = get_option( 'woocommerce_collector_checkout_settings' );
 		$this->username     = $collector_settings['collector_username'];
@@ -53,6 +93,17 @@ class Collector_Checkout_SOAP_Requests_Adjust_Invoice {
 	}
 
 
+	/**
+	 * Make the request.
+	 *
+	 * @param int    $order_id The WooCommerce order id.
+	 * @param float  $amount Refund amount.
+	 * @param string $reason Refund reason.
+	 * @param array  $refunded_items Refund data.
+	 *
+	 * @return bool
+	 * @throws SoapFault SOAP Fault.
+	 */
 	public function request( $order_id, $amount, $reason, $refunded_items ) {
 		$soap      = new SoapClient( $this->endpoint );
 		$args      = $this->get_request_args( $order_id, $amount, $reason, $refunded_items );
@@ -66,27 +117,57 @@ class Collector_Checkout_SOAP_Requests_Adjust_Invoice {
 		} catch ( SoapFault $e ) {
 			$request = $e->getMessage();
 
-			$log = CCO_WC()->logger->format_log( $order_id, 'SOAP', 'CCO FAILED credit (AdjustInvoice)', $args, '', wp_json_encode( $e ) . wp_json_encode( $headers ), '' );
-			CCO_WC()->logger->log( $log );
+			$log = CCO_WC()->logger::format_log( $order_id, 'SOAP', 'CCO FAILED credit (AdjustInvoice)', $args, '', wp_json_encode( $e ) . wp_json_encode( $headers ), '' );
+			CCO_WC()->logger::log( $log );
 			return false;
 		}
 		$order = wc_get_order( $order_id );
-		if ( isset( $request->CorrelationId ) || $request->CorrelationId == null ) {
-			$order->add_order_note( sprintf( __( 'Order credited with Collector Bank. CorrelationId ' . $request->CorrelationId, 'collector-checkout-for-woocommerce' ) ) );
+		if ( isset( $request->CorrelationId ) || null === $request->CorrelationId ) { // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
+			$order->add_order_note(
+				sprintf(
+				// translators: 1. Collector correlation ID.
+					__(
+						'Order credited with Collector Bank. CorrelationId %s',
+						'collector-checkout-for-woocommerce'
+					),
+					$request->CorrelationId // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
+				)
+			);
 
-			$log = CCO_WC()->logger->format_log( $order_id, 'SOAP', 'CCO credit (AdjustInvoice)', $args, '', wp_json_encode( $request ), '' );
-			CCO_WC()->logger->log( $log );
+			$log = CCO_WC()->logger::format_log( $order_id, 'SOAP', 'CCO credit (AdjustInvoice)', $args, '', wp_json_encode( $request ), '' );
+			CCO_WC()->logger::log( $log );
 			return true;
 		} else {
 
-			$order->add_order_note( sprintf( __( 'Order failed to be credited with Collector Bank - ' . var_export( $request, true ), 'collector-checkout-for-woocommerce' ) ) );
-
-			$log = CCO_WC()->logger->format_log( $order_id, 'SOAP', 'CCO FAILED credit (AdjustInvoice)', $args, '', wp_json_encode( $e ) . wp_json_encode( $headers ), '' );
-			CCO_WC()->logger->log( $log );
+			$export_request = var_export( $request, true ); //phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
+			$order->add_order_note(
+				sprintf(
+				// translators: 1. The response from Collector.
+					__(
+						'Order failed to be credited with Collector Bank - %s',
+						'collector-checkout-for-woocommerce'
+					),
+					$export_request
+				)
+			);
+			// TODO $e is not defined.
+			// TODO Add errors from Collector response.
+			$log = CCO_WC()->logger::format_log( $order_id, 'SOAP', 'CCO FAILED credit (AdjustInvoice)', $args, '', wp_json_encode( $request ) . wp_json_encode( $headers ), '' );
+			CCO_WC()->logger::log( $log );
 			return false;
 		}
 	}
 
+	/**
+	 * Get the request args.
+	 *
+	 * @param int    $order_id The WooCommerce order id.
+	 * @param float  $amount Refund amount.
+	 * @param string $reason Refund reason.
+	 * @param array  $refunded_items Refund data.
+	 *
+	 * @return array
+	 */
 	public function get_request_args( $order_id, $amount, $reason, $refunded_items ) {
 
 		$order          = wc_get_order( $order_id );

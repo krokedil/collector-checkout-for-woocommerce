@@ -1,4 +1,4 @@
-<?php
+<?php //phpcs:ignore
 /**
  * Delivery module class.
  *

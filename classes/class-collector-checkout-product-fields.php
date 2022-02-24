@@ -8,10 +8,19 @@
  * @category Class
  * @author   Krokedil
  */
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
+
+/**
+ * Class Collector_Checkout_Product_Fields
+ */
 class Collector_Checkout_Product_Fields {
+
+	/**
+	 * Class constructor.
+	 */
 	public function __construct() {
 		$collector_settings       = get_option( 'woocommerce_collector_checkout_settings' );
 		$this->add_product_fields = ! empty( $collector_settings['requires_electronic_id_fields'] ) ? $collector_settings['requires_electronic_id_fields'] : 'no';
@@ -44,9 +53,16 @@ class Collector_Checkout_Product_Fields {
 
 	}
 
+	/**
+	 * Check if the electronic id should be required.
+	 *
+	 * @param WP_Post $post_id The WP Post id.
+	 *
+	 * @return void
+	 */
 	public function save_product_fields( $post_id ) {
 		$product                          = wc_get_product( $post_id );
-		$collector_requires_electronic_id = isset( $_POST['_collector_requires_electronic_id'] ) ? 'yes' : 'no';
+		$collector_requires_electronic_id = isset( $_POST['_collector_requires_electronic_id'] ) ? 'yes' : 'no';//phpcs:ignore
 		$product->update_meta_data( '_collector_requires_electronic_id', sanitize_text_field( $collector_requires_electronic_id ) );
 		$product->save();
 	}
