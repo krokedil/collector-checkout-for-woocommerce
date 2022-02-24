@@ -69,7 +69,7 @@ class Collector_Checkout_DB {
 	 */
 	private static function table_exists( $table_name ) {
 		global $wpdb;
-		return $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $wpdb->esc_like( $table_name ) ) ) === $table_name;
+		return $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $wpdb->esc_like( $table_name ) ) ) === $table_name;//phpcs:ignore
 	}
 
 	/**
@@ -117,7 +117,7 @@ class Collector_Checkout_DB {
 			array(
 				'id'         => $args['private_id'],
 				'data'       => wp_json_encode( $args['data'] ),
-				'created_at' => date( 'Y-m-d H:i:s', time() ),
+				'created_at' => gmdate( 'Y-m-d H:i:s', time() ),
 			),
 			array(
 				'%s',
@@ -173,6 +173,7 @@ class Collector_Checkout_DB {
 		$table_name = $wpdb->prefix . self::$table_name;
 		$query      = $wpdb->prepare( "DELETE FROM `{$table_name}` WHERE `id` = %s LIMIT 1", $data_id ); //phpcs:ignore
 		$data       = $wpdb->get_results( $query ); // phpcs:ignore
+		// TODO maybe add return statement and return $data value.
 	}
 
 

@@ -1,9 +1,16 @@
 <?php
+/**
+ * Creates Collector refund data.
+ *
+ * @class    Collector_Checkout_Create_Refund_Data
+ * @package  Collector/Classes/Requests/Helpers
+ */
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 /**
- * Creates Collector refund data.
+ * Class Collector_Checkout_Create_Refund_Data
  *
  * @class    Collector_Checkout_Create_Refund_Data
  * @package  Collector/Classes/Requests/Helpers
@@ -14,9 +21,10 @@ class Collector_Checkout_Create_Refund_Data {
 	/**
 	 * Creates refund data
 	 *
-	 * @param int    $order_id
-	 * @param int    $amount
-	 * @param string $reason
+	 * @param int    $order_id The WooCommerce order id.
+	 * @param int    $refund_order_id The Refund order id.
+	 * @param float  $amount Refund amount.
+	 * @param string $reason Refund reason.
 	 * @return array
 	 */
 	public static function create_refund_data( $order_id, $refund_order_id, $amount, $reason ) {
@@ -42,12 +50,12 @@ class Collector_Checkout_Create_Refund_Data {
 				foreach ( $refunded_items as $item ) {
 					$original_order = wc_get_order( $order_id );
 					foreach ( $original_order->get_items() as $original_order_item ) {
-						if ( $item->get_product_id() == $original_order_item->get_product_id() ) {
+						if ( $item->get_product_id() === $original_order_item->get_product_id() ) {
 							// Found product match, continue.
 							break;
 						}
 					}
-					if ( abs( $item->get_total() ) / abs( $item->get_quantity() ) == $original_order_item->get_total() / $original_order_item->get_quantity() ) {
+					if ( abs( $item->get_total() ) / abs( $item->get_quantity() ) === $original_order_item->get_total() / $original_order_item->get_quantity() ) {
 						// The entire item price is refunded.
 						array_push( $full_item_refund, self::get_full_refund_item_data( $item ) );
 					} else {
@@ -70,12 +78,12 @@ class Collector_Checkout_Create_Refund_Data {
 				foreach ( $refunded_shipping as $shipping ) {
 					$original_order = wc_get_order( $order_id );
 					foreach ( $original_order->get_items( 'shipping' ) as $original_order_shipping ) {
-						if ( $shipping->get_name() == $original_order_shipping->get_name() ) {
+						if ( $shipping->get_name() === $original_order_shipping->get_name() ) {
 							// Found product match, continue.
 							break;
 						}
 					}
-					if ( abs( $shipping->get_total() ) / abs( $shipping->get_quantity() ) == $original_order_shipping->get_total() / $original_order_shipping->get_quantity() ) {
+					if ( abs( $shipping->get_total() ) / abs( $shipping->get_quantity() ) === $original_order_shipping->get_total() / $original_order_shipping->get_quantity() ) {
 						// The entire shipping price is refunded.
 						array_push( $full_item_refund, self::get_full_refund_shipping_data( $shipping, $original_order ) );
 					} else {
@@ -98,12 +106,12 @@ class Collector_Checkout_Create_Refund_Data {
 				foreach ( $refunded_fees as $fee ) {
 					$original_order = wc_get_order( $order_id );
 					foreach ( $original_order->get_items( 'fee' ) as $original_order_fee ) {
-						if ( $fee->get_name() == $original_order_fee->get_name() ) {
+						if ( $fee->get_name() === $original_order_fee->get_name() ) {
 							// Found product match, continue.
 							break;
 						}
 					}
-					if ( abs( $fee->get_total() ) / abs( $fee->get_quantity() ) == $original_order_fee->get_total() / $original_order_fee->get_quantity() ) {
+					if ( abs( $fee->get_total() ) / abs( $fee->get_quantity() ) === $original_order_fee->get_total() / $original_order_fee->get_quantity() ) {
 						// The entire fee price is refunded.
 						array_push( $full_item_refund, self::get_full_refund_fee_data( $fee ) );
 					} else {
@@ -122,13 +130,13 @@ class Collector_Checkout_Create_Refund_Data {
 			}
 		}
 
-		// update_post_meta( $refund_order_id, '_krokedil_refunded', 'true' );
+		// update_post_meta( $refund_order_id, '_krokedil_refunded', 'true' ); phpcs:ignore Squiz.PHP.CommentedOutCode.Found.
 		return $data;
 	}
 	/**
 	 * Gets refunded order
 	 *
-	 * @param int $order_id
+	 * @param int $order_id The WooCommerce order id.
 	 * @return string
 	 */
 	public static function get_refunded_order( $order_id ) {
@@ -139,7 +147,7 @@ class Collector_Checkout_Create_Refund_Data {
 			'posts_per_page' => -1,
 		);
 		$refunds         = get_posts( $query_args );
-		$refund_order_id = array_search( $order_id, $refunds );
+		$refund_order_id = array_search( $order_id, $refunds, true );
 		if ( is_array( $refund_order_id ) ) {
 			foreach ( $refund_order_id as $key => $value ) {
 				if ( ! get_post_meta( $value, '_krokedil_refunded' ) ) {
@@ -153,8 +161,8 @@ class Collector_Checkout_Create_Refund_Data {
 	/**
 	 * Calculates tax.
 	 *
-	 * @param string $refund_order_id
-	 * @return void
+	 * @param string $refund_order_id The refund order id.
+	 * @return int
 	 */
 	private static function calculate_tax( $refund_order_id ) {
 		$refund_order     = wc_get_order( $refund_order_id );

@@ -1,11 +1,32 @@
 <?php
+/**
+ * Class to update the shipping fee while the Checkout is rendered on the screen
+ *
+ * @package  Collector/Classes/Requests
+ */
+
 if ( ! defined( 'ABSPATH' ) ) {
-	exit; // Exit if accessed directly
+	exit; // Exit if accessed directly.
 }
 
+/**
+ * Class Collector_Checkout_Requests_Update_Fees
+ */
 class Collector_Checkout_Requests_Update_Fees extends Collector_Checkout_Requests {
+
+	/**
+	 * The endpoint path
+	 *
+	 * @var string
+	 */
 	public $path = '';
 
+	/**
+	 * Class constructor.
+	 *
+	 * @param string $private_id The private id.
+	 * @param string $customer_type The customer type.
+	 */
 	public function __construct( $private_id, $customer_type ) {
 		parent::__construct();
 		$collector_settings = get_option( 'woocommerce_collector_checkout_settings' );
@@ -30,6 +51,11 @@ class Collector_Checkout_Requests_Update_Fees extends Collector_Checkout_Request
 		$this->path       = '/merchants/' . $store_id . '/checkouts/' . $private_id . '/fees';
 	}
 
+	/**
+	 * Get the request args.
+	 *
+	 * @return array
+	 */
 	private function get_request_args() {
 		$request_args = array(
 			'headers' => $this->request_header( $this->request_body(), $this->path ),
@@ -40,6 +66,11 @@ class Collector_Checkout_Requests_Update_Fees extends Collector_Checkout_Request
 		return $request_args;
 	}
 
+	/**
+	 * Make the request.
+	 *
+	 * @return array|bool|object|void|WP_Error
+	 */
 	public function request() {
 
 		$request_url  = $this->base_url . $this->path;
@@ -54,13 +85,18 @@ class Collector_Checkout_Requests_Update_Fees extends Collector_Checkout_Request
 		$code     = wp_remote_retrieve_response_code( $response );
 
 		// Log the request.
-		$log = CCO_WC()->logger->format_log( $this->private_id, 'PUT', 'CCO update fees', $request_args, $request_url, json_decode( wp_remote_retrieve_body( $response ), true ), $code );
-		CCO_WC()->logger->log( $log );
+		$log = CCO_WC()->logger::format_log( $this->private_id, 'PUT', 'CCO update fees', $request_args, $request_url, json_decode( wp_remote_retrieve_body( $response ), true ), $code );
+		CCO_WC()->logger::log( $log );
 
 		$formated_response = $this->process_response( $response, $request_args, $request_url );
 		return $formated_response;
 	}
 
+	/**
+	 * Get the request body.
+	 *
+	 * @return false|string
+	 */
 	protected function request_body() {
 		$fees                   = $this->fees();
 		$formatted_request_body = array();

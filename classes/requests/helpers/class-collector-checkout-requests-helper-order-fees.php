@@ -1,13 +1,36 @@
 <?php
+/**
+ * Order helper class.
+ *
+ * @package Collector_Checkout/Classes/Requests/Helpers
+ */
+
 if ( ! defined( 'ABSPATH' ) ) {
-	exit; // Exit if accessed directly
+	exit; // Exit if accessed directly.
 }
 
+/**
+ * Class Collector_Checkout_Requests_Helper_Order_Fees
+ */
 class Collector_Checkout_Requests_Helper_Order_Fees {
 
+	/**
+	 * Invoice fee ID
+	 *
+	 * @var string
+	 */
 	public $invoice_fee_id = '';
-	public $price          = 0;
 
+	/**
+	 * Price with tax included, based on store settings or an empty string if price calculation failed.
+	 *
+	 * @var float|string
+	 */
+	public $price = 0;
+
+	/**
+	 * Class constructor.
+	 */
 	public function __construct() {
 		$collector_settings   = get_option( 'woocommerce_collector_checkout_settings' );
 		$invoice_fee_id       = $collector_settings['collector_invoice_fee'];
@@ -32,6 +55,13 @@ class Collector_Checkout_Requests_Helper_Order_Fees {
 		}
 	}
 
+	/**
+	 * Gets order fees for the order.
+	 *
+	 * @param int $order_id The WooCommerce order id.
+	 *
+	 * @return array
+	 */
 	public function get_order_fees( $order_id ) {
 		$order            = wc_get_order( $order_id );
 		$fees             = array();
@@ -48,6 +78,13 @@ class Collector_Checkout_Requests_Helper_Order_Fees {
 		return $fees;
 	}
 
+	/**
+	 * Gets the shipping for the order.
+	 *
+	 * @param WC_Order $order The WooCommerce order.
+	 *
+	 * @return array|void
+	 */
 	public function get_shipping( $order ) {
 
 		if ( empty( $order->get_shipping_method() ) ) {
@@ -64,6 +101,7 @@ class Collector_Checkout_Requests_Helper_Order_Fees {
 				'vat'         => ( '0' !== $order->get_shipping_tax() ) ? $this->get_product_tax_rate( $order, current( $order->get_items( 'shipping' ) ) ) : 0, // Float.
 			);
 		} else {
+			// todo $shipping_method_id is here probably undefined.
 			return array(
 				'id'          => 'shipping|' . substr( $shipping_method_id, 0, 50 ),
 				'description' => $order->get_shipping_method(),
@@ -73,6 +111,13 @@ class Collector_Checkout_Requests_Helper_Order_Fees {
 		}
 	}
 
+	/**
+	 * Gets the invoice fee for the product.
+	 *
+	 * @param WC_Product $_product The WooCommerce product.
+	 *
+	 * @return array
+	 */
 	public function get_invoice_fee( $_product ) {
 
 		$price = wc_get_price_including_tax( $_product );
@@ -84,7 +129,7 @@ class Collector_Checkout_Requests_Helper_Order_Fees {
 		if ( $_product->is_taxable() && isset( $_vat['rate'] ) ) {
 			$vat_rate = round( $_vat['rate'] );
 		} else {
-			// if empty, set 0% as rate
+			// if empty, set 0% as rate.
 			$vat_rate = 0;
 		}
 

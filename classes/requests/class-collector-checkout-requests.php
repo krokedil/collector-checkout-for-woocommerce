@@ -1,13 +1,36 @@
 <?php
+/**
+ * Main request class
+ *
+ * @package  Collector/Classes/Requests
+ */
+
 if ( ! defined( 'ABSPATH' ) ) {
-	exit; // Exit if accessed directly
+	exit; // Exit if accessed directly.
 }
 
+/**
+ * Class Collector_Checkout_Requests
+ */
 class Collector_Checkout_Requests {
 
-	static $log      = '';
+	/**
+	 * Static log variable.
+	 *
+	 * @var string
+	 */
+	protected static $log = '';
+
+	/**
+	 * The Collector base url.
+	 *
+	 * @var string
+	 */
 	public $base_url = '';
 
+	/**
+	 * Class constructor
+	 */
 	public function __construct() {
 		$collector_settings = get_option( 'woocommerce_collector_checkout_settings' );
 		$test_mode          = $collector_settings['test_mode'];
@@ -18,30 +41,61 @@ class Collector_Checkout_Requests {
 		}
 	}
 
+
+	/**
+	 * All subclasses must implement this function.
+	 *
+	 * @return void
+	 */
 	public function request() {
 		die( 'function Collector_Checkout_Requests::request() must be over-ridden in a sub-class.' );
 	}
 
+	/**
+	 * Get the request headers.
+	 *
+	 * @param array  $body The request body.
+	 * @param string $path The endpoint.
+	 *
+	 * @return array
+	 */
 	protected function request_header( $body, $path ) {
 		$get_header = new Collector_Checkout_Requests_Header( $body, $path );
 		return $get_header->get();
 	}
-	/*
+	/*  phpcs:ignore
 	protected function request_body( $order_id ) {
 		die( 'function Collector_Checkout_Requests::request_body() must be over-ridden in a sub-class.' );
 	}
 	*/
 
+	/**
+	 * Gets the WC cart.
+	 *
+	 * @return array
+	 */
 	protected function cart() {
 		$collector_checkout_requests_cart = new Collector_Checkout_Requests_Cart();
 		return $collector_checkout_requests_cart->cart();
 	}
 
+	/**
+	 * Gets fees.
+	 *
+	 * @return array|string
+	 */
 	protected function fees() {
 		$collector_checkout_requests_fees = new Collector_Checkout_Requests_Fees();
 		return $collector_checkout_requests_fees->fees();
 	}
 
+	/**
+	 * A Helper function for logging request.
+	 *
+	 * @param string $message The message.
+	 *
+	 * @return void
+	 */
 	public static function log( $message ) {
 		$dibs_settings = get_option( 'woocommerce_collector_checkout_settings' );
 		if ( 'yes' === $dibs_settings['debug_mode'] ) {
