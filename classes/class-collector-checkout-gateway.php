@@ -78,30 +78,33 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 	 * Schedule order status check on notificationUri callback from Collector
 	 */
 	public function notification_listener() {
-		CCO_WC()->logger::log( 'Notification Listener hit: ' . json_encode( $_GET ) . ' URL: ' . $_SERVER['REQUEST_URI'] );//phpcs:ignore
-		if ( isset( $_GET['private-id'], $_GET['public-token'], $_GET['customer-type'] ) ) { //phpcs:ignore
-			$private_id    = filter_input( INPUT_GET, 'private-id', FILTER_SANITIZE_STRING );
-			$public_token  = filter_input( INPUT_GET, 'public-token', FILTER_SANITIZE_STRING );
-			$customer_type = filter_input( INPUT_GET, 'customer-type', FILTER_SANITIZE_STRING );
+		$private_id    = filter_input( INPUT_GET, 'private-id', FILTER_SANITIZE_STRING );
+		$public_token  = filter_input( INPUT_GET, 'public-token', FILTER_SANITIZE_STRING );
+		$customer_type = filter_input( INPUT_GET, 'customer-type', FILTER_SANITIZE_STRING );
 
-			$scheduled_actions = as_get_scheduled_actions(
-				array(
-					'hook'   => 'collector_check_for_order',
-					'status' => ActionScheduler_Store::STATUS_PENDING,
-					'args'   => array( $private_id, $public_token, $customer_type ),
-				),
-				'ids'
-			);
+		CCO_WC()->logger::log( 'Notification Listener hit. Private id: ' . wp_json_encode( $private_id ) . '. Public token: ' . $public_token . '. Customer type: ' . $customer_type );
 
-			if ( empty( $scheduled_actions ) ) {
-				as_schedule_single_action( time() + 120, 'collector_check_for_order', array( $private_id, $public_token, $customer_type ) );
-				header( 'HTTP/1.1 200 OK' );
-			} else {
-				CCO_WC()->logger::log( 'collector_check_for_order callback already scheduled. ' . wp_json_encode( $scheduled_actions ) ); // Input var okay.
-				header( 'HTTP/1.1 400 Bad Request' );
-			}
-			die();
+		if ( empty( $private_id ) || empty( $public_token ) || empty( $customer_type ) ) {
+			return;
 		}
+
+		$scheduled_actions = as_get_scheduled_actions(
+			array(
+				'hook'   => 'collector_check_for_order',
+				'status' => ActionScheduler_Store::STATUS_PENDING,
+				'args'   => array( $private_id, $public_token, $customer_type ),
+			),
+			'ids'
+		);
+
+		if ( empty( $scheduled_actions ) ) {
+			as_schedule_single_action( time() + 120, 'collector_check_for_order', array( $private_id, $public_token, $customer_type ) );
+			header( 'HTTP/1.1 200 OK' );
+		} else {
+			CCO_WC()->logger::log( 'collector_check_for_order callback already scheduled. ' . wp_json_encode( $scheduled_actions ) ); // Input var okay.
+			header( 'HTTP/1.1 400 Bad Request' );
+		}
+		die();
 
 	}
 
@@ -365,7 +368,9 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 			CCO_WC()->logger::log( 'Thankyou page rendered for order ID - ' . $order->get_id() );
 			return '<div class="collector-checkout-thankyou"></div>';
 		}
-		if ( isset( $_GET['purchase-status'] ) && 'not-completed' === $_GET['purchase-status'] ) {// phpcs:ignore
+		$purchase_status = filter_input( INPUT_GET, 'purchase-status', FILTER_SANITIZE_STRING );
+
+		if ( 'not-completed' === $purchase_status ) {
 			// Unset Collector token and id.
 			wc_collector_unset_sessions();
 			WC()->cart->empty_cart();

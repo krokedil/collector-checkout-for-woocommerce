@@ -75,10 +75,13 @@ class Collector_Api_Callbacks {
 	 * Handles validation callbacks.
 	 */
 	public function validation_cb() {
-		CCO_WC()->logger::log( 'Validation Callback hit: ' . json_encode( $_GET ) . ' URL: ' . $_SERVER['REQUEST_URI'] );//phpcs:ignore
+		$private_id    = filter_input( INPUT_GET, 'private-id', FILTER_SANITIZE_STRING );
+		$customer_type = filter_input( INPUT_GET, 'customer-type', FILTER_SANITIZE_STRING );
+		CCO_WC()->logger::log( 'Validation Callback hit. Private id: ' . wp_json_encode( $private_id ) . ' Customer type: ' . $customer_type );
 
-		$private_id          = isset( $_GET['private-id'] ) ? sanitize_text_field( wp_unslash( $_GET['private-id'] ) ) : null;//phpcs:ignore
-		$customer_type       = isset( $_GET['customer-type'] ) ? sanitize_text_field( wp_unslash( $_GET['customer-type'] ) ) : null;//phpcs:ignore
+		if ( empty( $private_id ) ) {
+			return;
+		}
 		$collector_db_data   = get_collector_data_from_db( $private_id );
 		$this->db_session_id = $collector_db_data->session_id;
 
