@@ -65,8 +65,9 @@ class Collector_Checkout_Sessions {
 	 * @return void
 	 */
 	public function set_session_from_id() {
-		$collector_db_data = isset( $_GET['private-id'] ) ? get_collector_data_from_db( $_GET['private-id'] ) : null;//phpcs:ignore
-		if ( isset( $collector_db_data->session_id ) ) { // phpcs: ignore.
+		$private_id        = filter_input( INPUT_GET, 'private-id', FILTER_SANITIZE_STRING );
+		$collector_db_data = ! empty( $private_id ) ? get_collector_data_from_db( $private_id ) : null;
+		if ( isset( $collector_db_data->session_id ) ) {
 			$sessions_handler = new WC_Session_Handler();
 			$session_data     = $sessions_handler->get_session( $collector_db_data->session_id );
 			if ( ! empty( $session_data ) ) {
@@ -91,8 +92,9 @@ class Collector_Checkout_Sessions {
 	 * @return void
 	 */
 	public function maybe_set_wc_cart( $cart ) {
-		$collector_db_data = isset( $_GET['private-id'] ) ? get_collector_data_from_db( $_GET['private-id'] ) : null;//phpcs:ignore
-		if ( isset( $collector_db_data->session_id ) ) { // phpcs: ignore.
+		$private_id        = filter_input( INPUT_GET, 'private-id', FILTER_SANITIZE_STRING );
+		$collector_db_data = ! empty( $private_id ) ? get_collector_data_from_db( $private_id ) : null;
+		if ( isset( $collector_db_data->session_id ) ) {
 			WC()->cart = $cart;
 		}
 	}

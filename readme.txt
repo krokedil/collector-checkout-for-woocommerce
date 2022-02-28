@@ -4,7 +4,7 @@ Tags: ecommerce, e-commerce, woocommerce, collector, checkout, walley
 Requires at least: 5.0
 Tested up to: 5.9.1
 Requires PHP: 7.0
-Stable tag: 3.1.0
+Stable tag: 3.1.1
 WC requires at least: 4.0.0
 WC tested up to: 6.2.1
 License: GPLv3
@@ -39,6 +39,9 @@ For help setting up and configuring Walley Checkout for WooCommerce please refer
 
 
 == CHANGELOG ==
+= 2022.02.28    - version 3.1.1 =
+* Enhancement   - PHPCS changes.
+
 = 2022.02.24    - version 3.1.0 =
 * Enhancement   - PHPCS changes performed in the entire plugin.
 

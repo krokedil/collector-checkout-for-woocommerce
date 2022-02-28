@@ -64,7 +64,7 @@ class Collector_Checkout_Confirmation {
 		}
 
 		// Prevent duplicate orders if confirmation page is reloaded manually by customer.
-		$collector_public_token = sanitize_key( $_GET['public-token'] );// phpcs:ignore
+		$collector_public_token = filter_input( INPUT_GET, 'public-token', FILTER_SANITIZE_STRING );
 		$query                  = new WC_Order_Query(
 			array(
 				'limit'          => -1,
@@ -120,7 +120,7 @@ class Collector_Checkout_Confirmation {
 			return;
 		}
 
-		$collector_public_token = sanitize_key( $_GET['public-token'] );//phpcs:ignore
+		$collector_public_token = filter_input( INPUT_GET, 'public-token', FILTER_SANITIZE_STRING );
 
 		echo '<div id="collector-confirm-loading"></div>';
 
