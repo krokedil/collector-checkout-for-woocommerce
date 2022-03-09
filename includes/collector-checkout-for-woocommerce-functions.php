@@ -142,12 +142,14 @@ function collector_wc_show_another_gateway_button() {
  * Only available for Checkout version 1.0.
  */
 function collector_wc_show_customer_type_switcher() {
-	?>
+	if ( 'collector-b2c-b2b' === wc_collector_get_available_customer_types() ) {
+		?>
 	<ul class="collector-checkout-tabs">
 		<li class="tab-link current" data-tab="b2c"><?php esc_html_e( 'Person', 'collector-checkout-for-woocommerce' ); ?></li>
 		<li class="tab-link" data-tab="b2b"><?php esc_html_e( 'Company', 'collector-checkout-for-woocommerce' ); ?></li>
 	</ul>
-	<?php
+		<?php
+	}
 }
 
 /**
