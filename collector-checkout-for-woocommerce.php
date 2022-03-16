@@ -280,6 +280,8 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 						'checkout_error'                => WC_AJAX::get_endpoint( 'checkout_error' ),
 						'update_delivery_module_shipping_url' => WC_AJAX::get_endpoint( 'update_delivery_module_shipping' ),
 						'process_order_text'            => __( 'Please wait while we process your order.', 'collector-checkout-for-woocommerce' ),
+						'private_id'                    => WC_AJAX::get_endpoint( 'collector_checkout_get_private_id' ),
+						'private_id_nonce'              => wp_create_nonce( 'private_id_nonce' ),
 					)
 				);
 				wp_enqueue_script( 'checkout' );
