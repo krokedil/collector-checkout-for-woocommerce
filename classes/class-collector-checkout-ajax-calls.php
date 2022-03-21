@@ -25,16 +25,15 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 	 */
 	public static function add_ajax_events() {
 		$ajax_events = array(
-			'get_public_token'                  => true,
-			'update_checkout'                   => true,
-			'add_customer_order_note'           => true,
-			'get_checkout_thank_you'            => true,
-			'get_customer_data'                 => true,
-			'customer_adress_updated'           => true,
-			'update_fragment'                   => true,
-			'checkout_error'                    => true,
-			'update_delivery_module_shipping'   => true,
-			'collector_checkout_get_private_id' => true,
+			'get_public_token'                => true,
+			'update_checkout'                 => true,
+			'add_customer_order_note'         => true,
+			'get_checkout_thank_you'          => true,
+			'get_customer_data'               => true,
+			'customer_adress_updated'         => true,
+			'update_fragment'                 => true,
+			'checkout_error'                  => true,
+			'update_delivery_module_shipping' => true,
 		);
 		foreach ( $ajax_events as $ajax_event => $nopriv ) {
 			add_action( 'wp_ajax_woocommerce_' . $ajax_event, array( __CLASS__, $ajax_event ) );
@@ -45,23 +44,6 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 			}
 		}
 	}
-
-	/**
-	 *
-	 */
-	public static function collector_checkout_get_private_id() {
-
-		$wc_order_key = filter_input( INPUT_POST, 'key', FILTER_SANITIZE_STRING );
-		$order_id     = wc_get_order_id_by_order_key( $wc_order_key );
-		$private_id   = get_post_meta( $order_id, '_collector_private_id', true );
-
-		wp_send_json_success(
-			array(
-				'private_id' => $private_id,
-			)
-		);
-	}
-
 
 	/**
 	 * Gets the Public token from session.
