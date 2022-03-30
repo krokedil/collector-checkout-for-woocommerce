@@ -204,10 +204,6 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 
 				if ( ! empty( $collector_order_cart->get_error_message( 'Duplicate_Articles' ) ) || ! empty( $collector_order_cart->get_error_message( 'Validation_Error' ) ) ) {
 
-					// error_log( ' ERRORS  :::  ::: :::' );
-					// error_log( var_export( $collector_order_cart->get_error_message( 'Duplicate_Articles' ), true ) );
-					// error_log( var_export( $collector_order_cart->get_error_message( 'Validation_Error' ), true ) );
-
 					$return                 = array();
 					$return['redirect_url'] = '#';
 					wp_send_json_error( $return );
