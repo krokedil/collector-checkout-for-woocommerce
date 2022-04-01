@@ -156,14 +156,16 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 	 */
 	public function is_available() {
 
-		$cart_item_total = Collector_Checkout_Requests_Cart::cart();
-
-		// Update checkout and annul payment method if the total cart item amount is 0.
-		if ( empty( $cart_item_total['items'] ) ) {
-			return false;
-		}
-
 		if ( 'yes' === $this->enabled ) {
+
+			if  (is_checkout() ) {
+				$cart_item_total = Collector_Checkout_Requests_Cart::cart();
+
+				// Update checkout and annul payment method if the total cart item amount is 0.
+				if ( empty( $cart_item_total['items'] ) ) {
+					return false;
+				}
+			}
 
 			if ( ! is_admin() ) {
 				$collector_settings = get_option( 'woocommerce_collector_checkout_settings' );

@@ -53,7 +53,7 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 	 * @return void
 	 */
 	public static function get_public_token() {
-		 $customer_type     = filter_input( INPUT_POST, 'customer_type', FILTER_SANITIZE_STRING );
+		$customer_type     = filter_input( INPUT_POST, 'customer_type', FILTER_SANITIZE_STRING );
 		$public_token       = WC()->session->get( 'collector_public_token' );
 		$collector_settings = get_option( 'woocommerce_collector_checkout_settings' );
 		$test_mode          = $collector_settings['test_mode'];
@@ -125,14 +125,16 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 		$update_fees         = new Collector_Checkout_Requests_Update_Fees( $private_id, $customer_type );
 		$collector_order_fee = $update_fees->request();
 
-		$cart_item_total = Collector_Checkout_Requests_Cart::cart();
+		if ( is_checkout() ) {
+			$cart_item_total = Collector_Checkout_Requests_Cart::cart();
 
-		// Update checkout and annul payment method if the total cart item amount is 0.
-		if ( empty( $cart_item_total['items'] ) ) {
-			$return                 = array();
-			$return['redirect_url'] = wc_get_checkout_url();
-			wp_send_json_error( $return );
-			wp_die();
+			// Update checkout and annul payment method if the total cart item amount is 0.
+			if ( empty( $cart_item_total['items'] ) ) {
+				$return                 = array();
+				$return['redirect_url'] = wc_get_checkout_url();
+				wp_send_json_error( $return );
+				wp_die();
+			}
 		}
 
 		// Check that update fees request was ok.
