@@ -24,10 +24,6 @@ let context;
 let timeOutTime = 2500;
 let json = data;
 
-
-let cll = x => console.log(x)
-
-
 describe("Collector Checkout E2E tests", () => {
 	beforeAll(async () => {
 		try {
@@ -132,15 +128,15 @@ describe("Collector Checkout E2E tests", () => {
 				const updatedCollectorData = Number((parseFloat(collectorOrderData) + parseFloat(orderData.data.shipping_total) + parseFloat(orderData.data.shipping_tax)).toFixed(2))
 
 				expect(updatedCollectorData).toBe(args.expectedTotal);
-			} else {
 
+			} else {
 
 				removeCoupon.click()
 				await page.waitForTimeout(2*timeOutTime);
 
 				let collectorPaymentMethodSelector = await page.$('label[for="payment_method_collector_checkout"]');
-
 				collectorPaymentMethodSelector.click()
+				
 				await page.waitForTimeout(2*timeOutTime);
 
 				let refreshedFrameContainer = await page.$('#collector-container');
