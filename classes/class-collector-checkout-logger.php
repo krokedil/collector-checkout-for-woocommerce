@@ -32,7 +32,7 @@ class Collector_Checkout_Logger {
 			if ( empty( self::$log ) ) {
 				self::$log = new WC_Logger();
 			}
-			self::$log->add( 'collector_checkout', wp_json_encode( $message ) );
+			self::$log->add( 'collector_checkout', wp_json_encode( $message, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) );
 		}
 	}
 
@@ -45,7 +45,7 @@ class Collector_Checkout_Logger {
 	public static function format_data( $data ) {
 		if ( isset( $data['request']['body'] ) ) {
 			$request_body            = json_decode( $data['request']['body'], true );
-			$data['request']['body'] = $request_body;
+			$data['request']['body'] = ( ! empty( $request_body ) ) ? $request_body : $data['request']['body'];
 		}
 
 		return $data;
