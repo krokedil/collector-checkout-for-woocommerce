@@ -98,7 +98,7 @@ class Collector_Checkout_Requests_Helper_Order_Fees {
 				'id'          => 'shipping|' . substr( $shipping_method_id, 0, 50 ),
 				'description' => $order->get_shipping_method(),
 				'unitPrice'   => $order->get_shipping_total() + $order->get_shipping_tax(), // Float.
-				'vat'         => ( '0' !== $order->get_shipping_tax() ) ? $this->get_product_tax_rate( $order, current( $order->get_items( 'shipping' ) ) ) : 0, // Float.
+				'vat'         => ( ! empty( floatval( $order->get_shipping_tax() ) ) ) ? $this->get_product_tax_rate( $order, current( $order->get_items( 'shipping' ) ) ) : 0, // Float.
 			);
 		} else {
 			// todo $shipping_method_id is here probably undefined.
