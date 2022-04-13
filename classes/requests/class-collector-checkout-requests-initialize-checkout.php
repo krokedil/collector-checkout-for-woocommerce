@@ -116,8 +116,6 @@ class Collector_Checkout_Requests_Initialize_Checkout extends Collector_Checkout
 		$request_url  = $this->base_url . '/checkout';
 		$request_args = $this->get_request_args( $order_id );
 
-		$request = wp_remote_request( $request_url, $request_args );
-
 		$response = wp_remote_request( $request_url, $request_args );
 		$code     = wp_remote_retrieve_response_code( $response );
 
@@ -204,6 +202,11 @@ class Collector_Checkout_Requests_Initialize_Checkout extends Collector_Checkout
 			}
 		}
 
-		return wp_json_encode( apply_filters( 'coc_request_body', $formatted_request_body ) );
+		if ( ! wp_json_encode( $formatted_request_body ) ) {
+			$log = CCO_WC()->logger::format_log( 'null', 'POST', 'CCO initialize payment JSON FAILED', 'FAILED', 'null', print_r( $formatted_request_body, true ), 200 );
+			CCO_WC()->logger::log( $log );
+		}
+
+		return wp_json_encode( apply_filters( 'coc_request_body', $formatted_request_body ), JSON_PARTIAL_OUTPUT_ON_ERROR );
 	}
 }
