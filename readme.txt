@@ -4,7 +4,7 @@ Tags: ecommerce, e-commerce, woocommerce, collector, checkout, walley
 Requires at least: 5.0
 Tested up to: 5.9.3
 Requires PHP: 7.0
-Stable tag: 3.1.2
+Stable tag: 3.2.0
 WC requires at least: 4.0.0
 WC tested up to: 6.4.0
 License: GPLv3
@@ -39,6 +39,14 @@ For help setting up and configuring Walley Checkout for WooCommerce please refer
 
 
 == CHANGELOG ==
+= 2022.04.13    - version 3.2.0 =
+* Enhancement   - Improved logging on error.
+* Tweak         - The customer type switch on the checkout page is now only visible if you sell to more than one customer type.
+* Tweak         - Walley Checkout is no longer available as payment option if the cart has only free products and shipping.
+* Fix           - Fix various division by zero. This should fix some coupon related issues.
+* Fix           - Fix issue with not always properly identifying free items on refund.
+* Fix           - Do not check if the cart is available on any page other than the checkout page.
+
 = 2022.03.02    - version 3.1.2 =
 * Fix           - Fix PHP 7.x backward compatibility issue. 
 
