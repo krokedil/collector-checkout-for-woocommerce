@@ -28,7 +28,7 @@ class Collector_Checkout_Requests_Cart {
 		// Loop through cart items and make an item line for each.
 		foreach ( $wc_cart as $item ) {
 			// Don't send items with a price of 0.
-			if ( 0 === $item['line_total'] ) { // TODO Use strict comparisons === !
+			if ( empty( floatval( $item['line_total'] ) ) ) {
 				continue;
 			}
 			if ( $item['variation_id'] ) {
@@ -68,7 +68,7 @@ class Collector_Checkout_Requests_Cart {
 	 *
 	 * @param string     $sku Product SKU.
 	 * @param string     $product_name Product name.
-	 * @param int        $line_total Line total.
+	 * @param float      $line_total Line total.
 	 * @param int        $quantity Line quantity.
 	 * @param float      $line_tax Line tax.
 	 * @param WC_Product $product The WooCommerce product.
@@ -80,7 +80,7 @@ class Collector_Checkout_Requests_Cart {
 			'description' => $product_name,
 			'unitPrice'   => round( ( $line_total + $line_tax ) / $quantity, 2 ), // Total price per unit including VAT.
 			'quantity'    => $quantity,
-			'vat'         => round( $line_tax / $line_total, 2 ) * 100,
+			'vat'         => ( empty( floatval( $line_total ) ) ) ? 0 : round( $line_tax / $line_total, 2 ) * 100,
 		);
 
 		// Only check this on product line items.

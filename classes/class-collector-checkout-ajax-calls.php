@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Ajax class file.
  *
@@ -14,11 +15,12 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 
+
 	/**
 	 * Hook in ajax handlers.
 	 */
 	public static function init() {
-		self::add_ajax_events();
+		 self::add_ajax_events();
 	}
 	/**
 	 * Hook in methods - uses WordPress ajax handlers (admin-ajax).
@@ -51,7 +53,7 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 	 * @return void
 	 */
 	public static function get_public_token() {
-		$customer_type      = filter_input( INPUT_POST, 'customer_type', FILTER_SANITIZE_STRING );
+		$customer_type     = filter_input( INPUT_POST, 'customer_type', FILTER_SANITIZE_STRING );
 		$public_token       = WC()->session->get( 'collector_public_token' );
 		$collector_settings = get_option( 'woocommerce_collector_checkout_settings' );
 		$test_mode          = $collector_settings['test_mode'];
@@ -65,7 +67,6 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 			);
 			wp_send_json_success( $return );
 			wp_die();
-
 		} else {
 
 			// Get a new public token from Collector.
@@ -73,10 +74,9 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 			$collector_order = $init_checkout->request();
 
 			if ( is_wp_error( $collector_order ) || empty( $collector_order ) ) {
-					$return = sprintf( '%s <a href="%s" class="button wc-forward">%s</a>', __( 'Could not connect to Collector. Error message: ', 'collector-checkout-for-woocommerce' ) . $collector_order->get_error_message(), wc_get_checkout_url(), __( 'Try again', 'collector-checkout-for-woocommerce' ) );
+				$return = sprintf( '%s <a href="%s" class="button wc-forward">%s</a>', __( 'Could not connect to Collector. Error message: ', 'collector-checkout-for-woocommerce' ) . $collector_order->get_error_message(), wc_get_checkout_url(), __( 'Try again', 'collector-checkout-for-woocommerce' ) );
 				wp_send_json_error( $return );
 				wp_die();
-
 			} else {
 
 				$return = array(
@@ -104,7 +104,6 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 
 				wp_send_json_success( $return );
 				wp_die();
-
 			}
 		}
 	}
@@ -115,7 +114,6 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 	 * @return void
 	 */
 	public static function update_checkout() {
-
 		wc_maybe_define_constant( 'WOOCOMMERCE_CHECKOUT', true );
 
 		WC()->cart->calculate_shipping();
@@ -126,6 +124,18 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 		$customer_type       = WC()->session->get( 'collector_customer_type' );
 		$update_fees         = new Collector_Checkout_Requests_Update_Fees( $private_id, $customer_type );
 		$collector_order_fee = $update_fees->request();
+
+		if ( is_checkout() ) {
+			$cart_item_total = Collector_Checkout_Requests_Cart::cart();
+
+			// Update checkout and annul payment method if the total cart item amount is 0.
+			if ( empty( $cart_item_total['items'] ) ) {
+				$return                 = array();
+				$return['redirect_url'] = wc_get_checkout_url();
+				wp_send_json_error( $return );
+				wp_die();
+			}
+		}
 
 		// Check that update fees request was ok.
 		if ( is_wp_error( $collector_order_fee ) ) {
@@ -193,7 +203,9 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 
 			// Check if somethings wrong with the content of the cart sent, if it was don't redirect customer.
 			if ( 400 === $collector_order_cart->get_error_code() ) {
+
 				if ( ! empty( $collector_order_cart->get_error_message( 'Duplicate_Articles' ) ) || ! empty( $collector_order_cart->get_error_message( 'Validation_Error' ) ) ) {
+
 					$return                 = array();
 					$return['redirect_url'] = '#';
 					wp_send_json_error( $return );
@@ -236,7 +248,6 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 	 * Customer address updated - triggered when collectorCheckoutCustomerUpdated event is fired
 	 */
 	public static function customer_adress_updated() {
-
 		if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( wp_unslash( sanitize_key( $_REQUEST['nonce'] ) ), 'collector_nonce' ) ) {
 			exit( 'Nonce can not be verified.' );
 		}
@@ -282,7 +293,6 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 			WC()->customer->set_shipping_postcode( $customer_data['shipping_postcode'] );
 			WC()->customer->save();
 			WC()->cart->calculate_totals();
-
 		}
 
 		wp_send_json_success( $customer_data );
@@ -293,7 +303,6 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 	 * Collector Delivery Module shipping method update - triggered when collectorCheckoutShippingUpdated event is fired
 	 */
 	public static function update_delivery_module_shipping() {
-
 		if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( wp_unslash( sanitize_key( $_REQUEST['nonce'] ) ), 'collector_nonce' ) ) {
 			exit( 'Nonce can not be verified.' );
 		}
@@ -335,7 +344,7 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 	 * @return void
 	 */
 	public static function add_customer_order_note() {
-		WC()->session->set( 'collector_customer_order_note', $_POST['order_note'] );//phpcs:ignore
+		WC()->session->set( 'collector_customer_order_note', $_POST['order_note'] ); //phpcs:ignore
 
 		wp_send_json_success();
 		wp_die();
@@ -445,7 +454,7 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 			$url                    = add_query_arg(
 				array(
 					'purchase-status' => 'not-completed',
-					'public-token'    => sanitize_text_field( $_POST['public_token'] ),//phpcs:ignore
+					'public-token'    => sanitize_text_field( $_POST['public_token'] ), //phpcs:ignore
 				),
 				wc_get_endpoint_url( 'order-received', '', get_permalink( wc_get_page_id( 'checkout' ) ) )
 			);
@@ -462,7 +471,6 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 	 * @return void
 	 */
 	public static function update_fragment() {
-
 		WC()->cart->calculate_shipping();
 		WC()->cart->calculate_fees();
 		WC()->cart->calculate_totals();
@@ -521,7 +529,7 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 		$private_id    = WC()->session->get( 'collector_private_id' );
 
 		// Prevent duplicate orders if confirmation page is reloaded manually by customer.
-		$collector_public_token = sanitize_key( $_POST['public_token'] );//phpcs:ignore
+		$collector_public_token = sanitize_key( $_POST['public_token'] ); //phpcs:ignore
 		$query                  = new WC_Order_Query(
 			array(
 				'limit'          => -1,
@@ -608,7 +616,7 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 
 		// Add order note.
 		if ( isset( $_POST['error_message'] ) && ! empty( $_POST['error_message'] ) ) { //phpcs:ignore
-			$error_message = 'Error message: ' . wp_unslash( sanitize_text_field( sanitize_text_field( trim( $_POST['error_message'] ) ) ) );//phpcs:ignore
+			$error_message = 'Error message: ' . wp_unslash( sanitize_text_field( sanitize_text_field( trim( $_POST['error_message'] ) ) ) ); //phpcs:ignore
 		} else {
 			$error_message = 'Error message could not be retreived';
 		}

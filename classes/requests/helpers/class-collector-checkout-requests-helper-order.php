@@ -43,8 +43,6 @@ class Collector_Checkout_Requests_Helper_Order {
 	 * @return array
 	 */
 	public static function get_order_line_items( $order_item ) {
-		$order_id = $order_item->get_order_id();
-		$order    = wc_get_order( $order_id );
 		return array(
 			'id'          => self::get_article_number( $order_item ),
 			'description' => $order_item->get_name(),
@@ -68,7 +66,7 @@ class Collector_Checkout_Requests_Helper_Order {
 			'id'          => 'fee|' . $order_fee->get_id(),
 			'description' => substr( $order_fee->get_name(), 0, 254 ),
 			'quantity'    => $order_fee->get_quantity(),
-			'vat'         => ( '0' !== $order->get_total_tax() ) ? self::get_order_line_tax_rate( $order, current( $order->get_items( 'fee' ) ) ) : 0,
+			'vat'         => ( ! empty( floatval( $order->get_total_tax() ) ) ) ? self::get_order_line_tax_rate( $order, current( $order->get_items( 'fee' ) ) ) : 0,
 			'unitPrice'   => round( ( ( $order_fee->get_total() + $order_fee->get_total_tax() ) / $order_fee->get_quantity() ), 2 ),
 		);
 	}

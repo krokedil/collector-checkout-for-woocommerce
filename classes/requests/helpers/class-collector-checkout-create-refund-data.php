@@ -238,7 +238,7 @@ class Collector_Checkout_Create_Refund_Data {
 		}
 
 		$free_shipping = false;
-		if ( 0 === intval( $shipping->get_total() ) ) {
+		if ( empty( floatval( $shipping->get_total() ) ) ) {
 			$free_shipping = true;
 		}
 
