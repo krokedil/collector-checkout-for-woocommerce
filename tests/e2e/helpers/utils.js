@@ -50,21 +50,19 @@ const login = async (page, username, password) => {
 
 const applyCoupons = async (page, appliedCoupons) => {
 	if (appliedCoupons.length > 0) {
-		await appliedCoupons.forEach(async (singleCoupon) => {
+		for (const appliedCoupon of appliedCoupons) {
 			await page.click('[class="showcoupon"]');
 			await page.waitForTimeout(500);
-			await page.type('[name="coupon_code"]', singleCoupon);
+			await page.type('[name="coupon_code"]', appliedCoupon);
 			await page.click('[name="apply_coupon"]');
-		});
+		}
 	}
 	await page.waitForTimeout(3 * timeOutTime);
 };
 
 const addSingleProductToCart = async (page, productId) => {
-	const productSelector = productId;
-
 	try {
-		await page.goto(`${urls.ADD_TO_CART}${productSelector}`);
+		await page.goto(`${urls.ADD_TO_CART}${productId}`);
 		await page.goto(urls.SHOP);
 	} catch {
 		// Proceed
@@ -93,11 +91,9 @@ const addMultipleProductsToCart = async (page, products, data) => {
 		});
 	});
 
-	(async function addEachProduct() {
-		for (let i = 0; i < ids.length + 1; i += 1) {
-			await addSingleProductToCart(page, ids[i]);
-		}
-	})();
+	for (const id of ids) {
+		await addSingleProductToCart(page, id);
+	}
 
 	await page.waitForTimeout(timer * 1000);
 };

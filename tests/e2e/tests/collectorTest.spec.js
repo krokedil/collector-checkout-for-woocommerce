@@ -8,7 +8,7 @@ import tests from "../config/tests.json"
 import data from "../config/data.json";
 
 const options = {
-	"headless": false,
+	"headless": true,
 	"defaultViewport": null,
 	"args": [
 		"--disable-infobars",
@@ -21,7 +21,7 @@ const options = {
 let page;
 let browser;
 let context;
-let timeOutTime = 2500;
+let timeOutTime = 4500;
 let json = data;
 
 describe("Collector Checkout E2E tests", () => {
@@ -39,14 +39,14 @@ describe("Collector Checkout E2E tests", () => {
 		browser = await puppeteer.launch(options);
 		context = await browser.createIncognitoBrowserContext();
 		page = await context.newPage();
-	}),
+	});
 
 		afterEach(async () => {
 			if (!page.isClosed()) {
 				browser.close();
 			}
-			API.clearWCSession();
-		}),
+			await API.clearWCSession();
+		});
 
 		test.each(tests)(
 			"$name",
