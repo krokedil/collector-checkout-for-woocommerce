@@ -8,7 +8,7 @@ import tests from "../config/tests.json"
 import data from "../config/data.json";
 
 const options = {
-	"headless": true,
+	"headless": false,
 	"defaultViewport": null,
 	"args": [
 		"--disable-infobars",
@@ -52,6 +52,7 @@ describe("Collector Checkout E2E tests", () => {
 			"$name",
 			async (args) => {
 
+
 			// --------------- GUEST/LOGGED IN --------------- //
 			if (args.loggedIn) {
 				await page.goto(urls.MY_ACCOUNT);
@@ -64,11 +65,12 @@ describe("Collector Checkout E2E tests", () => {
 
 			// --------------- ADD PRODUCTS TO CART --------------- //
 			await utils.addMultipleProductsToCart(page, args.products, json);
-			await page.waitForTimeout(3 * timeOutTime);
+			await page.waitForTimeout( timeOutTime);
 
 			// --------------- GO TO CHECKOUT --------------- //
 			await page.goto(urls.CHECKOUT);
 			await page.waitForTimeout(timeOutTime);
+			await utils.selectShippingMethod(page, args.shippingMethod)
 			await utils.selectCollector(page);
 			await page.waitForTimeout( timeOutTime);
 
@@ -125,19 +127,23 @@ describe("Collector Checkout E2E tests", () => {
 				const collectorOrderData = await iframeHandler.getOrderData(collectorIframethankYou);
 
 				// Add shipping amounts for Collector totals.
-				const updatedCollectorData = Number((parseFloat(collectorOrderData) + parseFloat(orderData.data.shipping_total) + parseFloat(orderData.data.shipping_tax)).toFixed(2))
+				const updatedCollectorData = parseFloat(Number(parseFloat(collectorOrderData).toFixed(2)) + Number(parseFloat(orderData.data.shipping_total).toFixed(2)) + Number(parseFloat(orderData.data.shipping_tax).toFixed(2))).toFixed(2)
 
-				expect(updatedCollectorData).toBe(args.expectedTotal);
+			
+				const wooOrderTotal = await page.$eval(".woocommerce-Price-amount.amount bdi", (e) => e.innerText)
+				const wooOrderTotalAsFloat = utils.convertWooTotalAmountToFloat(wooOrderTotal)
+
+				expect(updatedCollectorData).toBe( wooOrderTotalAsFloat);
 
 			} else {
 
 				removeCoupon.click()
-				await page.waitForTimeout(2*timeOutTime);
+				await page.waitForTimeout(timeOutTime);
 
 				let collectorPaymentMethodSelector = await page.$('label[for="payment_method_collector_checkout"]');
 				collectorPaymentMethodSelector.click()
 				
-				await page.waitForTimeout(2*timeOutTime);
+				await page.waitForTimeout(timeOutTime);
 
 				let refreshedFrameContainer = await page.$('#collector-container');
 

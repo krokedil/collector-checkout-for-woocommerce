@@ -115,13 +115,37 @@ const setOptions = async () => {
 	await API.updateOptions(collectorSettingsArray);
 };
 
+const selectShippingMethod = async (page, shippingMethod) => {
+
+	let searchString
+
+	if (shippingMethod === 'free_shipping') {
+		searchString = 'input[value*="free_shipping"]'
+	} else if (shippingMethod === 'flat_rate') {
+		searchString = 'input[value*="flat_rate"]'
+	}
+
+	let shippingMethodSelector = await page.$(searchString)
+
+	if (shippingMethodSelector) {
+		await shippingMethodSelector.focus()
+		await shippingMethodSelector.click()
+	}
+}
+
+const convertWooTotalAmountToFloat = (totalString) => {
+	return parseFloat((((totalString.substring(totalString.indexOf('\n') + 1)).split('kr')[0]).replace('.', '')).replace(',', '.')).toFixed(2)
+}
+
 export default {
 	login,
 	applyCoupons,
 	addSingleProductToCart,
 	addMultipleProductsToCart,
 	setPricesIncludesTax,
-
+	selectShippingMethod,
+	convertWooTotalAmountToFloat,
+	
 	selectCollector,
 	setOptions
 };
