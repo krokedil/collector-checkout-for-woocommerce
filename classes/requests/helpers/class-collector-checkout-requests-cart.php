@@ -56,6 +56,10 @@ class Collector_Checkout_Requests_Cart {
 			}
 		}
 
+		// Compare and fix differences in total amounts due to rounding.
+		$rounding_fee = self::rounding_fee( $items );
+		array_push( $items, $rounding_fee );
+
 		// Check if we need to make any id/sku's unique (required by Collector).
 		$items = self::maybe_make_ids_unique( $items );
 
@@ -96,6 +100,38 @@ class Collector_Checkout_Requests_Cart {
 
 		return apply_filters( 'coc_cart_item', $configured_item );
 	}
+
+	/**
+	 * Compare and fix rounded total amounts in WooCommerce and Collector.
+	 *
+	 * @param array $collector_items The cart order line items array.
+	 * @return void
+	 */
+	public static function rounding_fee( $collector_items ) {
+
+		$cart_total     = floatval( WC()->cart->total );
+		$shipping_total = round( WC()->cart->get_shipping_total() );
+		$shipping_tax   = round( WC()->cart->get_shipping_tax() );
+
+		$collector_total_amount = 0.00;
+
+		foreach ( $collector_items as $key ) {
+			$collector_total_amount += round( ( $key['unitPrice'] * $key['quantity'] ), 2 );
+		}
+
+		$rounding_amount = round( $cart_total - ( $collector_total_amount + ( $shipping_tax + $shipping_total ) ), 2 );
+
+		$rounding_item = array(
+			'id'          => 'rounding-fee',
+			'description' => 'rounding-fee',
+			'unitPrice'   => $rounding_amount,
+			'quantity'    => 1,
+			'vat'         => 0.0,
+		);
+
+		return apply_filters( 'coc_cart_item', $rounding_item );
+	}
+
 
 	/**
 	 * Gets the product SKU.
