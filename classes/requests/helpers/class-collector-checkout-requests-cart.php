@@ -119,15 +119,19 @@ class Collector_Checkout_Requests_Cart {
 			$collector_total_amount += round( ( $key['unitPrice'] * $key['quantity'] ), 2 );
 		}
 
-		$rounding_amount = round( $cart_total - ( $collector_total_amount + ( $shipping_tax + $shipping_total ) ), 2 );
+		$amount_to_adjust = round( $cart_total - ( $collector_total_amount + ( $shipping_tax + $shipping_total ) ), 2 );
 
 		$rounding_item = array(
 			'id'          => 'rounding-fee',
 			'description' => 'rounding-fee',
-			'unitPrice'   => $rounding_amount,
+			'unitPrice'   => 0,
 			'quantity'    => 1,
 			'vat'         => 0.0,
 		);
+
+		if ( 0 !== $amount_to_adjust ) {
+			$rounding_item['unitAmount'] = $amount_to_adjust;
+		}
 
 		return apply_filters( 'coc_cart_item', $rounding_item );
 	}
