@@ -109,28 +109,27 @@ class Collector_Checkout_Requests_Cart {
 	 */
 	public static function rounding_fee( $collector_items ) {
 
-		$cart_total     = floatval( WC()->cart->total );
-		$shipping_total = round( WC()->cart->get_shipping_total() );
-		$shipping_tax   = round( WC()->cart->get_shipping_tax() );
-
-		$collector_total_amount = 0.00;
+		$cart_total                    = WC()->cart->total;
+		$total_tax                     = floatval( WC()->cart->get_shipping_tax() ) + floatval( WC()->cart->get_shipping_total() );
+		$collector_total_amount_no_tax = 0;
 
 		foreach ( $collector_items as $key ) {
-			$collector_total_amount += round( ( $key['unitPrice'] * $key['quantity'] ), 2 );
+			$collector_total_amount_no_tax += round( $key['unitPrice'] * $key['quantity'], 2 );
 		}
 
-		$amount_to_adjust = round( $cart_total - ( $collector_total_amount + ( $shipping_tax + $shipping_total ) ), 2 );
+		$collector_total_amount = round( $collector_total_amount_no_tax + $total_tax, 2 );
+		$amount_to_adjust       = round( $cart_total - $collector_total_amount, 2 );
 
 		$rounding_item = array(
 			'id'          => 'rounding-fee',
 			'description' => 'rounding-fee',
-			'unitPrice'   => 0,
+			'unitPrice'   => 0.00,
 			'quantity'    => 1,
 			'vat'         => 0.0,
 		);
 
-		if ( 0 !== $amount_to_adjust ) {
-			$rounding_item['unitAmount'] = $amount_to_adjust;
+		if ( 0.0 !== $amount_to_adjust ) {
+			$rounding_item['unitPrice'] = $amount_to_adjust;
 		}
 
 		return apply_filters( 'coc_cart_item', $rounding_item );
