@@ -103,6 +103,6 @@ class Collector_Checkout_Requests_Update_Reference extends Collector_Checkout_Re
 		$formatted_request_body = array(
 			'Reference' => $this->order_id,
 		);
-		return wp_json_encode( $formatted_request_body );
+		return wp_json_encode( apply_filters( 'coc_request_body', $formatted_request_body ) );
 	}
 }
