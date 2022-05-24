@@ -39,6 +39,9 @@ For help setting up and configuring Walley Checkout for WooCommerce please refer
 
 
 == CHANGELOG ==
+= 2022.05.24    - version 3.2.1 =
+* Fix           - Fix rounding error.
+
 = 2022.04.13    - version 3.2.0 =
 * Enhancement   - Improved logging on error.
 * Tweak         - The customer type switch on the checkout page is now only visible if you sell to more than one customer type.
