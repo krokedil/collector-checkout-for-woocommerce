@@ -144,8 +144,8 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 				<h4>Logotypes</h4><p>Du hittar våra logotypes genom att klicka på länken <a href="https://checkout-documentation.collector.se/#branding-resources" target="_blank">här</a>.</p>
 				<h4>Köpvillkorstexter</h4><p>Text som avser Collector Banks köpvillkor hittas nedan.
 					<ul>
-						<li><a href="https://merchant.collectorbank.se/integration/b2c/agreement-texts/collector-checkout/" target="_blank">B2C</a></li>
-						<li><a href="https://merchant.collectorbank.se/integration/b2b/agreement-texts/collector-checkout/" target="_blank">B2B</a></li>
+						<li><a href="https://dev.walleypay.com/docs/marketingAssets/terms/overview" target="_blank">B2C</a></li>
+						<li><a href="https://dev.walleypay.com/docs/marketingAssets/terms/overview" target="_blank">B2B</a></li>
 					</ul></p>
 			</div>
 		</div>
