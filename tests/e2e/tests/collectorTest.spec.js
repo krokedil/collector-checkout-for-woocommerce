@@ -28,8 +28,9 @@ describe("Collector Checkout E2E tests", () => {
 	beforeAll(async () => {
 		try {
 			json = await setup.setupStore(json);
-
+			
 			await utils.setOptions();
+
 		} catch (e) {
 			console.log(e);
 		}
@@ -52,8 +53,7 @@ describe("Collector Checkout E2E tests", () => {
 			"$name",
 			async (args) => {
 
-
-			// --------------- GUEST/LOGGED IN --------------- //
+				// --------------- GUEST/LOGGED IN --------------- //
 			if (args.loggedIn) {
 				await page.goto(urls.MY_ACCOUNT);
 				await utils.login(page, "admin", "password");
@@ -65,11 +65,11 @@ describe("Collector Checkout E2E tests", () => {
 
 			// --------------- ADD PRODUCTS TO CART --------------- //
 			await utils.addMultipleProductsToCart(page, args.products, json);
-			await page.waitForTimeout( timeOutTime);
+			// await page.waitForTimeout( timeOutTime);
 
 			// --------------- GO TO CHECKOUT --------------- //
 			await page.goto(urls.CHECKOUT);
-			await page.waitForTimeout(timeOutTime);
+			// await page.waitForTimeout(timeOutTime);
 			await utils.selectShippingMethod(page, args.shippingMethod)
 			await utils.selectCollector(page);
 			await page.waitForTimeout( timeOutTime);
@@ -98,8 +98,14 @@ describe("Collector Checkout E2E tests", () => {
 
 				if(args.customerType === 'company'){
 					customerSelectorB2B.click()
+					await page.waitForTimeout(500);
+					customerSelectorB2B.click()
+
 				} else if (args.customerType === 'person') {
 					customerSelectorB2C.click()
+					await page.waitForTimeout(500);
+					customerSelectorB2C.click()
+
 				}
 
 				await page.waitForTimeout(timeOutTime);
@@ -138,12 +144,15 @@ describe("Collector Checkout E2E tests", () => {
 			} else {
 
 				removeCoupon.click()
-				await page.waitForTimeout(timeOutTime);
+				await page.waitForTimeout( timeOutTime);
 
 				let collectorPaymentMethodSelector = await page.$('label[for="payment_method_collector_checkout"]');
-				collectorPaymentMethodSelector.click()
-				
-				await page.waitForTimeout(timeOutTime);
+
+				if(collectorPaymentMethodSelector) {
+
+					collectorPaymentMethodSelector.click();		
+					await page.waitForTimeout(timeOutTime);
+				}
 
 				let refreshedFrameContainer = await page.$('#collector-container');
 

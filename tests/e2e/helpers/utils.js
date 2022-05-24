@@ -103,6 +103,9 @@ const setPricesIncludesTax = async (value) => {
 };
 
 const selectCollector = async (page) => {
+
+	await page.waitForTimeout(timeOutTime);
+
 	if (await page.$('input[id="payment_method_collector_checkout"]')) {
 		await page.evaluate(
 			(paymentMethod) => paymentMethod.click(),
