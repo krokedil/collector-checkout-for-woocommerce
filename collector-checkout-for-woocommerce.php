@@ -1,4 +1,4 @@
-<?php // phpcs:ignore
+<?php // phpcs:ignore WordPress.NamingConventions.ValidFileName
 /**
  * Collector Bank for WooCommerce
  *
@@ -397,7 +397,7 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
  *
  * @return Collector_Checkout
  */
-function CCO_WC() { // phpcs:ignore
+function CCO_WC() { // phpcs:ignore WordPress.NamingConventions.ValidFunctionName
 	return Collector_Checkout::get_instance();
 }
 
