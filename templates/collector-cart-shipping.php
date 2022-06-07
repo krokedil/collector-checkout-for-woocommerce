@@ -22,7 +22,7 @@ if ( ! empty( $rate ) ) {
 	?>
 	<tr class="woocommerce-shipping-totals shipping">
 		<th><?php esc_html_e( 'Shipping', 'woocommerce' ); ?></th>
-		<td data-title="Shipping" class="kco-shipping"><?php echo wc_cart_totals_shipping_method_label( $rate ); // phpcs:ignore WPCS: XSS ok. ?></td>
+		<td data-title="Shipping" class="cco-shipping"><?php echo wp_kses_post( wc_cart_totals_shipping_method_label( $rate ) ); ?></td>
 	</tr>
 	<?php
 }

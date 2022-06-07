@@ -95,8 +95,7 @@ function collector_wc_show_snippet() {
 		echo( "<script>console.log('Collector: " . wp_json_encode( $output ) . "');</script>" );
 		$return = '<div id="collector-container"><script src="' . $url . '" data-lang="' . $locale . '" data-version="' . $checkout_version . '" data-token="' . $public_token . '" data-variant="' . $customer_type . '"' . $data_action_color_button . ' ></script></div>'; // phpcs:ignore
 	}
-
-	echo $return; // phpcs:ignore
+	echo wp_kses( $return, wc_collector_allowed_tags() );
 }
 
 /**
@@ -523,4 +522,137 @@ function wc_collector_save_shipping_reference_to_order( $order_id, $collector_or
 			update_post_meta( $order_id, '_collector_shipping_reference', $item['id'] );
 		}
 	}
+}
+
+/**
+ * Function wc_collector_allowed_tags.
+ * Set which tags are allowed in the content printed by the plugin.
+ *
+ * @return array
+ */
+function wc_collector_allowed_tags() {
+
+	$allowed_tags = array(
+		'a'          => array(
+			'class' => array(),
+			'href'  => array(),
+			'rel'   => array(),
+			'title' => array(),
+		),
+		'abbr'       => array(
+			'title' => array(),
+		),
+		'b'          => array(),
+		'blockquote' => array(
+			'cite' => array(),
+		),
+		'button'     => array(
+			'onclick'    => array(),
+			'class'      => array(),
+			'type'       => array(),
+			'aria-label' => array(),
+		),
+		'cite'       => array(
+			'title' => array(),
+		),
+		'code'       => array(),
+		'del'        => array(
+			'datetime' => array(),
+			'title'    => array(),
+		),
+		'dd'         => array(),
+		'div'        => array(
+			'class'             => array(),
+			'title'             => array(),
+			'style'             => array(),
+			'id'                => array(),
+			'data-id'           => array(),
+			'data-redirect-url' => array(),
+			'onclick'           => array(),
+		),
+		'dl'         => array(),
+		'dt'         => array(),
+		'em'         => array(),
+		'h1'         => array(),
+		'h2'         => array(),
+		'h3'         => array(),
+		'h4'         => array(),
+		'h5'         => array(),
+		'h6'         => array(),
+		'hr'         => array(
+			'class' => array(),
+		),
+		'i'          => array(),
+		'img'        => array(
+			'alt'     => array(),
+			'class'   => array(),
+			'height'  => array(),
+			'src'     => array(),
+			'width'   => array(),
+			'onclick' => array(),
+		),
+		'li'         => array(
+			'class' => array(),
+		),
+		'ol'         => array(
+			'class' => array(),
+		),
+		'p'          => array(
+			'class' => array(),
+		),
+		'q'          => array(
+			'cite'  => array(),
+			'title' => array(),
+		),
+		'span'       => array(
+			'class'       => array(),
+			'title'       => array(),
+			'style'       => array(),
+			'onclick'     => array(),
+			'aria-hidden' => array(),
+		),
+		'strike'     => array(),
+		'strong'     => array(),
+		'ul'         => array(
+			'class' => array(),
+		),
+		'style'      => array(
+			'types' => array(),
+		),
+		'table'      => array(
+			'class' => array(),
+			'id'    => array(),
+		),
+		'tbody'      => array(
+			'class' => array(),
+			'id'    => array(),
+		),
+		'tr'         => array(
+			'class' => array(),
+			'id'    => array(),
+		),
+		'td'         => array(
+			'class' => array(),
+			'id'    => array(),
+		),
+		'iframe'     => array(
+			'src'             => array(),
+			'height'          => array(),
+			'width'           => array(),
+			'frameborder'     => array(),
+			'allowfullscreen' => array(),
+		),
+		'script'     => array(
+			'type'              => array(),
+			'src'               => array(),
+			'async'             => array(),
+			'data-lang'         => array(),
+			'data-version'      => array(),
+			'data-token'        => array(),
+			'data-variant'      => array(),
+			'data-action-color' => array(),
+		),
+	);
+
+	return apply_filters( 'coc_allowed_tags', $allowed_tags );
 }
