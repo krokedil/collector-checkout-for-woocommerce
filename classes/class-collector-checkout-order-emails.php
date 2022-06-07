@@ -45,7 +45,7 @@ class Collector_Checkout_Order_Emails {
 			$payment_type    = wc_collector_get_payment_method_name( get_post_meta( $order_id, '_collector_payment_method', true ) );
 			$order_date      = wc_format_datetime( $order->get_date_created() );
 
-			echo '<h2>' . __( 'Collector details', 'collector-checkout-for-woocommerce' ) . '</h2>';//phpcs:ignore
+			echo '<h2>' . esc_html__( 'Collector details', 'collector-checkout-for-woocommerce' ) . '</h2>';
 			if ( $payment_id ) {
 				$payment_details = __( 'Collector Payment ID: ', 'collector-checkout-for-woocommerce' ) . $payment_id . '<br/>';
 			}
@@ -53,9 +53,7 @@ class Collector_Checkout_Order_Emails {
 				$payment_details .= __( 'Payment type: ', 'collector-checkout-for-woocommerce' ) . $payment_type;
 			}
 
-			echo wpautop( wptexturize( $payment_details ) );//phpcs:ignore
-			// phpcs:ignore echo $payment_details;.
-
+			echo wp_kses_post( wptexturize( $payment_details ) );
 		}
 	}
 }

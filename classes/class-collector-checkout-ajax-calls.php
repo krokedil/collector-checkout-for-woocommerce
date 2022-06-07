@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Ajax class file.
  *
@@ -20,7 +19,7 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 	 * Hook in ajax handlers.
 	 */
 	public static function init() {
-		 self::add_ajax_events();
+		self::add_ajax_events();
 	}
 	/**
 	 * Hook in methods - uses WordPress ajax handlers (admin-ajax).
@@ -53,7 +52,7 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 	 * @return void
 	 */
 	public static function get_public_token() {
-		$customer_type     = filter_input( INPUT_POST, 'customer_type', FILTER_SANITIZE_STRING );
+		$customer_type      = filter_input( INPUT_POST, 'customer_type', FILTER_SANITIZE_STRING );
 		$public_token       = WC()->session->get( 'collector_public_token' );
 		$collector_settings = get_option( 'woocommerce_collector_checkout_settings' );
 		$test_mode          = $collector_settings['test_mode'];
@@ -344,7 +343,8 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 	 * @return void
 	 */
 	public static function add_customer_order_note() {
-		WC()->session->set( 'collector_customer_order_note', $_POST['order_note'] ); //phpcs:ignore
+		$order_note = filter_input( INPUT_POST, 'order_note', FILTER_SANITIZE_STRING );
+		WC()->session->set( 'collector_customer_order_note', $order_note );
 
 		wp_send_json_success();
 		wp_die();

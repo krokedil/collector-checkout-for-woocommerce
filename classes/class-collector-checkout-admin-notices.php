@@ -55,7 +55,7 @@ class Collector_Checkout_Admin_Notices {
 		// Terms page.
 		if ( ! wc_get_page_id( 'terms' ) || wc_get_page_id( 'terms' ) < 0 ) {
 			echo '<div class="notice notice-error">';
-			echo '<p>' . __( 'You need to specify a terms page in WooCommerce Settings to be able to use Collector.', 'collector-checkout-for-woocommerce' ) . '</p>';// phpcs:ignore
+			echo '<p>' . wp_kses_post( 'You need to specify a terms page in WooCommerce Settings to be able to use Collector.', 'collector-checkout-for-woocommerce' ) . '</p>';
 			echo '</div>';
 		}
 	}
@@ -70,7 +70,7 @@ class Collector_Checkout_Admin_Notices {
 		// Terms page.
 		if ( wc_get_price_decimals() < 2 ) {
 			echo '<div class="notice notice-error">';
-			echo '<p>' . __( 'You need to set price decimals to <em>2</em> to ensure that prices is reported correctly to Collector.', 'collector-checkout-for-woocommerce' ) . '</p>'; //phpcs:ignore
+			echo '<p>' . wp_kses_post( 'You need to set price decimals to <em>2</em> to ensure that prices is reported correctly to Collector.', 'collector-checkout-for-woocommerce' ) . '</p>';
 			echo '</div>';
 		}
 	}
