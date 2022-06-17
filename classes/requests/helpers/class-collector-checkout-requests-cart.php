@@ -57,8 +57,7 @@ class Collector_Checkout_Requests_Cart {
 		}
 
 		// Compare and fix differences in total amounts due to rounding.
-		$rounding_fee = self::rounding_fee( $items );
-		array_push( $items, $rounding_fee );
+		self::rounding_fee( $items );
 
 		// Check if we need to make any id/sku's unique (required by Collector).
 		$items = self::maybe_make_ids_unique( $items );
@@ -107,38 +106,31 @@ class Collector_Checkout_Requests_Cart {
 	 * @param array $collector_items The cart order line items array.
 	 * @return void
 	 */
-	public static function rounding_fee( $collector_items ) {
-		$cart_total                    = 0.0;
-		$total_tax                     = 0.0;
-		$collector_total_amount_no_tax = 0.0;
-
-		/* The $collector_items does not include the shipping. */
-		foreach ( $collector_items as $product ) {
-			$collector_total_amount_no_tax += round( $product['unitPrice'] * $product['quantity'], 2 );
-		}
-
-		/* Calculate the total without the shipping cost. */
-		foreach ( WC()->cart->get_cart() as $cart_item ) {
-			$cart_total += $cart_item['line_total'];
-			$total_tax  += $cart_item['line_tax'];
-		}
-
-		$collector_total_amount = round( $collector_total_amount_no_tax + $total_tax, 2 );
-		$amount_to_adjust       = round( $cart_total - $collector_total_amount, 2 );
-
+	public static function rounding_fee( &$collector_items ) {
 		$rounding_item = array(
 			'id'          => 'rounding-fee',
-			'description' => 'rounding-fee',
+			'description' => __( 'Rounding fee', 'collector-checkout-for-woocommerce' ),
 			'unitPrice'   => 0.00,
 			'quantity'    => 1,
 			'vat'         => 0.0,
 		);
 
-		if ( ! empty( floatval( $amount_to_adjust ) ) ) {
-			$rounding_item['unitPrice'] = $amount_to_adjust;
+		// Get WooCommerce cart totals including tax.
+		$wc_total        = ( WC()->cart->get_cart_contents_total() + WC()->cart->get_cart_contents_tax() );
+		$collector_total = 0;
+
+		// Add all collector item amounts together.
+		foreach ( $collector_items as $collector_item ) {
+			$collector_total += round( $collector_item['unitPrice'] * $collector_item['quantity'], 2 );
 		}
 
-		return apply_filters( 'coc_cart_item', $rounding_item );
+		// Set the unitprice for the rounding fee to the difference between WooCommerce and Collector.
+		$rounding_item['unitPrice'] = round( $wc_total - $collector_total, 2 );
+
+		// Add the rounding item to the collector items only if the price is not zero.
+		if ( ! empty( $rounding_item['unitPrice'] ) ) {
+			$collector_items[] = $rounding_item;
+		}
 	}
 
 
