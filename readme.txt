@@ -4,9 +4,9 @@ Tags: ecommerce, e-commerce, woocommerce, collector, checkout, walley
 Requires at least: 5.0
 Tested up to: 6.0
 Requires PHP: 7.0
-Stable tag: 3.2.2
+Stable tag: 3.2.3
 WC requires at least: 5.0.0
-WC tested up to: 6.5.1
+WC tested up to: 6.6.0
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -39,6 +39,10 @@ For help setting up and configuring Walley Checkout for WooCommerce please refer
 
 
 == CHANGELOG ==
+= 2022.06.17    - version 3.2.3 =
+* Fix           - Fixed an issue with the rounding fee with sertain shipping settings.
+* Fix           - Fixed adding the rounding fee even when no rounding is needed.
+
 = 2022.06.07    - version 3.2.2 =
 * Fix           - PHPCS fixes.
 
