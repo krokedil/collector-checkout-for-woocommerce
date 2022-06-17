@@ -32,8 +32,42 @@ class Collector_Checkout_Requests_Helper_Order {
 			array_push( $order_lines, self::get_order_line_fees( $fee ) );
 		}
 
+		self::rounding_fee( $order_lines, $order );
 		return array( 'items' => $order_lines );
+	}
 
+	/**
+	 * Compare and fix rounded total amounts in WooCommerce and Collector.
+	 *
+	 * @param array    $order_lines The cart order line items array.
+	 * @param WC_Order $order The WooCommerce Order.
+	 * @return void
+	 */
+	public static function rounding_fee( &$order_lines, $order ) {
+		$rounding_item = array(
+			'id'          => 'rounding-fee',
+			'description' => __( 'Rounding fee', 'collector-checkout-for-woocommerce' ),
+			'unitPrice'   => 0.00,
+			'quantity'    => 1,
+			'vat'         => 0.0,
+		);
+
+		// Get WooCommerce cart totals including tax.
+		$wc_total        = ( $order->get_total() + $order->get_total_tax() );
+		$collector_total = 0;
+
+		// Add all collector item amounts together.
+		foreach ( $order_lines as $order_line ) {
+			$collector_total += round( $order_line['unitPrice'] * $order_line['quantity'], 2 );
+		}
+
+		// Set the unitprice for the rounding fee to the difference between WooCommerce and Collector.
+		$rounding_item['unitPrice'] = round( $wc_total - $collector_total, 2 );
+
+		// Add the rounding item to the collector items only if the price is not zero.
+		if ( ! empty( $rounding_item['unitPrice'] ) ) {
+			$order_lines[] = $rounding_item;
+		}
 	}
 
 	/**
