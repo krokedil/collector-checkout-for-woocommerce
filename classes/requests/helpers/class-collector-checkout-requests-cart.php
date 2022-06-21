@@ -116,7 +116,7 @@ class Collector_Checkout_Requests_Cart {
 		);
 
 		// Get WooCommerce cart totals including tax.
-		$wc_total        = ( WC()->cart->get_cart_contents_total() + WC()->cart->get_cart_contents_tax() );
+		$wc_total        = WC()->cart->get_total( 'total' ) - ( WC()->cart->get_shipping_total() + WC()->cart->get_shipping_tax() );
 		$collector_total = 0;
 
 		// Add all collector item amounts together.
