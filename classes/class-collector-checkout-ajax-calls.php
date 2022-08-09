@@ -224,8 +224,8 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 			'private_id' => WC()->session->get( 'collector_private_id' ),
 			'data'       => $collector_data,
 		);
-		// TODO unused variable.
-		$result = Collector_Checkout_DB::update_data( $args );
+
+		Collector_Checkout_DB::update_data( $args );
 
 		wp_send_json_success();
 	}
