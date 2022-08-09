@@ -139,7 +139,7 @@ class Collector_Checkout_SOAP_Requests_Activate_Invoice {
 			if ( isset( $request->InvoiceUrl ) ) { // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
 				update_post_meta( $order_id, '_collector_invoice_url', wc_clean( $request->InvoiceUrl ) );// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
 				$due_date = gmdate( get_option( 'date_format' ) . ' - ' . get_option( 'time_format' ), strtotime( $request->DueDate ) ); // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
-				$due_date = sprintf( __( 'Invoice due date: $s', 'collector-checkout-for-woocommerce' ), $due_date );
+				$due_date = sprintf( __( 'Invoice due date: %s', 'collector-checkout-for-woocommerce' ), $due_date );
 			}
 
 			// translators: 1. Due date.
