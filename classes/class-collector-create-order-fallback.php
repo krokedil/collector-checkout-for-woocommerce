@@ -176,24 +176,24 @@ class Collector_Create_Local_Order_Fallback {
 		$response        = new Collector_Checkout_Requests_Get_Checkout_Information( $private_id, $customer_type );
 		$collector_order = $response->request();
 
-		$formated_customer_data = wc_collector_verify_customer_data( $collector_order );
+		$formatted_customer_data = wc_collector_verify_customer_data( $collector_order );
 
-		update_post_meta( $order_id, '_billing_first_name', $formated_customer_data['billingFirstName'] );
-		update_post_meta( $order_id, '_billing_last_name', $formated_customer_data['billingLastName'] );
-		update_post_meta( $order_id, '_billing_address_1', $formated_customer_data['billingAddress'] );
-		update_post_meta( $order_id, '_billing_address_2', $formated_customer_data['billingAddress2'] );
-		update_post_meta( $order_id, '_billing_city', $formated_customer_data['billingCity'] );
-		update_post_meta( $order_id, '_billing_postcode', $formated_customer_data['billingPostalCode'] );
-		update_post_meta( $order_id, '_billing_country', $formated_customer_data['countryCode'] );
-		update_post_meta( $order_id, '_billing_phone', $formated_customer_data['phone'] );
-		update_post_meta( $order_id, '_billing_email', $formated_customer_data['email'] );
-		update_post_meta( $order_id, '_shipping_first_name', $formated_customer_data['shippingFirstName'] );
-		update_post_meta( $order_id, '_shipping_last_name', $formated_customer_data['shippingLastName'] );
-		update_post_meta( $order_id, '_shipping_address_1', $formated_customer_data['shippingAddress'] );
-		update_post_meta( $order_id, '_shipping_address_2', $formated_customer_data['shippingAddress2'] );
-		update_post_meta( $order_id, '_shipping_city', $formated_customer_data['shippingCity'] );
-		update_post_meta( $order_id, '_shipping_postcode', $formated_customer_data['shippingPostalCode'] );
-		update_post_meta( $order_id, '_shipping_country', $formated_customer_data['countryCode'] );
+		update_post_meta( $order_id, '_billing_first_name', $formatted_customer_data['billingFirstName'] );
+		update_post_meta( $order_id, '_billing_last_name', $formatted_customer_data['billingLastName'] );
+		update_post_meta( $order_id, '_billing_address_1', $formatted_customer_data['billingAddress'] );
+		update_post_meta( $order_id, '_billing_address_2', $formatted_customer_data['billingAddress2'] );
+		update_post_meta( $order_id, '_billing_city', $formatted_customer_data['billingCity'] );
+		update_post_meta( $order_id, '_billing_postcode', $formatted_customer_data['billingPostalCode'] );
+		update_post_meta( $order_id, '_billing_country', $formatted_customer_data['countryCode'] );
+		update_post_meta( $order_id, '_billing_phone', $formatted_customer_data['phone'] );
+		update_post_meta( $order_id, '_billing_email', $formatted_customer_data['email'] );
+		update_post_meta( $order_id, '_shipping_first_name', $formatted_customer_data['shippingFirstName'] );
+		update_post_meta( $order_id, '_shipping_last_name', $formatted_customer_data['shippingLastName'] );
+		update_post_meta( $order_id, '_shipping_address_1', $formatted_customer_data['shippingAddress'] );
+		update_post_meta( $order_id, '_shipping_address_2', $formatted_customer_data['shippingAddress2'] );
+		update_post_meta( $order_id, '_shipping_city', $formatted_customer_data['shippingCity'] );
+		update_post_meta( $order_id, '_shipping_postcode', $formatted_customer_data['shippingPostalCode'] );
+		update_post_meta( $order_id, '_shipping_country', $formatted_customer_data['countryCode'] );
 
 		// Post meta.
 		update_post_meta( $order_id, '_created_via_collector_fallback', 'yes' );

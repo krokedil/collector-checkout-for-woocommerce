@@ -525,7 +525,7 @@ class Collector_Api_Callbacks {
 		if ( $woo_order_total > $collector_order_total && ( $woo_order_total - $collector_order_total ) > 3 ) {
 			// translators: Order total.
 			$order->update_status( 'on-hold', sprintf( __( 'Order needs manual review. WooCommerce order total and Collector order total do not match. Collector order total: %s.', 'collector-checkout-for-woocommerce' ), $collector_order_total ) );
-			CCO_WC()->logger::log( 'Order total missmatch in order:' . $order->get_order_number() . '. Woo order total: ' . $woo_order_total . '. Collector order total: ' . $collector_order_total );
+			CCO_WC()->logger::log( 'Order total mismatch in order:' . $order->get_order_number() . '. Woo order total: ' . $woo_order_total . '. Collector order total: ' . $collector_order_total );
 		} elseif ( $collector_order_total > $woo_order_total && ( $collector_order_total - $woo_order_total ) > 3 ) {
 			// translators: Order total notice..
 			$order->update_status( 'on-hold', sprintf( __( 'Order needs manual review. WooCommerce order total and Collector order total do not match. Collector order total: %s.', 'collector-checkout-for-woocommerce' ), $collector_order_total ) );
@@ -616,11 +616,11 @@ class Collector_Api_Callbacks {
 		$woo_total       = floatval( WC()->cart->get_total( 'collector_validation' ) );
 		if ( $woo_total > $collector_total && ( $woo_total - $collector_total ) > 3 ) {
 			$this->order_is_valid                             = false;
-			$this->validation_messages['amount_error']        = __( 'Missmatch between the Collector and WooCommerce order total.', 'collector-checkout-for-woocommerce' );
+			$this->validation_messages['amount_error']        = __( 'Mismatch between the Collector and WooCommerce order total.', 'collector-checkout-for-woocommerce' );
 			$this->validation_messages['amount_error_totals'] = 'Woo Total: ' . $woo_total . ' Collector total: ' . $collector_total;
 		} elseif ( $collector_total > $woo_total && ( $collector_total - $woo_total ) > 3 ) {
 			$this->order_is_valid                             = false;
-			$this->validation_messages['amount_error']        = __( 'Missmatch between the Collector and WooCommerce order total.', 'collector-checkout-for-woocommerce' );
+			$this->validation_messages['amount_error']        = __( 'Mismatch between the Collector and WooCommerce order total.', 'collector-checkout-for-woocommerce' );
 			$this->validation_messages['amount_error_totals'] = 'Woo Total: ' . $woo_total . ' Collector total: ' . $collector_total;
 		}
 	}
