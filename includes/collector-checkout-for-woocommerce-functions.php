@@ -656,3 +656,33 @@ function wc_collector_allowed_tags() {
 
 	return apply_filters( 'coc_allowed_tags', $allowed_tags );
 }
+
+
+	/**
+	 * Check order totals
+	 *
+	 * @param WC_Order $order The WooCommerce order.
+	 * @param array    $collector_order The Collector order.
+	 *
+	 * @return bool TRUE If the WC and Collector total amounts match, otherwise FALSE.
+	 */
+function cco_check_order_totals( $order, $collector_order ) {
+	// Check order total and compare it with Woo.
+	$woo_order_total       = intval( round( $order->get_total() * 100, 2 ) );
+	$collector_order_total = intval( round( $collector_order['data']['order']['totalAmount'] * 100, 2 ) );
+	if ( $woo_order_total > $collector_order_total && ( $woo_order_total - $collector_order_total ) > 3 ) {
+		// translators: Order total.
+		$order->update_status( 'on-hold', sprintf( __( 'Order needs manual review. WooCommerce order total and Collector order total do not match. Collector order total: %s.', 'collector-checkout-for-woocommerce' ), $collector_order_total ) );
+		CCO_WC()->logger::log( 'Order total mismatch in order:' . $order->get_order_number() . '. Woo order total: ' . $woo_order_total . '. Collector order total: ' . $collector_order_total );
+		return false;
+
+	} elseif ( $collector_order_total > $woo_order_total && ( $collector_order_total - $woo_order_total ) > 3 ) {
+		// translators: Order total notice.
+		$order->update_status( 'on-hold', sprintf( __( 'Order needs manual review. WooCommerce order total and Collector order total do not match. Collector order total: %s.', 'collector-checkout-for-woocommerce' ), $collector_order_total ) );
+		CCO_WC()->logger::log( 'Order total mismatch in order:' . $order->get_order_number() . '. Woo order total: ' . $woo_order_total . '. Collector order total: ' . $collector_order_total );
+		return false;
+
+	}
+
+	return true;
+}

@@ -158,7 +158,7 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 
 		if ( 'yes' === $this->enabled ) {
 
-			if  (is_checkout() ) {
+			if ( is_checkout() ) {
 				$cart_item_total = Collector_Checkout_Requests_Cart::cart();
 
 				// Update checkout and annul payment method if the total cart item amount is 0.
@@ -228,7 +228,10 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 
 		$order = wc_get_order( $order_id );
 		CCO_WC()->logger::log( 'Process payment triggered for order ID ' . $order_id . ' (order number ' . $order->get_order_number() . ').' );
-		$private_id = get_post_meta( $order_id, '_collector_private_id', true );
+		$private_id    = get_post_meta( $order_id, '_collector_private_id', true );
+		$customer_type = WC()->session->get( 'collector_customer_type' );
+
+		$collector_order = ( new Collector_Checkout_Requests_Get_Checkout_Information( $private_id, $customer_type ) )->request();
 
 		// Make sure that we don't proceed with a duplicate order.
 		$order_ids = wc_collector_get_orders_by_private_id( $private_id );
@@ -262,7 +265,7 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 			CCO_WC()->logger::log( 'Update Collector order reference for order - ' . $order->get_order_number() );
 		}
 
-		$process_payment = $this->process_collector_payment_in_order( $order_id );
+		$this->process_collector_payment_in_order( $order_id );
 
 		CCO_WC()->logger::log( 'Process Collector Payment for private_id ' . $private_id . '. WC order ID ' . $order_id . '. Redirecting customer to ' . $this->get_return_url( $order ) );
 
@@ -307,6 +310,11 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 			$user    = get_user_by( 'email', $collector_order['data']['customer']['email'] );
 			$user_id = $user->ID;
 			update_post_meta( $order_id, '_customer_user', $user_id );
+		}
+
+		if ( ! cco_check_order_totals( $order, $collector_order ) ) {
+			// $order->update_status( 'on-hold', __( 'Mismatch between the Collector and WooCommerce order total. Please, verify and potentially edit the WooCommerce order to match the corresponding Collector order.', 'collector-checkout-for-woocommerce' ) );
+			update_post_meta( $order_id, '_transaction_id', $payment_id );
 		}
 
 		if ( ! $order->has_status( 'on-hold' ) ) {

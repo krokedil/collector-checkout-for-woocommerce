@@ -225,7 +225,7 @@ class Collector_Api_Callbacks {
 			}
 
 			// Compare order totals between the orders.
-			$this->check_order_totals( $order, $collector_order );
+			cco_check_order_totals( $order, $collector_order );
 
 			// Check if we need to update reference in collectors system.
 			if ( empty( $collector_order['data']['reference'] ) ) {
@@ -252,7 +252,7 @@ class Collector_Api_Callbacks {
 		$order = $this->process_order( $collector_order, $private_id, $public_token, $customer_type );
 
 		// Check order total.
-		$this->check_order_totals( $order, $collector_order );
+		cco_check_order_totals( $order, $collector_order );
 
 		// Send order number to Collector.
 		if ( is_object( $order ) ) {
@@ -507,29 +507,6 @@ class Collector_Api_Callbacks {
 			$order->add_order_note( __( 'Order is PENDING APPROVAL by Collector. Payment ID: ', 'collector-checkout-for-woocommerce' ) . $collector_order['data']['purchase']['purchaseIdentifier'] );
 			$order->update_status( 'on-hold' );
 			CCO_WC()->logger::log( 'Order status not set correctly for order ' . $order->get_order_number() . ' during checkout process. Setting order status to On hold.' );
-		}
-	}
-
-	/**
-	 * Check order totals
-	 *
-	 * @param WC_Order $order The WooCommerce order.
-	 * @param array    $collector_order The Collector order.
-	 *
-	 * @return void
-	 */
-	public function check_order_totals( $order, $collector_order ) {
-		// Check order total and compare it with Woo.
-		$woo_order_total       = intval( round( $order->get_total() * 100, 2 ) );
-		$collector_order_total = intval( round( $collector_order['data']['order']['totalAmount'] * 100, 2 ) );
-		if ( $woo_order_total > $collector_order_total && ( $woo_order_total - $collector_order_total ) > 3 ) {
-			// translators: Order total.
-			$order->update_status( 'on-hold', sprintf( __( 'Order needs manual review. WooCommerce order total and Collector order total do not match. Collector order total: %s.', 'collector-checkout-for-woocommerce' ), $collector_order_total ) );
-			CCO_WC()->logger::log( 'Order total mismatch in order:' . $order->get_order_number() . '. Woo order total: ' . $woo_order_total . '. Collector order total: ' . $collector_order_total );
-		} elseif ( $collector_order_total > $woo_order_total && ( $collector_order_total - $woo_order_total ) > 3 ) {
-			// translators: Order total notice..
-			$order->update_status( 'on-hold', sprintf( __( 'Order needs manual review. WooCommerce order total and Collector order total do not match. Collector order total: %s.', 'collector-checkout-for-woocommerce' ), $collector_order_total ) );
-			CCO_WC()->logger::log( 'Order total mismatch in order:' . $order->get_order_number() . '. Woo order total: ' . $woo_order_total . '. Collector order total: ' . $collector_order_total );
 		}
 	}
 
