@@ -158,7 +158,7 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 
 		if ( 'yes' === $this->enabled ) {
 
-			if  (is_checkout() ) {
+			if ( is_checkout() ) {
 				$cart_item_total = Collector_Checkout_Requests_Cart::cart();
 
 				// Update checkout and annul payment method if the total cart item amount is 0.
@@ -228,7 +228,10 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 
 		$order = wc_get_order( $order_id );
 		CCO_WC()->logger::log( 'Process payment triggered for order ID ' . $order_id . ' (order number ' . $order->get_order_number() . ').' );
-		$private_id = get_post_meta( $order_id, '_collector_private_id', true );
+		$private_id    = get_post_meta( $order_id, '_collector_private_id', true );
+		$customer_type = WC()->session->get( 'collector_customer_type' );
+
+		$collector_order = ( new Collector_Checkout_Requests_Get_Checkout_Information( $private_id, $customer_type ) )->request();
 
 		// Make sure that we don't proceed with a duplicate order.
 		$order_ids = wc_collector_get_orders_by_private_id( $private_id );
@@ -262,7 +265,7 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 			CCO_WC()->logger::log( 'Update Collector order reference for order - ' . $order->get_order_number() );
 		}
 
-		$process_payment = $this->process_collector_payment_in_order( $order_id );
+		$this->process_collector_payment_in_order( $order_id );
 
 		CCO_WC()->logger::log( 'Process Collector Payment for private_id ' . $private_id . '. WC order ID ' . $order_id . '. Redirecting customer to ' . $this->get_return_url( $order ) );
 
@@ -309,15 +312,19 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 			update_post_meta( $order_id, '_customer_user', $user_id );
 		}
 
+		if ( ! cco_check_order_totals( $order, $collector_order ) ) {
+			update_post_meta( $order_id, '_transaction_id', $payment_id );
+		}
+
 		if ( ! $order->has_status( 'on-hold' ) ) {
 			if ( 'Preliminary' === $payment_status || 'Completed' === $payment_status ) {
 				$order->payment_complete( $payment_id );
 			} elseif ( 'Signing' === $payment_status ) {
-				$order->add_order_note( __( 'Order is waiting for electronic signing by customer. Payment ID: ', 'woocommerce-gateway-klarna' ) . $payment_id );
+				$order->add_order_note( __( 'Order is waiting for electronic signing by customer. Payment ID: ', 'collector-checkout-for-woocommerce' ) . $payment_id );
 				update_post_meta( $order_id, '_transaction_id', $payment_id );
 				$order->update_status( 'on-hold' );
 			} else {
-				$order->add_order_note( __( 'Order is PENDING APPROVAL by Collector. Payment ID: ', 'woocommerce-gateway-klarna' ) . $payment_id );
+				$order->add_order_note( __( 'Order is PENDING APPROVAL by Collector. Payment ID: ', 'collector-checkout-for-woocommerce' ) . $payment_id );
 				update_post_meta( $order_id, '_transaction_id', $payment_id );
 				$order->update_status( 'on-hold' );
 			}
@@ -328,8 +335,8 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 		// Check if there where any empty fields, if so send mail.
 		if ( WC()->session->get( 'collector_empty_fields' ) ) {
 			$email   = get_option( 'admin_email' );
-			$subject = __( 'Order data was missing from Collector', 'collector-checkout-for-woocommerce' );
-			$message = '<p>' . __( 'The following fields had missing data from Collector, please verify the order with Collector.', 'collector-checkout-for-woocommerce' );
+			$subject = __( 'Order data was missing from Walley', 'collector-checkout-for-woocommerce' );
+			$message = '<p>' . __( 'The following fields had missing data from Walley, please verify the order with Walley.', 'collector-checkout-for-woocommerce' );
 			foreach ( WC()->session->get( 'collector_empty_fields' ) as $field ) {
 				$message = $message . '<br>' . $field;
 			}
@@ -471,11 +478,11 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 			}
 			// Failed full item refunds.
 			if ( ! $result_full ) {
-				$order->add_order_note( sprintf( __( 'Failed to refund full order lines with Collector.', 'collector-checkout-for-woocommerce' ) ) );
+				$order->add_order_note( sprintf( __( 'Failed to refund full order lines with Walley.', 'collector-checkout-for-woocommerce' ) ) );
 			}
 			// Failed partial item refunds.
 			if ( ! $result_part ) {
-				$order->add_order_note( sprintf( __( 'Failed to refund partial order lines with Collector.', 'collector-checkout-for-woocommerce' ) ) );
+				$order->add_order_note( sprintf( __( 'Failed to refund partial order lines with Walley.', 'collector-checkout-for-woocommerce' ) ) );
 			}
 			return ( ! $result_full || ! $result_part ) ? false : true;
 		}

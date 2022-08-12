@@ -59,7 +59,7 @@ function collector_wc_show_snippet() {
 		$collector_order = $init_checkout->request();
 
 		if ( is_wp_error( $collector_order ) ) {
-			$return = '<ul class="woocommerce-error"><li>' . sprintf( '%s <a href="%s" class="button wc-forward">%s</a>', __( 'Could not connect to Collector. Error message: ', 'collector-checkout-for-woocommerce' ) . $collector_order->get_error_message(), wc_get_checkout_url(), __( 'Try again', 'collector-checkout-for-woocommerce' ) ) . '</li></ul>';
+			$return = '<ul class="woocommerce-error"><li>' . sprintf( '%s <a href="%s" class="button wc-forward">%s</a>', __( 'Could not connect to Walley. Error message: ', 'collector-checkout-for-woocommerce' ) . $collector_order->get_error_message(), wc_get_checkout_url(), __( 'Try again', 'collector-checkout-for-woocommerce' ) ) . '</li></ul>';
 		} else {
 			WC()->session->set( 'collector_public_token', $collector_order['data']['publicToken'] );
 			WC()->session->set( 'collector_private_id', $collector_order['data']['privateId'] );
@@ -207,7 +207,7 @@ function wc_collector_add_invoice_fee_to_order( $order_id, $product_id ) {
 		$fee_result = $order->add_item( $fee );
 
 		if ( false === $fee_result ) {
-			$order->add_order_note( __( 'Unable to add Collector Bank Invoice Fee to the order.', 'collector-checkout-for-woocommerce' ) );
+			$order->add_order_note( __( 'Unable to add Walley Checkout Invoice Fee to the order.', 'collector-checkout-for-woocommerce' ) );
 		}
 		$result = $order->calculate_totals( true );
 	}
@@ -495,11 +495,11 @@ function wc_collector_confirm_order( $order_id, $private_id = null ) {
 	if ( 'Preliminary' === $payment_status || 'Completed' === $payment_status ) {
 		$order->payment_complete( $payment_id );
 	} elseif ( 'Signing' === $payment_status ) {
-		$order->add_order_note( __( 'Order is waiting for electronic signing by customer. Payment ID: ', 'woocommerce-gateway-klarna' ) . $payment_id );
+		$order->add_order_note( __( 'Order is waiting for electronic signing by customer. Payment ID: ', 'collector-checkout-for-woocommerce' ) . $payment_id );
 		update_post_meta( $order_id, '_transaction_id', $payment_id );
 		$order->update_status( 'on-hold' );
 	} else {
-		$order->add_order_note( __( 'Order is PENDING APPROVAL by Collector. Payment ID: ', 'woocommerce-gateway-klarna' ) . $payment_id );
+		$order->add_order_note( __( 'Order is PENDING APPROVAL by Collector. Payment ID: ', 'collector-checkout-for-woocommerce' ) . $payment_id );
 		update_post_meta( $order_id, '_transaction_id', $payment_id );
 		$order->update_status( 'on-hold' );
 	}
@@ -655,4 +655,34 @@ function wc_collector_allowed_tags() {
 	);
 
 	return apply_filters( 'coc_allowed_tags', $allowed_tags );
+}
+
+
+	/**
+	 * Check order totals
+	 *
+	 * @param WC_Order $order The WooCommerce order.
+	 * @param array    $collector_order The Collector order.
+	 *
+	 * @return bool TRUE If the WC and Collector total amounts match, otherwise FALSE.
+	 */
+function cco_check_order_totals( $order, $collector_order ) {
+	// Check order total and compare it with Woo.
+	$woo_order_total       = intval( round( $order->get_total() * 100, 2 ) );
+	$collector_order_total = intval( round( $collector_order['data']['order']['totalAmount'] * 100, 2 ) );
+	if ( $woo_order_total > $collector_order_total && ( $woo_order_total - $collector_order_total ) > 3 ) {
+		// translators: Order total.
+		$order->update_status( 'on-hold', sprintf( __( 'Order needs manual review. WooCommerce order total and Walley order total do not match. Walley order total: %s.', 'collector-checkout-for-woocommerce' ), $collector_order_total ) );
+		CCO_WC()->logger::log( 'Order total mismatch in order:' . $order->get_order_number() . '. Woo order total: ' . $woo_order_total . '. Collector order total: ' . $collector_order_total );
+		return false;
+
+	} elseif ( $collector_order_total > $woo_order_total && ( $collector_order_total - $woo_order_total ) > 3 ) {
+		// translators: Order total notice.
+		$order->update_status( 'on-hold', sprintf( __( 'Order needs manual review. WooCommerce order total and Walley order total do not match. Walley order total: %s.', 'collector-checkout-for-woocommerce' ), $collector_order_total ) );
+		CCO_WC()->logger::log( 'Order total mismatch in order:' . $order->get_order_number() . '. Woo order total: ' . $woo_order_total . '. Collector order total: ' . $collector_order_total );
+		return false;
+
+	}
+
+	return true;
 }

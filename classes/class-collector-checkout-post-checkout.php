@@ -56,7 +56,7 @@ class Collector_Checkout_Post_Checkout {
 		}
 
 		if ( get_post_meta( $order_id, '_collector_order_activated', true ) ) {
-			$order->add_order_note( __( 'Could not activate Collector reservation, Collector reservation is already activated.', 'collector-checkout-for-woocommerce' ) );
+			$order->add_order_note( __( 'Could not activate Walley reservation, Walley reservation is already activated.', 'collector-checkout-for-woocommerce' ) );
 			return;
 		}
 
@@ -87,7 +87,7 @@ class Collector_Checkout_Post_Checkout {
 
 		// If this reservation was already cancelled, do nothing.
 		if ( get_post_meta( $order_id, '_collector_order_cancelled', true ) ) {
-			$order->add_order_note( __( 'Could not cancel Collector reservation, Collector reservation is already cancelled.', 'collector-checkout-for-woocommerce' ) );
+			$order->add_order_note( __( 'Could not cancel Walley reservation, Walley reservation is already cancelled.', 'collector-checkout-for-woocommerce' ) );
 			return;
 		}
 
@@ -118,7 +118,7 @@ class Collector_Checkout_Post_Checkout {
 				if ( is_object( $order ) ) {
 					// Add order note about the callback
 					// translators: Invoice status.
-					$order->add_order_note( sprintf( __( 'Invoice status callback from Collector. New Invoice status: %s', 'collector-checkout-for-woocommerce' ), $invoice_no ) );
+					$order->add_order_note( sprintf( __( 'Invoice status callback from Walley. New Invoice status: %s', 'collector-checkout-for-woocommerce' ), $invoice_no ) );
 					// Set order status.
 					if ( '1' === $invoice_status ) {
 						$order->payment_complete( $collector_payment_id );

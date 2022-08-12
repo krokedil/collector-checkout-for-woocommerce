@@ -225,7 +225,7 @@ class Collector_Api_Callbacks {
 			}
 
 			// Compare order totals between the orders.
-			$this->check_order_totals( $order, $collector_order );
+			cco_check_order_totals( $order, $collector_order );
 
 			// Check if we need to update reference in collectors system.
 			if ( empty( $collector_order['data']['reference'] ) ) {
@@ -252,7 +252,7 @@ class Collector_Api_Callbacks {
 		$order = $this->process_order( $collector_order, $private_id, $public_token, $customer_type );
 
 		// Check order total.
-		$this->check_order_totals( $order, $collector_order );
+		cco_check_order_totals( $order, $collector_order );
 
 		// Send order number to Collector.
 		if ( is_object( $order ) ) {
@@ -316,7 +316,7 @@ class Collector_Api_Callbacks {
 		$available_gateways = WC()->payment_gateways->payment_gateways();
 		$payment_method     = $available_gateways['collector_checkout'];
 		$order->set_payment_method( $payment_method );
-		$order->add_order_note( __( 'Order created via Collector Checkout API callback. Please verify the order in Collectors system.', 'collector-checkout-for-woocommerce' ) );
+		$order->add_order_note( __( 'Order created via Walley Checkout API callback. Please verify the order in Walley\'s system.', 'collector-checkout-for-woocommerce' ) );
 
 		foreach ( $collector_order['data']['order']['items'] as $cart_item ) {
 			if ( strpos( $cart_item['id'], 'shipping|' ) !== false ) {
@@ -499,37 +499,14 @@ class Collector_Api_Callbacks {
 			$order->add_order_note( 'Payment via Collector Checkout. Payment ID: ' . sanitize_key( $collector_order['data']['purchase']['purchaseIdentifier'] ) );
 			CCO_WC()->logger::log( 'Order status not set correctly for order ' . $order->get_order_number() . ' during checkout process. Setting order status to Processing/Completed.' );
 		} elseif ( 'Signing' === $collector_order['data']['purchase']['result'] ) {
-			$order->add_order_note( __( 'Order is waiting for electronic signing by customer. Payment ID: ', 'woocommerce-gateway-klarna' ) . $collector_order['data']['purchase']['purchaseIdentifier'] );
+			$order->add_order_note( __( 'Order is waiting for electronic signing by customer. Payment ID: ', 'collector-checkout-for-woocommerce' ) . $collector_order['data']['purchase']['purchaseIdentifier'] );
 			update_post_meta( $order->get_id(), '_transaction_id', $collector_order['data']['purchase']['purchaseIdentifier'] );
 			$order->update_status( 'on-hold' );
 			CCO_WC()->logger::log( 'Order status not set correctly for order ' . $order->get_order_number() . ' during checkout process. Setting order status to On hold.' );
 		} else {
-			$order->add_order_note( __( 'Order is PENDING APPROVAL by Collector. Payment ID: ', 'collector-checkout-for-woocommerce' ) . $collector_order['data']['purchase']['purchaseIdentifier'] );
+			$order->add_order_note( __( 'Order is PENDING APPROVAL by Walley. Payment ID: ', 'collector-checkout-for-woocommerce' ) . $collector_order['data']['purchase']['purchaseIdentifier'] );
 			$order->update_status( 'on-hold' );
 			CCO_WC()->logger::log( 'Order status not set correctly for order ' . $order->get_order_number() . ' during checkout process. Setting order status to On hold.' );
-		}
-	}
-
-	/**
-	 * Check order totals
-	 *
-	 * @param WC_Order $order The WooCommerce order.
-	 * @param array    $collector_order The Collector order.
-	 *
-	 * @return void
-	 */
-	public function check_order_totals( $order, $collector_order ) {
-		// Check order total and compare it with Woo.
-		$woo_order_total       = intval( round( $order->get_total() * 100, 2 ) );
-		$collector_order_total = intval( round( $collector_order['data']['order']['totalAmount'] * 100, 2 ) );
-		if ( $woo_order_total > $collector_order_total && ( $woo_order_total - $collector_order_total ) > 3 ) {
-			// translators: Order total.
-			$order->update_status( 'on-hold', sprintf( __( 'Order needs manual review. WooCommerce order total and Collector order total do not match. Collector order total: %s.', 'collector-checkout-for-woocommerce' ), $collector_order_total ) );
-			CCO_WC()->logger::log( 'Order total missmatch in order:' . $order->get_order_number() . '. Woo order total: ' . $woo_order_total . '. Collector order total: ' . $collector_order_total );
-		} elseif ( $collector_order_total > $woo_order_total && ( $collector_order_total - $woo_order_total ) > 3 ) {
-			// translators: Order total notice..
-			$order->update_status( 'on-hold', sprintf( __( 'Order needs manual review. WooCommerce order total and Collector order total do not match. Collector order total: %s.', 'collector-checkout-for-woocommerce' ), $collector_order_total ) );
-			CCO_WC()->logger::log( 'Order total mismatch in order:' . $order->get_order_number() . '. Woo order total: ' . $woo_order_total . '. Collector order total: ' . $collector_order_total );
 		}
 	}
 
@@ -616,11 +593,11 @@ class Collector_Api_Callbacks {
 		$woo_total       = floatval( WC()->cart->get_total( 'collector_validation' ) );
 		if ( $woo_total > $collector_total && ( $woo_total - $collector_total ) > 3 ) {
 			$this->order_is_valid                             = false;
-			$this->validation_messages['amount_error']        = __( 'Missmatch between the Collector and WooCommerce order total.', 'collector-checkout-for-woocommerce' );
+			$this->validation_messages['amount_error']        = __( 'Mismatch between the Walley and WooCommerce order total.', 'collector-checkout-for-woocommerce' );
 			$this->validation_messages['amount_error_totals'] = 'Woo Total: ' . $woo_total . ' Collector total: ' . $collector_total;
 		} elseif ( $collector_total > $woo_total && ( $collector_total - $woo_total ) > 3 ) {
 			$this->order_is_valid                             = false;
-			$this->validation_messages['amount_error']        = __( 'Missmatch between the Collector and WooCommerce order total.', 'collector-checkout-for-woocommerce' );
+			$this->validation_messages['amount_error']        = __( 'Mismatch between the Walley and WooCommerce order total.', 'collector-checkout-for-woocommerce' );
 			$this->validation_messages['amount_error_totals'] = 'Woo Total: ' . $woo_total . ' Collector total: ' . $collector_total;
 		}
 	}

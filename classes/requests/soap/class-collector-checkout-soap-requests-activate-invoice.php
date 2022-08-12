@@ -139,11 +139,11 @@ class Collector_Checkout_SOAP_Requests_Activate_Invoice {
 			if ( isset( $request->InvoiceUrl ) ) { // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
 				update_post_meta( $order_id, '_collector_invoice_url', wc_clean( $request->InvoiceUrl ) );// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
 				$due_date = gmdate( get_option( 'date_format' ) . ' - ' . get_option( 'time_format' ), strtotime( $request->DueDate ) ); // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
-				$due_date = sprintf( __( 'Invoice due date: $s', 'collector-checkout-for-woocommerce' ), $due_date );
+				$due_date = sprintf( __( 'Invoice due date: %s', 'collector-checkout-for-woocommerce' ), $due_date );
 			}
 
 			// translators: 1. Due date.
-			$order->add_order_note( sprintf( __( 'Order activated with Collector Bank. %s', 'collector-checkout-for-woocommerce' ), $due_date ) );
+			$order->add_order_note( sprintf( __( 'Order activated with Walley Checkout. %s', 'collector-checkout-for-woocommerce' ), $due_date ) );
 			update_post_meta( $order_id, '_collector_order_activated', time() );
 
 			$log = CCO_WC()->logger::format_log( $order_id, 'SOAP', 'CCO Activate order ', $args, '', wp_json_encode( $request ), '' );
@@ -153,7 +153,7 @@ class Collector_Checkout_SOAP_Requests_Activate_Invoice {
 			$order->update_status( $order->get_status() );
 			$failed_request = wp_json_encode( $request );
 			// translators: 1. Failed request.
-			$order->add_order_note( sprintf( __( 'Order failed to activate with Collector Bank - %s', 'collector-checkout-for-woocommerce' ), $failed_request ) );
+			$order->add_order_note( sprintf( __( 'Order failed to activate with Walley Checkout - %s', 'collector-checkout-for-woocommerce' ), $failed_request ) );
 
 			// TODO $e is not defined.
 			$log = CCO_WC()->logger::format_log( $order_id, 'SOAP', 'CCO FAILED Activate order', $args, '', wp_json_encode( $request ) . wp_json_encode( $headers ), '' );

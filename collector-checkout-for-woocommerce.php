@@ -8,14 +8,14 @@
  * Plugin Name:     Walley Checkout for WooCommerce
  * Plugin URI:      https://krokedil.se/collector/
  * Description:     Extends WooCommerce. Provides a <a href="https://www.collector.se/" target="_blank">Walley Checkout</a> checkout for WooCommerce.
- * Version:         3.2.4
+ * Version:         3.2.5
  * Author:          Krokedil
  * Author URI:      https://krokedil.se/
  * Text Domain:     collector-checkout-for-woocommerce
  * Domain Path:     /languages
  *
  * WC requires at least: 5.0.0
- * WC tested up to: 6.6.0
+ * WC tested up to: 6.8.0
  *
  * Copyright:       © 2017-2022 Krokedil.
  * License:         GNU General Public License v3.0
@@ -28,7 +28,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 define( 'COLLECTOR_BANK_PLUGIN_DIR', untrailingslashit( plugin_dir_path( __FILE__ ) ) );
 define( 'COLLECTOR_BANK_PLUGIN_URL', untrailingslashit( plugin_dir_url( __FILE__ ) ) );
-define( 'COLLECTOR_BANK_VERSION', '3.2.4' );
+define( 'COLLECTOR_BANK_VERSION', '3.2.5' );
 define( 'COLLECTOR_DB_VERSION', '1' );
 
 if ( ! class_exists( 'Collector_Checkout' ) ) {
@@ -527,24 +527,24 @@ function wc_collector_get_payment_method_name( $payment_method ) {
 
 		case 'Direct Invoice':
 		case 'DirectInvoice':
-			$payment_method = __( 'Collector Invoice', 'collector-checkout-for-woocommerce' );
+			$payment_method = __( 'Walley Invoice', 'collector-checkout-for-woocommerce' );
 			break;
 		case 'Account':
-			$payment_method = __( 'Collector Account', 'collector-checkout-for-woocommerce' );
+			$payment_method = __( 'Walley Account', 'collector-checkout-for-woocommerce' );
 			break;
 		case 'Part Payment':
 		case 'PartPayment':
-			$payment_method = __( 'Collector Part Payment', 'collector-checkout-for-woocommerce' );
+			$payment_method = __( 'Walley Part Payment', 'collector-checkout-for-woocommerce' );
 			break;
 		case 'Campaign':
-			$payment_method = __( 'Collector Campaign', 'collector-checkout-for-woocommerce' );
+			$payment_method = __( 'Walley Campaign', 'collector-checkout-for-woocommerce' );
 			break;
 		case 'Card':
-			$payment_method = __( 'Collector Card', 'collector-checkout-for-woocommerce' );
+			$payment_method = __( 'Walley Card', 'collector-checkout-for-woocommerce' );
 			break;
 		case 'Bank Transfer':
 		case 'BankTransfer':
-			$payment_method = __( 'Collector Bank Transfer', 'collector-checkout-for-woocommerce' );
+			$payment_method = __( 'Walley Bank Transfer', 'collector-checkout-for-woocommerce' );
 			break;
 		default:
 			break;
