@@ -26,7 +26,7 @@ if ( class_exists( 'WC_Shipping_Method' ) ) {
 			$this->instance_id          = absint( $instance_id );
 			$this->title                = 'Walley Shipping Module';
 			$this->method_title         = __( 'Walley Shipping Module', 'collector-checkout-for-woocommerce' );
-			$this->method_description   = __( 'Enables Collector Checkout Delivery Module', 'collector-checkout-for-woocommerce' );
+			$this->method_description   = __( 'Enables Walley Checkout Delivery Module', 'collector-checkout-for-woocommerce' );
 			$this->supports             = array(
 				'shipping-zones',
 				'instance-settings',

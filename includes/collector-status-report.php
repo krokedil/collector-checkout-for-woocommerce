@@ -14,7 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	<thead>
 	<tr>
 		<th colspan="3" data-export-label="Collector Checkout">
-			<h2><?php esc_html_e( 'Collector Checkout', 'collector-checkout-for-woocommerce' ); ?><?php echo wc_help_tip( esc_html__( 'Collector Checkout System Status.', 'collector-checkout-for-woocommerce' ) ); /* phpcs:ignore WordPress.XSS.EscapeOutput.OutputNotEscaped */ ?></h2>
+			<h2><?php esc_html_e( 'Collector Checkout', 'collector-checkout-for-woocommerce' ); ?><?php echo wc_help_tip( esc_html__( 'Walley Checkout System Status.', 'collector-checkout-for-woocommerce' ) ); /* phpcs:ignore WordPress.XSS.EscapeOutput.OutputNotEscaped */ ?></h2>
 		</th>
 	</tr>
 	</thead>

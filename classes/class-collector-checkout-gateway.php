@@ -313,7 +313,6 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 		}
 
 		if ( ! cco_check_order_totals( $order, $collector_order ) ) {
-			// $order->update_status( 'on-hold', __( 'Mismatch between the Collector and WooCommerce order total. Please, verify and potentially edit the WooCommerce order to match the corresponding Collector order.', 'collector-checkout-for-woocommerce' ) );
 			update_post_meta( $order_id, '_transaction_id', $payment_id );
 		}
 
@@ -336,8 +335,8 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 		// Check if there where any empty fields, if so send mail.
 		if ( WC()->session->get( 'collector_empty_fields' ) ) {
 			$email   = get_option( 'admin_email' );
-			$subject = __( 'Order data was missing from Collector', 'collector-checkout-for-woocommerce' );
-			$message = '<p>' . __( 'The following fields had missing data from Collector, please verify the order with Collector.', 'collector-checkout-for-woocommerce' );
+			$subject = __( 'Order data was missing from Walley', 'collector-checkout-for-woocommerce' );
+			$message = '<p>' . __( 'The following fields had missing data from Walley, please verify the order with Walley.', 'collector-checkout-for-woocommerce' );
 			foreach ( WC()->session->get( 'collector_empty_fields' ) as $field ) {
 				$message = $message . '<br>' . $field;
 			}
@@ -479,11 +478,11 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 			}
 			// Failed full item refunds.
 			if ( ! $result_full ) {
-				$order->add_order_note( sprintf( __( 'Failed to refund full order lines with Collector.', 'collector-checkout-for-woocommerce' ) ) );
+				$order->add_order_note( sprintf( __( 'Failed to refund full order lines with Walley.', 'collector-checkout-for-woocommerce' ) ) );
 			}
 			// Failed partial item refunds.
 			if ( ! $result_part ) {
-				$order->add_order_note( sprintf( __( 'Failed to refund partial order lines with Collector.', 'collector-checkout-for-woocommerce' ) ) );
+				$order->add_order_note( sprintf( __( 'Failed to refund partial order lines with Walley.', 'collector-checkout-for-woocommerce' ) ) );
 			}
 			return ( ! $result_full || ! $result_part ) ? false : true;
 		}

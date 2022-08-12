@@ -72,7 +72,7 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 			$collector_order = $init_checkout->request();
 
 			if ( is_wp_error( $collector_order ) || empty( $collector_order ) ) {
-				$return = sprintf( '%s <a href="%s" class="button wc-forward">%s</a>', __( 'Could not connect to Collector. Error message: ', 'collector-checkout-for-woocommerce' ) . $collector_order->get_error_message(), wc_get_checkout_url(), __( 'Try again', 'collector-checkout-for-woocommerce' ) );
+				$return = sprintf( '%s <a href="%s" class="button wc-forward">%s</a>', __( 'Could not connect to Walley. Error message: ', 'collector-checkout-for-woocommerce' ) . $collector_order->get_error_message(), wc_get_checkout_url(), __( 'Try again', 'collector-checkout-for-woocommerce' ) );
 				wp_send_json_error( $return );
 			} else {
 
@@ -598,7 +598,7 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 			$error_message = 'Error message could not be retreived';
 		}
 		// translators: The error message.
-		$note = sprintf( __( 'This order was made as a fallback due to an error in the checkout (%s). Please verify the order with Collector.', 'collector-checkout-for-woocommerce' ), $error_message );
+		$note = sprintf( __( 'This order was made as a fallback due to an error in the checkout (%s). Please verify the order with Walley.', 'collector-checkout-for-woocommerce' ), $error_message );
 		$order->add_order_note( $note );
 		$order->set_status( 'on-hold' );
 		$order->save();

@@ -4,7 +4,7 @@ Tags: ecommerce, e-commerce, woocommerce, collector, checkout, walley
 Requires at least: 5.0
 Tested up to: 6.0
 Requires PHP: 7.0
-Stable tag: 3.2.4
+Stable tag: 3.2.5
 WC requires at least: 5.0.0
 WC tested up to: 6.6.0
 License: GPLv3
@@ -39,6 +39,11 @@ For help setting up and configuring Walley Checkout for WooCommerce please refer
 
 
 == CHANGELOG ==
+= 2022.08.12    - version 3.2.5 =
+* Fix           - Fixed due date not being printed in the order note.
+* Tweak         – If the WooCommerce and Walley total amount differs, the merchant will be notified about this.
+* Tweak         - Corrected payment method names, and updated translations.
+
 = 2022.06.21    - version 3.2.4 =
 * Tweak         - Change how we get the cart totals for the rounding line function.
 

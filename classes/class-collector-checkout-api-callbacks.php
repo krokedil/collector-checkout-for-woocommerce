@@ -316,7 +316,7 @@ class Collector_Api_Callbacks {
 		$available_gateways = WC()->payment_gateways->payment_gateways();
 		$payment_method     = $available_gateways['collector_checkout'];
 		$order->set_payment_method( $payment_method );
-		$order->add_order_note( __( 'Order created via Collector Checkout API callback. Please verify the order in Collectors system.', 'collector-checkout-for-woocommerce' ) );
+		$order->add_order_note( __( 'Order created via Walley Checkout API callback. Please verify the order in Walley\'s system.', 'collector-checkout-for-woocommerce' ) );
 
 		foreach ( $collector_order['data']['order']['items'] as $cart_item ) {
 			if ( strpos( $cart_item['id'], 'shipping|' ) !== false ) {
@@ -504,7 +504,7 @@ class Collector_Api_Callbacks {
 			$order->update_status( 'on-hold' );
 			CCO_WC()->logger::log( 'Order status not set correctly for order ' . $order->get_order_number() . ' during checkout process. Setting order status to On hold.' );
 		} else {
-			$order->add_order_note( __( 'Order is PENDING APPROVAL by Collector. Payment ID: ', 'collector-checkout-for-woocommerce' ) . $collector_order['data']['purchase']['purchaseIdentifier'] );
+			$order->add_order_note( __( 'Order is PENDING APPROVAL by Walley. Payment ID: ', 'collector-checkout-for-woocommerce' ) . $collector_order['data']['purchase']['purchaseIdentifier'] );
 			$order->update_status( 'on-hold' );
 			CCO_WC()->logger::log( 'Order status not set correctly for order ' . $order->get_order_number() . ' during checkout process. Setting order status to On hold.' );
 		}
@@ -593,11 +593,11 @@ class Collector_Api_Callbacks {
 		$woo_total       = floatval( WC()->cart->get_total( 'collector_validation' ) );
 		if ( $woo_total > $collector_total && ( $woo_total - $collector_total ) > 3 ) {
 			$this->order_is_valid                             = false;
-			$this->validation_messages['amount_error']        = __( 'Mismatch between the Collector and WooCommerce order total.', 'collector-checkout-for-woocommerce' );
+			$this->validation_messages['amount_error']        = __( 'Mismatch between the Walley and WooCommerce order total.', 'collector-checkout-for-woocommerce' );
 			$this->validation_messages['amount_error_totals'] = 'Woo Total: ' . $woo_total . ' Collector total: ' . $collector_total;
 		} elseif ( $collector_total > $woo_total && ( $collector_total - $woo_total ) > 3 ) {
 			$this->order_is_valid                             = false;
-			$this->validation_messages['amount_error']        = __( 'Mismatch between the Collector and WooCommerce order total.', 'collector-checkout-for-woocommerce' );
+			$this->validation_messages['amount_error']        = __( 'Mismatch between the Walley and WooCommerce order total.', 'collector-checkout-for-woocommerce' );
 			$this->validation_messages['amount_error_totals'] = 'Woo Total: ' . $woo_total . ' Collector total: ' . $collector_total;
 		}
 	}
