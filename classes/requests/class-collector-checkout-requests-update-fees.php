@@ -88,8 +88,8 @@ class Collector_Checkout_Requests_Update_Fees extends Collector_Checkout_Request
 		$log = CCO_WC()->logger::format_log( $this->private_id, 'PUT', 'CCO update fees', $request_args, $request_url, json_decode( wp_remote_retrieve_body( $response ), true ), $code );
 		CCO_WC()->logger::log( $log );
 
-		$formated_response = $this->process_response( $response, $request_args, $request_url );
-		return $formated_response;
+		$formatted_response = $this->process_response( $response, $request_args, $request_url );
+		return $formatted_response;
 	}
 
 	/**

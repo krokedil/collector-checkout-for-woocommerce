@@ -65,7 +65,6 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 				'customer_type' => $customer_type,
 			);
 			wp_send_json_success( $return );
-			wp_die();
 		} else {
 
 			// Get a new public token from Collector.
@@ -75,7 +74,6 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 			if ( is_wp_error( $collector_order ) || empty( $collector_order ) ) {
 				$return = sprintf( '%s <a href="%s" class="button wc-forward">%s</a>', __( 'Could not connect to Collector. Error message: ', 'collector-checkout-for-woocommerce' ) . $collector_order->get_error_message(), wc_get_checkout_url(), __( 'Try again', 'collector-checkout-for-woocommerce' ) );
 				wp_send_json_error( $return );
-				wp_die();
 			} else {
 
 				$return = array(
@@ -102,7 +100,6 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 				$result                      = Collector_Checkout_DB::create_data_entry( $args );
 
 				wp_send_json_success( $return );
-				wp_die();
 			}
 		}
 	}
@@ -132,7 +129,6 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 				$return                 = array();
 				$return['redirect_url'] = wc_get_checkout_url();
 				wp_send_json_error( $return );
-				wp_die();
 			}
 		}
 
@@ -155,7 +151,6 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 						$return['redirect_url'] = '#900';
 					}
 					wp_send_json_error( $return );
-					wp_die();
 				}
 			}
 
@@ -165,7 +160,6 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 					$return                 = array();
 					$return['redirect_url'] = '#400';
 					wp_send_json_error( $return );
-					wp_die();
 				}
 			}
 
@@ -174,14 +168,12 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 				$return                 = array();
 				$return['redirect_url'] = '#423';
 				wp_send_json_error( $return );
-				wp_die();
 			}
 
 			wc_collector_unset_sessions();
 			$return                 = array();
 			$return['redirect_url'] = wc_get_checkout_url();
 			wp_send_json_error( $return );
-			wp_die();
 		}
 
 		$update_cart          = new Collector_Checkout_Requests_Update_Cart( $private_id, $customer_type );
@@ -196,7 +188,6 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 					$return                 = array();
 					$return['redirect_url'] = '#';
 					wp_send_json_error( $return );
-					wp_die();
 				}
 			}
 
@@ -208,7 +199,6 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 					$return                 = array();
 					$return['redirect_url'] = '#';
 					wp_send_json_error( $return );
-					wp_die();
 				}
 			}
 
@@ -217,14 +207,12 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 				$return                 = array();
 				$return['redirect_url'] = '#';
 				wp_send_json_error( $return );
-				wp_die();
 			}
 
 			wc_collector_unset_sessions();
 			$return                 = array();
 			$return['redirect_url'] = wc_get_checkout_url();
 			wp_send_json_error( $return );
-			wp_die();
 		}
 
 		// Update database session id.
@@ -236,11 +224,10 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 			'private_id' => WC()->session->get( 'collector_private_id' ),
 			'data'       => $collector_data,
 		);
-		// TODO unused variable.
-		$result = Collector_Checkout_DB::update_data( $args );
+
+		Collector_Checkout_DB::update_data( $args );
 
 		wp_send_json_success();
-		wp_die();
 	}
 
 	/**
@@ -295,7 +282,6 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 		}
 
 		wp_send_json_success( $customer_data );
-		wp_die();
 	}
 
 	/**
@@ -334,7 +320,6 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 			'shipping_price' => $shipping_price,
 		);
 		wp_send_json_success( $data );
-		wp_die();
 	}
 
 	/**
@@ -347,7 +332,6 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 		WC()->session->set( 'collector_customer_order_note', $order_note );
 
 		wp_send_json_success();
-		wp_die();
 	}
 
 	/**
@@ -381,7 +365,6 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 		);
 
 		wp_send_json_success( $return );
-		wp_die();
 	}
 
 	/**
@@ -419,7 +402,6 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 			$return                 = array();
 			$return['redirect_url'] = $order->get_checkout_order_received_url();
 			wp_send_json_error( $return );
-			wp_die();
 		}
 
 		CCO_WC()->logger::log( 'Payment complete triggered for private id ' . $private_id . '. Starting WooCommerce checkout form processing...' );
@@ -447,7 +429,6 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 			}
 			$return['shipping'] = WC()->session->get( 'collector_chosen_shipping' );
 			wp_send_json_success( $return );
-			wp_die();
 		} else {
 			// We didn't get a status PurchaseCompleted from Collector (but the Collector redirectPageUri has been triggered) so we redirect the customer to thank you page.
 			$return                 = array();
@@ -461,7 +442,6 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 			$return['redirect_url'] = $url;
 			CCO_WC()->logger::log( 'Payment complete triggered for private id ' . $private_id . ' but status is not PurchaseCompleted in Collectors system. Current status: ' . var_export( $collector_order['data']['status'], true ) . '. Redirecting customer to simplified thankyou page.' ); //phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
 			wp_send_json_error( $return );
-			wp_die();
 		}
 	}
 
@@ -514,7 +494,6 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 		);
 		*/
 		wp_send_json_success( $data );
-		wp_die();
 	}
 
 	/**
@@ -556,8 +535,6 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 			$redirect_url = $order->get_checkout_order_received_url();
 			$return       = array( 'redirect_url' => $redirect_url );
 			wp_send_json_success( $return );
-			wp_die();
-			exit;
 		}
 
 		// If we get here its safe to create an order.
@@ -629,7 +606,6 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 		$redirect_url = $order->get_checkout_order_received_url();
 		$return       = array( 'redirect_url' => $redirect_url );
 		wp_send_json_success( $return );
-		wp_die();
 	}
 }
 Collector_Checkout_Ajax_Calls::init();

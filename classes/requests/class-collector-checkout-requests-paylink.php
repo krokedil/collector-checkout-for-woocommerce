@@ -75,8 +75,8 @@ class Collector_Checkout_Requests_Paylink extends Collector_Checkout_Requests {
 		$log = CCO_WC()->logger::format_log( $this->private_id, 'POST', 'CCO paylink', $request_args, $request_url, json_decode( wp_remote_retrieve_body( $response ), true ), $code );
 		CCO_WC()->logger::log( $log );
 
-		$formated_response = $this->process_response( $response, $request_args, $request_url );
-		return $formated_response;
+		$formatted_response = $this->process_response( $response, $request_args, $request_url );
+		return $formatted_response;
 	}
 
 	/**
