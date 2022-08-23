@@ -122,17 +122,7 @@
                     },
                     complete: function( response ) {
                         console.log('update_delivery_module_shipping done');
-                        collectorUpdateNeeded = false;
-                        var currentCollectorShippingMethod = document.querySelector('[id*="collector_delivery_module"]');
-                        //console.log('test');
-                        console.log(currentCollectorShippingMethod);
-                        
-                        if( currentCollectorShippingMethod ) {
-                            $( '#shipping_method #' + currentCollectorShippingMethod.id ).prop( 'checked', true );
-                            // $( 'body' ).trigger( 'collector_shipping_option_changed', [ data ]);
-                            $( 'body' ).trigger( 'update_checkout' );
-                        }
-                        $( '.woocommerce-checkout-review-order-table' ).unblock();
+                        $( 'body' ).trigger( 'update_checkout' );
                     }
                 }
             );
@@ -402,21 +392,23 @@
         var paymentMethod = $("input[name='payment_method']:checked").val()
         
         if ( 'collector_checkout' === paymentMethod && 'yes' === wc_collector_checkout.delivery_module && 'no' === wc_collector_checkout.is_collector_confirmation ) {
-            if ( $( '#shipping_method input[type=\'radio\']' ).length ) {
+            if ( $('#shipping_method input[type="radio"]').length > 1 ) {
                 // Multiple shipping options available.
-                $( '#shipping_method input[type=\'radio\']:checked' ).each( function() {
+                $( '#shipping_method input[type="radio"]:checked' ).each( function() {
                     var idVal = $( this ).attr( 'id' );
-                    var shippingPrice = $( 'label[for=\'' + idVal + '\'] .amount' ).text();
-                    $( '.woocommerce-shipping-totals td' ).append( shippingPrice );
-                    $( '.woocommerce-shipping-totals ul' ).hide();
+                    var shippingPrice = $( 'label[for="' + idVal + '"]' ).text();
+                    $( '.woocommerce-shipping-totals td' ).html( shippingPrice );
                     $( '.woocommerce-shipping-totals td' ).addClass( 'collector-shipping' );
                 });
-            } else {
+            } else if ( $('#shipping_method input[type="hidden"]').length === 1) {
                 // Only one shipping option available.
-                var idVal = $( '#shipping_method input[name=\'shipping_method[0]\']' ).attr( 'id' );
-                var shippingPrice = $( 'label[for=\'' + idVal + '\'] .amount' ).text();
+                var idVal = $( '#shipping_method input[name="shipping_method[0]"]' ).attr( 'id' );
+                var shippingPrice = $( 'label[for="' + idVal + '"]' ).text();
                 $( '.woocommerce-shipping-totals td' ).html( shippingPrice );
-                $( '.woocommerce-shipping-totals td' ).addClass( 'collector-shipping' );
+                $('.woocommerce-shipping-totals td').addClass('collector-shipping');
+            } else {
+                // No shipping method is available.
+                $('.woocommerce-shipping-totals td').html(wc_collector_checkout.no_shipping_message);
             }
         }
     }

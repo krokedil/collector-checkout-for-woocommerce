@@ -311,6 +311,9 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 		);
 		WC()->session->set( 'collector_delivery_module_data', $shipping_data );
 
+		$chosen_shipping_methods = array( 'collector_delivery_module' );
+		WC()->session->set( 'chosen_shipping_methods', apply_filters( 'coc_shipping_method', $chosen_shipping_methods, $shipping_data ) ); // Set chosen shipping method, with filter to allow overrides.
+
 		WC()->cart->calculate_shipping();
 		WC()->cart->calculate_fees();
 		WC()->cart->calculate_totals();

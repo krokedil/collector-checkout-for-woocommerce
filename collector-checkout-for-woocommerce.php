@@ -280,6 +280,7 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 						'checkout_error'                => WC_AJAX::get_endpoint( 'checkout_error' ),
 						'update_delivery_module_shipping_url' => WC_AJAX::get_endpoint( 'update_delivery_module_shipping' ),
 						'process_order_text'            => __( 'Please wait while we process your order.', 'collector-checkout-for-woocommerce' ),
+						'no_shipping_message'           => apply_filters( 'woocommerce_no_shipping_available_html', __( 'There are no shipping options available. Please ensure that your address has been entered correctly, or contact us if you need any help.', 'woocommerce' ) ),
 					)
 				);
 				wp_enqueue_script( 'checkout' );
