@@ -686,3 +686,40 @@ function cco_check_order_totals( $order, $collector_order ) {
 
 	return true;
 }
+
+
+/**
+ * Get shipping data from a collector order when using shipping in iframe.
+ *
+ * @param array $collector_order The collector order array.
+ * @return array
+ */
+function coc_get_shipping_data( $collector_order ) {
+	$shipping_data = array();
+	$shipping      = $collector_order['data']['shipping'];
+	if ( isset( $shipping['shipments'] ) ) {
+		// Handle Walley Custom Delivery Adapter.
+		foreach ( $shipping['shipments'] as $shipment ) {
+			$cost = $shipment['shippingChoice']['fee'];
+			foreach ( $shipment['shippingChoice']['options'] as $option ) {
+				$cost += $option['fee'] ?? 0;
+			}
+			$shipping_data[] = array(
+				'label'        => $shipment['shippingChoice']['id'],
+				'shipping_id'  => $shipment['shippingChoice']['id'],
+				'cost'         => $cost,
+				'shipping_vat' => $shipment['shippingChoise']['metadata']['tax_rate'] ?? null,
+			);
+		}
+	} else {
+		// Default handling of the Walley Shipping Module.
+		$shipping_data = array(
+			'label'        => $shipping['carrierName'],
+			'shipping_id'  => $shipping['carrierId'],
+			'cost'         => $shipping['shippingFee'],
+			'shipping_vat' => $collector_order['data']['fees']['shipping']['vat'],
+		);
+	}
+
+	return $shipping_data;
+}
