@@ -298,31 +298,15 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 		$customer_type   = WC()->session->get( 'collector_customer_type' );
 		$collector_order = new Collector_Checkout_Requests_Get_Checkout_Information( $private_id, $customer_type );
 		$collector_order = $collector_order->request();
-		$shipping_title  = $collector_order['data']['shipping']['label'];
-		$shipping_id     = $collector_order['data']['shipping']['shipping_id'];
-		$shipping_price  = $collector_order['data']['shipping']['cost'];
-		$shipping_vat    = $collector_order['data']['shipping']['shipping_vat'];
 
-		$shipping_data = array(
-			'label'        => $shipping_title,
-			'shipping_id'  => $shipping_id,
-			'cost'         => $shipping_price,
-			'shipping_vat' => $shipping_vat,
-		);
+		$shipping_data = coc_get_shipping_data( $collector_order );
+
 		WC()->session->set( 'collector_delivery_module_data', $shipping_data );
 
 		$chosen_shipping_methods = array( 'collector_delivery_module' );
 		WC()->session->set( 'chosen_shipping_methods', apply_filters( 'coc_shipping_method', $chosen_shipping_methods, $shipping_data ) ); // Set chosen shipping method, with filter to allow overrides.
 
-		WC()->cart->calculate_shipping();
-		WC()->cart->calculate_fees();
-		WC()->cart->calculate_totals();
-
-		$data = array(
-			'shipping_title' => $shipping_title,
-			'shipping_price' => $shipping_price,
-		);
-		wp_send_json_success( $data );
+		wp_send_json_success();
 	}
 
 	/**
