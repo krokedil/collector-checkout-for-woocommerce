@@ -69,8 +69,9 @@ class Collector_Checkout_Requests_Fees {
 	 * @return array|string
 	 */
 	public function fees() {
-		$fees = array();
-		if ( 'no' === $this->delivery_module || 'v2' === $this->checkout_version ) {
+		$fees            = array();
+		$update_shipping = apply_filters( 'coc_update_shipping', ( 'no' === $this->delivery_module || 'v2' === $this->checkout_version ) ); // Filter on if we should update shipping with fees or not.
+		if ( $update_shipping ) {
 			$shipping         = $this->get_shipping();
 			$fees['shipping'] = $shipping;
 		}
