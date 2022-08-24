@@ -298,10 +298,10 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 		$customer_type   = WC()->session->get( 'collector_customer_type' );
 		$collector_order = new Collector_Checkout_Requests_Get_Checkout_Information( $private_id, $customer_type );
 		$collector_order = $collector_order->request();
-		$shipping_title  = $collector_order['data']['fees']['shipping']['description'];
-		$shipping_id     = $collector_order['data']['fees']['shipping']['id'];
-		$shipping_price  = $collector_order['data']['fees']['shipping']['unitPrice'];
-		$shipping_vat    = $collector_order['data']['fees']['shipping']['vat'];
+		$shipping_title  = $collector_order['data']['shipping']['label'];
+		$shipping_id     = $collector_order['data']['shipping']['shipping_id'];
+		$shipping_price  = $collector_order['data']['shipping']['cost'];
+		$shipping_vat    = $collector_order['data']['shipping']['shipping_vat'];
 
 		$shipping_data = array(
 			'label'        => $shipping_title,
