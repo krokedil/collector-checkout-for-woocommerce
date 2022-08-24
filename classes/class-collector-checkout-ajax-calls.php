@@ -301,19 +301,28 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 		//Check if we have data in 'shipping' - Custom Delivery Adapter, else fallback to 'fees'
 		$shipping_data = array();
 		if( isset( $collector_order['data']['shipping'] ) ){
-			$shipping_data['provider']  = $collector_order['data']['shipping']['provider'];
-			foreach( $collector_order['data']['shipping']['shipments'] as $shipment ){
-				$shipping_id 	= $shipment['shippingChoice']['id'];
-				$shipping_title = $shipment['shippingChoice']['id'];
-				$shipping_price = $shipment['shippingChoice']['fee'];
-				if( isset( $shipment['shippingChoice']['metadata']['tax_rate'] ) ){
-					$shipping_vat 	= $shipment['shippingChoice']['metadata']['tax_rate'];
-				}
-				//Make sure to add options and their fee, options only shows up here if toggled.
-				foreach ($shipment['shippingChoice']['options'] as $option){
-					$shipping_price += $option['fee'];
+			$provider  = $collector_order['data']['shipping']['provider'];
+			if( $provider === 'Unifaun'){
+				$shipping_id 	= $collector_order['data']['shipping']['carrierId'];
+				$shipping_title = $collector_order['data']['shipping']['carrierName'];
+				$shipping_price = $collector_order['data']['shipping']['shippingFee'];
+				$shipping_vat   = $collector_order['data']['fees']['shipping']['vat'];
+
+			}else{
+				foreach( $collector_order['data']['shipping']['shipments'] as $shipment ){
+					$shipping_id 	= $shipment['shippingChoice']['id'];
+					$shipping_title = $shipment['shippingChoice']['id'];
+					$shipping_price = $shipment['shippingChoice']['fee'];
+					if( isset( $shipment['shippingChoice']['metadata']['tax_rate'] ) ){
+						$shipping_vat 	= $shipment['shippingChoice']['metadata']['tax_rate'];
+					}
+					//Make sure to add options and their fee, options only shows up here if toggled.
+					foreach ($shipment['shippingChoice']['options'] as $option){
+						$shipping_price += $option['fee'];
+					}
 				}
 			}
+			
 		}else{
 			$shipping_title  = $collector_order['data']['fees']['shipping']['description'];
 			$shipping_id     = $collector_order['data']['fees']['shipping']['id'];
