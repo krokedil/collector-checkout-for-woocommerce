@@ -179,6 +179,7 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 		$update_cart          = new Collector_Checkout_Requests_Update_Cart( $private_id, $customer_type );
 		$collector_order_cart = $update_cart->request();
 
+		
 		// Check that update cart request was ok.
 		if ( is_wp_error( $collector_order_cart ) ) {
 
@@ -213,6 +214,37 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 			$return                 = array();
 			$return['redirect_url'] = wc_get_checkout_url();
 			wp_send_json_error( $return );
+		}
+		//If cart was updated, update metadata
+		$metadata = apply_filters( 'coc_update_cart_metadata', array() );
+		if( !empty( $metadata ) ){
+			$update_metadata   = new Collector_Checkout_Requests_Update_Metadata( $private_id, $customer_type, $metadata );
+			$collecor_order_metadata = $update_metadata->request();
+			//Check that everything went alright
+			if ( is_wp_error( $collecor_order_metadata ) ) {
+				// Check if purchase was completed, if it was don't redirect customer.
+				if ( 900 === $collecor_order_metadata->get_error_code() ) {
+					if ( ! empty( $collecor_order_metadata->get_error_message( 'Purchase_Completed' ) ) || ! empty( $collecor_order_metadata->get_error_message( 'Purchase_Commitment_Found' ) ) ) {
+						$return                 = array();
+						$return['redirect_url'] = '#';
+						wp_send_json_error( $return );
+					}
+				}
+				// Check if we had validation error
+				if ( 400 === $collecor_order_metadata->get_error_code() ) {
+					if ( ! empty( $collecor_order_metadata->get_error_message( 'Validation_Error' ) ) ) {
+						$return                 = array();
+						$return['redirect_url'] = '#';
+						wp_send_json_error( $return );
+					}
+				}
+				// Check if the resource is temporarily locked, if it was don't redirect customer.
+				if ( 423 === $collecor_order_metadata->get_error_code() ) {
+					$return                 = array();
+					$return['redirect_url'] = '#';
+					wp_send_json_error( $return );
+				}
+			}
 		}
 
 		// Update database session id.
