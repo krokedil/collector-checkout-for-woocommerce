@@ -708,7 +708,7 @@ function coc_get_shipping_data( $collector_order ) {
 				'label'        => $shipment['shippingChoice']['id'],
 				'shipping_id'  => $shipment['shippingChoice']['id'],
 				'cost'         => $cost,
-				'shipping_vat' => $shipment['shippingChoise']['metadata']['tax_rate'] ?? null,
+				'shipping_vat' => $shipment['shippingChoice']['metadata']['tax_rate'] ?? null,
 			);
 		}
 	} else {
