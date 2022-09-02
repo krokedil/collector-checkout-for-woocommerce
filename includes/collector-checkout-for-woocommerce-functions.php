@@ -233,7 +233,7 @@ function is_collector_confirmation() {
  * Get Collector data from Database.
  *
  * @param string $private_id Collector private id.
- * @return string|null
+ * @return object|null
  */
 function get_collector_data_from_db( $private_id ) {
 	$result = Collector_Checkout_DB::get_data_entry( $private_id );
