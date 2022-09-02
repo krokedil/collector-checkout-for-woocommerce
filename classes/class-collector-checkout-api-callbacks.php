@@ -650,8 +650,8 @@ class Collector_Api_Callbacks {
 		$fee_total_amount = 0;
 		// Loop all fees and them to the total.
 		foreach ( $this->collector_order['data']['fees'] as $cart_fee => $fee ) {
-			// Ignore shipping fees since they will be included by the shipping amount.
-			if ( 'shipping' === $cart_fee ) {
+			// Ignore shipping fees since they will be included by the shipping amount, but only if a shipping object exists under data.
+			if ( 'shipping' === $cart_fee && isset( $this->collector_order['data']['shipping'] ) ) {
 				continue;
 			}
 
