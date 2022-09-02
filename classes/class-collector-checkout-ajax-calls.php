@@ -116,15 +116,15 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 		WC()->cart->calculate_fees();
 		WC()->cart->calculate_totals();
 
-		$private_id          = WC()->session->get( 'collector_private_id' );
-		$customer_type       = WC()->session->get( 'collector_customer_type' );
+		$private_id    = WC()->session->get( 'collector_private_id' );
+		$customer_type = WC()->session->get( 'collector_customer_type' );
 
-		//start by updating our metadata if any
+		// start by updating our metadata if any
 		$metadata = apply_filters( 'coc_update_cart_metadata', array() );
-		if( !empty( $metadata ) ){
-			$update_metadata   = new Collector_Checkout_Requests_Update_Metadata( $private_id, $customer_type, $metadata );
+		if ( ! empty( $metadata ) ) {
+			$update_metadata         = new Collector_Checkout_Requests_Update_Metadata( $private_id, $customer_type, $metadata );
 			$collecor_order_metadata = $update_metadata->request();
-			//Check that everything went alright
+			// Check that everything went alright
 			if ( is_wp_error( $collecor_order_metadata ) ) {
 				// Check if purchase was completed, if it was don't redirect customer.
 				if ( 900 === $collecor_order_metadata->get_error_code() ) {
@@ -150,7 +150,7 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 				}
 			}
 		}
-		
+
 		$update_fees         = new Collector_Checkout_Requests_Update_Fees( $private_id, $customer_type );
 		$collector_order_fee = $update_fees->request();
 
@@ -212,7 +212,6 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 		$update_cart          = new Collector_Checkout_Requests_Update_Cart( $private_id, $customer_type );
 		$collector_order_cart = $update_cart->request();
 
-		
 		// Check that update cart request was ok.
 		if ( is_wp_error( $collector_order_cart ) ) {
 
@@ -248,7 +247,6 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 			$return['redirect_url'] = wc_get_checkout_url();
 			wp_send_json_error( $return );
 		}
-
 
 		// Update database session id.
 		$collector_checkout_sessions = new Collector_Checkout_Sessions();
