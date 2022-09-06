@@ -633,19 +633,50 @@ class Collector_Api_Callbacks {
 	 * @return int
 	 */
 	public function get_collector_total() {
-		$cart_total_amount = $this->collector_order['data']['cart']['totalAmount'];
-		$cart_fees         = $this->collector_order['data']['fees'];
-		$fee_total_amount  = 0;
-		foreach ( $cart_fees as $cart_fee => $fee ) {
-			if ( false === strpos( $fee['id'], 'invoicefee|' ) ) { // Invoice fee is not included in WC()->cart->get_total(). Therefore excluding it in this calculation.
-				if ( is_numeric( $fee['unitPrice'] ) ) {
-					$fee_total_amount += $fee['unitPrice'];
-				}
+		$cart_total_amount     = $this->collector_order['data']['cart']['totalAmount'];
+		$fee_total_amount      = $this->get_collector_fee_total();
+		$shipping_total_amount = $this->get_collector_shipping_total();
+
+		$collector_total = $fee_total_amount + $cart_total_amount + $shipping_total_amount;
+		return floatval( round( $collector_total, 2 ) );
+	}
+
+	/**
+	 * Gets the total of the fees from the collector order.
+	 *
+	 * @return float
+	 */
+	public function get_collector_fee_total() {
+		$fee_total_amount = 0;
+		// Loop all fees and them to the total.
+		foreach ( $this->collector_order['data']['fees'] as $cart_fee => $fee ) {
+			// Ignore shipping fees since they will be included by the shipping amount, but only if a shipping object exists under data.
+			if ( 'shipping' === $cart_fee && isset( $this->collector_order['data']['shipping'] ) ) {
+				continue;
+			}
+
+			// Ignore Invoice fee that we add, since that is not included in the WooCommerce cart.
+			if ( false !== strpos( $fee['id'], 'invoicefee|' ) ) {
+				continue;
+			}
+
+			if ( is_numeric( $fee['unitPrice'] ) ) {
+				$fee_total_amount += $fee['unitPrice'];
 			}
 		}
 
-		$collector_total = $fee_total_amount + $cart_total_amount;
-		return floatval( round( $collector_total, 2 ) );
+		return $fee_total_amount;
+	}
+
+	/**
+	 * Get the total of the shipping from the collector order.
+	 *
+	 * @return float
+	 */
+	public function get_collector_shipping_total() {
+		$shipping_total_amount = $this->collector_order['data']['shipping']['shippingFee'] ?? 0; // Get the shipping fee total if the items are set, else set zero.
+
+		return $shipping_total_amount;
 	}
 
 	/**
