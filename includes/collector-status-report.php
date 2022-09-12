@@ -43,7 +43,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 						$amount_of_api_callback_orders++;
 					}
 				}
-				$percent_of_orders = round( ( $amount_of_api_callback_orders / $amount_of_collector_orders ) * 100 );
+				$percent_of_orders = empty( $amount_of_api_callback_orders ) ? 0 : round( ( $amount_of_api_callback_orders / $amount_of_collector_orders ) * 100 );
 
 				if ( $percent_of_orders >= 10 ) {
 					$report_status = 'error';
