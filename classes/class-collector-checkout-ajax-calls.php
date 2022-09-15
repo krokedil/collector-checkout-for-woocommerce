@@ -116,8 +116,41 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 		WC()->cart->calculate_fees();
 		WC()->cart->calculate_totals();
 
-		$private_id          = WC()->session->get( 'collector_private_id' );
-		$customer_type       = WC()->session->get( 'collector_customer_type' );
+		$private_id    = WC()->session->get( 'collector_private_id' );
+		$customer_type = WC()->session->get( 'collector_customer_type' );
+
+		// start by updating our metadata if any
+		$metadata = apply_filters( 'coc_update_cart_metadata', array() );
+		if ( ! empty( $metadata ) ) {
+			$update_metadata         = new Collector_Checkout_Requests_Update_Metadata( $private_id, $customer_type, $metadata );
+			$collecor_order_metadata = $update_metadata->request();
+			// Check that everything went alright
+			if ( is_wp_error( $collecor_order_metadata ) ) {
+				// Check if purchase was completed, if it was don't redirect customer.
+				if ( 900 === $collecor_order_metadata->get_error_code() ) {
+					if ( ! empty( $collecor_order_metadata->get_error_message( 'Purchase_Completed' ) ) || ! empty( $collecor_order_metadata->get_error_message( 'Purchase_Commitment_Found' ) ) ) {
+						$return                 = array();
+						$return['redirect_url'] = '#';
+						wp_send_json_error( $return );
+					}
+				}
+				// Check if we had validation error
+				if ( 400 === $collecor_order_metadata->get_error_code() ) {
+					if ( ! empty( $collecor_order_metadata->get_error_message( 'Validation_Error' ) ) ) {
+						$return                 = array();
+						$return['redirect_url'] = '#';
+						wp_send_json_error( $return );
+					}
+				}
+				// Check if the resource is temporarily locked, if it was don't redirect customer.
+				if ( 423 === $collecor_order_metadata->get_error_code() ) {
+					$return                 = array();
+					$return['redirect_url'] = '#';
+					wp_send_json_error( $return );
+				}
+			}
+		}
+
 		$update_fees         = new Collector_Checkout_Requests_Update_Fees( $private_id, $customer_type );
 		$collector_order_fee = $update_fees->request();
 
@@ -298,28 +331,15 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 		$customer_type   = WC()->session->get( 'collector_customer_type' );
 		$collector_order = new Collector_Checkout_Requests_Get_Checkout_Information( $private_id, $customer_type );
 		$collector_order = $collector_order->request();
-		$shipping_title  = $collector_order['data']['fees']['shipping']['description'];
-		$shipping_id     = $collector_order['data']['fees']['shipping']['id'];
-		$shipping_price  = $collector_order['data']['fees']['shipping']['unitPrice'];
-		$shipping_vat    = $collector_order['data']['fees']['shipping']['vat'];
 
-		$shipping_data = array(
-			'label'        => $shipping_title,
-			'shipping_id'  => $shipping_id,
-			'cost'         => $shipping_price,
-			'shipping_vat' => $shipping_vat,
-		);
+		$shipping_data = coc_get_shipping_data( $collector_order );
+
 		WC()->session->set( 'collector_delivery_module_data', $shipping_data );
 
-		WC()->cart->calculate_shipping();
-		WC()->cart->calculate_fees();
-		WC()->cart->calculate_totals();
+		$chosen_shipping_methods = array( 'collector_delivery_module' );
+		WC()->session->set( 'chosen_shipping_methods', apply_filters( 'coc_shipping_method', $chosen_shipping_methods, $shipping_data ) ); // Set chosen shipping method, with filter to allow overrides.
 
-		$data = array(
-			'shipping_title' => $shipping_title,
-			'shipping_price' => $shipping_price,
-		);
-		wp_send_json_success( $data );
+		wp_send_json_success();
 	}
 
 	/**
