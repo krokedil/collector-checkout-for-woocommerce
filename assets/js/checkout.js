@@ -67,7 +67,6 @@
     
     // Customer updated - event triggered when customer changes address in Collector iframe
     document.addEventListener("collectorCheckoutCustomerUpdated", function(){
-	    
         var url = window.location.href;
         // Check that this only happens in checkout page. Don't do it on thank you page
         if ( wc_collector_checkout.is_thank_you_page === 'no' ) {
@@ -91,7 +90,6 @@
                     }
                 }
             );
-            window.collector.checkout.api.resume();
         }
     });
     
@@ -126,7 +124,6 @@
                     }
                 }
             );
-            window.collector.checkout.api.resume();
         }
     });
 	
