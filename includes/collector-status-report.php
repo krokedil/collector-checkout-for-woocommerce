@@ -24,7 +24,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 		<td class="help"><?php echo wc_help_tip( __( 'Displays the number of orders created via the API callback feature during the last month.', 'collector-checkout-for-woocommerce' ) ); /* phpcs:ignore WordPress.XSS.EscapeOutput.OutputNotEscaped */ ?></td>
 		<td>
 			<?php
-				$query                        = new WC_Order_Query(
+				$query                         = new WC_Order_Query(
 					array(
 						'limit'          => -1,
 						'orderby'        => 'date',
@@ -34,16 +34,16 @@ if ( ! defined( 'ABSPATH' ) ) {
 						'date_created'   => '>' . ( time() - MONTH_IN_SECONDS ),
 					)
 				);
-				$orders                       = $query->get_orders();
-				$amont_of_collector_orders    = count( $orders );
-				$amont_of_api_callback_orders = 0;
+				$orders                        = $query->get_orders();
+				$amount_of_collector_orders    = count( $orders );
+				$amount_of_api_callback_orders = 0;
 				foreach ( $orders as $order_id ) {
 
 					if ( 'collector_checkout_api' === get_post_meta( $order_id, '_created_via', true ) ) {
-						$amont_of_api_callback_orders++;
+						$amount_of_api_callback_orders++;
 					}
 				}
-				$percent_of_orders = round( ( $amont_of_api_callback_orders / $amont_of_collector_orders ) * 100 );
+				$percent_of_orders = empty( $amount_of_api_callback_orders ) ? 0 : round( ( $amount_of_api_callback_orders / $amount_of_collector_orders ) * 100 );
 
 				if ( $percent_of_orders >= 10 ) {
 					$report_status = 'error';
@@ -51,7 +51,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 					$report_status = 'yes';
 				}
 
-				echo '<strong><mark class="' . esc_html( $report_status ) . '">' . esc_html( $percent_of_orders ) . '% (' . esc_html( $amont_of_api_callback_orders ) . ' of ' . esc_html( $amont_of_collector_orders ) . ')</mark></strong> of all orders payed via Collector Checkout was created via API callback during the last month. This is a fallback order creation feature. You should aim for 0%.';
+				echo '<strong><mark class="' . esc_html( $report_status ) . '">' . esc_html( $percent_of_orders ) . '% (' . esc_html( $amount_of_api_callback_orders ) . ' of ' . esc_html( $amount_of_collector_orders ) . ')</mark></strong> of all orders payed via Collector Checkout was created via API callback during the last month. This is a fallback order creation feature. You should aim for 0%.';
 
 				?>
 		</td>
