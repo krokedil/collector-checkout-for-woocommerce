@@ -2,11 +2,11 @@
 Contributors: collectorbank, krokedil, NiklasHogefjord
 Tags: ecommerce, e-commerce, woocommerce, collector, checkout, walley
 Requires at least: 5.0
-Tested up to: 6.0
+Tested up to: 6.0.2
 Requires PHP: 7.0
-Stable tag: 3.2.5
+Stable tag: 3.3.0
 WC requires at least: 5.0.0
-WC tested up to: 6.6.0
+WC tested up to: 6.8.0
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -39,6 +39,13 @@ For help setting up and configuring Walley Checkout for WooCommerce please refer
 
 
 == CHANGELOG ==
+= 2022.09.15    - version 3.3.0 =
+* Feature       - Added compatibility with Redlight Media's Walley Shipping plugin (thanks @hedqvist!).
+* Tweak         - You can now use the 'coc_request_body' hook to filter the request body.
+* Tweak         - You can now use the 'coc_update_cart_metadata' filter hook to send additional meta data to Walley.
+* Fix           - Fix division by zero.
+* Enhancement   - The checkout should now "flicker" less when updating shipping and customer data.
+
 = 2022.08.12    - version 3.2.5 =
 * Fix           - Fixed due date not being printed in the order note.
 * Tweak         – If the WooCommerce and Walley total amount differs, the merchant will be notified about this.
