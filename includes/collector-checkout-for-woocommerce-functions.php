@@ -703,9 +703,12 @@ function coc_get_shipping_data( $collector_order ) {
 		// Handle Walley Custom Delivery Adapter.
 		foreach ( $shipping['shipments'] as $shipment ) {
 			$cost = $shipment['shippingChoice']['fee'];
-			foreach ( $shipment['shippingChoice']['options'] as $option ) {
+			
+			$shipment_options = $shipment['shippingChoice']['options'] ?? array();
+			foreach ( $shipment_options as $option ) {
 				$cost += $option['fee'] ?? 0;
 			}
+
 			$shipping_data[] = array(
 				'label'        => $shipment['shippingChoice']['id'],
 				'shipping_id'  => $shipment['shippingChoice']['id'],
