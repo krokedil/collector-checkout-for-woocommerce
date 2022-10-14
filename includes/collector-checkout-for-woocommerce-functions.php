@@ -336,8 +336,10 @@ function wc_collector_verify_customer_data( $collector_order ) {
 		$org_nr            = isset( $collector_order['data']['businessCustomer']['organizationNumber'] ) ? $collector_order['data']['businessCustomer']['organizationNumber'] : '.';
 		$invoice_reference = isset( $collector_order['data']['businessCustomer']['invoiceReference'] ) ? $collector_order['data']['businessCustomer']['invoiceReference'] : '.';
 
-		WC()->session->set( 'collector_org_nr', $org_nr );
-		WC()->session->set( 'collector_invoice_reference', $invoice_reference );
+		if ( isset( WC()->session ) && method_exists( WC()->session, 'set' ) ) {
+			WC()->session->set( 'collector_org_nr', $org_nr );
+			WC()->session->set( 'collector_invoice_reference', $invoice_reference );
+		}
 	}
 	$country_code = isset( $collector_order['data']['countryCode'] ) ? $collector_order['data']['countryCode'] : $base_country;
 
