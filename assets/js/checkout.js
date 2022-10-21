@@ -10,7 +10,6 @@
     
     function get_new_checkout_iframe( customer ) {
 	    console.log( customer );
-        var url = window.location.href;
         
         var data = {
             'action': 'get_public_token',
