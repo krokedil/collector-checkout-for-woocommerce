@@ -105,9 +105,9 @@ class Collector_Checkout_Requests_Update_Fees extends Collector_Checkout_Request
 			$formatted_request_body ['directinvoicenotification'] = $fees['directinvoicenotification'];
 		}
 
-		if ( isset( $fees['shipping'] ) && ! empty( $fees['shipping'] ) ) {
-			$formatted_request_body['shipping'] = $fees['shipping'];
-		}
+		// if ( isset( $fees['shipping'] ) && ! empty( $fees['shipping'] ) ) {
+		// 	$formatted_request_body['shipping'] = $fees['shipping'];
+		// }
 
 		if ( ! empty( $formatted_request_body ) ) {
 			return wp_json_encode( apply_filters( 'coc_request_body', $formatted_request_body ) );
