@@ -2,9 +2,9 @@
 Contributors: collectorbank, krokedil, NiklasHogefjord
 Tags: ecommerce, e-commerce, woocommerce, collector, checkout, walley
 Requires at least: 5.0
-Tested up to: 6.0.2
+Tested up to: 6.1
 Requires PHP: 7.0
-Stable tag: 3.3.0
+Stable tag: 3.3.1
 WC requires at least: 5.0.0
 WC tested up to: 6.8.0
 License: GPLv3
@@ -39,6 +39,11 @@ For help setting up and configuring Walley Checkout for WooCommerce please refer
 
 
 == CHANGELOG ==
+= 2022.10.24    - version 3.3.1 =
+* Fix           - Fixed a warning due to access before initialization.
+* Fix           - Fixed an error due to the session not being available.
+* Enhancement   - Implemented the checkout locking mechanism.
+
 = 2022.09.15    - version 3.3.0 =
 * Feature       - Added compatibility with Redlight Media's Walley Shipping plugin (thanks @hedqvist!).
 * Tweak         - You can now use the 'coc_request_body' hook to filter the request body.
