@@ -5,7 +5,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: "
 "https://wordpress.org/support/plugin/collector-checkout-for-woocommerce\n"
-"POT-Creation-Date: 2022-08-12 09:10:31+00:00\n"
+"POT-Creation-Date: 2022-10-24 13:33:00+00:00\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -24,7 +24,7 @@ msgstr ""
 msgid "Try again"
 msgstr ""
 
-#: classes/class-collector-checkout-ajax-calls.php:601
+#: classes/class-collector-checkout-ajax-calls.php:621
 #. translators: The error message.
 msgid ""
 "This order was made as a fallback due to an error in the checkout (%s). "
@@ -39,7 +39,7 @@ msgstr ""
 
 #: classes/class-collector-checkout-api-callbacks.php:474
 #: classes/class-collector-checkout-gateway.php:333
-#: includes/collector-checkout-for-woocommerce-functions.php:508
+#: includes/collector-checkout-for-woocommerce-functions.php:510
 #. translators: The Collector order data.
 #. Translators: Collector Payment method.
 #. Translators: Collector Payment method.
@@ -48,7 +48,7 @@ msgstr ""
 
 #: classes/class-collector-checkout-api-callbacks.php:502
 #: classes/class-collector-checkout-gateway.php:323
-#: includes/collector-checkout-for-woocommerce-functions.php:498
+#: includes/collector-checkout-for-woocommerce-functions.php:500
 msgid "Order is waiting for electronic signing by customer. Payment ID: "
 msgstr ""
 
@@ -112,7 +112,7 @@ msgid ""
 msgstr ""
 
 #: classes/class-collector-checkout-gateway.php:327
-#: includes/collector-checkout-for-woocommerce-functions.php:502
+#: includes/collector-checkout-for-woocommerce-functions.php:504
 msgid "Order is PENDING APPROVAL by Collector. Payment ID: "
 msgstr ""
 
@@ -284,31 +284,37 @@ msgstr ""
 msgid "Nope"
 msgstr ""
 
-#: collector-checkout-for-woocommerce.php:282
+#: collector-checkout-for-woocommerce.php:283
 msgid "Please wait while we process your order."
 msgstr ""
 
-#: collector-checkout-for-woocommerce.php:530
+#: collector-checkout-for-woocommerce.php:284
+msgid ""
+"There are no shipping options available. Please ensure that your address "
+"has been entered correctly, or contact us if you need any help."
+msgstr ""
+
+#: collector-checkout-for-woocommerce.php:532
 msgid "Walley Invoice"
 msgstr ""
 
-#: collector-checkout-for-woocommerce.php:533
+#: collector-checkout-for-woocommerce.php:535
 msgid "Walley Account"
 msgstr ""
 
-#: collector-checkout-for-woocommerce.php:537
+#: collector-checkout-for-woocommerce.php:539
 msgid "Walley Part Payment"
 msgstr ""
 
-#: collector-checkout-for-woocommerce.php:540
+#: collector-checkout-for-woocommerce.php:542
 msgid "Walley Campaign"
 msgstr ""
 
-#: collector-checkout-for-woocommerce.php:543
+#: collector-checkout-for-woocommerce.php:545
 msgid "Walley Card"
 msgstr ""
 
-#: collector-checkout-for-woocommerce.php:547
+#: collector-checkout-for-woocommerce.php:549
 msgid "Walley Bank Transfer"
 msgstr ""
 
@@ -328,8 +334,8 @@ msgstr ""
 msgid "Unable to add Walley Checkout Invoice Fee to the order."
 msgstr ""
 
-#: includes/collector-checkout-for-woocommerce-functions.php:675
-#: includes/collector-checkout-for-woocommerce-functions.php:681
+#: includes/collector-checkout-for-woocommerce-functions.php:677
+#: includes/collector-checkout-for-woocommerce-functions.php:683
 #. translators: Order total.
 #. translators: Order total notice.
 msgid ""

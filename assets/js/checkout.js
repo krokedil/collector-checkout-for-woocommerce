@@ -10,7 +10,6 @@
     
     function get_new_checkout_iframe( customer ) {
 	    console.log( customer );
-        var url = window.location.href;
         
         var data = {
             'action': 'get_public_token',
@@ -91,6 +90,16 @@
                 }
             );
         }
+    });
+
+    document.addEventListener("collectorCheckoutLocked", function () {
+        console.log("collectorCheckoutLocked");
+        blockForm()
+    });
+
+    document.addEventListener("collectorCheckoutUnlocked", function () {
+        console.log("collectorCheckoutUnlocked")
+        unblockForm();
     });
     
     document.addEventListener("collectorCheckoutShippingUpdated", function(listener){
@@ -197,6 +206,38 @@
                 }
             });
     });
+
+    /**
+	 * Block form fields from being modified by the user.
+	 */
+	function blockForm() {
+		/* Order review. */
+		$( '.woocommerce-checkout-review-order-table' ).block( {
+			message: null,
+			overlayCSS: {
+				background: '#fff',
+			},
+		} );
+
+		/* Additional checkout fields. */
+		$( '.woocommerce-checkout-review-order-table' ).siblings().block({
+			message: null,
+			overlayCSS: {
+				background: '#fff',
+			},
+		} );
+	}
+
+	/**
+	 * Unblock form fields.
+	 */
+	function unblockForm() {
+		/* Order review. */
+		$( '.woocommerce-checkout-review-order-table' ).unblock();
+
+		/* Additional checkout fields. */
+		$( '.woocommerce-checkout-review-order-table' ).siblings().unblock();
+	}
 
     // Change to Collector Checkout payment method
     $(document).on("change", "input[name='payment_method']", function (event) {
