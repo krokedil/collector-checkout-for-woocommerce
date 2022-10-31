@@ -287,10 +287,20 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 		$customer_data['billing_email']    = $collector_order['data']['customer']['email'];
 
 		if ( 'BusinessCustomer' === $collector_order['data']['customerType'] ) {
-			$customer_data['billing_postcode']  = $collector_order['data']['businessCustomer']['invoiceAddress']['postalCode'];
+			$customer_data['billing_city']     = $collector_order['data']['businessCustomer']['invoiceAddress']['city'];
+			$customer_data['billing_address']  = $collector_order['data']['businessCustomer']['invoiceAddress']['address'];
+			$customer_data['billing_postcode'] = $collector_order['data']['businessCustomer']['invoiceAddress']['postalCode'];
+
+			$customer_data['shipping_city']     = $collector_order['data']['businessCustomer']['deliveryAddress']['city'];
+			$customer_data['shipping_address']  = $collector_order['data']['businessCustomer']['deliveryAddress']['address'];
 			$customer_data['shipping_postcode'] = $collector_order['data']['businessCustomer']['deliveryAddress']['postalCode'];
 		} else {
-			$customer_data['billing_postcode']  = $collector_order['data']['customer']['billingAddress']['postalCode'];
+			$customer_data['billing_city']     = $collector_order['data']['customer']['deliveryAddress']['city'];
+			$customer_data['billing_address']  = $collector_order['data']['customer']['billingAddress']['address'];
+			$customer_data['billing_postcode'] = $collector_order['data']['customer']['billingAddress']['postalCode'];
+
+			$customer_data['shipping_city']     = $collector_order['data']['customer']['deliveryAddress']['city'];
+			$customer_data['shipping_address']  = $collector_order['data']['customer']['deliveryAddress']['address'];
 			$customer_data['shipping_postcode'] = $collector_order['data']['customer']['deliveryAddress']['postalCode'];
 		}
 
@@ -306,11 +316,16 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 				$update_needed = 'yes';
 			}
 			// Set customer data in Woo.
+			WC()->customer->set_billing_address( $customer_data['billing_address'] );
 			WC()->customer->set_billing_country( $customer_data['billing_country'] );
-			WC()->customer->set_shipping_country( $customer_data['shipping_country'] );
+			WC()->customer->set_billing_city( $customer_data['billing_city'] );
 			WC()->customer->set_billing_postcode( $customer_data['billing_postcode'] );
+			WC()->customer->set_shipping_country( $customer_data['shipping_country'] );
+			WC()->customer->set_shipping_city( $customer_data['shipping_city'] );
+			WC()->customer->set_shipping_address( $customer_data['shipping_address'] );
 			WC()->customer->set_shipping_postcode( $customer_data['shipping_postcode'] );
 			WC()->customer->save();
+
 			WC()->cart->calculate_totals();
 		}
 
