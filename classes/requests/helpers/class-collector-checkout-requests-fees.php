@@ -72,13 +72,21 @@ class Collector_Checkout_Requests_Fees {
 		$fees = array();
 
 		/**
-		 * If a delivery module is not used, the shipping is handled in WooCommerce, and must be sent in the fee.shipping object.
+		 * If a delivery module is not used, the shipping is handled in WooCommerce, and must be sent in the fee.shipping object. Retrieves first available.
 		 * Note: if no shipping is available, fees.shipping is simply unset, NOT null.
 		 */
 		$update_shipping = apply_filters( 'coc_update_shipping', ( 'no' === $this->delivery_module || 'v2' === $this->checkout_version ) ); // Filter on if we should update shipping with fees or not.
 		$shipping        = $this->get_shipping();
 		if ( $update_shipping && ! empty( $shipping ) ) {
 			$fees['shipping'] = $shipping;
+		}
+
+		/**
+		 * If "Hide shipping cost until address is entered" is enabled, we don't want to send the shipping cost yet,
+		 * as this will cause a discrepancy between WooCommerce and Walley since the WooCommerce shipping cost is zero.
+		 */
+		if ( ! WC()->cart->show_shipping() ) {
+			unset( $fees['shipping'] );
 		}
 
 		if ( $this->invoice_fee_id ) {
