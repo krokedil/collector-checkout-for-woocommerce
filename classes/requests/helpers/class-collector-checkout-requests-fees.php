@@ -77,7 +77,7 @@ class Collector_Checkout_Requests_Fees {
 		 */
 		$update_shipping = apply_filters( 'coc_update_shipping', ( 'no' === $this->delivery_module || 'v2' === $this->checkout_version ) ); // Filter on if we should update shipping with fees or not.
 		$shipping        = $this->get_shipping();
-		if ( $update_shipping && ! empty( $shipping ) ) {
+		if ( ( WC()->cart->show_shipping() && $update_shipping ) && ! empty( $shipping ) ) {
 			$fees['shipping'] = $shipping;
 		}
 
