@@ -72,6 +72,9 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 
 		// Notification listener.
 		add_action( 'woocommerce_api_collector_checkout_gateway', array( $this, 'notification_listener' ) );
+
+		// Wait for the delivery module to load before calculating shipping.
+		add_filter( 'woocommerce_cart_ready_to_calc_shipping', array( $this, 'show_shipping' ) );
 	}
 
 	/**
@@ -506,4 +509,55 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 			}
 		}
 	}
+
+	/**
+	 * Whether shipping should be displayed in the order review.
+	 *
+	 * If the "Walley Delivery Module" is enabled, the shipping option will not be available, only the default ones (if available).
+	 * This will result in a discrepancy between WooCommerce that has a default shipping cost, and Walley that does not include a shipping cost.
+	 * For this purpose, we want to WooCommerce to wait with calculating shipping until a shipping option from Walley is available.
+	 *
+	 * @param  bool $show_shipping
+	 * @return bool
+	 */
+	public function show_shipping( $show_shipping ) {
+		if ( 'collector_checkout' !== WC()->session->get( 'chosen_payment_method' ) ) {
+			return $show_shipping;
+		}
+
+		$collector_settings = get_option( 'woocommerce_collector_checkout_settings' );
+		$checkout_version   = isset( $collector_settings['checkout_version'] ) ? $collector_settings['checkout_version'] : 'v1';
+
+		switch ( get_woocommerce_currency() ) {
+			case 'SEK':
+				$delivery_module = isset( $collector_settings['collector_delivery_module_se'] ) ? $collector_settings['collector_delivery_module_se'] : 'no';
+				break;
+			case 'NOK':
+				$delivery_module = isset( $collector_settings['collector_delivery_module_no'] ) ? $collector_settings['collector_delivery_module_no'] : 'no';
+				break;
+			case 'DKK':
+				$delivery_module = isset( $collector_settings['collector_delivery_module_dk'] ) ? $collector_settings['collector_delivery_module_dk'] : 'no';
+				break;
+			case 'EUR':
+				$delivery_module = isset( $collector_settings['collector_delivery_module_fi'] ) ? $collector_settings['collector_delivery_module_fi'] : 'no';
+				break;
+			default:
+				$delivery_module = isset( $collector_settings['collector_delivery_module_se'] ) ? $collector_settings['collector_delivery_module_se'] : 'no';
+				break;
+		}
+
+		if ( 'yes' === $delivery_module && 'v1' === $checkout_version ) {
+
+			/* Once the "Walley Delivery Module" is available, display the shipping options. */
+			$chosen_shipping = WC()->session->get( 'chosen_shipping_methods' )[0];
+			if ( ! empty( $chosen_shipping ) && false !== strpos( $chosen_shipping, 'collector_delivery_module' ) ) {
+				return true;
+			}
+
+			return false;
+		}
+
+		return $show_shipping;
+	}
+
 }

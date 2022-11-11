@@ -73,7 +73,7 @@ function collector_wc_show_snippet() {
 				'private_id' => $collector_order['data']['privateId'],
 				'data'       => $collector_data,
 			);
-			$result                      = Collector_Checkout_DB::create_data_entry( $args );
+			Collector_Checkout_DB::create_data_entry( $args );
 
 			$public_token = $collector_order['data']['publicToken'];
 			$output       = array(
@@ -703,7 +703,7 @@ function coc_get_shipping_data( $collector_order ) {
 		// Handle Walley Custom Delivery Adapter.
 		foreach ( $shipping['shipments'] as $shipment ) {
 			$cost = $shipment['shippingChoice']['fee'];
-			
+
 			$shipment_options = $shipment['shippingChoice']['options'] ?? array();
 			foreach ( $shipment_options as $option ) {
 				$cost += $option['fee'] ?? 0;
