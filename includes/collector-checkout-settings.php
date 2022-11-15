@@ -213,6 +213,12 @@ $settings = array(
 		'label'   => __( 'Enable WooCommerce to manage orders in Walley backend (when order status changes to Cancelled and Completed in WooCommerce).', 'collector-checkout-for-woocommerce' ),
 		'default' => 'yes',
 	),
+	'activate_individual_order_lines' => array(
+		'title'   => __( 'Activate individual order lines', 'collector-checkout-for-woocommerce' ),
+		'type'    => 'checkbox',
+		'label'   => __( 'If checked, each order line will be activated instead of the entire order.', 'collector-checkout-for-woocommerce' ),
+		'default' => 'no',
+	),
 	'display_invoice_no'              => array(
 		'title'   => __( 'Invoice number on order page', 'collector-checkout-for-woocommerce' ),
 		'type'    => 'checkbox',
