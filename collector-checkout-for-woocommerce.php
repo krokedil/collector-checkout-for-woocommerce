@@ -509,7 +509,7 @@ function wc_collector_get_default_customer_type() {
  */
 function wc_collector_get_selected_customer_type() {
 	$selected_customer_type = false;
-	if ( method_exists( WC()->session, 'get' ) ) {
+	if ( isset( WC()->session ) && method_exists( WC()->session, 'get' ) ) {
 		$selected_customer_type = WC()->session->get( 'collector_customer_type' );
 	}
 
