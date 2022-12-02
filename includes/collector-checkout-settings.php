@@ -65,10 +65,16 @@ $settings = array(
 		'desc_tip'    => true,
 	),
 	'collector_delivery_module_se'    => array(
-		'title'   => __( 'Shipping Module Sweden', 'collector-checkout-for-woocommerce' ),
+		'title'   => __( 'Walley nShift Delivery', 'collector-checkout-for-woocommerce' ),
 		'type'    => 'checkbox',
-		'label'   => __( 'Activate Shipping Module for Sweden', 'collector-checkout-for-woocommerce' ),
+		'label'   => __( 'Activate Walley nShift Delivery Sweden', 'collector-checkout-for-woocommerce' ),
 		'default' => 'no',
+	),
+	'collector_custom_profile_se'     => array(
+		'title'       => __( 'Custom Profile Sweden', 'collector-checkout-for-woocommerce' ),
+		'type'        => 'text',
+		'description' => __( '', 'collector-checkout-for-woocommerce' ),
+		'default'     => '',
 	),
 	'no_settings_title'               => array(
 		'title' => __( 'Norway', 'collector-checkout-for-woocommerce' ),
@@ -89,10 +95,16 @@ $settings = array(
 		'desc_tip'    => true,
 	),
 	'collector_delivery_module_no'    => array(
-		'title'   => __( 'Shipping Module Norway', 'collector-checkout-for-woocommerce' ),
+		'title'   => __( 'Walley nShift Delivery', 'collector-checkout-for-woocommerce' ),
 		'type'    => 'checkbox',
-		'label'   => __( 'Activate Shipping Module for Norway', 'collector-checkout-for-woocommerce' ),
+		'label'   => __( 'Activate Walley nShift Delivery Norway', 'collector-checkout-for-woocommerce' ),
 		'default' => 'no',
+	),
+	'collector_custom_profile_no'     => array(
+		'title'       => __( 'Custom Profile Norway', 'collector-checkout-for-woocommerce' ),
+		'type'        => 'text',
+		'description' => __( '', 'collector-checkout-for-woocommerce' ),
+		'default'     => '',
 	),
 	'fi_settings_title'               => array(
 		'title' => __( 'Finland', 'collector-checkout-for-woocommerce' ),
@@ -113,10 +125,16 @@ $settings = array(
 		'desc_tip'    => true,
 	),
 	'collector_delivery_module_fi'    => array(
-		'title'   => __( 'Shipping Module Finland', 'collector-checkout-for-woocommerce' ),
+		'title'   => __( 'Walley nShift Delivery', 'collector-checkout-for-woocommerce' ),
 		'type'    => 'checkbox',
-		'label'   => __( 'Activate Shipping Module for Finland', 'collector-checkout-for-woocommerce' ),
+		'label'   => __( 'Activate Walley nShift Delivery Finland', 'collector-checkout-for-woocommerce' ),
 		'default' => 'no',
+	),
+	'collector_custom_profile_fi'     => array(
+		'title'       => __( 'Custom Profile Finland', 'collector-checkout-for-woocommerce' ),
+		'type'        => 'text',
+		'description' => __( '', 'collector-checkout-for-woocommerce' ),
+		'default'     => '',
 	),
 	'dk_settings_title'               => array(
 		'title' => __( 'Denmark', 'collector-checkout-for-woocommerce' ),
@@ -130,10 +148,16 @@ $settings = array(
 		'desc_tip'    => true,
 	),
 	'collector_delivery_module_dk'    => array(
-		'title'   => __( 'Shipping Module Denmark', 'collector-checkout-for-woocommerce' ),
+		'title'   => __( 'Walley nShift Delivery', 'collector-checkout-for-woocommerce' ),
 		'type'    => 'checkbox',
-		'label'   => __( 'Activate Shipping Module for Denmark', 'collector-checkout-for-woocommerce' ),
+		'label'   => __( 'Activate Walley nShift Delivery Denmark', 'collector-checkout-for-woocommerce' ),
 		'default' => 'no',
+	),
+	'collector_custom_profile_dk'     => array(
+		'title'       => __( 'Custom Profile Denmark', 'collector-checkout-for-woocommerce' ),
+		'type'        => 'text',
+		'description' => __( '', 'collector-checkout-for-woocommerce' ),
+		'default'     => '',
 	),
 	'checkout_settings_title'         => array(
 		'title' => __( 'Checkout settings', 'collector-checkout-for-woocommerce' ),

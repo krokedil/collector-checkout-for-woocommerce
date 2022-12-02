@@ -163,13 +163,18 @@ class Collector_Checkout_Requests_Initialize_Checkout extends Collector_Checkout
 			'fees'             => ( null === $order_id ) ? $this->fees() : CCO_WC()->order_fees->get_order_fees( $order_id ),
 		);
 
+		$collector_settings = get_option( 'woocommerce_collector_checkout_settings' );
+
 		// Only send validationUri & profileName if this is a purchase from the checkout.
 		if ( null === $order_id ) {
 			if ( 'yes' === $this->activate_validation_callback ) {
 				$formatted_request_body['validationUri'] = $validation_uri;
 			}
 			if ( 'yes' === $this->delivery_module && 'v1' === $this->checkout_version ) {
-				$formatted_request_body['profileName'] = 'Shipping';
+				$formatted_request_body['profileName'] = trim( $collector_settings[ 'collector_custom_profile_' . strtolower( $this->country_code ) ] );
+				if ( empty( $formatted_request_body['profileName'] ) ) {
+					$formatted_request_body['profileName'] = 'Shipping';
+				}
 			}
 
 			$formatted_request_body['redirectPageUri'] = add_query_arg(
