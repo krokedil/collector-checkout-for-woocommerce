@@ -83,6 +83,7 @@ class Collector_Checkout_Requests_Initialize_Checkout extends Collector_Checkout
 		}
 		$this->customer_type                = $customer_type;
 		$this->country_code                 = $country_code;
+		$this->currency                     = get_woocommerce_currency();
 		$this->terms_page                   = esc_url( get_permalink( wc_get_page_id( 'terms' ) ) );
 		$this->activate_validation_callback = isset( $collector_settings['activate_validation_callback'] ) ? $collector_settings['activate_validation_callback'] : 'no';
 		$this->checkout_version             = isset( $collector_settings['checkout_version'] ) ? $collector_settings['checkout_version'] : 'v1';
@@ -138,9 +139,10 @@ class Collector_Checkout_Requests_Initialize_Checkout extends Collector_Checkout
 		// Set validation URI query args.
 		$validation_uri = add_query_arg(
 			array(
-				'private-id'    => '{checkout.id}',
-				'public-token'  => '{checkout.publictoken}',
-				'customer-type' => $this->customer_type,
+				'private-id'        => '{checkout.id}',
+				'public-token'      => '{checkout.publictoken}',
+				'customer-type'     => $this->customer_type,
+				'customer-currency' => $this->currency,
 			),
 			get_home_url() . '/wc-api/Collector_WC_Validation/'
 		);
