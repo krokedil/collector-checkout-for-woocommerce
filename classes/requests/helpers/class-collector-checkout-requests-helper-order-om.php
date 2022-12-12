@@ -27,17 +27,26 @@ class Collector_Checkout_Requests_Helper_Order_Om {
 		$order_lines = array();
 
 		foreach ( $order->get_items() as $item ) {
-			array_push( $order_lines, self::get_order_line_items( $item ) );
+			$formatted_item = self::get_order_line_items( $item );
+			if ( is_array( $formatted_item ) ) {
+				array_push( $order_lines, $formatted_item );
+			}
 		}
 		foreach ( $order->get_fees() as $fee ) {
-			array_push( $order_lines, self::get_order_line_fees( $fee ) );
+			$formatted_item = self::get_order_line_fees( $fee );
+			if ( is_array( $formatted_item ) ) {
+				array_push( $order_lines, $formatted_item );
+			}
 		}
 
 		foreach ( $order->get_items( 'shipping' ) as $order_item ) {
-			array_push( $order_lines, self::get_order_line_shipping( $order_item, $order ) );
+			$formatted_item = self::get_order_line_shipping( $order_item, $order );
+			if ( is_array( $formatted_item ) ) {
+				array_push( $order_lines, $formatted_item );
+			}
 		}
 
-		// self::rounding_fee( $order_lines, $order );
+		self::rounding_fee( $order_lines, $order );
 		return $order_lines;
 	}
 
@@ -51,25 +60,24 @@ class Collector_Checkout_Requests_Helper_Order_Om {
 	public static function rounding_fee( &$order_lines, $order ) {
 		$rounding_item = array(
 			'ArticleId'   => 'rounding-fee',
-			'description' => __( 'Rounding fee', 'collector-checkout-for-woocommerce' ),
-			'Description' => 0.00,
+			'Description' => __( 'Rounding fee', 'collector-checkout-for-woocommerce' ),
 			'Quantity'    => 1,
 		);
 
-		// Get WooCommerce cart totals including tax.
-		$wc_total        = ( $order->get_total() + $order->get_total_tax() );
+		// Get WooCommerce order total.
+		$wc_total        = $order->get_total();
 		$collector_total = 0;
 
 		// Add all collector item amounts together.
 		foreach ( $order_lines as $order_line ) {
-			$collector_total += round( $order_line['unitPrice'] * $order_line['quantity'], 2 );
+			$collector_total += round( $order_line['UnitPrice'] * $order_line['Quantity'], 2 );
 		}
 
 		// Set the unitprice for the rounding fee to the difference between WooCommerce and Collector.
-		$rounding_item['UnitPrice'] = round( $wc_total - $collector_total, 2 );
+		$rounding_item['UnitPrice'] = self::format_number( $wc_total - $collector_total );
 
 		// Add the rounding item to the collector items only if the price is not zero.
-		if ( ! empty( $rounding_item['unitPrice'] ) ) {
+		if ( ! empty( floatval( $rounding_item['UnitPrice'] ) ) ) {
 			$order_lines[] = $rounding_item;
 		}
 	}
@@ -81,11 +89,19 @@ class Collector_Checkout_Requests_Helper_Order_Om {
 	 * @return array
 	 */
 	public static function get_order_line_items( $order_item ) {
+
+		$unit_price = self::format_number( ( $order_item->get_total() + $order_item->get_total_tax() ) / $order_item->get_quantity() );
+
+		// If price is 0 - return.
+		if ( empty( floatval( $unit_price ) ) ) {
+			return false;
+		}
+
 		return array(
 			'ArticleId'   => self::get_article_number( $order_item ),
 			'Description' => $order_item->get_name(),
 			'Quantity'    => $order_item->get_quantity(),
-			'UnitPrice'   => round( ( ( $order_item->get_total() + $order_item->get_total_tax() ) / $order_item->get_quantity() ), 2 ),
+			'UnitPrice'   => $unit_price,
 		);
 	}
 
@@ -116,11 +132,18 @@ class Collector_Checkout_Requests_Helper_Order_Om {
 			$sku      = 'fee|' . $fee_name;
 		}
 
+		$unit_price = self::format_number( ( $order_fee->get_total() + $order_fee->get_total_tax() ) / $order_fee->get_quantity() );
+
+		// If price is 0 - return.
+		if ( empty( floatval( $unit_price ) ) ) {
+			return false;
+		}
+
 		return array(
 			'ArticleId'   => $sku,
 			'Description' => substr( $order_fee->get_name(), 0, 254 ),
 			'Quantity'    => $order_fee->get_quantity(),
-			'UnitPrice'   => round( ( ( $order_fee->get_total() + $order_fee->get_total_tax() ) / $order_fee->get_quantity() ), 2 ),
+			'UnitPrice'   => $unit_price,
 		);
 	}
 
@@ -144,11 +167,14 @@ class Collector_Checkout_Requests_Helper_Order_Om {
 			}
 		}
 
+		// Shipping should be added even if it is 0 since free shipping is added to the original purchase.
+		$unit_price = self::format_number( ( $order_item->get_total() + $order_item->get_total_tax() ) / $order_item->get_quantity() );
+
 		return array(
 			'ArticleId'   => $shipping_reference,
 			'Description' => self::get_name( $order_item ),
 			'Quantity'    => 1,
-			'UnitPrice'   => round( ( ( $order_item->get_total() + $order_item->get_total_tax() ) / $order_item->get_quantity() ), 2 ),
+			'UnitPrice'   => $unit_price,
 		);
 	}
 
@@ -187,5 +213,15 @@ class Collector_Checkout_Requests_Helper_Order_Om {
 	 */
 	public static function get_name( $order_item ) {
 		return substr( $order_item->get_name(), 0, 255 );
+	}
+
+	/**
+	 * Format the value as needed for Walley order management.
+	 *
+	 * @param int|float $value The unformated value.
+	 * @return string
+	 */
+	public static function format_number( $value ) {
+		return number_format( round( $value, 2 ), 2, '.', '' );
 	}
 }
