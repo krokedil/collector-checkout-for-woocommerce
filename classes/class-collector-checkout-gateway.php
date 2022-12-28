@@ -295,9 +295,11 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 		$payment_status  = $collector_order['data']['purchase']['result'];
 		$payment_method  = $collector_order['data']['purchase']['paymentName'];
 		$payment_id      = $collector_order['data']['purchase']['purchaseIdentifier'];
+		$walley_order_id = $collector_order['data']['order']['orderId'];
 
 		update_post_meta( $order_id, '_collector_payment_method', $payment_method );
 		update_post_meta( $order_id, '_collector_payment_id', $payment_id );
+		update_post_meta( $order_id, '_collector_order_id', sanitize_key( $walley_order_id ) );
 		wc_collector_save_shipping_reference_to_order( $order_id, $collector_order );
 
 		// Save shipping data.
