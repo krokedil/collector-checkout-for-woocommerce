@@ -18,13 +18,15 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 	 * Class constructor.
 	 */
 	public function __construct() {
-		$this->id                 = 'collector_checkout';
-		$this->method_title       = __( 'Walley Checkout', 'collector-checkout-for-woocommerce' );
-		$this->method_description = __( 'Walley Checkout payment solution for WooCommerce.', 'collector-checkout-for-woocommerce' );
-		$this->description        = $this->get_option( 'description' );
-		$this->title              = $this->get_option( 'title' );
-		$this->enabled            = $this->get_option( 'enabled' );
-		$this->checkout_version   = $this->get_option( 'checkout_version' );
+		$this->id                   = 'collector_checkout';
+		$this->method_title         = __( 'Walley Checkout', 'collector-checkout-for-woocommerce' );
+		$this->method_description   = __( 'Walley Checkout payment solution for WooCommerce.', 'collector-checkout-for-woocommerce' );
+		$this->description          = $this->get_option( 'description' );
+		$this->title                = $this->get_option( 'title' );
+		$this->enabled              = $this->get_option( 'enabled' );
+		$this->checkout_version     = $this->get_option( 'checkout_version' );
+		$this->walley_api_client_id = $this->get_option( 'walley_api_client_id' );
+		$this->walley_api_secret    = $this->get_option( 'walley_api_secret' );
 
 		switch ( get_woocommerce_currency() ) {
 			case 'SEK':
@@ -455,6 +457,27 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 	 * @throws SoapFault Soap Fault.
 	 */
 	public function process_refund( $order_id, $amount = null, $reason = '' ) {
+
+		if ( ! empty( $this->walley_api_client_id ) && ! empty( $this->walley_api_secret ) ) {
+			return $this->process_rest_refund( $order_id, $amount, $reason );
+		} else {
+			return $this->process_soap_refund( $order_id, $amount, $reason );
+		}
+
+	}
+
+	/**
+	 *
+	 *  Process refund request if SOAP is still active.
+	 *
+	 * @param int    $order_id Thw WooCommerce order id.
+	 * @param float  $amount Refund amount.
+	 * @param string $reason Refund reason.
+	 *
+	 * @return bool
+	 * @throws SoapFault Soap Fault.
+	 */
+	public function process_soap_refund( $order_id, $amount = null, $reason = '' ) {
 		// Check if amount equals total order.
 		$order = wc_get_order( $order_id );
 		if ( $amount === $order->get_total() ) {
@@ -491,6 +514,20 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 			}
 			return ( ! $result_full || ! $result_part ) ? false : true;
 		}
+	}
+
+	/**
+	 *
+	 *  Process refund request if REST order management is active.
+	 *
+	 * @param int    $order_id The WooCommerce order id.
+	 * @param float  $amount Refund amount.
+	 * @param string $reason Refund reason.
+	 *
+	 * @return bool
+	 */
+	public function process_rest_refund( $order_id, $amount = null, $reason = '' ) {
+		return CCO_WC()->order_management->refund_walley_order( $order_id, $amount, $reason );
 	}
 
 	/**

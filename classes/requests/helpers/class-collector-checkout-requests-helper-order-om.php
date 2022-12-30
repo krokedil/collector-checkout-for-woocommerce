@@ -51,6 +51,28 @@ class Collector_Checkout_Requests_Helper_Order_Om {
 	}
 
 	/**
+	 * Formats the order lines for a refund request.
+	 *
+	 * @param int $order_id The WooCommerce Order ID.
+	 * @return array
+	 */
+	public static function get_refund_items( $order_id ) {
+		$order_lines  = self::get_order_lines( $order_id );
+		$return_lines = array();
+
+		foreach ( $order_lines as $order_line ) {
+			$return_lines[] = array(
+				'ArticleId'   => $order_line['ArticleId'],
+				'Description' => $order_line['Description'],
+				'Quantity'    => abs( $order_line['Quantity'] ),
+				'UnitPrice'   => $order_line['UnitPrice'],
+			);
+		}
+
+		return $return_lines;
+	}
+
+	/**
 	 * Compare and fix rounded total amounts in WooCommerce and Collector.
 	 *
 	 * @param array    $order_lines The cart order line items array.
@@ -160,10 +182,10 @@ class Collector_Checkout_Requests_Helper_Order_Om {
 		if ( isset( $collector_shipping_reference ) && ! empty( $collector_shipping_reference ) ) {
 			$shipping_reference = $collector_shipping_reference;
 		} else {
-			if ( null !== $shipping->get_instance_id() ) {
-				$shipping_reference = 'shipping|' . $shipping->get_method_id() . ':' . $shipping->get_instance_id();
+			if ( null !== $order_item->get_instance_id() ) {
+				$shipping_reference = 'shipping|' . $order_item->get_method_id() . ':' . $order_item->get_instance_id();
 			} else {
-				$shipping_reference = 'shipping|' . $shipping->get_method_id();
+				$shipping_reference = 'shipping|' . $order_item->get_method_id();
 			}
 		}
 

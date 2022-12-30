@@ -81,6 +81,41 @@ class Walley_Checkout_API {
 	}
 
 	/**
+	 * Refund Walley order.
+	 *
+	 * @param int $order_id The WooCommerce order id.
+	 * @return array|WP_Error
+	 */
+	public function refund_walley_order( $order_id, $amount = null, $reason = '' ) {
+
+		$query_args = array(
+			'fields'         => 'id=>parent',
+			'post_type'      => 'shop_order_refund',
+			'post_status'    => 'any',
+			'posts_per_page' => - 1,
+		);
+
+		$refunds         = get_posts( $query_args );
+		$refund_order_id = array_search( $order_id, $refunds, true );
+		if ( is_array( $refund_order_id ) ) {
+			foreach ( $refund_order_id as $key => $value ) {
+				$refund_order_id = $value;
+				break;
+			}
+		}
+
+		$args     = array(
+			'order_id'        => $order_id,
+			'refund_order_id' => $refund_order_id,
+			'amount'          => $amount,
+			'reason'          => $reason,
+		);
+		$request  = new Walley_Checkout_Request_Refund_Order( $args );
+		$response = $request->request();
+		return $this->check_for_api_error( $response );
+	}
+
+	/**
 	 * Checks for WP Errors and returns either the response as array.
 	 *
 	 * @param array $response The response from the request.
