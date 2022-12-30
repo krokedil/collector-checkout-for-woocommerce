@@ -173,3 +173,4 @@ class Collector_Checkout_Post_Checkout {
 	}
 }
 
+new Collector_Checkout_Post_Checkout();
