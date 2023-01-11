@@ -48,7 +48,7 @@ For help setting up and configuring Walley Checkout for WooCommerce please refer
 * Tweak         - Adds customer currency to validation url. Used to get correct store id in GET collector session request.
 * Fix           - Improve order total calculation in rounding fee logic related to Delivery Module settings. 
 * Fix           - Try to set customer address and city if possible when collectorCheckoutCustomerUpdated JS event is triggered.
-* Fix           - Check if shipping object exists in Woo before trying to trigger update fee request to Walley (that is used to update shiping).
+* Fix           - Check if shipping object exists in Woo before trying to trigger update fee request to Walley (that is used to update shipping).
 * Fix           - Wait for the delivery module to load before calculating shipping.
 * Fix           - Check if session exists before trying to access it in wc_collector_get_selected_customer_type. To avoid PHP error.
 
