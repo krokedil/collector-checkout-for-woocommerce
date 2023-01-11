@@ -28,16 +28,16 @@ $settings = array(
 	'walley_api_client_id'            => array(
 		'title'       => __( 'API Client ID', 'collector-checkout-for-woocommerce' ),
 		'type'        => 'text',
-		'description' => __( 'Enter your Walley Checkout API Client ID', 'collector-checkout-for-woocommerce' ),
+		'description' => __( 'Enter your Walley Checkout API Client ID. Used for Walley\'s new Management API.', 'collector-checkout-for-woocommerce' ),
 		'default'     => '',
-		'desc_tip'    => true,
+		'desc_tip'    => false,
 	),
 	'walley_api_secret'               => array(
 		'title'       => __( 'API Secret', 'collector-checkout-for-woocommerce' ),
 		'type'        => 'text',
-		'description' => __( 'Enter your Walley Checkout API Secret', 'collector-checkout-for-woocommerce' ),
+		'description' => __( 'Enter your Walley Checkout API Secret. Used for Walley\'s new Management API.', 'collector-checkout-for-woocommerce' ),
 		'default'     => '',
-		'desc_tip'    => true,
+		'desc_tip'    => false,
 	),
 	'collector_username'              => array(
 		'title'       => __( 'Username', 'collector-checkout-for-woocommerce' ),
