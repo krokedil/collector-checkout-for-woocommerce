@@ -2,11 +2,11 @@
 Contributors: collectorbank, krokedil, NiklasHogefjord
 Tags: ecommerce, e-commerce, woocommerce, collector, checkout, walley
 Requires at least: 5.0
-Tested up to: 6.1
+Tested up to: 6.1.1
 Requires PHP: 7.0
-Stable tag: 3.3.1
+Stable tag: 3.4.0
 WC requires at least: 5.0.0
-WC tested up to: 7.1.0
+WC tested up to: 7.2.3
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -39,6 +39,19 @@ For help setting up and configuring Walley Checkout for WooCommerce please refer
 
 
 == CHANGELOG ==
+= 2023.01.11    - version 3.4.0 =
+* Feature       - Adds shipping profile name setting option. Defaults to Shipping if Walley nShift Delivery is used but no profile name is entered.
+* Feature       - Adds support for Part activate invoice (activation on order row level). Can be used together with Partial Delivery for WooCommerce plugin.
+* Feature       - Adds support for new Walley Management API (used for order management).
+* Tweak         - Send shipping cost to Walley first when shipping is available in Woo.
+* Tweak         - Limit rounding fee to small amount.
+* Tweak         - Adds customer currency to validation url. Used to get correct store id in GET collector session request.
+* Fix           - Improve order total calculation in rounding fee logic related to Delivery Module settings. 
+* Fix           - Try to set customer address and city if possible when collectorCheckoutCustomerUpdated JS event is triggered.
+* Fix           - Check if shipping object exists in Woo before trying to trigger update fee request to Walley (that is used to update shiping).
+* Fix           - Wait for the delivery module to load before calculating shipping.
+* Fix           - Check if session exists before trying to access it in wc_collector_get_selected_customer_type. To avoid PHP error.
+
 = 2022.10.24    - version 3.3.1 =
 * Fix           - Fixed a warning due to access before initialization.
 * Fix           - Fixed an error due to the session not being available.
