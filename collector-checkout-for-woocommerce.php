@@ -89,6 +89,10 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 		 */
 		public function __construct() {
 
+			$collector_settings         = get_option( 'woocommerce_collector_checkout_settings', array() );
+			$this->walley_api_client_id = $collector_settings['walley_api_client_id'] ?? '';
+			$this->walley_api_secret    = $collector_settings['walley_api_secret'] ?? '';
+
 			// Initiate the gateway.
 			add_action( 'plugins_loaded', array( $this, 'init' ) );
 			// Load scripts.
@@ -120,7 +124,6 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 			// Include the Classes.
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-logger.php';
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-ajax-calls.php';
-			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-post-checkout.php';
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-admin-notices.php';
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-order-emails.php';
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-create-order-fallback.php';
@@ -135,6 +138,44 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-shipping-method.php';
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-delivery-module.php';
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-product-fields.php';
+
+			// Order management. SOAP will be deprecated.
+			if ( ! empty( $this->walley_api_client_id ) && ! empty( $this->walley_api_secret ) ) {
+
+				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-walley-checkout-api.php';
+				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-walley-checkout-order-management.php';
+
+				// New OM class files.
+				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/class-walley-checkout-request.php';
+				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/class-walley-checkout-request-get.php';
+				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/class-walley-checkout-request-post.php';
+				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/manage-orders/get/class-walley-checkout-request-get-order.php';
+				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/manage-orders/post/class-walley-checkout-request-capture-order.php';
+				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/manage-orders/post/class-walley-checkout-request-part-capture-order.php';
+				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/manage-orders/post/class-walley-checkout-request-cancel-order.php';
+				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/manage-orders/post/class-walley-checkout-request-refund-order.php';
+				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/manage-orders/post/class-walley-checkout-request-refund-order-by-amount.php';
+				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/oauth2/class-walley-checkout-request-access-token.php';
+
+				// Set class variables related to new Management API.
+				$this->api              = new Walley_Checkout_API();
+				$this->order_management = new Walley_Checkout_Order_Management();
+
+			} else {
+
+				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-post-checkout.php';
+
+				// Include the Soap Request Classes.
+				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/soap/class-collector-checkout-soap-requests-activate-invoice.php';
+				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/soap/class-collector-checkout-soap-requests-part-activate-invoice.php';
+				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/soap/class-collector-checkout-soap-requests-cancel-invoice.php';
+				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/soap/class-collector-checkout-soap-requests-credit-payment.php';
+				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/soap/class-collector-checkout-soap-requests-adjust-invoice.php';
+				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/soap/class-collector-checkout-soap-requests-part-credit-invoice.php';
+
+				// Set class variables related to old Payments/SOAP API.
+				$this->order_management = new Collector_Checkout_Post_Checkout();
+			}
 
 			// Functions.
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/includes/collector-checkout-for-woocommerce-functions.php';
@@ -163,14 +204,6 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/helpers/class-collector-checkout-requests-helper-order-om.php';
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/helpers/class-collector-checkout-requests-helper-order-fees.php';
 
-			// Include the Soap Request Classes.
-			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/soap/class-collector-checkout-soap-requests-activate-invoice.php';
-			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/soap/class-collector-checkout-soap-requests-part-activate-invoice.php';
-			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/soap/class-collector-checkout-soap-requests-cancel-invoice.php';
-			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/soap/class-collector-checkout-soap-requests-credit-payment.php';
-			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/soap/class-collector-checkout-soap-requests-adjust-invoice.php';
-			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/soap/class-collector-checkout-soap-requests-part-credit-invoice.php';
-
 			// Set variables for shorthand access to classes.
 			$this->order_items = new Collector_Checkout_Requests_Helper_Order();
 			$this->order_fees  = new Collector_Checkout_Requests_Helper_Order_Fees();
@@ -187,8 +220,7 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 			add_filter( 'plugin_action_links_' . plugin_basename( __FILE__ ), array( $this, 'add_action_links' ) );
 
 			// Set class variables.
-			$this->logger           = new Collector_Checkout_Logger();
-			$this->order_management = new Collector_Checkout_Post_Checkout();
+			$this->logger = new Collector_Checkout_Logger();
 		}
 
 		/**

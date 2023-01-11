@@ -32,19 +32,33 @@ $settings = array(
 		'default'     => '',
 		'desc_tip'    => true,
 	),
-	'collector_password'              => array(
-		'title'       => __( 'Password', 'collector-checkout-for-woocommerce' ),
-		'type'        => 'text',
-		'description' => __( 'Enter your Walley Checkout Password', 'collector-checkout-for-woocommerce' ),
-		'default'     => '',
-		'desc_tip'    => true,
-	),
 	'collector_shared_key'            => array(
 		'title'       => __( 'Shared Key', 'collector-checkout-for-woocommerce' ),
 		'type'        => 'text',
 		'description' => __( 'Enter your Walley Checkout Shared Key', 'collector-checkout-for-woocommerce' ),
 		'default'     => '',
 		'desc_tip'    => true,
+	),
+	'walley_api_client_id'            => array(
+		'title'       => __( 'API Client ID', 'collector-checkout-for-woocommerce' ),
+		'type'        => 'text',
+		'description' => __( 'Enter your Walley Checkout API Client ID. Used for Walley\'s new Management API. If entered this API will be used instead of the old SOAP based.', 'collector-checkout-for-woocommerce' ),
+		'default'     => '',
+		'desc_tip'    => false,
+	),
+	'walley_api_secret'               => array(
+		'title'       => __( 'API Secret', 'collector-checkout-for-woocommerce' ),
+		'type'        => 'text',
+		'description' => __( 'Enter your Walley Checkout API Secret. Used for Walley\'s new Management API. If entered this API will be used instead of the old SOAP based.', 'collector-checkout-for-woocommerce' ),
+		'default'     => '',
+		'desc_tip'    => false,
+	),
+	'collector_password'              => array(
+		'title'       => __( 'Password', 'collector-checkout-for-woocommerce' ),
+		'type'        => 'text',
+		'description' => __( 'Enter your Walley Checkout Password. Used for Walley\'s old SOAP based Payments API (for order management).', 'collector-checkout-for-woocommerce' ),
+		'default'     => '',
+		'desc_tip'    => false,
 	),
 	'se_settings_title'               => array(
 		'title' => __( 'Sweden', 'collector-checkout-for-woocommerce' ),
@@ -275,7 +289,7 @@ if ( version_compare( $wc_version, '3.4', '>=' ) ) {
 	$new_settings = array();
 	foreach ( $settings as $key => $value ) {
 		$new_settings[ $key ] = $value;
-		if ( 'collector_shared_key' === $key ) {
+		if ( 'collector_password' === $key ) {
 			$new_settings['display_privacy_policy_text'] = array(
 				'title'   => __( 'Display checkout privacy policy text', 'collector-checkout-for-woocommerce' ),
 				'label'   => __( 'Select if you want to show the <em>Checkout privacy policy</em> text on the checkout page, and where you want to display it.', 'collector-checkout-for-woocommerce' ),
