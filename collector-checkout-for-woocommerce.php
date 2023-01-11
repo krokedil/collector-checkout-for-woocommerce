@@ -172,6 +172,9 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/soap/class-collector-checkout-soap-requests-credit-payment.php';
 				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/soap/class-collector-checkout-soap-requests-adjust-invoice.php';
 				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/soap/class-collector-checkout-soap-requests-part-credit-invoice.php';
+
+				// Set class variables related to old Payments/SOAP API.
+				$this->order_management = new Collector_Checkout_Post_Checkout();
 			}
 
 			// Functions.
