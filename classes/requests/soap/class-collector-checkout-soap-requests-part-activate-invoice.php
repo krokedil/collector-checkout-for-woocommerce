@@ -1,7 +1,8 @@
 <?php
 /**
- * Cancel a pending invoice
+ * Creates Collector Part Activation of Invoice.
  *
+ * @class    Collector_Checkout_SOAP_Requests_Part_Activate_Invoice
  * @package  Collector/Classes/Requests/Soap
  */
 
@@ -9,10 +10,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
+
 /**
- * Class Collector_Checkout_SOAP_Requests_Cancel_Invoice
+ * Class Collector_Checkout_SOAP_Requests_Part_Activate_Invoice
  */
-class Collector_Checkout_SOAP_Requests_Cancel_Invoice {
+class Collector_Checkout_SOAP_Requests_Part_Activate_Invoice {
 
 
 	/**
@@ -35,18 +37,28 @@ class Collector_Checkout_SOAP_Requests_Cancel_Invoice {
 	 * @var string
 	 */
 	public $password = '';
+
 	/**
 	 * The store id.
 	 *
 	 * @var mixed|string
 	 */
 	public $store_id = '';
+
 	/**
 	 * The country code.
 	 *
 	 * @var string
 	 */
 	public $country_code = '';
+
+	/**
+	 * Customer type
+	 *
+	 * @var string
+	 */
+	public $customer_type = '';
+
 
 	/**
 	 * Class constructor.
@@ -98,41 +110,75 @@ class Collector_Checkout_SOAP_Requests_Cancel_Invoice {
 	 * @param int $order_id The WooCommerce order id.
 	 *
 	 * @return void
-	 * @throws SoapFault Soap Fault.
+	 * @throws SoapFault SOAP Fault.
 	 */
 	public function request( $order_id ) {
-		$order = wc_get_order( $order_id );
-		$soap  = new SoapClient( $this->endpoint );
-		$args  = $this->get_request_args( $order_id );
+
+		$soap = new SoapClient( $this->endpoint );
+		$args = $this->get_request_args( $order_id );
 
 		$headers   = array();
 		$headers[] = new SoapHeader( 'http://schemas.ecommerce.collector.se/v30/InvoiceService', 'Username', $this->username );
 		$headers[] = new SoapHeader( 'http://schemas.ecommerce.collector.se/v30/InvoiceService', 'Password', $this->password );
 		$soap->__setSoapHeaders( $headers );
 
+		$order    = wc_get_order( $order_id );
+		$due_date = '';
+
 		try {
-			$request = $soap->CancelInvoice( $args );
+			$request = $soap->PartActivateInvoice( $args );
 		} catch ( SoapFault $e ) {
 			$request = $e->getMessage();
-			$order->update_status( $order->get_status() );
-			// translators: The error message.
-			$order->add_order_note( sprintf( __( 'Order failed to cancel with Collector Bank - %s', 'collector-checkout-for-woocommerce' ), $e->getMessage() ) );
-
-			$log = CCO_WC()->logger::format_log( $order_id, 'SOAP', 'CCO FAILED cancel order', $args, '', wp_json_encode( $e ) . wp_json_encode( $headers ), '' );
-			CCO_WC()->logger::log( $log );
+			$order->set_status( 'on-hold' );
+			$order->save();
 		}
 
-		if ( property_exists( $request, 'CorrelationId' ) && null === $request->CorrelationId ) {// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
-			$order->add_order_note( sprintf( __( 'Order canceled with Collector Bank', 'collector-checkout-for-woocommerce' ) ) );
-			update_post_meta( $order_id, '_collector_order_cancelled', time() );
-			$log = CCO_WC()->logger::format_log( $order_id, 'SOAP', 'CCO Cancel order', $args, '', wp_json_encode( $request ), '' );
+		// todo maybe : solution for snake case errors is to cast response to key-value array??!
+		if ( isset( $request->TotalAmount ) ) { // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
+
+			if ( isset( $request->InvoiceUrl ) ) { // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
+				update_post_meta( $order_id, '_collector_invoice_url', wc_clean( $request->InvoiceUrl ) );// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
+				$due_date = gmdate( get_option( 'date_format' ) . ' - ' . get_option( 'time_format' ), strtotime( $request->DueDate ) ); // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
+				// Translators: Invoice due date.
+				$due_date = sprintf( __( 'Invoice due date: %s.', 'collector-checkout-for-woocommerce' ), $due_date );
+			}
+
+			if ( isset( $request->NewInvoiceNo ) && ! empty( $request->NewInvoiceNo ) ) {
+
+				$parent_order_id = $order->get_parent_id();
+
+				// Save info to parent order (if one exists).
+				if ( ! empty( $parent_order_id ) ) {
+					$collector_new_invoice_no = json_decode( get_post_meta( $parent_order_id, '_collector_activate_invoice_data', true ), true );
+					if ( is_array( $collector_new_invoice_no ) ) {
+						$collector_new_invoice_no[] = (array) $request;
+					} else {
+						$collector_new_invoice_no = array(
+							(array) $request,
+						);
+					}
+					update_post_meta( $parent_order_id, '_collector_activate_invoice_data', wp_json_encode( $collector_new_invoice_no ) );
+				}
+
+				update_post_meta( $order_id, '_collector_activate_invoice_data', wp_json_encode( (array) $request ) );
+
+			}
+
+			// translators: 1. Due date.
+			$order->add_order_note( sprintf( __( 'Order part activated with Walley Checkout. Activated amount %s', 'collector-checkout-for-woocommerce' ), wc_price( $request->TotalAmount, array( 'currency' => $order->get_order_currency() ) ), $due_date ) );
+			update_post_meta( $order_id, '_collector_order_activated', time() );
+
+			$log = CCO_WC()->logger::format_log( $order_id, 'SOAP', 'CCO Part Activate order ', $args, '', wp_json_encode( $request ), '' );
 			CCO_WC()->logger::log( $log );
+
 		} else {
 			$order->update_status( $order->get_status() );
-			// translators: Cancel request.
-			$order->add_order_note( sprintf( __( 'Order failed to cancel with Collector Bank - %s', 'collector-checkout-for-woocommerce' ), wp_json_encode( $request ) ) );
+			$failed_request = wp_json_encode( $request );
+			// translators: 1. Failed request.
+			$order->add_order_note( sprintf( __( 'Order failed to part activate with Walley Checkout - %s', 'collector-checkout-for-woocommerce' ), $failed_request ) );
 
-			$log = CCO_WC()->logger::format_log( $order_id, 'SOAP', 'CCO FAILED cancel order', $args, '', wp_json_encode( $request ) . wp_json_encode( $headers ), '' );
+			// TODO $e is not defined.
+			$log = CCO_WC()->logger::format_log( $order_id, 'SOAP', 'CCO FAILED Part Activate order', $args, '', wp_json_encode( $request ) . wp_json_encode( $headers ), '' );
 			CCO_WC()->logger::log( $log );
 		}
 	}
@@ -155,11 +201,11 @@ class Collector_Checkout_SOAP_Requests_Cancel_Invoice {
 		} else {
 			$invoice_no = get_post_meta( $order_id, '_collector_payment_id', true );
 		}
-
 		return array(
 			'StoreId'     => $this->store_id,
 			'CountryCode' => $this->country_code,
 			'InvoiceNo'   => $invoice_no,
+			'ArticleList' => Collector_Checkout_Requests_Helper_Order_Om::get_order_lines( $order_id ),
 		);
 	}
 }

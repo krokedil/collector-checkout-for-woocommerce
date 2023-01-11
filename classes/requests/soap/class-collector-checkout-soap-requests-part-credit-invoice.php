@@ -152,12 +152,20 @@ class Collector_Checkout_SOAP_Requests_Part_Credit_Invoice {
 	 */
 	public function get_request_args( $order_id, $amount, $reason, $refunded_items ) {
 
-		$order          = wc_get_order( $order_id );
-		$transaction_id = $order->get_transaction_id();
-		$request_args   = array(
+		$order                  = wc_get_order( $order_id );
+		$collector_invoice_data = json_decode( get_post_meta( $order_id, '_collector_activate_invoice_data', true ), true );
+
+		if ( is_array( $collector_invoice_data ) && isset( $collector_invoice_data[0]['NewInvoiceNo'] ) ) {
+			// The newest invoice is the latest one. Let's use that.
+			$reversed_invoice_data = array_reverse( $collector_invoice_data );
+			$invoice_no            = $reversed_invoice_data[0]['NewInvoiceNo'];
+		} else {
+			$invoice_no = get_post_meta( $order_id, '_collector_payment_id', true );
+		}
+		$request_args = array(
 			'StoreId'       => $this->store_id,
 			'CountryCode'   => $this->country_code,
-			'InvoiceNo'     => $transaction_id,
+			'InvoiceNo'     => $invoice_no,
 			'ArticleList'   => $refunded_items,
 			'CreditDate'    => gmdate( 'Y-m-d\TH:i:s', strtotime( 'now' ) ),
 			'CorrelationId' => Collector_Checkout_Create_Refund_Data::get_refunded_order( $order_id ),

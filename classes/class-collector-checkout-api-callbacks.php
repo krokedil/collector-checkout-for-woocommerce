@@ -77,7 +77,9 @@ class Collector_Api_Callbacks {
 	public function validation_cb() {
 		$private_id    = filter_input( INPUT_GET, 'private-id', FILTER_SANITIZE_STRING );
 		$customer_type = filter_input( INPUT_GET, 'customer-type', FILTER_SANITIZE_STRING );
-		CCO_WC()->logger::log( 'Validation Callback hit. Private id: ' . wp_json_encode( $private_id ) . ' Customer type: ' . $customer_type );
+		$currency      = filter_input( INPUT_GET, 'customer-currency', FILTER_SANITIZE_STRING );
+
+		CCO_WC()->logger::log( 'Validation Callback hit. Private id: ' . wp_json_encode( $private_id ) . '. Customer type: ' . $customer_type . '. Customer currency: ' . $currency );
 
 		if ( empty( $private_id ) ) {
 			return;
@@ -85,7 +87,7 @@ class Collector_Api_Callbacks {
 		$collector_db_data   = get_collector_data_from_db( $private_id );
 		$this->db_session_id = $collector_db_data->session_id;
 
-		$response              = new Collector_Checkout_Requests_Get_Checkout_Information( $private_id, $customer_type );
+		$response              = new Collector_Checkout_Requests_Get_Checkout_Information( $private_id, $customer_type, $currency );
 		$this->collector_order = $response->request();
 
 		// Check if we have a session id.
@@ -648,6 +650,11 @@ class Collector_Api_Callbacks {
 	 */
 	public function get_collector_fee_total() {
 		$fee_total_amount = 0;
+
+		if ( ! isset( $this->collector_order['data']['fees'] ) ) {
+			return 0;
+		}
+
 		// Loop all fees and them to the total.
 		foreach ( $this->collector_order['data']['fees'] as $cart_fee => $fee ) {
 			// Ignore shipping fees since they will be included by the shipping amount, but only if a shipping object exists under data.

@@ -18,9 +18,10 @@ class Collector_Checkout_Post_Checkout {
 	 * Class constructor
 	 */
 	public function __construct() {
-		$collector_settings       = get_option( 'woocommerce_collector_checkout_settings' );
-		$this->manage_orders      = $collector_settings['manage_collector_orders'];
-		$this->display_invoice_no = $collector_settings['display_invoice_no'];
+		$collector_settings                    = get_option( 'woocommerce_collector_checkout_settings' );
+		$this->manage_orders                   = $collector_settings['manage_collector_orders'];
+		$this->display_invoice_no              = $collector_settings['display_invoice_no'];
+		$this->activate_individual_order_lines = $collector_settings['activate_individual_order_lines'] ?? 'no';
 
 		if ( 'yes' === $this->manage_orders ) {
 			add_action( 'woocommerce_order_status_completed', array( $this, 'collector_order_completed' ) );
@@ -60,8 +61,14 @@ class Collector_Checkout_Post_Checkout {
 			return;
 		}
 
-		$activate_order = new Collector_Checkout_SOAP_Requests_Activate_Invoice( $order_id );
-		$activate_order->request( $order_id );
+		// Part activate or activate the entire order.
+		if ( 'yes' === $this->activate_individual_order_lines ) {
+			$activate_order = new Collector_Checkout_SOAP_Requests_Part_Activate_Invoice( $order_id );
+			$activate_order->request( $order_id );
+		} else {
+			$activate_order = new Collector_Checkout_SOAP_Requests_Activate_Invoice( $order_id );
+			$activate_order->request( $order_id );
+		}
 	}
 
 	/**
@@ -165,4 +172,4 @@ class Collector_Checkout_Post_Checkout {
 		return $order_number;
 	}
 }
-$collector_checkout_post_checkout = new Collector_Checkout_Post_Checkout();
+

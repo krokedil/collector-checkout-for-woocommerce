@@ -32,19 +32,33 @@ $settings = array(
 		'default'     => '',
 		'desc_tip'    => true,
 	),
-	'collector_password'              => array(
-		'title'       => __( 'Password', 'collector-checkout-for-woocommerce' ),
-		'type'        => 'text',
-		'description' => __( 'Enter your Walley Checkout Password', 'collector-checkout-for-woocommerce' ),
-		'default'     => '',
-		'desc_tip'    => true,
-	),
 	'collector_shared_key'            => array(
 		'title'       => __( 'Shared Key', 'collector-checkout-for-woocommerce' ),
 		'type'        => 'text',
 		'description' => __( 'Enter your Walley Checkout Shared Key', 'collector-checkout-for-woocommerce' ),
 		'default'     => '',
 		'desc_tip'    => true,
+	),
+	'walley_api_client_id'            => array(
+		'title'       => __( 'API Client ID', 'collector-checkout-for-woocommerce' ),
+		'type'        => 'text',
+		'description' => __( 'Enter your Walley Checkout API Client ID. Used for Walley\'s new Management API. If entered this API will be used instead of the old SOAP based.', 'collector-checkout-for-woocommerce' ),
+		'default'     => '',
+		'desc_tip'    => false,
+	),
+	'walley_api_secret'               => array(
+		'title'       => __( 'API Secret', 'collector-checkout-for-woocommerce' ),
+		'type'        => 'text',
+		'description' => __( 'Enter your Walley Checkout API Secret. Used for Walley\'s new Management API. If entered this API will be used instead of the old SOAP based.', 'collector-checkout-for-woocommerce' ),
+		'default'     => '',
+		'desc_tip'    => false,
+	),
+	'collector_password'              => array(
+		'title'       => __( 'Password', 'collector-checkout-for-woocommerce' ),
+		'type'        => 'text',
+		'description' => __( 'Enter your Walley Checkout Password. Used for Walley\'s old SOAP based Payments API (for order management).', 'collector-checkout-for-woocommerce' ),
+		'default'     => '',
+		'desc_tip'    => false,
 	),
 	'se_settings_title'               => array(
 		'title' => __( 'Sweden', 'collector-checkout-for-woocommerce' ),
@@ -65,10 +79,16 @@ $settings = array(
 		'desc_tip'    => true,
 	),
 	'collector_delivery_module_se'    => array(
-		'title'   => __( 'Shipping Module Sweden', 'collector-checkout-for-woocommerce' ),
+		'title'   => __( 'Walley nShift Delivery', 'collector-checkout-for-woocommerce' ),
 		'type'    => 'checkbox',
-		'label'   => __( 'Activate Shipping Module for Sweden', 'collector-checkout-for-woocommerce' ),
+		'label'   => __( 'Activate Walley nShift Delivery Sweden', 'collector-checkout-for-woocommerce' ),
 		'default' => 'no',
+	),
+	'collector_custom_profile_se'     => array(
+		'title'       => __( 'Custom Profile Sweden', 'collector-checkout-for-woocommerce' ),
+		'type'        => 'text',
+		'description' => __( '', 'collector-checkout-for-woocommerce' ),
+		'default'     => '',
 	),
 	'no_settings_title'               => array(
 		'title' => __( 'Norway', 'collector-checkout-for-woocommerce' ),
@@ -89,10 +109,16 @@ $settings = array(
 		'desc_tip'    => true,
 	),
 	'collector_delivery_module_no'    => array(
-		'title'   => __( 'Shipping Module Norway', 'collector-checkout-for-woocommerce' ),
+		'title'   => __( 'Walley nShift Delivery', 'collector-checkout-for-woocommerce' ),
 		'type'    => 'checkbox',
-		'label'   => __( 'Activate Shipping Module for Norway', 'collector-checkout-for-woocommerce' ),
+		'label'   => __( 'Activate Walley nShift Delivery Norway', 'collector-checkout-for-woocommerce' ),
 		'default' => 'no',
+	),
+	'collector_custom_profile_no'     => array(
+		'title'       => __( 'Custom Profile Norway', 'collector-checkout-for-woocommerce' ),
+		'type'        => 'text',
+		'description' => __( '', 'collector-checkout-for-woocommerce' ),
+		'default'     => '',
 	),
 	'fi_settings_title'               => array(
 		'title' => __( 'Finland', 'collector-checkout-for-woocommerce' ),
@@ -113,10 +139,16 @@ $settings = array(
 		'desc_tip'    => true,
 	),
 	'collector_delivery_module_fi'    => array(
-		'title'   => __( 'Shipping Module Finland', 'collector-checkout-for-woocommerce' ),
+		'title'   => __( 'Walley nShift Delivery', 'collector-checkout-for-woocommerce' ),
 		'type'    => 'checkbox',
-		'label'   => __( 'Activate Shipping Module for Finland', 'collector-checkout-for-woocommerce' ),
+		'label'   => __( 'Activate Walley nShift Delivery Finland', 'collector-checkout-for-woocommerce' ),
 		'default' => 'no',
+	),
+	'collector_custom_profile_fi'     => array(
+		'title'       => __( 'Custom Profile Finland', 'collector-checkout-for-woocommerce' ),
+		'type'        => 'text',
+		'description' => __( '', 'collector-checkout-for-woocommerce' ),
+		'default'     => '',
 	),
 	'dk_settings_title'               => array(
 		'title' => __( 'Denmark', 'collector-checkout-for-woocommerce' ),
@@ -130,10 +162,16 @@ $settings = array(
 		'desc_tip'    => true,
 	),
 	'collector_delivery_module_dk'    => array(
-		'title'   => __( 'Shipping Module Denmark', 'collector-checkout-for-woocommerce' ),
+		'title'   => __( 'Walley nShift Delivery', 'collector-checkout-for-woocommerce' ),
 		'type'    => 'checkbox',
-		'label'   => __( 'Activate Shipping Module for Denmark', 'collector-checkout-for-woocommerce' ),
+		'label'   => __( 'Activate Walley nShift Delivery Denmark', 'collector-checkout-for-woocommerce' ),
 		'default' => 'no',
+	),
+	'collector_custom_profile_dk'     => array(
+		'title'       => __( 'Custom Profile Denmark', 'collector-checkout-for-woocommerce' ),
+		'type'        => 'text',
+		'description' => __( '', 'collector-checkout-for-woocommerce' ),
+		'default'     => '',
 	),
 	'checkout_settings_title'         => array(
 		'title' => __( 'Checkout settings', 'collector-checkout-for-woocommerce' ),
@@ -213,6 +251,12 @@ $settings = array(
 		'label'   => __( 'Enable WooCommerce to manage orders in Walley backend (when order status changes to Cancelled and Completed in WooCommerce).', 'collector-checkout-for-woocommerce' ),
 		'default' => 'yes',
 	),
+	'activate_individual_order_lines' => array(
+		'title'   => __( 'Activate individual order lines', 'collector-checkout-for-woocommerce' ),
+		'type'    => 'checkbox',
+		'label'   => __( 'If checked, each order line will be activated instead of the entire order.', 'collector-checkout-for-woocommerce' ),
+		'default' => 'no',
+	),
 	'display_invoice_no'              => array(
 		'title'   => __( 'Invoice number on order page', 'collector-checkout-for-woocommerce' ),
 		'type'    => 'checkbox',
@@ -245,7 +289,7 @@ if ( version_compare( $wc_version, '3.4', '>=' ) ) {
 	$new_settings = array();
 	foreach ( $settings as $key => $value ) {
 		$new_settings[ $key ] = $value;
-		if ( 'collector_shared_key' === $key ) {
+		if ( 'collector_password' === $key ) {
 			$new_settings['display_privacy_policy_text'] = array(
 				'title'   => __( 'Display checkout privacy policy text', 'collector-checkout-for-woocommerce' ),
 				'label'   => __( 'Select if you want to show the <em>Checkout privacy policy</em> text on the checkout page, and where you want to display it.', 'collector-checkout-for-woocommerce' ),

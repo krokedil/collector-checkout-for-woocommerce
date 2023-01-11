@@ -73,7 +73,7 @@ function collector_wc_show_snippet() {
 				'private_id' => $collector_order['data']['privateId'],
 				'data'       => $collector_data,
 			);
-			$result                      = Collector_Checkout_DB::create_data_entry( $args );
+			Collector_Checkout_DB::create_data_entry( $args );
 
 			$public_token = $collector_order['data']['publicToken'];
 			$output       = array(
@@ -466,6 +466,7 @@ function wc_collector_confirm_order( $order_id, $private_id = null ) {
 	$payment_status  = $collector_order['data']['purchase']['result'];
 	$payment_method  = $collector_order['data']['purchase']['paymentName'];
 	$payment_id      = $collector_order['data']['purchase']['purchaseIdentifier'];
+	$walley_order_id = $collector_order['data']['order']['orderId'];
 
 	// Check if we need to update reference in collectors system.
 	if ( empty( $collector_order['data']['reference'] ) ) {
@@ -485,6 +486,7 @@ function wc_collector_confirm_order( $order_id, $private_id = null ) {
 
 	update_post_meta( $order_id, '_collector_payment_method', $payment_method );
 	update_post_meta( $order_id, '_collector_payment_id', $payment_id );
+	update_post_meta( $order_id, '_collector_order_id', sanitize_key( $walley_order_id ) );
 	wc_collector_save_shipping_reference_to_order( $order_id, $collector_order );
 
 	// Tie this order to a user if we have one.
@@ -703,7 +705,7 @@ function coc_get_shipping_data( $collector_order ) {
 		// Handle Walley Custom Delivery Adapter.
 		foreach ( $shipping['shipments'] as $shipment ) {
 			$cost = $shipment['shippingChoice']['fee'];
-			
+
 			$shipment_options = $shipment['shippingChoice']['options'] ?? array();
 			foreach ( $shipment_options as $option ) {
 				$cost += $option['fee'] ?? 0;
@@ -727,4 +729,34 @@ function coc_get_shipping_data( $collector_order ) {
 	}
 
 	return $shipping_data;
+}
+
+/**
+ * Prints error message as notices.
+ *
+ * Sometimes an error message cannot be printed (e.g., in a cronjob environment) where there is
+ * no front end to display the error message, or otherwise irrelevant for a human. For that reason, we have to check if the print functions are undefined.
+ *
+ * @param WP_Error $wp_error A WordPress error object.
+ * @return void
+ */
+function walley_print_error_message( $wp_error ) {
+	if ( is_ajax() ) {
+		if ( function_exists( 'wc_add_notice' ) ) {
+			$print = 'wc_add_notice';
+		}
+	} else {
+		if ( function_exists( 'wc_print_notice' ) ) {
+			$print = 'wc_print_notice';
+		}
+	}
+
+	if ( ! isset( $print ) ) {
+		return;
+	}
+
+	foreach ( $wp_error->get_error_messages() as $error ) {
+		$message = is_array( $error ) ? implode( ' ', $error ) : $error;
+		$print( $message, 'error' );
+	}
 }

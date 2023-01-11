@@ -66,7 +66,6 @@
     
     // Customer updated - event triggered when customer changes address in Collector iframe
     document.addEventListener("collectorCheckoutCustomerUpdated", function(){
-        var url = window.location.href;
         // Check that this only happens in checkout page. Don't do it on thank you page
         if ( wc_collector_checkout.is_thank_you_page === 'no' ) {
             window.collector.checkout.api.suspend();
@@ -399,12 +398,14 @@
     }
 
     function set_customer_data( data ) {
-        console.log( data );
+        console.log( 'set_customer_data', data );
         if (  null !== data.billing_country ) {
             // Billing fields.
             $( '#billing_postcode' ).val( ( ( data.billing_postcode ) ? data.billing_postcode : '' ) );
             $( '#billing_country' ).val( ( ( data.billing_country ) ? data.billing_country.toUpperCase() : '' ) );
             $( '#billing_email' ).val( ( ( data.billing_email ) ? data.billing_email : '' ) );
+            $( '#billing_address_1' ).val( ( ( data.billing_address ) ? data.billing_address : '' ) );
+            $( '#billing_city' ).val( ( ( data.billing_city ) ? data.billing_city : '' ) );
         }
         
         if ( null !== data.shipping_country ) {
@@ -413,6 +414,8 @@
             // Shipping fields.
             $( '#shipping_postcode' ).val( ( ( data.shipping_postcode ) ? data.shipping_postcode : '' ) );
             $( '#shipping_country' ).val( ( ( data.shipping_country ) ? data.shipping_country.toUpperCase() : '' ) );
+            $( '#shipping_address_1' ).val( ( ( data.shipping_address ) ? data.shipping_address : '' ) );
+            $( '#shipping_city' ).val( ( ( data.shipping_city ) ? data.shipping_city : '' ) );
         }
 
         // Trigger changes.

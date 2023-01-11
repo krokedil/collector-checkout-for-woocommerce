@@ -83,6 +83,7 @@ class Collector_Checkout_Requests_Initialize_Checkout extends Collector_Checkout
 		}
 		$this->customer_type                = $customer_type;
 		$this->country_code                 = $country_code;
+		$this->currency                     = get_woocommerce_currency();
 		$this->terms_page                   = esc_url( get_permalink( wc_get_page_id( 'terms' ) ) );
 		$this->activate_validation_callback = isset( $collector_settings['activate_validation_callback'] ) ? $collector_settings['activate_validation_callback'] : 'no';
 		$this->checkout_version             = isset( $collector_settings['checkout_version'] ) ? $collector_settings['checkout_version'] : 'v1';
@@ -138,9 +139,10 @@ class Collector_Checkout_Requests_Initialize_Checkout extends Collector_Checkout
 		// Set validation URI query args.
 		$validation_uri = add_query_arg(
 			array(
-				'private-id'    => '{checkout.id}',
-				'public-token'  => '{checkout.publictoken}',
-				'customer-type' => $this->customer_type,
+				'private-id'        => '{checkout.id}',
+				'public-token'      => '{checkout.publictoken}',
+				'customer-type'     => $this->customer_type,
+				'customer-currency' => $this->currency,
 			),
 			get_home_url() . '/wc-api/Collector_WC_Validation/'
 		);
@@ -163,13 +165,18 @@ class Collector_Checkout_Requests_Initialize_Checkout extends Collector_Checkout
 			'fees'             => ( null === $order_id ) ? $this->fees() : CCO_WC()->order_fees->get_order_fees( $order_id ),
 		);
 
+		$collector_settings = get_option( 'woocommerce_collector_checkout_settings' );
+
 		// Only send validationUri & profileName if this is a purchase from the checkout.
 		if ( null === $order_id ) {
 			if ( 'yes' === $this->activate_validation_callback ) {
 				$formatted_request_body['validationUri'] = $validation_uri;
 			}
 			if ( 'yes' === $this->delivery_module && 'v1' === $this->checkout_version ) {
-				$formatted_request_body['profileName'] = 'Shipping';
+				$formatted_request_body['profileName'] = trim( $collector_settings[ 'collector_custom_profile_' . strtolower( $this->country_code ) ] );
+				if ( empty( $formatted_request_body['profileName'] ) ) {
+					$formatted_request_body['profileName'] = 'Shipping';
+				}
 			}
 
 			$formatted_request_body['redirectPageUri'] = add_query_arg(

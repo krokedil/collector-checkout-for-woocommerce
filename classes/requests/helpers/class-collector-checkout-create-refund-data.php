@@ -299,5 +299,18 @@ class Collector_Checkout_Create_Refund_Data {
 		);
 	}
 
+	/**
+	 * Returns the id of the refunded order.
+	 *
+	 * @param int $order_id The WooCommerce order id.
+	 * @return string
+	 */
+	public static function get_refunded_order_id( $order_id ) {
+		$order = wc_get_order( $order_id );
+
+		/* Always retrieve the most recent (current) refund (index 0). */
+		return $order->get_refunds()[0]->get_id();
+	}
+
 
 }

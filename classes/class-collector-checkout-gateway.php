@@ -18,13 +18,15 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 	 * Class constructor.
 	 */
 	public function __construct() {
-		$this->id                 = 'collector_checkout';
-		$this->method_title       = __( 'Walley Checkout', 'collector-checkout-for-woocommerce' );
-		$this->method_description = __( 'Walley Checkout payment solution for WooCommerce.', 'collector-checkout-for-woocommerce' );
-		$this->description        = $this->get_option( 'description' );
-		$this->title              = $this->get_option( 'title' );
-		$this->enabled            = $this->get_option( 'enabled' );
-		$this->checkout_version   = $this->get_option( 'checkout_version' );
+		$this->id                   = 'collector_checkout';
+		$this->method_title         = __( 'Walley Checkout', 'collector-checkout-for-woocommerce' );
+		$this->method_description   = __( 'Walley Checkout payment solution for WooCommerce.', 'collector-checkout-for-woocommerce' );
+		$this->description          = $this->get_option( 'description' );
+		$this->title                = $this->get_option( 'title' );
+		$this->enabled              = $this->get_option( 'enabled' );
+		$this->checkout_version     = $this->get_option( 'checkout_version' );
+		$this->walley_api_client_id = $this->get_option( 'walley_api_client_id' );
+		$this->walley_api_secret    = $this->get_option( 'walley_api_secret' );
 
 		switch ( get_woocommerce_currency() ) {
 			case 'SEK':
@@ -72,6 +74,9 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 
 		// Notification listener.
 		add_action( 'woocommerce_api_collector_checkout_gateway', array( $this, 'notification_listener' ) );
+
+		// Wait for the delivery module to load before calculating shipping.
+		add_filter( 'woocommerce_cart_ready_to_calc_shipping', array( $this, 'show_shipping' ) );
 	}
 
 	/**
@@ -292,9 +297,11 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 		$payment_status  = $collector_order['data']['purchase']['result'];
 		$payment_method  = $collector_order['data']['purchase']['paymentName'];
 		$payment_id      = $collector_order['data']['purchase']['purchaseIdentifier'];
+		$walley_order_id = $collector_order['data']['order']['orderId'];
 
 		update_post_meta( $order_id, '_collector_payment_method', $payment_method );
 		update_post_meta( $order_id, '_collector_payment_id', $payment_id );
+		update_post_meta( $order_id, '_collector_order_id', sanitize_key( $walley_order_id ) );
 		wc_collector_save_shipping_reference_to_order( $order_id, $collector_order );
 
 		// Save shipping data.
@@ -450,6 +457,27 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 	 * @throws SoapFault Soap Fault.
 	 */
 	public function process_refund( $order_id, $amount = null, $reason = '' ) {
+
+		if ( ! empty( $this->walley_api_client_id ) && ! empty( $this->walley_api_secret ) ) {
+			return $this->process_rest_refund( $order_id, $amount, $reason );
+		} else {
+			return $this->process_soap_refund( $order_id, $amount, $reason );
+		}
+
+	}
+
+	/**
+	 *
+	 *  Process refund request if SOAP is still active.
+	 *
+	 * @param int    $order_id Thw WooCommerce order id.
+	 * @param float  $amount Refund amount.
+	 * @param string $reason Refund reason.
+	 *
+	 * @return bool
+	 * @throws SoapFault Soap Fault.
+	 */
+	public function process_soap_refund( $order_id, $amount = null, $reason = '' ) {
 		// Check if amount equals total order.
 		$order = wc_get_order( $order_id );
 		if ( $amount === $order->get_total() ) {
@@ -489,6 +517,20 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 	}
 
 	/**
+	 *
+	 *  Process refund request if REST order management is active.
+	 *
+	 * @param int    $order_id The WooCommerce order id.
+	 * @param float  $amount Refund amount.
+	 * @param string $reason Refund reason.
+	 *
+	 * @return bool
+	 */
+	public function process_rest_refund( $order_id, $amount = null, $reason = '' ) {
+		return CCO_WC()->order_management->refund_walley_order( $order_id, $amount, $reason );
+	}
+
+	/**
 	 * Add org nr and invoice reference to order for
 	 *
 	 * @param WC_Order $order The WoCommerce order.
@@ -506,4 +548,55 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 			}
 		}
 	}
+
+	/**
+	 * Whether shipping should be displayed in the order review.
+	 *
+	 * If the "Walley Delivery Module" is enabled, the shipping option will not be available, only the default ones (if available).
+	 * This will result in a discrepancy between WooCommerce that has a default shipping cost, and Walley that does not include a shipping cost.
+	 * For this purpose, we want to WooCommerce to wait with calculating shipping until a shipping option from Walley is available.
+	 *
+	 * @param  bool $show_shipping
+	 * @return bool
+	 */
+	public function show_shipping( $show_shipping ) {
+		if ( 'collector_checkout' !== WC()->session->get( 'chosen_payment_method' ) ) {
+			return $show_shipping;
+		}
+
+		$collector_settings = get_option( 'woocommerce_collector_checkout_settings' );
+		$checkout_version   = isset( $collector_settings['checkout_version'] ) ? $collector_settings['checkout_version'] : 'v1';
+
+		switch ( get_woocommerce_currency() ) {
+			case 'SEK':
+				$delivery_module = isset( $collector_settings['collector_delivery_module_se'] ) ? $collector_settings['collector_delivery_module_se'] : 'no';
+				break;
+			case 'NOK':
+				$delivery_module = isset( $collector_settings['collector_delivery_module_no'] ) ? $collector_settings['collector_delivery_module_no'] : 'no';
+				break;
+			case 'DKK':
+				$delivery_module = isset( $collector_settings['collector_delivery_module_dk'] ) ? $collector_settings['collector_delivery_module_dk'] : 'no';
+				break;
+			case 'EUR':
+				$delivery_module = isset( $collector_settings['collector_delivery_module_fi'] ) ? $collector_settings['collector_delivery_module_fi'] : 'no';
+				break;
+			default:
+				$delivery_module = isset( $collector_settings['collector_delivery_module_se'] ) ? $collector_settings['collector_delivery_module_se'] : 'no';
+				break;
+		}
+
+		if ( 'yes' === $delivery_module && 'v1' === $checkout_version ) {
+
+			/* Once the "Walley Delivery Module" is available, display the shipping options. */
+			$chosen_shipping = WC()->session->get( 'chosen_shipping_methods' )[0];
+			if ( ! empty( $chosen_shipping ) && false !== strpos( $chosen_shipping, 'collector_delivery_module' ) ) {
+				return true;
+			}
+
+			return false;
+		}
+
+		return $show_shipping;
+	}
+
 }
