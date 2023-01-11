@@ -195,13 +195,17 @@ class  Walley_Checkout_Order_Management {
 			return new WP_Error( 'error', __( 'Could not refund Walley reservation, Walley order ID is missing.', 'collector-checkout-for-woocommerce' ) );
 		}
 
-		$response = CCO_WC()->api->refund_walley_order( $order_id, $amount, $reason );
+		if ( $this->order_contain_goodwill_refund( $order_id ) ) {
+			$response = CCO_WC()->api->refund_walley_order_by_amount( $order_id, $amount, $reason );
+		} else {
+			$response = CCO_WC()->api->refund_walley_order( $order_id, $amount, $reason );
+		}
 
 		if ( is_wp_error( $response ) ) {
 			// If error save error message.
 			$code          = $response->get_error_code();
 			$message       = $response->get_error_message();
-			$text          = __( 'Cancel Walley Checkout order error: ', 'collector-checkout-for-woocommerce' ) . '%s %s';
+			$text          = __( 'Refund Walley Checkout order error: ', 'collector-checkout-for-woocommerce' ) . '%s %s';
 			$formated_text = sprintf( $text, $code, $message );
 			$order->add_order_note( $formated_text );
 
@@ -235,6 +239,50 @@ class  Walley_Checkout_Order_Management {
 		}
 		// Translators: Request error message.
 		$wc_order->add_order_note( sprintf( __( 'Unable to get the Walley order. Error message: <i>%s</i>.', 'dibs-easy-for-woocommerce' ), $response->get_error_message() ) );
+		return false;
+	}
+
+	/**
+	 * Check if refund order contains a goodwill refund (a partially refunded orderline).
+	 *
+	 * @param int $order_id The WooCommerce order id.
+	 *
+	 * @return bool
+	 */
+	public function order_contain_goodwill_refund( $order_id ) {
+		$original_order  = wc_get_order( $order_id );
+		$refund_order_id = Collector_Checkout_Create_Refund_Data::get_refunded_order_id( $order_id );
+
+		// Get refund order data.
+		$refund_order   = wc_get_order( $refund_order_id );
+		$refunded_items = $refund_order->get_items( array( 'line_item', 'shipping', 'fee' ) );
+
+		if ( $refunded_items ) {
+			foreach ( $refunded_items as $refunded_item ) {
+
+				$parent_order_item_id = $refunded_item->get_meta( '_refunded_item_id' );
+
+				switch ( $refunded_item->get_type() ) {
+					case 'line_item':
+						$parent_order_item = new WC_Order_Item_Product( $parent_order_item_id );
+						break;
+					case 'shipping':
+						$parent_order_item = new WC_Order_Item_Shipping( $parent_order_item_id );
+						break;
+					case 'fee':
+						$parent_order_item = new WC_Order_Item_Fee( $parent_order_item_id );
+						break;
+					default:
+						$parent_order_item = new WC_Order_Item_Product( $parent_order_item_id );
+
+				}
+
+				if ( abs( $refunded_item->get_total() ) / abs( $refunded_item->get_quantity() ) !== $parent_order_item->get_total() / $parent_order_item->get_quantity() ) {
+					return true;
+				}
+			}
+		}
+
 		return false;
 	}
 

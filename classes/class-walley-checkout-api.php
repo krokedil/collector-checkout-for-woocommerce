@@ -83,7 +83,9 @@ class Walley_Checkout_API {
 	/**
 	 * Refund Walley order.
 	 *
-	 * @param int $order_id The WooCommerce order id.
+	 * @param int    $order_id The WooCommerce order id.
+	 * @param string $amount The refund amount.
+	 * @param string $reason The refund rason.
 	 * @return array|WP_Error
 	 */
 	public function refund_walley_order( $order_id, $amount = null, $reason = '' ) {
@@ -111,6 +113,29 @@ class Walley_Checkout_API {
 			'reason'          => $reason,
 		);
 		$request  = new Walley_Checkout_Request_Refund_Order( $args );
+		$response = $request->request();
+		return $this->check_for_api_error( $response );
+	}
+
+	/**
+	 * Refund Walley order by amount.
+	 *
+	 * @param int    $order_id The WooCommerce order id.
+	 * @param string $amount The refund amount.
+	 * @param string $reason The refund rason.
+	 * @return array|WP_Error
+	 */
+	public function refund_walley_order_by_amount( $order_id, $amount = null, $reason = '' ) {
+
+		$refund_order_id = Collector_Checkout_Create_Refund_Data::get_refunded_order_id( $order_id );
+
+		$args     = array(
+			'order_id'        => $order_id,
+			'refund_order_id' => $refund_order_id,
+			'amount'          => $amount,
+			'reason'          => $reason,
+		);
+		$request  = new Walley_Checkout_Request_Refund_Order_By_Amount( $args );
 		$response = $request->request();
 		return $this->check_for_api_error( $response );
 	}
