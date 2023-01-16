@@ -55,8 +55,12 @@ function collector_wc_show_snippet() {
 
 	if ( empty( $public_token ) || get_woocommerce_currency() !== $collector_currency ) {
 		// Get a new public token from Collector.
-		$init_checkout   = new Collector_Checkout_Requests_Initialize_Checkout( $customer_type );
-		$collector_order = $init_checkout->request();
+		if ( walley_use_new_api() ) {
+			$collector_order = CCO_WC()->api->initialize_walley_checkout( array( 'customer_type' => $customer_type ) );
+		} else {
+			$init_checkout   = new Collector_Checkout_Requests_Initialize_Checkout( $customer_type );
+			$collector_order = $init_checkout->request();
+		}
 
 		if ( is_wp_error( $collector_order ) ) {
 			$return = '<ul class="woocommerce-error"><li>' . sprintf( '%s <a href="%s" class="button wc-forward">%s</a>', __( 'Could not connect to Walley. Error message: ', 'collector-checkout-for-woocommerce' ) . $collector_order->get_error_message(), wc_get_checkout_url(), __( 'Try again', 'collector-checkout-for-woocommerce' ) ) . '</li></ul>';
@@ -758,5 +762,17 @@ function walley_print_error_message( $wp_error ) {
 	foreach ( $wp_error->get_error_messages() as $error ) {
 		$message = is_array( $error ) ? implode( ' ', $error ) : $error;
 		$print( $message, 'error' );
+	}
+}
+
+function walley_use_new_api() {
+	$collector_settings   = get_option( 'woocommerce_collector_checkout_settings' );
+	$walley_api_client_id = $collector_settings['walley_api_client_id'] ?? '';
+	$walley_api_secret    = $collector_settings['walley_api_secret'] ?? '';
+
+	if ( ! empty( $walley_api_client_id ) && ! empty( $walley_api_secret ) ) {
+		return true;
+	} else {
+		return false;
 	}
 }

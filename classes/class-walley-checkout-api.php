@@ -29,6 +29,78 @@ class Walley_Checkout_API {
 	}
 
 	/**
+	 * Initialize Walley checkout.
+	 *
+	 * @param array $args Data passed to init request.
+	 * @return array|WP_Error
+	 */
+	public function initialize_walley_checkout( $args ) {
+		$request  = new Walley_Checkout_Request_Initialize_Checkout( $args );
+		$response = $request->request();
+		return $this->check_for_api_error( $response );
+	}
+
+	/**
+	 * Update Walley checkout cart.
+	 *
+	 * @param array $args Data passed to init request.
+	 * @return array|WP_Error
+	 */
+	public function update_walley_cart( $args ) {
+		$request  = new Walley_Checkout_Request_Update_Cart( $args );
+		$response = $request->request();
+		return $this->check_for_api_error( $response );
+	}
+
+	/**
+	 * Update Walley checkout fees.
+	 *
+	 * @param array $args Data passed to init request.
+	 * @return array|WP_Error
+	 */
+	public function update_walley_fees( $args ) {
+		$request  = new Walley_Checkout_Request_Update_Fees( $args );
+		$response = $request->request();
+		return $this->check_for_api_error( $response );
+	}
+
+	/**
+	 * Update Walley checkout metadata.
+	 *
+	 * @param array $args Data passed to init request.
+	 * @return array|WP_Error
+	 */
+	public function update_walley_metadata( $args ) {
+		$request  = new Walley_Checkout_Request_Update_Metadata( $args );
+		$response = $request->request();
+		return $this->check_for_api_error( $response );
+	}
+
+	/**
+	 * Get Walley checkout session.
+	 *
+	 * @param array $args Data passed to init request.
+	 * @return array|WP_Error
+	 */
+	public function get_walley_checkout( $args ) {
+		$request  = new Walley_Checkout_Request_Get_Checkout( $args );
+		$response = $request->request();
+		return $this->check_for_api_error( $response );
+	}
+
+	/**
+	 * Set order reference in Walley order.
+	 *
+	 * @param array $args Data passed to init request.
+	 * @return array|WP_Error
+	 */
+	public function set_order_reference_in_walley( $args ) {
+		$request  = new Walley_Checkout_Request_Set_Order_Reference( $args );
+		$response = $request->request();
+		return $this->check_for_api_error( $response );
+	}
+
+	/**
 	 * Get Walley order.
 	 *
 	 * @param string $walley_id The Walley transaction id.

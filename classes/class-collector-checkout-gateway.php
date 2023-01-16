@@ -236,7 +236,17 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 		$private_id    = get_post_meta( $order_id, '_collector_private_id', true );
 		$customer_type = WC()->session->get( 'collector_customer_type' );
 
-		$collector_order = ( new Collector_Checkout_Requests_Get_Checkout_Information( $private_id, $customer_type ) )->request();
+		// Use new or old API.
+		if ( walley_use_new_api() ) {
+			$collector_order = CCO_WC()->api->get_walley_checkout(
+				array(
+					'private_id'    => $private_id,
+					'customer_type' => $customer_type,
+				)
+			);
+		} else {
+			$collector_order = ( new Collector_Checkout_Requests_Get_Checkout_Information( $private_id, $customer_type ) )->request();
+		}
 
 		// Make sure that we don't proceed with a duplicate order.
 		$order_ids = wc_collector_get_orders_by_private_id( $private_id );
@@ -264,10 +274,21 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 		// Update the Collector Order with the Order number.
 		$customer_type = get_post_meta( $order_id, '_collector_customer_type', true );
 		if ( ! empty( $private_id ) && ! empty( $customer_type ) ) {
-			$update_reference = new Collector_Checkout_Requests_Update_Reference( $order->get_order_number(), $private_id, $customer_type );
-			$update_reference->request();
 
-			CCO_WC()->logger::log( 'Update Collector order reference for order - ' . $order->get_order_number() );
+			// Use new or old API.
+			if ( walley_use_new_api() ) {
+				$collector_order = CCO_WC()->api->set_order_reference_in_walley(
+					array(
+						'order_id'      => $order_id,
+						'private_id'    => $private_id,
+						'customer_type' => $customer_type,
+					)
+				);
+			} else {
+				$update_reference = new Collector_Checkout_Requests_Update_Reference( $order->get_order_number(), $private_id, $customer_type );
+				$update_reference->request();
+				CCO_WC()->logger::log( 'Update Collector order reference for order - ' . $order->get_order_number() );
+			}
 		}
 
 		$this->process_collector_payment_in_order( $order_id );
@@ -292,8 +313,18 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 		$private_id    = get_post_meta( $order_id, '_collector_private_id', true );
 		$customer_type = get_post_meta( $order_id, '_collector_customer_type', true );
 
-		$collector_order = new Collector_Checkout_Requests_Get_Checkout_Information( $private_id, $customer_type );
-		$collector_order = $collector_order->request();
+		// Use new or old API.
+		if ( walley_use_new_api() ) {
+			$collector_order = CCO_WC()->api->get_walley_checkout(
+				array(
+					'private_id'    => $private_id,
+					'customer_type' => $customer_type,
+				)
+			);
+		} else {
+			$collector_order = new Collector_Checkout_Requests_Get_Checkout_Information( $private_id, $customer_type );
+			$collector_order = $collector_order->request();
+		}
 		$payment_status  = $collector_order['data']['purchase']['result'];
 		$payment_method  = $collector_order['data']['purchase']['paymentName'];
 		$payment_id      = $collector_order['data']['purchase']['purchaseIdentifier'];

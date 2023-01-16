@@ -87,8 +87,19 @@ class Collector_Api_Callbacks {
 		$collector_db_data   = get_collector_data_from_db( $private_id );
 		$this->db_session_id = $collector_db_data->session_id;
 
-		$response              = new Collector_Checkout_Requests_Get_Checkout_Information( $private_id, $customer_type, $currency );
-		$this->collector_order = $response->request();
+		// Use new or old API.
+		if ( walley_use_new_api() ) {
+			$this->collector_order = CCO_WC()->api->get_walley_checkout(
+				array(
+					'private_id'    => $private_id,
+					'customer_type' => $customer_type,
+					'currency'      => $currency,
+				)
+			);
+		} else {
+			$response              = new Collector_Checkout_Requests_Get_Checkout_Information( $private_id, $customer_type, $currency );
+			$this->collector_order = $response->request();
+		}
 
 		// Check if we have a session id.
 		$this->check_session_id();
