@@ -215,6 +215,8 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/helpers/class-collector-checkout-requests-helper-order-om.php';
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/helpers/class-collector-checkout-requests-helper-order-fees.php';
 
+			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/helpers/class-walley-checkout-requests-fees-helper.php';
+
 			// Set variables for shorthand access to classes.
 			$this->order_items = new Collector_Checkout_Requests_Helper_Order();
 			$this->order_fees  = new Collector_Checkout_Requests_Helper_Order_Fees();

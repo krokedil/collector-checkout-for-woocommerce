@@ -290,14 +290,4 @@ abstract class Walley_Checkout_Request {
 		$collector_checkout_requests_cart = new Collector_Checkout_Requests_Cart();
 		return $collector_checkout_requests_cart->cart();
 	}
-
-	/**
-	 * Gets fees.
-	 *
-	 * @return array|string
-	 */
-	protected function fees() {
-		$collector_checkout_requests_fees = new Collector_Checkout_Requests_Fees();
-		return $collector_checkout_requests_fees->fees();
-	}
 }

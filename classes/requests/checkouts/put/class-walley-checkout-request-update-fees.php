@@ -41,7 +41,7 @@ class Walley_Checkout_Request_Update_Fees extends Walley_Checkout_Request_Put {
 	 */
 	protected function get_body() {
 
-		$fees = $this->fees();
+		$fees = Walley_Checkout_Requests_Fees_Helper::fees();
 		$body = array();
 
 		if ( isset( $fees['directinvoicenotification'] ) ) {

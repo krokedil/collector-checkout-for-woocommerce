@@ -66,7 +66,7 @@ class Walley_Checkout_Request_Initialize_Checkout extends Walley_Checkout_Reques
 				get_home_url() . '/wc-api/Collector_Checkout_Gateway/'
 			),
 			'cart'             => empty( $this->order_id ) ? $this->cart() : CCO_WC()->order_items->get_order_lines( $this->order_id ),
-			'fees'             => empty( $this->order_id ) ? $this->fees() : CCO_WC()->order_fees->get_order_fees( $this->order_id ),
+			'fees'             => empty( $this->order_id ) ? Walley_Checkout_Requests_Fees_Helper::fees() : CCO_WC()->order_fees->get_order_fees( $this->order_id ),
 		);
 
 		// Only send validationUri & profileName if this is a purchase from the checkout.
