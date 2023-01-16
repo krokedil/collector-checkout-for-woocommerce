@@ -639,6 +639,12 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 	public static function maybe_update_fees( $private_id, $customer_type ) {
 		// Use new or old API.
 		if ( self::use_new_api() ) {
+
+			// If Walley delivery module is used and there is no invoice fee - bail.
+			if ( empty( Walley_Checkout_Requests_Fees_Helper::fees() ) ) {
+				return;
+			}
+
 			$collector_order_fee = CCO_WC()->api->update_walley_fees(
 				array(
 					'private_id'    => $private_id,
