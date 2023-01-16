@@ -765,6 +765,11 @@ function walley_print_error_message( $wp_error ) {
 	}
 }
 
+/**
+ * Use new Walley API or not.
+ *
+ * @return bool
+ */
 function walley_use_new_api() {
 	$collector_settings   = get_option( 'woocommerce_collector_checkout_settings' );
 	$walley_api_client_id = $collector_settings['walley_api_client_id'] ?? '';
