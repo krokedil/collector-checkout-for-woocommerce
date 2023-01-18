@@ -127,8 +127,19 @@ class Collector_Checkout_Confirmation {
 		$private_id    = WC()->session->get( 'collector_private_id' );
 		$customer_type = WC()->session->get( 'collector_customer_type' );
 
-		$customer_data   = new Collector_Checkout_Requests_Get_Checkout_Information( $private_id, $customer_type );
-		$collector_order = $customer_data->request();
+		// Use new or old API.
+		if ( walley_use_new_api() ) {
+			$collector_order = CCO_WC()->api->get_walley_checkout(
+				array(
+					'private_id'    => $private_id,
+					'customer_type' => $customer_type,
+				)
+			);
+		} else {
+			$customer_data   = new Collector_Checkout_Requests_Get_Checkout_Information( $private_id, $customer_type );
+			$collector_order = $customer_data->request();
+
+		}
 
 		if ( 'PurchaseCompleted' === $collector_order['data']['status'] ) {
 			// Save the payment method and payment id.

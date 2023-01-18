@@ -145,10 +145,21 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-walley-checkout-api.php';
 				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-walley-checkout-order-management.php';
 
-				// New OM class files.
+				// New request class files.
 				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/class-walley-checkout-request.php';
 				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/class-walley-checkout-request-get.php';
+				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/class-walley-checkout-request-put.php';
 				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/class-walley-checkout-request-post.php';
+
+				// New Checkout request class files.
+				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/checkouts/get/class-walley-checkout-request-get-checkout.php';
+				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/checkouts/post/class-walley-checkout-request-initialize-checkout.php';
+				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/checkouts/put/class-walley-checkout-request-update-cart.php';
+				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/checkouts/put/class-walley-checkout-request-update-fees.php';
+				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/checkouts/put/class-walley-checkout-request-update-metadata.php';
+				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/checkouts/put/class-walley-checkout-request-set-order-reference.php';
+
+				// New OM request class files.
 				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/manage-orders/get/class-walley-checkout-request-get-order.php';
 				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/manage-orders/post/class-walley-checkout-request-capture-order.php';
 				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/manage-orders/post/class-walley-checkout-request-part-capture-order.php';
@@ -164,6 +175,16 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 			} else {
 
 				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-post-checkout.php';
+
+				// Include the Checkout Request Classes.
+				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/class-collector-checkout-requests.php';
+				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/class-collector-checkout-requests-initialize-checkout.php';
+				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/class-collector-checkout-requests-update-fees.php';
+				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/class-collector-checkout-requests-update-cart.php';
+				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/class-collector-checkout-requests-update-metadata.php';
+				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/class-collector-checkout-requests-get-checkout-information.php';
+				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/class-collector-checkout-requests-update-reference.php';
+				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/class-collector-checkout-requests-paylink.php';
 
 				// Include the Soap Request Classes.
 				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/soap/class-collector-checkout-soap-requests-activate-invoice.php';
@@ -184,16 +205,6 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-gateway.php';
 			add_filter( 'woocommerce_payment_gateways', array( $this, 'add_collector_checkout_gateway' ) );
 
-			// Include the Request Classes.
-			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/class-collector-checkout-requests.php';
-			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/class-collector-checkout-requests-initialize-checkout.php';
-			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/class-collector-checkout-requests-update-fees.php';
-			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/class-collector-checkout-requests-update-cart.php';
-			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/class-collector-checkout-requests-update-metadata.php';
-			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/class-collector-checkout-requests-get-checkout-information.php';
-			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/class-collector-checkout-requests-update-reference.php';
-			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/class-collector-checkout-requests-paylink.php';
-
 			// Include the Request Helpers.
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/helpers/class-collector-checkout-requests-cart.php';
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/helpers/class-collector-checkout-requests-fees.php';
@@ -203,6 +214,8 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/helpers/class-collector-checkout-requests-helper-order.php';
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/helpers/class-collector-checkout-requests-helper-order-om.php';
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/helpers/class-collector-checkout-requests-helper-order-fees.php';
+
+			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/helpers/class-walley-checkout-requests-fees-helper.php';
 
 			// Set variables for shorthand access to classes.
 			$this->order_items = new Collector_Checkout_Requests_Helper_Order();

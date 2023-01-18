@@ -64,7 +64,7 @@ abstract class Walley_Checkout_Request {
 	 * @return void
 	 */
 	protected function load_settings() {
-		$this->settings = get_option( 'woocommerce_collector_checkout_settings' );
+		$this->settings = get_option( 'woocommerce_collector_checkout_settings', array() );
 	}
 
 	/**
@@ -236,5 +236,58 @@ abstract class Walley_Checkout_Request {
 			return '705798e0-8cef-427c-ae00-6023deba29af/.default';
 		}
 		return 'a3f3019f-2be9-41cc-a254-7bb347238e89/.default';
+	}
+
+	/**
+	 * Set environment variables from settings depending on customer type and currency.
+	 *
+	 * @param array $arguments The current customer args.
+	 *
+	 * @return void
+	 */
+	public function set_environment_variables( $arguments = array() ) {
+		$this->customer_type = $arguments['customer_type'] ?? 'b2c';
+		$this->currency      = $arguments['currency'] ?? get_woocommerce_currency();
+		switch ( $this->currency ) {
+			case 'SEK':
+				$country_code          = 'SE';
+				$this->store_id        = $this->settings[ 'collector_merchant_id_se_' . $this->customer_type ];
+				$this->delivery_module = isset( $this->settings['collector_delivery_module_se'] ) ? $this->settings['collector_delivery_module_se'] : 'no';
+				break;
+			case 'NOK':
+				$country_code          = 'NO';
+				$this->store_id        = $this->settings[ 'collector_merchant_id_no_' . $this->customer_type ];
+				$this->delivery_module = isset( $this->settings['collector_delivery_module_no'] ) ? $this->settings['collector_delivery_module_no'] : 'no';
+				break;
+			case 'DKK':
+				$country_code          = 'DK';
+				$this->store_id        = $this->settings[ 'collector_merchant_id_dk_' . $this->customer_type ];
+				$this->delivery_module = isset( $this->settings['collector_delivery_module_dk'] ) ? $this->settings['collector_delivery_module_dk'] : 'no';
+				break;
+			case 'EUR':
+				$country_code          = 'FI';
+				$this->store_id        = $this->settings[ 'collector_merchant_id_fi_' . $this->customer_type ];
+				$this->delivery_module = isset( $this->settings['collector_delivery_module_fi'] ) ? $this->settings['collector_delivery_module_fi'] : 'no';
+				break;
+			default:
+				$country_code          = 'SE';
+				$this->store_id        = $this->settings[ 'collector_merchant_id_se_' . $this->customer_type ];
+				$this->delivery_module = isset( $this->settings['collector_delivery_module_se'] ) ? $this->settings['collector_delivery_module_se'] : 'no';
+				break;
+		}
+		$this->country_code                 = $country_code;
+		$this->terms_page                   = esc_url( get_permalink( wc_get_page_id( 'terms' ) ) );
+		$this->activate_validation_callback = isset( $this->settings['activate_validation_callback'] ) ? $this->settings['activate_validation_callback'] : 'no';
+		$this->checkout_version             = isset( $this->settings['checkout_version'] ) ? $this->settings['checkout_version'] : 'v1';
+	}
+
+	/**
+	 * Gets the WC cart.
+	 *
+	 * @return array
+	 */
+	protected function cart() {
+		$collector_checkout_requests_cart = new Collector_Checkout_Requests_Cart();
+		return $collector_checkout_requests_cart->cart();
 	}
 }
