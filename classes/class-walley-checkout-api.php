@@ -114,6 +114,19 @@ class Walley_Checkout_API {
 	}
 
 	/**
+	 * Reauthorize Walley order.
+	 *
+	 * @param int $order_id The WooCommerce order id.
+	 * @return array|WP_Error
+	 */
+	public function reauthorize_walley_order( $order_id ) {
+		$args     = array( 'order_id' => $order_id );
+		$request  = new Walley_Checkout_Request_Reauthorize_Order( $args );
+		$response = $request->request();
+		return $this->check_for_api_error( $response );
+	}
+
+	/**
 	 * Capture Walley order.
 	 *
 	 * @param int $order_id The WooCommerce order id.
