@@ -24,6 +24,8 @@ class Walley_Checkout_Assets {
 
 		// CSS for settings page.
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_css' ) );
+		// JS for metabox.
+		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_metabox_scripts' ) );
 
 	}
 
@@ -33,7 +35,7 @@ class Walley_Checkout_Assets {
 	public function load_scripts() {
 		wp_enqueue_script( 'jquery' );
 		if ( is_checkout() ) {
-			wp_register_script( 'checkout', plugins_url( '/assets/js/checkout.js', __FILE__ ), array( 'jquery' ), COLLECTOR_BANK_VERSION, false );
+			wp_register_script( 'walley_checkout', COLLECTOR_BANK_PLUGIN_URL . '/assets/js/checkout.js', array( 'jquery' ), COLLECTOR_BANK_VERSION, false );
 
 			if ( 'NOK' === get_woocommerce_currency() ) {
 				$locale = 'nb-NO';
@@ -92,7 +94,7 @@ class Walley_Checkout_Assets {
 					break;
 			}
 			wp_localize_script(
-				'checkout',
+				'walley_checkout',
 				'wc_collector_checkout',
 				array(
 					'ajaxurl'                             => admin_url( 'admin-ajax.php' ),
@@ -123,13 +125,13 @@ class Walley_Checkout_Assets {
 					'no_shipping_message'                 => apply_filters( 'woocommerce_no_shipping_available_html', __( 'There are no shipping options available. Please ensure that your address has been entered correctly, or contact us if you need any help.', 'woocommerce' ) ),
 				)
 			);
-			wp_enqueue_script( 'checkout' );
+			wp_enqueue_script( 'walley_checkout' );
 		}
 
 		// Load stylesheet for the checkout page.
 		wp_register_style(
 			'collector_checkout',
-			plugin_dir_url( __FILE__ ) . 'assets/css/style.css',
+			COLLECTOR_BANK_PLUGIN_URL . '/assets/css/style.css',
 			array(),
 			COLLECTOR_BANK_VERSION
 		);
@@ -167,8 +169,46 @@ class Walley_Checkout_Assets {
 			return;
 		}
 
-		wp_register_style( 'collector-checkout-admin', plugin_dir_url( __FILE__ ) . 'assets/css/admin.css', false, COLLECTOR_BANK_VERSION );
+		wp_register_style( 'collector-checkout-admin', COLLECTOR_BANK_PLUGIN_URL . '/assets/css/admin.css', false, COLLECTOR_BANK_VERSION );
 		wp_enqueue_style( 'collector-checkout-admin' );
+	}
+
+	/**
+	 * Enqueues admin page scripts.
+	 *
+	 * @hook admin_enqueue_scripts
+	 */
+	public function enqueue_admin_metabox_scripts( $hook ) {
+
+		global $post;
+
+		if ( empty( $post ) ) {
+			return;
+		}
+
+		if ( get_post_type( $post ) !== 'shop_order' ) {
+			return;
+		}
+
+		if ( ! walley_use_new_api() ) {
+			return;
+		}
+
+		wp_register_script( 'walley-admin', COLLECTOR_BANK_PLUGIN_URL . '/assets/js/walley-order-meta-box.js', true, COLLECTOR_BANK_VERSION, true );
+		wp_localize_script(
+			'walley-admin',
+			'walleyParams',
+			array(
+				'walley_reauthorize_order'       => WC_AJAX::get_endpoint( 'walley_reauthorize_order' ),
+				'walley_reauthorize_order_nonce' => wp_create_nonce( 'walley_reauthorize_order' ),
+				'order_id'                       => get_the_ID(),
+			)
+		);
+		wp_enqueue_script( 'walley-admin' );
+
+		// CSS for metabox.
+		wp_register_style( 'walley-metabox-css', COLLECTOR_BANK_PLUGIN_URL . '/assets/css/walley-metabox.css', false, COLLECTOR_BANK_VERSION );
+		wp_enqueue_style( 'walley-metabox-css' );
 	}
 
 
