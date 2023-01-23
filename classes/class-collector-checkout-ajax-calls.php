@@ -801,15 +801,12 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 		}
 
 		$response = CCO_WC()->api->reauthorize_walley_order( $order_id );
+
 		if ( ! is_wp_error( $response ) ) {
 			$order->add_order_note( 'Wallley order successfully synced.' );
 		} else {
-			$order_note = 'Could not update Walley order lines.';
-			$errors     = $response->get_error_messages();
-			foreach ( $errors as $error ) {
-				$order_note .= ' ' . $error['reason'] . '.';
-				$order->add_order_note( $order_note );
-			}
+			// Translators: Request error message & request error code.
+			$order->add_order_note( sprintf( __( 'Could not update order lines in Walley. Error message: %1$s. Error code: %2$s</i>', 'collector-checkout-for-woocommerce' ), $response->get_error_message(), $response->get_error_code() ) );
 			wp_send_json_error( 'Could not update Walley order.' );
 			wp_die();
 		}
