@@ -716,7 +716,7 @@ function coc_get_shipping_data( $collector_order ) {
 			}
 
 			$shipping_data[] = array(
-				'label'        => $shipment['shippingChoice']['id'],
+				'label'        => $shipment['shippingChoice']['name'],
 				'shipping_id'  => $shipment['shippingChoice']['id'],
 				'cost'         => $cost,
 				'shipping_vat' => $shipment['shippingChoice']['metadata']['tax_rate'] ?? null,
