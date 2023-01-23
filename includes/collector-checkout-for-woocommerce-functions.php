@@ -465,8 +465,24 @@ function wc_collector_confirm_order( $order_id, $private_id = null ) {
 		$customer_type = 'b2c';
 	}
 
-	$response        = new Collector_Checkout_Requests_Get_Checkout_Information( $private_id, $customer_type, $order->get_currency() );
-	$collector_order = $response->request();
+	// Use new or old API.
+	if ( walley_use_new_api() ) {
+		$collector_order = CCO_WC()->api->get_walley_checkout(
+			array(
+				'private_id'    => $private_id,
+				'customer_type' => $customer_type,
+			)
+		);
+	} else {
+		$response        = new Collector_Checkout_Requests_Get_Checkout_Information( $private_id, $customer_type, $order->get_currency() );
+		$collector_order = $response->request();
+	}
+
+	if ( is_wp_error( $collector_order ) ) {
+		$order->add_order_note( __( 'Could not retreive Walley order during wc_collector_confirm_order function.', 'collector-checkout-for-woocommerce' ) );
+		return;
+	}
+
 	$payment_status  = $collector_order['data']['purchase']['result'];
 	$payment_method  = $collector_order['data']['purchase']['paymentName'];
 	$payment_id      = $collector_order['data']['purchase']['purchaseIdentifier'];
@@ -474,9 +490,21 @@ function wc_collector_confirm_order( $order_id, $private_id = null ) {
 
 	// Check if we need to update reference in collectors system.
 	if ( empty( $collector_order['data']['reference'] ) ) {
-		$update_reference = new Collector_Checkout_Requests_Update_Reference( $order->get_order_number(), $private_id, $customer_type );
-		$update_reference->request();
-		CCO_WC()->logger::log( 'Update Collector order reference for order - ' . $order->get_order_number() );
+
+		// Use new or old API.
+		if ( walley_use_new_api() ) {
+			$update_reference = CCO_WC()->api->set_order_reference_in_walley(
+				array(
+					'order_id'      => $order_id,
+					'private_id'    => $private_id,
+					'customer_type' => $customer_type,
+				)
+			);
+		} else {
+			$update_reference = new Collector_Checkout_Requests_Update_Reference( $order->get_order_number(), $private_id, $customer_type );
+			$update_reference->request();
+			CCO_WC()->logger::log( 'Update Collector order reference for order - ' . $order->get_order_number() );
+		}
 	}
 
 	// Maybe add invoice fee to order.
