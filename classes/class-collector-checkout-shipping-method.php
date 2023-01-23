@@ -78,8 +78,19 @@ if ( class_exists( 'WC_Shipping_Method' ) ) {
 				if ( method_exists( WC()->session, 'get' ) && ! empty( WC()->session->get( 'collector_delivery_module_data' )['label'] ) && ! empty( WC()->session->get( 'collector_delivery_module_data' )['cost'] ) ) {
 					$shipping_data = WC()->session->get( 'collector_delivery_module_data' );
 				} else {
-					$collector_order = new Collector_Checkout_Requests_Get_Checkout_Information( $private_id, $customer_type );
-					$collector_order = $collector_order->request();
+
+					// Use new or old API.
+					if ( walley_use_new_api() ) {
+						$collector_order = CCO_WC()->api->get_walley_checkout(
+							array(
+								'private_id'    => $private_id,
+								'customer_type' => $customer_type,
+							)
+						);
+					} else {
+						$collector_order = new Collector_Checkout_Requests_Get_Checkout_Information( $private_id, $customer_type );
+						$collector_order = $collector_order->request();
+					}
 
 					if ( isset( $collector_order['data']['shipping'] ) ) {
 						$shipping_data = coc_get_shipping_data( $collector_order );
