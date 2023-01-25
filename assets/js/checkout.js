@@ -65,7 +65,7 @@
     }
     
     // Customer updated - event triggered when customer changes address in Collector iframe
-    document.addEventListener("collectorCheckoutCustomerUpdated", function(){
+    document.addEventListener("collectorCheckoutCustomerUpdated", function() {
         // Check that this only happens in checkout page. Don't do it on thank you page
         if ( wc_collector_checkout.is_thank_you_page === 'no' ) {
             window.collector.checkout.api.suspend();
@@ -103,35 +103,8 @@
     
     document.addEventListener("collectorCheckoutShippingUpdated", function(listener){
         console.log('collectorCheckoutShippingUpdated');
-        console.log(listener);
-
         if ( wc_collector_checkout.is_thank_you_page === 'no' ) {
-
-            $( '.woocommerce-checkout-review-order-table' ).block({
-                message: null,
-                overlayCSS: {
-                    background: '#fff',
-                    opacity: 0.6
-                }
-            });
-
-            window.collector.checkout.api.suspend();
-            $.ajax(
-                wc_collector_checkout.update_delivery_module_shipping_url,
-                {
-                    type: 'POST',
-                    dataType: 'json',
-                    data: {
-                        action  : 'update_delivery_module_shipping',
-                        data : listener.detail,
-                        nonce: wc_collector_checkout.collector_nonce,
-                    },
-                    complete: function( response ) {
-                        console.log('update_delivery_module_shipping done');
-                        $( 'body' ).trigger( 'update_checkout' );
-                    }
-                }
-            );
+            $( 'body' ).trigger( 'update_checkout' );
         }
     });
 	
@@ -150,23 +123,32 @@
         $('li[data-tab="' + wc_collector_checkout.selected_customer_type + '"]').addClass('current');
     });
 
-	// Suspend Collector Checkout during WooCommerce checkout update
+	// Suspend Walley Checkout during WooCommerce checkout update.
     $(document).on('update_checkout', function () {
         if ("collector_checkout" === $("input[name='payment_method']:checked").val() && checkout_initiated == 'yes') {
-            //window.collector.checkout.api.suspend();
+            window.collector.checkout.api.suspend();
         }
     });
     
+    // Resume Walley checkout when updated_checkout is triggered by Woo.
     $(document).on('updated_checkout', function () {
-        if ("collector_checkout" === $("input[name='payment_method']:checked").val() && wc_collector_checkout.payment_successful == 0 ) {
-            update_checkout();
-            console.log('Updated checkout event');
-            //$('#place_order').remove();
+        if ("collector_checkout" === $("input[name='payment_method']:checked").val() && 'yes' === checkout_initiated && wc_collector_checkout.payment_successful == 0 ) {
+            console.log('walley updated_checkout');
+            window.collector.checkout.api.resume();
+            // Display shipping price if Delivery module is active.
+            maybeDisplayShippingPrice();
+        } else {
+            checkout_initiated = 'yes';
         }
-        // Display shipping price if Delivery module is active.
-        maybeDisplayShippingPrice();
     });
-    // Change from Collector Checkout payment method
+
+    // Trigger update checkout when qty chage happens.
+    $(document).on('change', 'input.qty',function() {
+        console.log('input.qty change');
+        jQuery(document.body).trigger('update_checkout'); 
+     });
+
+    // Change from Walley Checkout payment method
     $(document).on( 'click', '#collector_change_payment_method', function () {
 	    $( '.woocommerce-info, .checkout_coupon' ).remove();
         $('form.checkout').block({
@@ -279,34 +261,6 @@
             }
         }
     });
-
-    function update_checkout() {
-        if( checkout_initiated == 'yes' && wc_collector_checkout.payment_successful == 0 ) {
-
-            if( ! collectorUpdateNeeded ) {
-                collectorUpdateNeeded = true;
-                return;
-            }
-
-            console.log( 'payment_successful' );
-            console.log( wc_collector_checkout.payment_successful );
-            //window.collector.checkout.api.suspend();
-            var data = {
-                'action': 'update_checkout'
-            };
-            jQuery.post(wc_collector_checkout.update_checkout_url, data, function (data) {
-                if (true === data.success) {
-                    window.collector.checkout.api.resume();
-                } else {
-                    console.log('error in update checkout');
-                    window.location.href = data.data.redirect_url;
-                }
-
-            });
-        } else {
-            checkout_initiated = 'yes';
-        }
-    }
 
     // If customer gets to thank you page
     $( document ).ready( function() {
@@ -425,6 +379,7 @@
 
     // Display Shipping Price in order review if Display shipping methods in iframe settings is active.
     function maybeDisplayShippingPrice() {
+        console.log('maybeDisplayShippingPrice');
         // Check if we already have set the price. If we have, return.
         if( $('.collector-shipping').length ) {
             return;
