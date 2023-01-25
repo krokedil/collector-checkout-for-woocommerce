@@ -47,6 +47,12 @@ class Collector_Delivery_Module {
 	 * @return void
 	 */
 	public function clear_shipping_and_recalculate() {
+
+		// If Delivery module is not used for the currency/country, return.
+		if ( 'yes' !== is_collector_delivery_module( get_woocommerce_currency() ) ) {
+			return;
+		}
+
 		$available_gateways = WC()->payment_gateways()->get_available_payment_gateways();
 		reset( $available_gateways );
 
