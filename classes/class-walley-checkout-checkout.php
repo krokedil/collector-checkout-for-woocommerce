@@ -126,7 +126,7 @@ class Walley_Checkout_Checkout {
 
 		$private_id = WC()->session->get( 'collector_private_id' );
 		if ( empty( $private_id ) ) {
-			return;
+			return walley_print_error_message( new WP_Error( 'error', __( 'Missing Walley private id. Possible API error', 'collector-checkout-for-woocommerce' ) ) );
 		}
 
 		$customer_type = WC()->session->get( 'collector_customer_type' );
@@ -189,24 +189,18 @@ class Walley_Checkout_Checkout {
 				// Check if purchase was completed, if it was don't redirect customer.
 				if ( 900 === $collecor_order_metadata->get_error_code() ) {
 					if ( ! empty( $collecor_order_metadata->get_error_message( 'Purchase_Completed' ) ) || ! empty( $collecor_order_metadata->get_error_message( 'Purchase_Commitment_Found' ) ) ) {
-						$return                 = array();
-						$return['redirect_url'] = '#';
-						wp_send_json_error( $return );
+						WC()->session->reload_checkout = true;
 					}
 				}
 				// Check if we had validation error.
 				if ( 400 === $collecor_order_metadata->get_error_code() ) {
 					if ( ! empty( $collecor_order_metadata->get_error_message( 'Validation_Error' ) ) ) {
-						$return                 = array();
-						$return['redirect_url'] = '#';
-						wp_send_json_error( $return );
+						WC()->session->reload_checkout = true;
 					}
 				}
 				// Check if the resource is temporarily locked, if it was don't redirect customer.
 				if ( 423 === $collecor_order_metadata->get_error_code() ) {
-					$return                 = array();
-					$return['redirect_url'] = '#';
-					wp_send_json_error( $return );
+					WC()->session->reload_checkout = true;
 				}
 			}
 		}
@@ -244,9 +238,7 @@ class Walley_Checkout_Checkout {
 
 			// Update checkout and annul payment method if the total cart item amount is 0.
 			if ( empty( $cart_item_total['items'] ) ) {
-				$return                 = array();
-				$return['redirect_url'] = wc_get_checkout_url();
-				wp_send_json_error( $return );
+				WC()->session->reload_checkout = true;
 			}
 		}
 
@@ -254,44 +246,23 @@ class Walley_Checkout_Checkout {
 		if ( is_wp_error( $collector_order_fee ) ) {
 			// Check if purchase was completed, if it was don't redirect customer.
 			if ( 900 === $collector_order_fee->get_error_code() ) {
-				if ( ! empty( $collector_order_fee->get_error_message( 'Purchase_Completed' ) ) || ! empty( $collector_order_fee->get_error_message( 'Purchase_Commitment_Found' ) ) ) {
-					$return = array();
-					// Check if an order exist with this private id. If we find a match, redirect to thank you page.
-					$order_id = wc_collector_get_order_id_by_private_id( $private_id );
-					if ( ! empty( $order_id ) ) {
-						$order = wc_get_order( $order_id );
-						if ( is_object( $order ) ) {
-							$return['redirect_url'] = $order->get_checkout_order_received_url();
-						} else {
-							$return['redirect_url'] = '#900';
-						}
-					} else {
-						$return['redirect_url'] = '#900';
-					}
-					wp_send_json_error( $return );
-				}
+				WC()->session->reload_checkout = true;
 			}
 
 			// Check if somethings wrong with the content of the cart sent, if it was don't redirect customer.
 			if ( 400 === $collector_order_fee->get_error_code() ) {
 				if ( ! empty( $collector_order_fee->get_error_message( 'Duplicate_Articles' ) ) || ! empty( $collector_order_fee->get_error_message( 'Validation_Error' ) ) ) {
-					$return                 = array();
-					$return['redirect_url'] = '#400';
-					wp_send_json_error( $return );
+					WC()->session->reload_checkout = true;
 				}
 			}
 
 			// Check if the resource is temporarily locked, if it was don't redirect customer.
 			if ( 423 === $collector_order_fee->get_error_code() ) {
-				$return                 = array();
-				$return['redirect_url'] = '#423';
-				wp_send_json_error( $return );
+				WC()->session->reload_checkout = true;
 			}
 
 			wc_collector_unset_sessions();
-			$return                 = array();
-			$return['redirect_url'] = wc_get_checkout_url();
-			wp_send_json_error( $return );
+			WC()->session->reload_checkout = true;
 		}
 	}
 
@@ -323,9 +294,7 @@ class Walley_Checkout_Checkout {
 			// Check if purchase was completed, if it was don't redirect customer.
 			if ( 900 === $collector_order_cart->get_error_code() ) {
 				if ( ! empty( $collector_order_cart->get_error_message( 'Purchase_Completed' ) ) || ! empty( $collector_order_cart->get_error_message( 'Purchase_Commitment_Found' ) ) ) {
-					$return                 = array();
-					$return['redirect_url'] = '#';
-					wp_send_json_error( $return );
+					WC()->session->reload_checkout = true;
 				}
 			}
 
@@ -333,24 +302,17 @@ class Walley_Checkout_Checkout {
 			if ( 400 === $collector_order_cart->get_error_code() ) {
 
 				if ( ! empty( $collector_order_cart->get_error_message( 'Duplicate_Articles' ) ) || ! empty( $collector_order_cart->get_error_message( 'Validation_Error' ) ) ) {
-
-					$return                 = array();
-					$return['redirect_url'] = '#';
-					wp_send_json_error( $return );
+					WC()->session->reload_checkout = true;
 				}
 			}
 
 			// Check if the resource is temporarily locked, if it was don't redirect customer.
 			if ( 423 === $collector_order_cart->get_error_code() ) {
-				$return                 = array();
-				$return['redirect_url'] = '#';
-				wp_send_json_error( $return );
+				WC()->session->reload_checkout = true;
 			}
 
 			wc_collector_unset_sessions();
-			$return                 = array();
-			$return['redirect_url'] = wc_get_checkout_url();
-			wp_send_json_error( $return );
+			WC()->session->reload_checkout = true;
 		}
 
 	}
