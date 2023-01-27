@@ -12,7 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Class for managing actions during the checkout process.
  */
-class Walley_Checkout_Checkout {
+class Walley_Checkout {
 	/**
 	 * Class constructor.
 	 */
@@ -83,6 +83,7 @@ class Walley_Checkout_Checkout {
 		if ( isset( $collector_order['data']['shipping'] ) ) {
 
 			/*
+			@todo:
 			Dont forget thios part of the ld code:
 			if ( ! isset( $shipping_data['label'] ) ) {
 				$shipping_data = $shipping_data[0];
@@ -322,4 +323,4 @@ class Walley_Checkout_Checkout {
 		}
 
 	}
-} new Walley_Checkout_Checkout();
+} new Walley_Checkout();
