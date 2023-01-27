@@ -247,18 +247,21 @@ class Walley_Checkout_Checkout {
 			// Check if purchase was completed, if it was don't redirect customer.
 			if ( 900 === $collector_order_fee->get_error_code() ) {
 				WC()->session->reload_checkout = true;
+				return;
 			}
 
 			// Check if somethings wrong with the content of the cart sent, if it was don't redirect customer.
 			if ( 400 === $collector_order_fee->get_error_code() ) {
 				if ( ! empty( $collector_order_fee->get_error_message( 'Duplicate_Articles' ) ) || ! empty( $collector_order_fee->get_error_message( 'Validation_Error' ) ) ) {
 					WC()->session->reload_checkout = true;
+					return;
 				}
 			}
 
 			// Check if the resource is temporarily locked, if it was don't redirect customer.
 			if ( 423 === $collector_order_fee->get_error_code() ) {
 				WC()->session->reload_checkout = true;
+				return;
 			}
 
 			wc_collector_unset_sessions();
@@ -295,6 +298,7 @@ class Walley_Checkout_Checkout {
 			if ( 900 === $collector_order_cart->get_error_code() ) {
 				if ( ! empty( $collector_order_cart->get_error_message( 'Purchase_Completed' ) ) || ! empty( $collector_order_cart->get_error_message( 'Purchase_Commitment_Found' ) ) ) {
 					WC()->session->reload_checkout = true;
+					return;
 				}
 			}
 
@@ -303,12 +307,14 @@ class Walley_Checkout_Checkout {
 
 				if ( ! empty( $collector_order_cart->get_error_message( 'Duplicate_Articles' ) ) || ! empty( $collector_order_cart->get_error_message( 'Validation_Error' ) ) ) {
 					WC()->session->reload_checkout = true;
+					return;
 				}
 			}
 
 			// Check if the resource is temporarily locked, if it was don't redirect customer.
 			if ( 423 === $collector_order_cart->get_error_code() ) {
 				WC()->session->reload_checkout = true;
+				return;
 			}
 
 			wc_collector_unset_sessions();
