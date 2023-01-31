@@ -293,6 +293,9 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 
 		$this->process_collector_payment_in_order( $order_id );
 
+		// Let other plugins hook into this sequence.
+		do_action( 'walley_process_payment', $order_id, $collector_order );
+
 		CCO_WC()->logger::log( 'Process Collector Payment for private_id ' . $private_id . '. WC order ID ' . $order_id . '. Redirecting customer to ' . $this->get_return_url( $order ) );
 
 		return array(
