@@ -52,8 +52,9 @@ function collector_wc_show_snippet() {
 
 	$public_token       = WC()->session->get( 'collector_public_token' );
 	$collector_currency = WC()->session->get( 'collector_currency' );
+	$private_id         = WC()->session->get( 'collector_private_id' );
 
-	if ( empty( $public_token ) || get_woocommerce_currency() !== $collector_currency ) {
+	if ( empty( $public_token ) || empty( $private_id ) || get_woocommerce_currency() !== $collector_currency ) {
 		// Get a new public token from Collector.
 		if ( walley_use_new_api() ) {
 			$collector_order = CCO_WC()->api->initialize_walley_checkout( array( 'customer_type' => $customer_type ) );
@@ -90,6 +91,40 @@ function collector_wc_show_snippet() {
 			$return = '<div id="collector-container"><script src="' . $url . '" data-lang="' . $locale . '" data-version="' . $checkout_version . '" data-token="' . $public_token . '" data-variant="' . $customer_type . '"' . $data_action_color_button . ' ></script></div>'; // phpcs:ignore
 		}
 	} else {
+
+		// Check if purchase was completed, if it was redirect customer to thankyou page.
+		// Use new or old API.
+		if ( walley_use_new_api() ) {
+			$collector_order = CCO_WC()->api->get_walley_checkout(
+				array(
+					'private_id'    => $private_id,
+					'customer_type' => $customer_type,
+				)
+			);
+		} else {
+			$collector_order = new Collector_Checkout_Requests_Get_Checkout_Information( $private_id, $customer_type );
+			$collector_order = $collector_order->request();
+		}
+
+		// If the update results in a Purchase_Completed response, let's try to redirect the customer to thank you page.
+		if ( is_wp_error( $collector_order ) ) {
+			return;
+		}
+
+		if ( isset( $collector_order['data']['status'] ) && 'PurchaseCompleted' === $collector_order['data']['status'] ) {
+			$order_id = wc_collector_get_order_id_by_private_id( $private_id );
+
+			if ( ! empty( $order_id ) ) {
+				$order = wc_get_order( $order_id );
+				if ( $order ) {
+					CCO_WC()->logger::log( 'Trying to display checkout but status is PurchaseCompleted. Private id ' . $private_id . ', exist in order id ' . $order_id . '. Redirecting customer to thankyou page.' );
+					wp_safe_redirect( $order->get_checkout_order_received_url() );
+					exit;
+				}
+			} else {
+				CCO_WC()->logger::log( 'Trying to display checkout but status is PurchaseCompleted. Private id ' . $private_id . '. No correlating order id can be found.' );
+			}
+		}
 
 		$output = array(
 			'publicToken'   => $public_token,
