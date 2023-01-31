@@ -173,8 +173,18 @@ class Collector_Create_Local_Order_Fallback {
 	public function add_customer_data_to_local_order( $order, $customer_type, $private_id ) {
 		$order_id = $order->get_id();
 
-		$response        = new Collector_Checkout_Requests_Get_Checkout_Information( $private_id, $customer_type );
-		$collector_order = $response->request();
+		// Use new or old API.
+		if ( walley_use_new_api() ) {
+			$collector_order = CCO_WC()->api->get_walley_checkout(
+				array(
+					'private_id'    => $private_id,
+					'customer_type' => $customer_type,
+				)
+			);
+		} else {
+			$response        = new Collector_Checkout_Requests_Get_Checkout_Information( $private_id, $customer_type );
+			$collector_order = $response->request();
+		}
 
 		$formatted_customer_data = wc_collector_verify_customer_data( $collector_order );
 

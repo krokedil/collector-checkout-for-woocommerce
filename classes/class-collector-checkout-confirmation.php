@@ -266,7 +266,7 @@ class Collector_Checkout_Confirmation {
 			return;
 		}
 
-		if ( method_exists( WC()->session, 'get' ) ) {
+		if ( isset( WC()->session ) && method_exists( WC()->session, 'get' ) ) {
 
 			if ( WC()->session->get( 'collector_private_id' ) ) {
 

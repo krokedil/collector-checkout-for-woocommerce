@@ -226,8 +226,23 @@ class Collector_Api_Callbacks {
 	 * @return void
 	 */
 	public function check_order_status( $private_id, $public_token, $customer_type, $order ) {
-		$response        = new Collector_Checkout_Requests_Get_Checkout_Information( $private_id, $customer_type, $order->get_currency() );
-		$collector_order = $response->request();
+
+		// Use new or old API.
+		if ( walley_use_new_api() ) {
+			$collector_order = CCO_WC()->api->get_walley_checkout(
+				array(
+					'private_id'    => $private_id,
+					'customer_type' => $customer_type,
+				)
+			);
+		} else {
+			$response        = new Collector_Checkout_Requests_Get_Checkout_Information( $private_id, $customer_type, $order->get_currency() );
+			$collector_order = $response->request();
+		}
+
+		if ( is_wp_error( $collector_order ) ) {
+			$order->add_order_note( __( 'Could not retreive Walley order during order status check (on API callback).', 'collector-checkout-for-woocommerce' ) );
+		}
 
 		if ( is_object( $order ) ) {
 
@@ -258,8 +273,23 @@ class Collector_Api_Callbacks {
 	 * @throws Exception WC_Data_Exception.
 	 */
 	public function backup_order_creation( $private_id, $public_token, $customer_type ) {
-		$response        = new Collector_Checkout_Requests_Get_Checkout_Information( $private_id, $customer_type );
-		$collector_order = $response->request();
+
+		// Use new or old API.
+		if ( walley_use_new_api() ) {
+			$collector_order = CCO_WC()->api->get_walley_checkout(
+				array(
+					'private_id'    => $private_id,
+					'customer_type' => $customer_type,
+				)
+			);
+		} else {
+			$response        = new Collector_Checkout_Requests_Get_Checkout_Information( $private_id, $customer_type );
+			$collector_order = $response->request();
+		}
+
+		if ( is_wp_error( $collector_order ) ) {
+			$order->add_order_note( __( 'Error: Could not retreive Walley order during backup order creation (on API callback).', 'collector-checkout-for-woocommerce' ) );
+		}
 
 		// Process order.
 		$order = $this->process_order( $collector_order, $private_id, $public_token, $customer_type );

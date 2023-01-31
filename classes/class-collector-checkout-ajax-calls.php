@@ -54,6 +54,7 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 			'update_fragment'                 => true,
 			'checkout_error'                  => true,
 			'update_delivery_module_shipping' => true,
+			'walley_reauthorize_order'        => true,
 		);
 		foreach ( $ajax_events as $ajax_event => $nopriv ) {
 			add_action( 'wp_ajax_woocommerce_' . $ajax_event, array( __CLASS__, $ajax_event ) );
@@ -770,6 +771,47 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 			wp_send_json_error( $return );
 		}
 
+	}
+
+	/**
+	 * Reauthorizes / updates an order in Walleys system.
+	 *
+	 * @return void
+	 */
+	public static function walley_reauthorize_order() {
+
+		$nonce = isset( $_POST['nonce'] ) ? sanitize_key( $_POST['nonce'] ) : '';
+		if ( ! wp_verify_nonce( $nonce, 'walley_reauthorize_order' ) ) {
+			wp_send_json_error( 'bad_nonce' );
+			exit;
+		}
+
+		$order_id = filter_input( INPUT_POST, 'id', FILTER_SANITIZE_NUMBER_INT );
+		$order    = wc_get_order( $order_id );
+
+		if ( empty( $order->get_date_paid() ) ) {
+			wp_send_json_error( 'Can not sync Walley order since it has not been marked as paid yet.' );
+			wp_die();
+		}
+
+		// Not going to do this for non-Walley orders.
+		if ( 'collector_checkout' !== $order->get_payment_method() ) {
+			wp_send_json_error( 'Payment method is not Walley' );
+			wp_die();
+		}
+
+		$response = CCO_WC()->api->reauthorize_walley_order( $order_id );
+
+		if ( ! is_wp_error( $response ) ) {
+			$order->add_order_note( 'Wallley order successfully synced.' );
+		} else {
+			// Translators: Request error message & request error code.
+			$order->add_order_note( sprintf( __( 'Could not update order lines in Walley. Error message: %1$s. Error code: %2$s</i>', 'collector-checkout-for-woocommerce' ), $response->get_error_message(), $response->get_error_code() ) );
+			wp_send_json_error( 'Could not update Walley order.' );
+			wp_die();
+		}
+		wp_send_json_success();
+		wp_die();
 	}
 }
 Collector_Checkout_Ajax_Calls::init();
