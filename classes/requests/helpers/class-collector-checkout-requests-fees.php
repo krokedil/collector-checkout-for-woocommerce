@@ -33,7 +33,7 @@ class Collector_Checkout_Requests_Fees {
 	 */
 	public function __construct() {
 		$collector_settings   = get_option( 'woocommerce_collector_checkout_settings' );
-		$invoice_fee_id       = $collector_settings['collector_invoice_fee'];
+		$invoice_fee_id       = $collector_settings['collector_invoice_fee'] ?? '';
 		$this->invoice_fee_id = $invoice_fee_id;
 
 		switch ( get_woocommerce_currency() ) {
