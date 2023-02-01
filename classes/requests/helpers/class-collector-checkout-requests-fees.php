@@ -29,20 +29,12 @@ class Collector_Checkout_Requests_Fees {
 	public $price = 0;
 
 	/**
-	 * Checkout version
-	 *
-	 * @var string
-	 */
-	public $checkout_version;
-
-	/**
 	 * Class constructor
 	 */
 	public function __construct() {
-		$collector_settings     = get_option( 'woocommerce_collector_checkout_settings' );
-		$invoice_fee_id         = $collector_settings['collector_invoice_fee'];
-		$this->invoice_fee_id   = $invoice_fee_id;
-		$this->checkout_version = isset( $collector_settings['checkout_version'] ) ? $collector_settings['checkout_version'] : 'v1';
+		$collector_settings   = get_option( 'woocommerce_collector_checkout_settings' );
+		$invoice_fee_id       = $collector_settings['collector_invoice_fee'];
+		$this->invoice_fee_id = $invoice_fee_id;
 
 		switch ( get_woocommerce_currency() ) {
 			case 'SEK':
@@ -75,7 +67,7 @@ class Collector_Checkout_Requests_Fees {
 		 * If a delivery module is not used, the shipping is handled in WooCommerce, and must be sent in the fee.shipping object. Retrieves first available.
 		 * Note: if no shipping is available, fees.shipping is simply unset, NOT null.
 		 */
-		$update_shipping = apply_filters( 'coc_update_shipping', ( 'no' === $this->delivery_module || 'v2' === $this->checkout_version ) ); // Filter on if we should update shipping with fees or not.
+		$update_shipping = apply_filters( 'coc_update_shipping', ( 'no' === $this->delivery_module ) ); // Filter on if we should update shipping with fees or not.
 		$shipping        = $this->get_shipping();
 		if ( ( WC()->cart->show_shipping() && $update_shipping ) && ! empty( $shipping ) ) {
 			$fees['shipping'] = $shipping;

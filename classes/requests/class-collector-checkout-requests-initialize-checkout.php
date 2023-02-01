@@ -86,7 +86,6 @@ class Collector_Checkout_Requests_Initialize_Checkout extends Collector_Checkout
 		$this->currency                     = get_woocommerce_currency();
 		$this->terms_page                   = esc_url( get_permalink( wc_get_page_id( 'terms' ) ) );
 		$this->activate_validation_callback = isset( $collector_settings['activate_validation_callback'] ) ? $collector_settings['activate_validation_callback'] : 'no';
-		$this->checkout_version             = isset( $collector_settings['checkout_version'] ) ? $collector_settings['checkout_version'] : 'v1';
 	}
 
 	/**
@@ -172,7 +171,7 @@ class Collector_Checkout_Requests_Initialize_Checkout extends Collector_Checkout
 			if ( 'yes' === $this->activate_validation_callback ) {
 				$formatted_request_body['validationUri'] = $validation_uri;
 			}
-			if ( 'yes' === $this->delivery_module && 'v1' === $this->checkout_version ) {
+			if ( 'yes' === $this->delivery_module ) {
 				$formatted_request_body['profileName'] = trim( $collector_settings[ 'collector_custom_profile_' . strtolower( $this->country_code ) ] );
 				if ( empty( $formatted_request_body['profileName'] ) ) {
 					$formatted_request_body['profileName'] = 'Shipping';
