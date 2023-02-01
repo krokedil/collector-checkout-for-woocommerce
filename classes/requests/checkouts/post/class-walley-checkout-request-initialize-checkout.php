@@ -74,7 +74,7 @@ class Walley_Checkout_Request_Initialize_Checkout extends Walley_Checkout_Reques
 			if ( 'yes' === $this->activate_validation_callback ) {
 				$body['validationUri'] = $validation_uri;
 			}
-			if ( 'yes' === $this->delivery_module && 'v1' === $this->checkout_version ) {
+			if ( 'yes' === $this->delivery_module ) {
 				$body['profileName'] = trim( $this->settings[ 'collector_custom_profile_' . strtolower( $this->country_code ) ] );
 				if ( empty( $body['profileName'] ) ) {
 					$body['profileName'] = 'Shipping';

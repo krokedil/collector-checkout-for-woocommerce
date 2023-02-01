@@ -177,16 +177,6 @@ $settings = array(
 		'title' => __( 'Checkout settings', 'collector-checkout-for-woocommerce' ),
 		'type'  => 'title',
 	),
-	'checkout_version'                => array(
-		'title'       => __( 'Checkout version', 'collector-checkout-for-woocommerce' ),
-		'type'        => 'select',
-		'description' => __( 'A brand new Checkout is available, project name Checkout 2.0. The current solution (referred as Checkout 1.0) will be deprecated during 2022.', 'collector-checkout-for-woocommerce' ),
-		'options'     => array(
-			'v1' => __( 'Checkout 1.0', 'collector-checkout-for-woocommerce' ),
-			'v2' => __( 'Checkout 2.0', 'collector-checkout-for-woocommerce' ),
-		),
-		'default'     => 'v1',
-	),
 	'checkout_layout'                 => array(
 		'title'       => __( 'Checkout layout', 'collector-checkout-for-woocommerce' ),
 		'type'        => 'select',

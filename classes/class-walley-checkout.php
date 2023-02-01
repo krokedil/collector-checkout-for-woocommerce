@@ -18,7 +18,7 @@ class Walley_Checkout {
 	 */
 	public function __construct() {
 
-		add_action( 'woocommerce_before_calculate_totals', array( $this, 'update_shipping_method' ), 9999 );
+		add_action( 'woocommerce_before_calculate_totals', array( $this, 'update_shipping_method' ) );
 		add_action( 'woocommerce_after_calculate_totals', array( $this, 'update_walley_order' ), 9999 );
 	}
 
@@ -96,6 +96,18 @@ class Walley_Checkout {
 		} else {
 			WC()->session->__unset( 'collector_delivery_module_enabled' );
 			WC()->session->__unset( 'collector_delivery_module_data' );
+		}
+		$this->invalidate_session_shipping_cache();
+	}
+
+	/**
+	 * Invalidate and recalc shipping on Woo session.
+	 * This will make WC call calculate_shipping() in the shipping_method
+	 */
+	public function invalidate_session_shipping_cache() {
+		$packages = WC()->cart->get_shipping_packages();
+		foreach ( $packages as $package_key => $package ) {
+			WC()->session->set( 'shipping_for_package_' . $package_key, false );
 		}
 	}
 

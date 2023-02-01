@@ -24,7 +24,6 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 		$this->description          = $this->get_option( 'description' );
 		$this->title                = $this->get_option( 'title' );
 		$this->enabled              = $this->get_option( 'enabled' );
-		$this->checkout_version     = $this->get_option( 'checkout_version' );
 		$this->walley_api_client_id = $this->get_option( 'walley_api_client_id' );
 		$this->walley_api_secret    = $this->get_option( 'walley_api_secret' );
 
@@ -431,9 +430,8 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 			wc_collector_unset_sessions();
 			WC()->cart->empty_cart();
 			CCO_WC()->logger::log( 'Rendering simplified thankyou page (only display Collector thank you iframe).' );
-			if ( 'v2' !== $this->checkout_version ) {
-				return '<div class="collector-checkout-thankyou"></div>';
-			}
+
+			return '<div class="collector-checkout-thankyou"></div>';
 		}
 
 		return $text;
@@ -596,7 +594,6 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 		}
 
 		$collector_settings = get_option( 'woocommerce_collector_checkout_settings' );
-		$checkout_version   = isset( $collector_settings['checkout_version'] ) ? $collector_settings['checkout_version'] : 'v1';
 
 		switch ( get_woocommerce_currency() ) {
 			case 'SEK':
@@ -616,7 +613,7 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 				break;
 		}
 
-		if ( 'yes' === $delivery_module && 'v1' === $checkout_version ) {
+		if ( 'yes' === $delivery_module ) {
 
 			/* Once the "Walley Delivery Module" is available, display the shipping options. */
 			$chosen_shipping = WC()->session->get( 'chosen_shipping_methods' )[0];

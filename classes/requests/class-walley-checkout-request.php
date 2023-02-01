@@ -278,7 +278,6 @@ abstract class Walley_Checkout_Request {
 		$this->country_code                 = $country_code;
 		$this->terms_page                   = esc_url( get_permalink( wc_get_page_id( 'terms' ) ) );
 		$this->activate_validation_callback = isset( $this->settings['activate_validation_callback'] ) ? $this->settings['activate_validation_callback'] : 'no';
-		$this->checkout_version             = isset( $this->settings['checkout_version'] ) ? $this->settings['checkout_version'] : 'v1';
 	}
 
 	/**
