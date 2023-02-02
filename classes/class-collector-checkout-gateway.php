@@ -346,6 +346,36 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 			WC()->session->__unset( 'collector_delivery_module_data' );
 		}
 
+		// Save customFields data.
+		if ( isset( $collector_order['data']['customFields'] ) ) {
+
+			// Save the entire customFields object as json in order.
+			if ( true === apply_filters( 'walley_save_custom_fields_raw_data', true ) ) {
+				update_post_meta( $order_id, '_collector_custom_fields', wp_json_encode( $collector_order['data']['customFields'] ) );
+			}
+
+			// Save each individual custom field as id:value.
+			if ( true === apply_filters( 'walley_save_individual_custom_field', true ) ) {
+				foreach ( $collector_order['data']['customFields'] as $custom_field_group ) {
+
+					foreach ( $custom_field_group['fields'] as $custom_field ) {
+
+						switch ( $custom_field['value'] ) {
+							case 'true':
+								$value = 'yes';
+								break;
+							case false:
+								$value = 'no';
+								break;
+							default:
+								$value = $custom_field['value'];
+						}
+						update_post_meta( $order_id, $custom_field['id'], sanitize_text_field( $value ) );
+					}
+				}
+			}
+		}
+
 		// Tie this order to a user if we have one.
 		if ( email_exists( $collector_order['data']['customer']['email'] ) ) {
 			$user    = get_user_by( 'email', $collector_order['data']['customer']['email'] );
