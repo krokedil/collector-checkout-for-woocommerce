@@ -360,15 +360,10 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 
 					foreach ( $custom_field_group['fields'] as $custom_field ) {
 
-						switch ( $custom_field['value'] ) {
-							case 'true':
-								$value = 'yes';
-								break;
-							case false:
-								$value = 'no';
-								break;
-							default:
-								$value = $custom_field['value'];
+						$value = $custom_field['value'];
+						// If the returned value is true/false convert it to yes/no since it is easier to store as post meta value.
+						if ( is_bool( $value ) ) {
+							$value = $value ? 'yes' : 'no';
 						}
 						update_post_meta( $order_id, $custom_field['id'], sanitize_text_field( $value ) );
 					}
