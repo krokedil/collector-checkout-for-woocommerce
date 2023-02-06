@@ -116,7 +116,7 @@ class Collector_Checkout_Requests_Fees {
 						if ( $method->cost > 0 ) {
 							$shipping_item = array(
 								'id'          => 'shipping|' . substr( $method->id, 0, 50 ),
-								'description' => $method->label,
+								'description' => substr( $method->label, 0, 50 ),
 								'unitPrice'   => round( $method->cost + array_sum( $method->taxes ), 2 ),
 								'vat'         => round( array_sum( $method->taxes ) / $method->cost, 2 ) * 100,
 							);
@@ -124,7 +124,7 @@ class Collector_Checkout_Requests_Fees {
 						} else {
 							$shipping_item = array(
 								'id'          => 'shipping|' . $method->id,
-								'description' => $method->label,
+								'description' => substr( $method->label, 0, 50 ),
 								'unitPrice'   => 0,
 								'vat'         => 0,
 							);
@@ -160,7 +160,7 @@ class Collector_Checkout_Requests_Fees {
 
 		return array(
 			'id'          => 'invoicefee|' . Collector_Checkout_Requests_Cart::get_sku( $_product, $_product->get_id() ),
-			'description' => $_product->get_title(),
+			'description' => substr( $_product->get_title(), 0, 50 ),
 			'unitPrice'   => round( $price, 2 ),
 			'vat'         => $vat_rate,
 		);

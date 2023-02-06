@@ -63,7 +63,7 @@ class Collector_Checkout_Requests_Helper_Order_Om {
 		foreach ( $order_lines as $order_line ) {
 			$return_lines[] = array(
 				'ArticleId'   => $order_line['ArticleId'],
-				'Description' => $order_line['Description'],
+				'Description' => substr( $order_line['Description'], 0, 50 ),
 				'Quantity'    => abs( $order_line['Quantity'] ),
 				'UnitPrice'   => $order_line['UnitPrice'],
 			);
@@ -122,7 +122,7 @@ class Collector_Checkout_Requests_Helper_Order_Om {
 
 		return array(
 			'ArticleId'   => self::get_article_number( $order_item ),
-			'Description' => $order_item->get_name(),
+			'Description' => substr( $order_item->get_name(), 0, 50 ),
 			'Quantity'    => $order_item->get_quantity(),
 			'UnitPrice'   => $unit_price,
 			'vat'         => self::get_tax_rate( $order_item, $order ),
@@ -163,7 +163,7 @@ class Collector_Checkout_Requests_Helper_Order_Om {
 
 		return array(
 			'ArticleId'   => $sku,
-			'Description' => substr( $order_fee->get_name(), 0, 254 ),
+			'Description' => substr( $order_fee->get_name(), 0, 50 ),
 			'Quantity'    => $order_fee->get_quantity(),
 			'UnitPrice'   => $unit_price,
 			'vat'         => self::get_tax_rate( $order_fee, $order ),
@@ -236,7 +236,7 @@ class Collector_Checkout_Requests_Helper_Order_Om {
 	 * @return string
 	 */
 	public static function get_name( $order_item ) {
-		return substr( $order_item->get_name(), 0, 255 );
+		return substr( $order_item->get_name(), 0, 50 );
 	}
 
 	/**

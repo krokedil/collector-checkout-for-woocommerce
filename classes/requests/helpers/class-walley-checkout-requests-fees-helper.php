@@ -128,7 +128,7 @@ class Walley_Checkout_Requests_Fees_Helper {
 						if ( $method->cost > 0 ) {
 							$shipping_item = array(
 								'id'          => 'shipping|' . substr( $method->id, 0, 50 ),
-								'description' => $method->label,
+								'description' => substr( $method->label, 0, 50 ),
 								'unitPrice'   => round( $method->cost + array_sum( $method->taxes ), 2 ),
 								'vat'         => round( array_sum( $method->taxes ) / $method->cost, 2 ) * 100,
 							);
@@ -136,7 +136,7 @@ class Walley_Checkout_Requests_Fees_Helper {
 						} else {
 							$shipping_item = array(
 								'id'          => 'shipping|' . $method->id,
-								'description' => $method->label,
+								'description' => substr( $method->label, 0, 50 ),
 								'unitPrice'   => 0,
 								'vat'         => 0,
 							);
