@@ -43,7 +43,7 @@ class Walley_Checkout_Request_Refund_Order_By_Amount extends Walley_Checkout_Req
 		$body            = array(
 			'amount'          => $this->arguments['amount'],
 			'description'     => $this->arguments['reason'],
-			'actionReference' => $this->arguments['refund_order_id'],
+			'actionReference' => strval( $this->arguments['refund_order_id'] ),
 		);
 
 		return apply_filters( 'coc_order_refund_by_amount_args', $body, $this->arguments['order_id'], $this->arguments['refund_order_id'] );
