@@ -65,7 +65,7 @@ class Collector_Checkout_Requests_Helper_Order_Om {
 				'ArticleId'   => $order_line['ArticleId'],
 				'Description' => substr( $order_line['Description'], 0, 50 ),
 				'Quantity'    => abs( $order_line['Quantity'] ),
-				'UnitPrice'   => $order_line['UnitPrice'],
+				'UnitPrice'   => abs( $order_line['UnitPrice'] ),
 			);
 		}
 
@@ -87,7 +87,7 @@ class Collector_Checkout_Requests_Helper_Order_Om {
 		);
 
 		// Get WooCommerce order total.
-		$wc_total        = $order->get_total();
+		$wc_total        = abs( $order->get_total() );
 		$collector_total = 0;
 
 		// Add all collector item amounts together.
@@ -165,7 +165,7 @@ class Collector_Checkout_Requests_Helper_Order_Om {
 			'ArticleId'   => $sku,
 			'Description' => substr( $order_fee->get_name(), 0, 50 ),
 			'Quantity'    => $order_fee->get_quantity(),
-			'UnitPrice'   => $unit_price,
+			'UnitPrice'   => abs( $unit_price ),
 			'vat'         => self::get_tax_rate( $order_fee, $order ),
 		);
 	}
@@ -197,7 +197,7 @@ class Collector_Checkout_Requests_Helper_Order_Om {
 			'ArticleId'   => $shipping_reference,
 			'Description' => self::get_name( $order_item ),
 			'Quantity'    => 1,
-			'UnitPrice'   => $unit_price,
+			'UnitPrice'   => abs( $unit_price ),
 			'vat'         => self::get_tax_rate( $order_item, $order ),
 		);
 	}
