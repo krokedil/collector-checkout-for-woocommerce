@@ -92,6 +92,7 @@ class Walley_Checkout {
 			$shipping_data           = coc_get_shipping_data( $collector_order );
 			$chosen_shipping_methods = array( 'collector_delivery_module' );
 			WC()->session->set( 'collector_delivery_module_data', $shipping_data );
+			WC()->session->set( 'collector_delivery_module_enabled', true );
 			WC()->session->set( 'chosen_shipping_methods', apply_filters( 'coc_shipping_method', $chosen_shipping_methods, $shipping_data ) ); // Set chosen shipping method, with filter to allow overrides.
 		} else {
 			WC()->session->__unset( 'collector_delivery_module_enabled' );

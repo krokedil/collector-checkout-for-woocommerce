@@ -101,7 +101,6 @@ if ( class_exists( 'WC_Shipping_Method' ) ) {
 				'package' => $package,
 			);
 
-			WC()->session->set( 'collector_delivery_module_enabled', true );
 			$this->add_rate( $args );
 		}
 	}
