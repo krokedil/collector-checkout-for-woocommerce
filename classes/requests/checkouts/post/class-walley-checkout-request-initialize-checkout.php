@@ -111,6 +111,12 @@ class Walley_Checkout_Request_Initialize_Checkout extends Walley_Checkout_Reques
 			}
 		}
 
+		// Custom fields.
+		$custom_fields = apply_filters( 'walley_custom_fields', array(), $this->order_id );
+		if ( ! empty( $custom_fields ) ) {
+			$body['customFields'] = $custom_fields;
+		}
+
 		return apply_filters( 'coc_initialize_checkout_args', $body, $this->order_id );
 	}
 }

@@ -292,6 +292,9 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 
 		$this->process_collector_payment_in_order( $order_id );
 
+		// Let other plugins hook into this sequence.
+		do_action( 'walley_process_payment', $order_id, $collector_order );
+
 		CCO_WC()->logger::log( 'Process Collector Payment for private_id ' . $private_id . '. WC order ID ' . $order_id . '. Redirecting customer to ' . $this->get_return_url( $order ) );
 
 		return array(
@@ -340,6 +343,31 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 			update_post_meta( $order_id, '_collector_delivery_module_reference', $collector_order['data']['shipping']['pendingShipment']['id'] );
 			WC()->session->__unset( 'collector_delivery_module_enabled' );
 			WC()->session->__unset( 'collector_delivery_module_data' );
+		}
+
+		// Save customFields data.
+		if ( isset( $collector_order['data']['customFields'] ) ) {
+
+			// Save the entire customFields object as json in order.
+			if ( true === apply_filters( 'walley_save_custom_fields_raw_data', true ) ) {
+				update_post_meta( $order_id, '_collector_custom_fields', wp_json_encode( $collector_order['data']['customFields'] ) );
+			}
+
+			// Save each individual custom field as id:value.
+			if ( true === apply_filters( 'walley_save_individual_custom_field', true ) ) {
+				foreach ( $collector_order['data']['customFields'] as $custom_field_group ) {
+
+					foreach ( $custom_field_group['fields'] as $custom_field ) {
+
+						$value = $custom_field['value'];
+						// If the returned value is true/false convert it to yes/no since it is easier to store as post meta value.
+						if ( is_bool( $value ) ) {
+							$value = $value ? 'yes' : 'no';
+						}
+						update_post_meta( $order_id, $custom_field['id'], sanitize_text_field( $value ) );
+					}
+				}
+			}
 		}
 
 		// Tie this order to a user if we have one.
