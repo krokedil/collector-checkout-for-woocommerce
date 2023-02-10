@@ -46,7 +46,7 @@ class Collector_Checkout_Requests_Helper_Order_Om {
 			}
 		}
 
-		self::rounding_fee( $order_lines, $order );
+		// self::rounding_fee( $order_lines, $order );
 		return $order_lines;
 	}
 
