@@ -843,3 +843,18 @@ function walley_use_new_api() {
 		return false;
 	}
 }
+
+/**
+ * Save Walley order data to transient in WordPress.
+ *
+ * @param array $walley_order the returned Walley order data.
+ * @return void
+ */
+function walley_save_order_data_to_transient( $walley_order ) {
+	$walley_order_status_data = array(
+		'status'       => $walley_order['status'] ?? '',
+		'total_amount' => $walley_order['total_amount'] ?? '',
+		'currency'     => $walley_order['currency'] ?? '',
+	);
+	set_transient( "walley_order_status_{$walley_order['order_id']}", $walley_order_status_data, 30 );
+}

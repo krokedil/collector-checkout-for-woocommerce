@@ -533,6 +533,14 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 
 		if ( ! is_wp_error( $response ) ) {
 			$order->add_order_note( 'Wallley order successfully synced.' );
+			// Save received data to WP transient.
+			walley_save_order_data_to_transient(
+				array(
+					'order_id'     => $order_id,
+					'total_amount' => $order->get_total(),
+					'currency'     => $order->get_currency(),
+				)
+			);
 		} else {
 			// Translators: Request error message & request error code.
 			$order->add_order_note( sprintf( __( 'Could not update order lines in Walley. Error message: %1$s. Error code: %2$s</i>', 'collector-checkout-for-woocommerce' ), $response->get_error_message(), $response->get_error_code() ) );

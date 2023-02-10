@@ -56,17 +56,35 @@ class Walley_Checkout_Meta_Box {
 		$title_walley_order_status  = __( 'Walley order status', 'collector-checkout-for-woocommerce' );
 		$title_walley_order_total   = __( 'Walley order total', 'collector-checkout-for-woocommerce' );
 		$title_order_total_mismatch = __( 'Order total mismatch', 'collector-checkout-for-woocommerce' );
-		$walley_order               = CCO_WC()->api->get_walley_order( $walley_order_id );
 
-		if ( is_wp_error( $walley_order ) ) {
-			$walley_order_status   = 'unknown';
-			$walley_order_total    = '';
-			$walley_order_currency = '';
-			$order_total_mismatch  = '';
+		if ( false === ( $walley_order_status_from_transient = get_transient( "walley_order_status_{$order_id}" ) ) ) {
+			$walley_order = CCO_WC()->api->get_walley_order( $walley_order_id );
+
+			if ( is_wp_error( $walley_order ) ) {
+				$walley_order_status   = 'unknown';
+				$walley_order_total    = '';
+				$walley_order_currency = '';
+				$order_total_mismatch  = '';
+			} else {
+				$walley_order_status   = $walley_order['data']['status'] ?? 'unknown';
+				$walley_order_total    = $walley_order['data']['totalAmount'] ?? '';
+				$walley_order_currency = $walley_order['data']['currency'] ?? '';
+				// Translators: Woo order total & Walley order total.
+				$order_total_mismatch = floatval( $order->get_total() ) !== floatval( $walley_order_total ) ? sprintf( __( '<i>Order total differs between systems (WooCommerce: %1$s, Walley: %2$s)</i>', 'collector-checkout-for-woocommerce' ), $order->get_total(), $walley_order_total ) : '';
+				// Save received data to WP transient.
+				walley_save_order_data_to_transient(
+					array(
+						'order_id'     => $order_id,
+						'status'       => $walley_order_status,
+						'total_amount' => $walley_order_total,
+						'currency'     => $walley_order_currency,
+					)
+				);
+			}
 		} else {
-			$walley_order_status   = $walley_order['data']['status'] ?? 'unknown';
-			$walley_order_total    = $walley_order['data']['totalAmount'] ?? '';
-			$walley_order_currency = $walley_order['data']['currency'] ?? '';
+			$walley_order_status   = $walley_order_status_from_transient['status'] ?? 'unknown';
+			$walley_order_total    = $walley_order_status_from_transient['total_amount'] ?? '';
+			$walley_order_currency = $walley_order_status_from_transient['currency'] ?? '';
 			// Translators: Woo order total & Walley order total.
 			$order_total_mismatch = floatval( $order->get_total() ) !== floatval( $walley_order_total ) ? sprintf( __( '<i>Order total differs between systems (WooCommerce: %1$s, Walley: %2$s)</i>', 'collector-checkout-for-woocommerce' ), $order->get_total(), $walley_order_total ) : '';
 		}

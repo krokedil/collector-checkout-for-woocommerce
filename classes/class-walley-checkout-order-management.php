@@ -81,6 +81,15 @@ class  Walley_Checkout_Order_Management {
 			// Translators: Activated amount.
 			$order->add_order_note( sprintf( __( 'Order part activated with Walley Checkout. Activated amount %s', 'collector-checkout-for-woocommerce' ), wc_price( $order->get_total(), array( 'currency' => $order->get_order_currency() ) ) ) );
 			update_post_meta( $order_id, '_collector_order_activated', time() );
+
+			// Save received data to WP transient.
+			walley_save_order_data_to_transient(
+				array(
+					'order_id'     => $order_id,
+					'total_amount' => $order->get_total(),
+					'currency'     => $order->get_currency(),
+				)
+			);
 			return;
 		} else {
 			$response = CCO_WC()->api->capture_walley_order( $order_id );
@@ -99,6 +108,15 @@ class  Walley_Checkout_Order_Management {
 			$note = __( 'Walley Checkout order activated.', 'collector-checkout-for-woocommerce' );
 			$order->add_order_note( $note );
 			update_post_meta( $order_id, '_collector_order_activated', time() );
+
+			// Save received data to WP transient.
+			walley_save_order_data_to_transient(
+				array(
+					'order_id'     => $order_id,
+					'total_amount' => $order->get_total(),
+					'currency'     => $order->get_currency(),
+				)
+			);
 			return;
 		}
 	}
@@ -155,6 +173,15 @@ class  Walley_Checkout_Order_Management {
 		$note = __( 'Walley Checkout order cancelled.', 'collector-checkout-for-woocommerce' );
 		$order->add_order_note( $note );
 		update_post_meta( $order_id, '_collector_order_cancelled', time() );
+
+		// Save received data to WP transient.
+		walley_save_order_data_to_transient(
+			array(
+				'order_id'     => $order_id,
+				'total_amount' => $order->get_total(),
+				'currency'     => $order->get_currency(),
+			)
+		);
 	}
 
 	/**
@@ -211,6 +238,15 @@ class  Walley_Checkout_Order_Management {
 
 			return $response;
 		}
+
+		// Save received data to WP transient.
+		walley_save_order_data_to_transient(
+			array(
+				'order_id' => $order_id,
+				'currency' => $order->get_currency(),
+			)
+		);
+
 		// Translators: Refunded amount.
 		$order->add_order_note( sprintf( __( 'Walley Checkout order refunded with %s.', 'collector-checkout-for-woocommerce' ), wc_price( $amount ) ) );
 		return true;
