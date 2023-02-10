@@ -18,7 +18,7 @@ if ( 'yes' !== $manage_orders ) {
 if ( in_array( $walley_order_status, array( 'NotActivated', 'PartActivated' ), true ) ) {
 	?>
 	<div class="walley_sync_wrapper">
-		<button class="button-primary sync-btn-walley"><?php esc_html_e( 'Sync order to Walley', 'collector-checkout-for-woocommerce' ); ?></button>
+		<button class="button-secondary sync-btn-walley"><?php esc_html_e( 'Update order to Walley', 'collector-checkout-for-woocommerce' ); ?></button>
 	</div>
 	<?php
 }
