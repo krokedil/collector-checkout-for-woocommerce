@@ -79,7 +79,7 @@ class  Walley_Checkout_Order_Management {
 			}
 
 			// Translators: Activated amount.
-			$order->add_order_note( sprintf( __( 'Order part activated with Walley Checkout. Activated amount %s', 'collector-checkout-for-woocommerce' ), wc_price( $order->get_total(), array( 'currency' => $order->get_order_currency() ) ) ) );
+			$order->add_order_note( sprintf( __( 'Order part activated with Walley Checkout. Activated amount %s', 'collector-checkout-for-woocommerce' ), wc_price( $order->get_total(), array( 'currency' => $order->get_currency() ) ) ) );
 			update_post_meta( $order_id, '_collector_order_activated', time() );
 
 			// Save received data to WP transient.
