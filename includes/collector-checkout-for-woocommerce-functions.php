@@ -258,8 +258,8 @@ function wc_collector_add_invoice_fee_to_order( $order_id, $product_id ) {
  * @return boolean
  */
 function is_collector_confirmation() {
-	$payment_successful = filter_input( INPUT_GET, 'payment_successful', FILTER_SANITIZE_STRING );
-	$public_token       = filter_input( INPUT_GET, 'payment_successful', FILTER_SANITIZE_STRING );
+	$payment_successful = filter_input( INPUT_GET, 'payment_successful', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
+	$public_token       = filter_input( INPUT_GET, 'payment_successful', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 	if ( '1' === $payment_successful && ! empty( $public_token ) ) {
 		return true;
 	}

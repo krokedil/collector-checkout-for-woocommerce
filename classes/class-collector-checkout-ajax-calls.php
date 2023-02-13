@@ -70,7 +70,7 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 	 * @return void
 	 */
 	public static function get_public_token() {
-		$customer_type      = filter_input( INPUT_POST, 'customer_type', FILTER_SANITIZE_STRING );
+		$customer_type      = filter_input( INPUT_POST, 'customer_type', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 		$public_token       = WC()->session->get( 'collector_public_token' );
 		$collector_settings = get_option( 'woocommerce_collector_checkout_settings' );
 		$test_mode          = $collector_settings['test_mode'];
@@ -212,7 +212,7 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 	 * @return void
 	 */
 	public static function add_customer_order_note() {
-		$order_note = filter_input( INPUT_POST, 'order_note', FILTER_SANITIZE_STRING );
+		$order_note = filter_input( INPUT_POST, 'order_note', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 		WC()->session->set( 'collector_customer_order_note', $order_note );
 
 		wp_send_json_success();
@@ -224,14 +224,14 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 	 * @return void
 	 */
 	public static function get_checkout_thank_you() {
-		$order_id           = filter_input( INPUT_POST, 'order_id', FILTER_SANITIZE_STRING );
-		$purchase_status    = filter_input( INPUT_POST, 'purchase_status', FILTER_SANITIZE_STRING );
+		$order_id           = filter_input( INPUT_POST, 'order_id', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
+		$purchase_status    = filter_input( INPUT_POST, 'purchase_status', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 		$collector_settings = get_option( 'woocommerce_collector_checkout_settings' );
 		$test_mode          = $collector_settings['test_mode'];
 
 		// If something went wrong in get_customer_data() - display a "thank you page light".
 		if ( 'not-completed' === $purchase_status ) {
-			$public_token = filter_input( INPUT_POST, 'public_token', FILTER_SANITIZE_STRING );
+			$public_token = filter_input( INPUT_POST, 'public_token', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 			if ( WC()->session->get( 'collector_customer_type' ) ) {
 				$customer_type = WC()->session->get( 'collector_customer_type' );
 			} else {

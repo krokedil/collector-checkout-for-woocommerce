@@ -65,7 +65,7 @@ class Collector_Checkout_Sessions {
 	 * @return void
 	 */
 	public function set_session_from_id() {
-		$private_id        = filter_input( INPUT_GET, 'private-id', FILTER_SANITIZE_STRING );
+		$private_id        = filter_input( INPUT_GET, 'private-id', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 		$collector_db_data = ! empty( $private_id ) ? get_collector_data_from_db( $private_id ) : null;
 		if ( isset( $collector_db_data->session_id ) ) {
 			$sessions_handler = new WC_Session_Handler();
@@ -92,7 +92,7 @@ class Collector_Checkout_Sessions {
 	 * @return void
 	 */
 	public function maybe_set_wc_cart( $cart ) {
-		$private_id        = filter_input( INPUT_GET, 'private-id', FILTER_SANITIZE_STRING );
+		$private_id        = filter_input( INPUT_GET, 'private-id', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 		$collector_db_data = ! empty( $private_id ) ? get_collector_data_from_db( $private_id ) : null;
 		if ( isset( $collector_db_data->session_id ) ) {
 			WC()->cart = $cart;
