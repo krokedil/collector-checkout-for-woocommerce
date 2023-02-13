@@ -107,8 +107,8 @@ class Collector_Checkout_Post_Checkout {
 	 **/
 	public function check_callback() {
 		if ( ! empty( $_SERVER['REQUEST_URI'] ) && false !== strpos( sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ), 'module/collectorcheckout/invoicestatus' ) ) {
-			$invoice_no     = filter_input( INPUT_GET, 'InvoiceNo', FILTER_SANITIZE_STRING );
-			$invoice_status = filter_input( INPUT_GET, 'InvoiceStatus', FILTER_SANITIZE_STRING );
+			$invoice_no     = filter_input( INPUT_GET, 'InvoiceNo', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
+			$invoice_status = filter_input( INPUT_GET, 'InvoiceStatus', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 			if ( ! empty( $invoice_no ) && ! empty( $invoice_status ) ) {
 				CCO_WC()->logger::log( 'Collector Invoice Status Change callback hit' );
 				$collector_payment_id = $invoice_no;

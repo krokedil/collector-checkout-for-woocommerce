@@ -82,9 +82,9 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 	 * Schedule order status check on notificationUri callback from Collector
 	 */
 	public function notification_listener() {
-		$private_id    = filter_input( INPUT_GET, 'private-id', FILTER_SANITIZE_STRING );
-		$public_token  = filter_input( INPUT_GET, 'public-token', FILTER_SANITIZE_STRING );
-		$customer_type = filter_input( INPUT_GET, 'customer-type', FILTER_SANITIZE_STRING );
+		$private_id    = filter_input( INPUT_GET, 'private-id', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
+		$public_token  = filter_input( INPUT_GET, 'public-token', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
+		$customer_type = filter_input( INPUT_GET, 'customer-type', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 
 		CCO_WC()->logger::log( 'Notification Listener hit. Private id: ' . wp_json_encode( $private_id ) . '. Public token: ' . $public_token . '. Customer type: ' . $customer_type );
 
@@ -335,6 +335,7 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 		update_post_meta( $order_id, '_collector_payment_method', $payment_method );
 		update_post_meta( $order_id, '_collector_payment_id', $payment_id );
 		update_post_meta( $order_id, '_collector_order_id', sanitize_key( $walley_order_id ) );
+		update_post_meta( $order_id, '_collector_original_order_total', $order->get_total() );
 		wc_collector_save_shipping_reference_to_order( $order_id, $collector_order );
 
 		// Save shipping data.
@@ -451,7 +452,7 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 			CCO_WC()->logger::log( 'Thankyou page rendered for order ID - ' . $order->get_id() );
 			return '<div class="collector-checkout-thankyou"></div>';
 		}
-		$purchase_status = filter_input( INPUT_GET, 'purchase-status', FILTER_SANITIZE_STRING );
+		$purchase_status = filter_input( INPUT_GET, 'purchase-status', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 
 		if ( 'not-completed' === $purchase_status ) {
 			// Unset Collector token and id.

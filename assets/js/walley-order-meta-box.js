@@ -23,6 +23,7 @@ jQuery(function ($) {
 					} else {
 						$('.sync-btn-walley').removeClass( 'disabled' );
 						$('.walley_sync_wrapper').append( '<div><i>' + data.data + '</i></div>' );
+						alert( data.data );
 					}
 				},
 				error: function (data) {

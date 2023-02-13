@@ -109,7 +109,7 @@ class Collector_Checkout_Templates {
 			<?php do_action( 'woocommerce_checkout_billing' ); ?>
 			<?php do_action( 'woocommerce_checkout_shipping' ); ?>
 			<?php
-			$payment_successful = filter_input( INPUT_GET, 'payment_successful', FILTER_SANITIZE_STRING );
+			$payment_successful = filter_input( INPUT_GET, 'payment_successful', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 			if ( ! empty( $payment_successful ) ) {//phpcs:ignore
 				// On confirmation page - render woocommerce_checkout_payment() to get the woocommerce-process-checkout-nonce correct.
 				woocommerce_checkout_payment();

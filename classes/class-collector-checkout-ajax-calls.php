@@ -70,7 +70,7 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 	 * @return void
 	 */
 	public static function get_public_token() {
-		$customer_type      = filter_input( INPUT_POST, 'customer_type', FILTER_SANITIZE_STRING );
+		$customer_type      = filter_input( INPUT_POST, 'customer_type', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 		$public_token       = WC()->session->get( 'collector_public_token' );
 		$collector_settings = get_option( 'woocommerce_collector_checkout_settings' );
 		$test_mode          = $collector_settings['test_mode'];
@@ -212,7 +212,7 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 	 * @return void
 	 */
 	public static function add_customer_order_note() {
-		$order_note = filter_input( INPUT_POST, 'order_note', FILTER_SANITIZE_STRING );
+		$order_note = filter_input( INPUT_POST, 'order_note', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 		WC()->session->set( 'collector_customer_order_note', $order_note );
 
 		wp_send_json_success();
@@ -224,14 +224,14 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 	 * @return void
 	 */
 	public static function get_checkout_thank_you() {
-		$order_id           = filter_input( INPUT_POST, 'order_id', FILTER_SANITIZE_STRING );
-		$purchase_status    = filter_input( INPUT_POST, 'purchase_status', FILTER_SANITIZE_STRING );
+		$order_id           = filter_input( INPUT_POST, 'order_id', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
+		$purchase_status    = filter_input( INPUT_POST, 'purchase_status', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 		$collector_settings = get_option( 'woocommerce_collector_checkout_settings' );
 		$test_mode          = $collector_settings['test_mode'];
 
 		// If something went wrong in get_customer_data() - display a "thank you page light".
 		if ( 'not-completed' === $purchase_status ) {
-			$public_token = filter_input( INPUT_POST, 'public_token', FILTER_SANITIZE_STRING );
+			$public_token = filter_input( INPUT_POST, 'public_token', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 			if ( WC()->session->get( 'collector_customer_type' ) ) {
 				$customer_type = WC()->session->get( 'collector_customer_type' );
 			} else {
@@ -523,6 +523,14 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 			wp_die();
 		}
 
+		if ( floatval( $order->get_total() ) > floatval( get_post_meta( $order_id, '_collector_original_order_total', true ) ) ) {
+			// Translators: Original order amount.
+			$message = sprintf( __( 'Updated total amount sent to Walley can not be higher than the original order amount (%1$s).', 'collector-checkout-for-woocommerce' ), get_post_meta( $order_id, '_collector_original_order_total', true ) );
+			$order->add_order_note( $message );
+			wp_send_json_error( $message );
+			wp_die();
+		}
+
 		// Not going to do this for non-Walley orders.
 		if ( 'collector_checkout' !== $order->get_payment_method() ) {
 			wp_send_json_error( 'Payment method is not Walley' );
@@ -532,7 +540,27 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 		$response = CCO_WC()->api->reauthorize_walley_order( $order_id );
 
 		if ( ! is_wp_error( $response ) ) {
-			$order->add_order_note( 'Wallley order successfully synced.' );
+			if ( 202 === $response['status'] ) {
+				$order->add_order_note( __( 'Walley order successfully updated.', 'collector-checkout-for-woocommerce' ) );
+			} elseif ( 201 === $response['status'] ) {
+				// This should not happen as long as we do not allow a order total amount that is higher than the original order amount.
+				$order->add_order_note( __( 'Walley order sync started. Waiting for reauthorize response.', 'collector-checkout-for-woocommerce' ) );
+				update_post_meta( $order_id, '_walley_reauthorize_data', wp_json_encode( $response['header'] ) );
+			} else {
+				// Translators: Request response http status.
+				$order->add_order_note( sprintf( __( 'Walley order sync started. Unknown http status response. Status: %1$s.', 'collector-checkout-for-woocommerce' ), $response['status'] ) );
+			}
+
+			// Save received data to WP transient.
+			walley_save_order_data_to_transient(
+				array(
+					'order_id'     => $order_id,
+					'status'       => $response['status'],
+					'total_amount' => $order->get_total(),
+					'currency'     => $order->get_currency(),
+				)
+			);
+
 		} else {
 			// Translators: Request error message & request error code.
 			$order->add_order_note( sprintf( __( 'Could not update order lines in Walley. Error message: %1$s. Error code: %2$s</i>', 'collector-checkout-for-woocommerce' ), $response->get_error_message(), $response->get_error_code() ) );

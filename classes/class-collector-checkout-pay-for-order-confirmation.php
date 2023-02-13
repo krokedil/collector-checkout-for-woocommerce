@@ -48,9 +48,9 @@ class Collector_Checkout_Pay_For_Order_Confirmation {
 	 * Confirm order
 	 */
 	public function confirm_order_pay_order() {
-		$collector_confirm = filter_input( INPUT_GET, 'collector_confirm_order_pay', FILTER_SANITIZE_STRING );
-		$public_token      = filter_input( INPUT_GET, 'public-token', FILTER_SANITIZE_STRING );
-		$order_key         = filter_input( INPUT_GET, 'key', FILTER_SANITIZE_STRING );
+		$collector_confirm = filter_input( INPUT_GET, 'collector_confirm_order_pay', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
+		$public_token      = filter_input( INPUT_GET, 'public-token', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
+		$order_key         = filter_input( INPUT_GET, 'key', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 
 		// Return if we dont have our parameters set.
 		if ( empty( $collector_confirm ) || empty( $public_token ) || empty( $order_key ) ) {

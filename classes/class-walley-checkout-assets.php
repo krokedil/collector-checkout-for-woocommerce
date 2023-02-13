@@ -46,14 +46,14 @@ class Walley_Checkout_Assets {
 			} else {
 				$locale = 'sv-SE';
 			}
-			$public_token = filter_input( INPUT_GET, 'public-token', FILTER_SANITIZE_STRING );
+			$public_token = filter_input( INPUT_GET, 'public-token', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 
 			if ( WC()->session->get( 'collector_private_id' ) ) {
 				$checkout_initiated = 'yes';
 			} else {
 				$checkout_initiated = 'no';
 			}
-			$payment_successful = filter_input( INPUT_GET, 'payment_successful', FILTER_SANITIZE_STRING );
+			$payment_successful = filter_input( INPUT_GET, 'payment_successful', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 			if ( empty( $payment_successful ) ) {
 				$payment_successful = '0';
 			} else {
@@ -61,13 +61,13 @@ class Walley_Checkout_Assets {
 			}
 			if ( is_wc_endpoint_url( 'order-received' ) ) {
 				$is_thank_you_page = 'yes';
-				$key               = filter_input( INPUT_GET, 'key', FILTER_SANITIZE_STRING );
+				$key               = filter_input( INPUT_GET, 'key', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 				if ( ! empty( $key ) ) {
 					$order_id = wc_get_order_id_by_order_key( sanitize_text_field( $key ) );
 				} else {
 					$order_id = '';
 				}
-				$purchase_status = filter_input( INPUT_GET, 'purchase-status', FILTER_SANITIZE_STRING );
+				$purchase_status = filter_input( INPUT_GET, 'purchase-status', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 			} else {
 				$is_thank_you_page = 'no';
 				$order_id          = '';
@@ -135,7 +135,7 @@ class Walley_Checkout_Assets {
 
 		// Hide the Order overview data on thankyou page if it's a Collector Checkout purchase.
 		if ( is_wc_endpoint_url( 'order-received' ) ) {
-			$key = filter_input( INPUT_GET, 'key', FILTER_SANITIZE_STRING );
+			$key = filter_input( INPUT_GET, 'key', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 			if ( ! empty( $key ) ) {
 				$order_id = wc_get_order_id_by_order_key( wc_clean( $key ) );
 				$order    = wc_get_order( $order_id );
@@ -160,7 +160,7 @@ class Walley_Checkout_Assets {
 			return;
 		}
 
-		$section = filter_input( INPUT_GET, 'section', FILTER_SANITIZE_STRING );
+		$section = filter_input( INPUT_GET, 'section', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 		if ( 'collector_checkout' !== $section ) {
 			return;
 		}

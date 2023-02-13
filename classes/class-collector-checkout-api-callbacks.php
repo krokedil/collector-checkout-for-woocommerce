@@ -75,9 +75,9 @@ class Collector_Api_Callbacks {
 	 * Handles validation callbacks.
 	 */
 	public function validation_cb() {
-		$private_id    = filter_input( INPUT_GET, 'private-id', FILTER_SANITIZE_STRING );
-		$customer_type = filter_input( INPUT_GET, 'customer-type', FILTER_SANITIZE_STRING );
-		$currency      = filter_input( INPUT_GET, 'customer-currency', FILTER_SANITIZE_STRING );
+		$private_id    = filter_input( INPUT_GET, 'private-id', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
+		$customer_type = filter_input( INPUT_GET, 'customer-type', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
+		$currency      = filter_input( INPUT_GET, 'customer-currency', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 
 		CCO_WC()->logger::log( 'Validation Callback hit. Private id: ' . wp_json_encode( $private_id ) . '. Customer type: ' . $customer_type . '. Customer currency: ' . $currency );
 
