@@ -47,4 +47,25 @@ class Walley_Checkout_Request_Reauthorize_Order extends Walley_Checkout_Request_
 
 		return apply_filters( 'coc_order_reauthorize_args', $body, $this->arguments['order_id'] );
 	}
+
+	/**
+	 * Processes the response checking for errors.
+	 *
+	 * @param object|WP_Error $response The response from the request.
+	 * @param array           $request_args The request args.
+	 * @param string          $request_url The request url.
+	 * @return array|WP_Error
+	 */
+	protected function process_response( $response, $request_args, $request_url ) {
+		if ( is_wp_error( $response ) ) {
+			return $response;
+		}
+
+		parent::process_response( $response, $request_args, $request_url );
+
+		return array(
+			'status' => wp_remote_retrieve_response_code( $response ),
+			'header' => wp_remote_retrieve_header( $response, 'location' ),
+		);
+	}
 }
