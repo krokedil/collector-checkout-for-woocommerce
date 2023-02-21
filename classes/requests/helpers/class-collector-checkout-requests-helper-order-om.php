@@ -46,7 +46,7 @@ class Collector_Checkout_Requests_Helper_Order_Om {
 			}
 		}
 
-		// self::rounding_fee( $order_lines, $order );
+		self::rounding_fee( $order_lines, $order );
 		return $order_lines;
 	}
 
@@ -61,11 +61,12 @@ class Collector_Checkout_Requests_Helper_Order_Om {
 		$return_lines = array();
 
 		foreach ( $order_lines as $order_line ) {
+			$unit_price     = 'rounding-fee' === $order_line['ArticleId'] ? $order_line['UnitPrice'] : abs( $order_line['UnitPrice'] );
 			$return_lines[] = array(
 				'ArticleId'   => $order_line['ArticleId'],
 				'Description' => substr( $order_line['Description'], 0, 50 ),
 				'Quantity'    => abs( $order_line['Quantity'] ),
-				'UnitPrice'   => abs( $order_line['UnitPrice'] ),
+				'UnitPrice'   => self::format_number( $unit_price ),
 			);
 		}
 
@@ -87,13 +88,17 @@ class Collector_Checkout_Requests_Helper_Order_Om {
 		);
 
 		// Get WooCommerce order total.
-		$wc_total        = abs( $order->get_total() );
+		$wc_total = abs( $order->get_total() );
+
 		$collector_total = 0;
 
 		// Add all collector item amounts together.
 		foreach ( $order_lines as $order_line ) {
 			$collector_total += round( $order_line['UnitPrice'] * $order_line['Quantity'], 2 );
 		}
+
+		// Make $collector_total a positive number. Can be negative due to refunds.
+		$collector_total = abs( $collector_total );
 
 		// Set the unitprice for the rounding fee to the difference between WooCommerce and Collector.
 		$rounding_item['UnitPrice'] = self::format_number( $wc_total - $collector_total );
@@ -165,7 +170,7 @@ class Collector_Checkout_Requests_Helper_Order_Om {
 			'ArticleId'   => $sku,
 			'Description' => substr( $order_fee->get_name(), 0, 50 ),
 			'Quantity'    => $order_fee->get_quantity(),
-			'UnitPrice'   => abs( $unit_price ),
+			'UnitPrice'   => $unit_price,
 			'vat'         => self::get_tax_rate( $order_fee, $order ),
 		);
 	}
@@ -197,7 +202,7 @@ class Collector_Checkout_Requests_Helper_Order_Om {
 			'ArticleId'   => $shipping_reference,
 			'Description' => self::get_name( $order_item ),
 			'Quantity'    => 1,
-			'UnitPrice'   => abs( $unit_price ),
+			'UnitPrice'   => $unit_price,
 			'vat'         => self::get_tax_rate( $order_item, $order ),
 		);
 	}
@@ -246,7 +251,8 @@ class Collector_Checkout_Requests_Helper_Order_Om {
 	 * @return string
 	 */
 	public static function format_number( $value ) {
-		return number_format( round( $value, 2 ), 2, '.', '' );
+		return wc_format_decimal( $value, 2 );
+
 	}
 
 	/**
