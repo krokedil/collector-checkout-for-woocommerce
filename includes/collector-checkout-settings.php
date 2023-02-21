@@ -42,14 +42,14 @@ $settings = array(
 	'walley_api_client_id'            => array(
 		'title'       => __( 'API Client ID', 'collector-checkout-for-woocommerce' ),
 		'type'        => 'text',
-		'description' => __( 'Enter your Walley Checkout API Client ID. Used for Walley\'s new Management API. If entered this API will be used instead of the old SOAP based.', 'collector-checkout-for-woocommerce' ),
+		'description' => __( 'Enter your Walley Checkout API Client ID. Used for Walley\'s new Checkout and Management API. If entered this API will be used instead of the old API.', 'collector-checkout-for-woocommerce' ),
 		'default'     => '',
 		'desc_tip'    => false,
 	),
 	'walley_api_secret'               => array(
 		'title'       => __( 'API Secret', 'collector-checkout-for-woocommerce' ),
 		'type'        => 'text',
-		'description' => __( 'Enter your Walley Checkout API Secret. Used for Walley\'s new Management API. If entered this API will be used instead of the old SOAP based.', 'collector-checkout-for-woocommerce' ),
+		'description' => __( 'Enter your Walley Checkout API Secret. Used for Walley\'s new Checkout and Management API. If entered this API will be used instead of the old API.', 'collector-checkout-for-woocommerce' ),
 		'default'     => '',
 		'desc_tip'    => false,
 	),
