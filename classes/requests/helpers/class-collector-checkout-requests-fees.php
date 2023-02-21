@@ -161,7 +161,7 @@ class Collector_Checkout_Requests_Fees {
 		return array(
 			'id'          => 'invoicefee|' . Collector_Checkout_Requests_Cart::get_sku( $_product, $_product->get_id() ),
 			'description' => substr( $_product->get_title(), 0, 50 ),
-			'unitPrice'   => round( $price, 2 ),
+			'unitPrice'   => wc_format_decimal( $price, 2 ),
 			'vat'         => $vat_rate,
 		);
 	}
