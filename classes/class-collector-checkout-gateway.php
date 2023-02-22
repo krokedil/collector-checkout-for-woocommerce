@@ -76,6 +76,9 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 
 		// Wait for the delivery module to load before calculating shipping.
 		add_filter( 'woocommerce_cart_ready_to_calc_shipping', array( $this, 'show_shipping' ) );
+
+		// Delete transient when Walley settings is saved.
+		add_action( 'woocommerce_update_options_checkout_collector_checkout', array( $this, 'delete_transients' ) );
 	}
 
 	/**
@@ -654,6 +657,16 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 		}
 
 		return $show_shipping;
+	}
+
+	/**
+	 * Delete transients when Walley settings is saved.
+	 *
+	 * @return void
+	 */
+	public function delete_transients() {
+		// Need to clear transients if credentials is changed.
+		delete_transient( 'walley_checkout_access_token' );
 	}
 
 }
