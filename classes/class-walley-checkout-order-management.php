@@ -222,11 +222,15 @@ class  Walley_Checkout_Order_Management {
 			return new WP_Error( 'error', __( 'Could not refund Walley reservation, Walley order ID is missing.', 'collector-checkout-for-woocommerce' ) );
 		}
 
+		// Currently we always need to do a refund by amount since rounding fee in refund can differ from original order and Walley does not accept that.
+		/*
 		if ( $this->order_contain_goodwill_refund( $order_id ) ) {
 			$response = CCO_WC()->api->refund_walley_order_by_amount( $order_id, $amount, $reason );
 		} else {
 			$response = CCO_WC()->api->refund_walley_order( $order_id, $amount, $reason );
 		}
+		*/
+		$response = CCO_WC()->api->refund_walley_order_by_amount( $order_id, $amount, $reason );
 
 		if ( is_wp_error( $response ) ) {
 			// If error save error message.
