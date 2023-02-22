@@ -42,6 +42,6 @@ class Walley_Checkout_Request_Update_Cart extends Walley_Checkout_Request_Put {
 	protected function get_body() {
 
 		$body = $this->cart();
-		return apply_filters( 'coc_update_cart_args', $body, $this->order_id );
+		return apply_filters( 'walley_update_cart_args', $body, $this->order_id );
 	}
 }

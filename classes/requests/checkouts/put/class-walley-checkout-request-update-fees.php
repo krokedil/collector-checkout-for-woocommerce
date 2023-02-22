@@ -53,7 +53,7 @@ class Walley_Checkout_Request_Update_Fees extends Walley_Checkout_Request_Put {
 		}
 
 		if ( ! empty( $body ) ) {
-			return apply_filters( 'coc_update_fees_args', $body, $this->order_id );
+			return apply_filters( 'walley_update_fees_args', $body, $this->order_id );
 		} else {
 			return false;
 		}

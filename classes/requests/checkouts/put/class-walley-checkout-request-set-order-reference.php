@@ -42,6 +42,6 @@ class Walley_Checkout_Request_Set_Order_Reference extends Walley_Checkout_Reques
 	protected function get_body() {
 		$order             = wc_get_order( $this->order_id );
 		$body['Reference'] = $order->get_order_number();
-		return apply_filters( 'coc_set_order_reference_args', $body, $this->order_id );
+		return apply_filters( 'walley_set_order_reference_args', $body, $this->order_id );
 	}
 }

@@ -43,6 +43,6 @@ class Walley_Checkout_Request_Update_Metadata extends Walley_Checkout_Request_Pu
 	protected function get_body() {
 
 		$body['metadata'] = $this->metadata;
-		return apply_filters( 'coc_update_metadata_args', $body, $this->order_id );
+		return apply_filters( 'walley_update_metadata_args', $body, $this->order_id );
 	}
 }
