@@ -507,6 +507,19 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 	}
 
 	/**
+	 * Can the order be refunded via Walley?
+	 *
+	 * @param  WC_Order $order Order object.
+	 * @return bool
+	 */
+	public function can_refund_order( $order ) {
+		if ( empty( get_post_meta( $order->get_id(), '_collector_order_activated', true ) ) ) {
+			return false;
+		}
+		return true;
+	}
+
+	/**
 	 *
 	 *  Process refund request.
 	 *
