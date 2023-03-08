@@ -61,7 +61,12 @@ class Walley_Checkout_Request_Reauthorize_Order extends Walley_Checkout_Request_
 			return $response;
 		}
 
-		parent::process_response( $response, $request_args, $request_url );
+		$parent_response = parent::process_response( $response, $request_args, $request_url );
+
+		// Return WP_Error if Walley returns something else than 2xx response.
+		if ( is_wp_error( $parent_response ) ) {
+			return $parent_response;
+		}
 
 		return array(
 			'status' => wp_remote_retrieve_response_code( $response ),
