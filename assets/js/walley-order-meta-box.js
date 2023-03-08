@@ -8,6 +8,7 @@ jQuery(function ($) {
 		syncOrderBtn:function(e) {
 			e.preventDefault();
 			$('.sync-btn-walley').addClass( 'disabled' );
+			$('.sync-btn-walley').prop('disabled', true);
 			$.ajax({
 				type: 'POST',
 				data: {
@@ -22,6 +23,7 @@ jQuery(function ($) {
 						window.location.reload();
 					} else {
 						$('.sync-btn-walley').removeClass( 'disabled' );
+						$('.sync-btn-walley').prop('disabled', false);
 						$('.walley_sync_wrapper').append( '<div><i>' + data.data + '</i></div>' );
 						alert( data.data );
 					}
