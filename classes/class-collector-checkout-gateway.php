@@ -516,7 +516,7 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 		if ( empty( get_post_meta( $order->get_id(), '_collector_order_activated', true ) ) ) {
 			return false;
 		}
-		return true;
+		return parent::can_refund_order( $order );
 	}
 
 	/**
