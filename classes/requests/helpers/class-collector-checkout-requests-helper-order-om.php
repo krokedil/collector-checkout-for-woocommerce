@@ -61,9 +61,9 @@ class Collector_Checkout_Requests_Helper_Order_Om {
 		$return_lines = array();
 
 		foreach ( $order_lines as $order_line ) {
-			$unit_price     = 'rounding-fee' === $order_line['ArticleId'] ? $order_line['UnitPrice'] : abs( $order_line['UnitPrice'] );
+			$unit_price     = 'rounding-fee' === $order_line['id'] ? $order_line['UnitPrice'] : abs( $order_line['UnitPrice'] );
 			$return_lines[] = array(
-				'ArticleId'   => $order_line['ArticleId'],
+				'id'          => $order_line['id'],
 				'Description' => substr( $order_line['Description'], 0, 50 ),
 				'Quantity'    => abs( $order_line['Quantity'] ),
 				'UnitPrice'   => self::format_number( $unit_price ),
@@ -82,7 +82,7 @@ class Collector_Checkout_Requests_Helper_Order_Om {
 	 */
 	public static function rounding_fee( &$order_lines, $order ) {
 		$rounding_item = array(
-			'ArticleId'   => 'rounding-fee',
+			'id'          => 'rounding-fee',
 			'Description' => __( 'Rounding fee', 'collector-checkout-for-woocommerce' ),
 			'Quantity'    => 1,
 		);
@@ -126,7 +126,7 @@ class Collector_Checkout_Requests_Helper_Order_Om {
 		}
 
 		return array(
-			'ArticleId'   => self::get_article_number( $order_item ),
+			'id'          => self::get_article_number( $order_item ),
 			'Description' => substr( $order_item->get_name(), 0, 50 ),
 			'Quantity'    => $order_item->get_quantity(),
 			'UnitPrice'   => $unit_price,
@@ -167,7 +167,7 @@ class Collector_Checkout_Requests_Helper_Order_Om {
 		}
 
 		return array(
-			'ArticleId'   => $sku,
+			'id'          => $sku,
 			'Description' => substr( $order_fee->get_name(), 0, 50 ),
 			'Quantity'    => $order_fee->get_quantity(),
 			'UnitPrice'   => $unit_price,
@@ -199,7 +199,7 @@ class Collector_Checkout_Requests_Helper_Order_Om {
 		$unit_price = self::format_number( ( $order_item->get_total() + $order_item->get_total_tax() ) / $order_item->get_quantity() );
 
 		return array(
-			'ArticleId'   => $shipping_reference,
+			'id'          => $shipping_reference,
 			'Description' => self::get_name( $order_item ),
 			'Quantity'    => 1,
 			'UnitPrice'   => $unit_price,
