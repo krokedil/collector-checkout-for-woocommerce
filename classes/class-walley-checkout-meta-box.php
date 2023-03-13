@@ -108,7 +108,8 @@ class Walley_Checkout_Meta_Box {
 			),
 		);
 
-		if ( ! empty( $order_total_mismatch ) && in_array( $walley_order_status, array( 'NotActivated', 'PartActivated' ), true ) ) {
+		// Order total mismatch info.
+		if ( ! empty( $order_total_mismatch ) && in_array( $walley_order_status, array( 'NotActivated', 'PartActivated' ), true ) && 0 === count( $order->get_refunds() ) ) {
 			$keys_for_meta_box[] = array(
 				'title' => esc_html( $title_order_total_mismatch ),
 				'value' => wp_kses_post( $order_total_mismatch ),

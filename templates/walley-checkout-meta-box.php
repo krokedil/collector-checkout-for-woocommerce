@@ -15,7 +15,7 @@ if ( 'yes' !== $manage_orders ) {
 	return;
 }
 
-if ( in_array( $walley_order_status, array( 'NotActivated', 'PartActivated' ), true ) ) {
+if ( in_array( $walley_order_status, array( 'NotActivated', 'PartActivated' ), true ) && 0 === count( $order->get_refunds() ) ) {
 	?>
 	<div class="walley_sync_wrapper">
 		<button class="button-secondary sync-btn-walley"><?php esc_html_e( 'Update order to Walley', 'collector-checkout-for-woocommerce' ); ?></button>
