@@ -14,6 +14,24 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 
+	/**
+	 * Use new or old API.
+	 *
+	 * @var bool $walley_use_new_api
+	 */
+	public static $walley_use_new_api;
+
+	/**
+	 * Returns the *Singleton* instance of this class.
+	 *
+	 * @return bool.
+	 */
+	public static function use_new_api() {
+		if ( null === self::$walley_use_new_api ) {
+			self::$walley_use_new_api = walley_use_new_api();
+		}
+		return self::$walley_use_new_api;
+	}
 
 	/**
 	 * Hook in ajax handlers.
@@ -21,20 +39,20 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 	public static function init() {
 		self::add_ajax_events();
 	}
+
 	/**
 	 * Hook in methods - uses WordPress ajax handlers (admin-ajax).
 	 */
 	public static function add_ajax_events() {
 		$ajax_events = array(
-			'get_public_token'                => true,
-			'update_checkout'                 => true,
-			'add_customer_order_note'         => true,
-			'get_checkout_thank_you'          => true,
-			'get_customer_data'               => true,
-			'customer_adress_updated'         => true,
-			'update_fragment'                 => true,
-			'checkout_error'                  => true,
-			'update_delivery_module_shipping' => true,
+			'get_public_token'         => true,
+			'add_customer_order_note'  => true,
+			'get_checkout_thank_you'   => true,
+			'get_customer_data'        => true,
+			'customer_adress_updated'  => true,
+			'update_fragment'          => true,
+			'checkout_error'           => true,
+			'walley_reauthorize_order' => true,
 		);
 		foreach ( $ajax_events as $ajax_event => $nopriv ) {
 			add_action( 'wp_ajax_woocommerce_' . $ajax_event, array( __CLASS__, $ajax_event ) );
@@ -52,7 +70,7 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 	 * @return void
 	 */
 	public static function get_public_token() {
-		$customer_type      = filter_input( INPUT_POST, 'customer_type', FILTER_SANITIZE_STRING );
+		$customer_type      = filter_input( INPUT_POST, 'customer_type', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 		$public_token       = WC()->session->get( 'collector_public_token' );
 		$collector_settings = get_option( 'woocommerce_collector_checkout_settings' );
 		$test_mode          = $collector_settings['test_mode'];
@@ -68,8 +86,12 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 		} else {
 
 			// Get a new public token from Collector.
-			$init_checkout   = new Collector_Checkout_Requests_Initialize_Checkout( $customer_type );
-			$collector_order = $init_checkout->request();
+			if ( self::use_new_api() ) {
+				$collector_order = CCO_WC()->api->initialize_walley_checkout( array( 'customer_type' => $customer_type ) );
+			} else {
+				$init_checkout   = new Collector_Checkout_Requests_Initialize_Checkout( $customer_type );
+				$collector_order = $init_checkout->request();
+			}
 
 			if ( is_wp_error( $collector_order ) || empty( $collector_order ) ) {
 				$return = sprintf( '%s <a href="%s" class="button wc-forward">%s</a>', __( 'Could not connect to Walley. Error message: ', 'collector-checkout-for-woocommerce' ) . $collector_order->get_error_message(), wc_get_checkout_url(), __( 'Try again', 'collector-checkout-for-woocommerce' ) );
@@ -105,165 +127,6 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 	}
 
 	/**
-	 * Update checkout.
-	 *
-	 * @return void
-	 */
-	public static function update_checkout() {
-		wc_maybe_define_constant( 'WOOCOMMERCE_CHECKOUT', true );
-
-		WC()->cart->calculate_shipping();
-		WC()->cart->calculate_fees();
-		WC()->cart->calculate_totals();
-
-		$private_id    = WC()->session->get( 'collector_private_id' );
-		$customer_type = WC()->session->get( 'collector_customer_type' );
-
-		// start by updating our metadata if any
-		$metadata = apply_filters( 'coc_update_cart_metadata', array() );
-		if ( ! empty( $metadata ) ) {
-			$update_metadata         = new Collector_Checkout_Requests_Update_Metadata( $private_id, $customer_type, $metadata );
-			$collecor_order_metadata = $update_metadata->request();
-			// Check that everything went alright
-			if ( is_wp_error( $collecor_order_metadata ) ) {
-				// Check if purchase was completed, if it was don't redirect customer.
-				if ( 900 === $collecor_order_metadata->get_error_code() ) {
-					if ( ! empty( $collecor_order_metadata->get_error_message( 'Purchase_Completed' ) ) || ! empty( $collecor_order_metadata->get_error_message( 'Purchase_Commitment_Found' ) ) ) {
-						$return                 = array();
-						$return['redirect_url'] = '#';
-						wp_send_json_error( $return );
-					}
-				}
-				// Check if we had validation error
-				if ( 400 === $collecor_order_metadata->get_error_code() ) {
-					if ( ! empty( $collecor_order_metadata->get_error_message( 'Validation_Error' ) ) ) {
-						$return                 = array();
-						$return['redirect_url'] = '#';
-						wp_send_json_error( $return );
-					}
-				}
-				// Check if the resource is temporarily locked, if it was don't redirect customer.
-				if ( 423 === $collecor_order_metadata->get_error_code() ) {
-					$return                 = array();
-					$return['redirect_url'] = '#';
-					wp_send_json_error( $return );
-				}
-			}
-		}
-
-		$update_fees         = new Collector_Checkout_Requests_Update_Fees( $private_id, $customer_type );
-		$collector_order_fee = $update_fees->request();
-
-		if ( is_checkout() ) {
-			$cart_item_total = Collector_Checkout_Requests_Cart::cart();
-
-			// Update checkout and annul payment method if the total cart item amount is 0.
-			if ( empty( $cart_item_total['items'] ) ) {
-				$return                 = array();
-				$return['redirect_url'] = wc_get_checkout_url();
-				wp_send_json_error( $return );
-			}
-		}
-
-		// Check that update fees request was ok.
-		if ( is_wp_error( $collector_order_fee ) ) {
-			// Check if purchase was completed, if it was don't redirect customer.
-			if ( 900 === $collector_order_fee->get_error_code() ) {
-				if ( ! empty( $collector_order_fee->get_error_message( 'Purchase_Completed' ) ) || ! empty( $collector_order_fee->get_error_message( 'Purchase_Commitment_Found' ) ) ) {
-					$return = array();
-					// Check if an order exist with this private id. If we find a match, redirect to thank you page.
-					$order_id = wc_collector_get_order_id_by_private_id( $private_id );
-					if ( ! empty( $order_id ) ) {
-						$order = wc_get_order( $order_id );
-						if ( is_object( $order ) ) {
-							$return['redirect_url'] = $order->get_checkout_order_received_url();
-						} else {
-							$return['redirect_url'] = '#900';
-						}
-					} else {
-						$return['redirect_url'] = '#900';
-					}
-					wp_send_json_error( $return );
-				}
-			}
-
-			// Check if somethings wrong with the content of the cart sent, if it was don't redirect customer.
-			if ( 400 === $collector_order_fee->get_error_code() ) {
-				if ( ! empty( $collector_order_fee->get_error_message( 'Duplicate_Articles' ) ) || ! empty( $collector_order_fee->get_error_message( 'Validation_Error' ) ) ) {
-					$return                 = array();
-					$return['redirect_url'] = '#400';
-					wp_send_json_error( $return );
-				}
-			}
-
-			// Check if the resource is temporarily locked, if it was don't redirect customer.
-			if ( 423 === $collector_order_fee->get_error_code() ) {
-				$return                 = array();
-				$return['redirect_url'] = '#423';
-				wp_send_json_error( $return );
-			}
-
-			wc_collector_unset_sessions();
-			$return                 = array();
-			$return['redirect_url'] = wc_get_checkout_url();
-			wp_send_json_error( $return );
-		}
-
-		$update_cart          = new Collector_Checkout_Requests_Update_Cart( $private_id, $customer_type );
-		$collector_order_cart = $update_cart->request();
-
-		// Check that update cart request was ok.
-		if ( is_wp_error( $collector_order_cart ) ) {
-
-			// Check if purchase was completed, if it was don't redirect customer.
-			if ( 900 === $collector_order_cart->get_error_code() ) {
-				if ( ! empty( $collector_order_cart->get_error_message( 'Purchase_Completed' ) ) || ! empty( $collector_order_cart->get_error_message( 'Purchase_Commitment_Found' ) ) ) {
-					$return                 = array();
-					$return['redirect_url'] = '#';
-					wp_send_json_error( $return );
-				}
-			}
-
-			// Check if somethings wrong with the content of the cart sent, if it was don't redirect customer.
-			if ( 400 === $collector_order_cart->get_error_code() ) {
-
-				if ( ! empty( $collector_order_cart->get_error_message( 'Duplicate_Articles' ) ) || ! empty( $collector_order_cart->get_error_message( 'Validation_Error' ) ) ) {
-
-					$return                 = array();
-					$return['redirect_url'] = '#';
-					wp_send_json_error( $return );
-				}
-			}
-
-			// Check if the resource is temporarily locked, if it was don't redirect customer.
-			if ( 423 === $collector_order_cart->get_error_code() ) {
-				$return                 = array();
-				$return['redirect_url'] = '#';
-				wp_send_json_error( $return );
-			}
-
-			wc_collector_unset_sessions();
-			$return                 = array();
-			$return['redirect_url'] = wc_get_checkout_url();
-			wp_send_json_error( $return );
-		}
-
-		// Update database session id.
-		$collector_checkout_sessions = new Collector_Checkout_Sessions();
-		$collector_data              = array(
-			'session_id' => $collector_checkout_sessions->get_session_id(),
-		);
-		$args                        = array(
-			'private_id' => WC()->session->get( 'collector_private_id' ),
-			'data'       => $collector_data,
-		);
-
-		Collector_Checkout_DB::update_data( $args );
-
-		wp_send_json_success();
-	}
-
-	/**
 	 * Customer address updated - triggered when collectorCheckoutCustomerUpdated event is fired
 	 */
 	public static function customer_adress_updated() {
@@ -276,10 +139,21 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 		$update_needed = 'no';
 
 		// Get customer data from Collector.
-		$private_id      = WC()->session->get( 'collector_private_id' );
-		$customer_type   = WC()->session->get( 'collector_customer_type' );
-		$collector_order = new Collector_Checkout_Requests_Get_Checkout_Information( $private_id, $customer_type );
-		$collector_order = $collector_order->request();
+		$private_id    = WC()->session->get( 'collector_private_id' );
+		$customer_type = WC()->session->get( 'collector_customer_type' );
+
+		// Use new or old API.
+		if ( self::use_new_api() ) {
+			$collector_order = CCO_WC()->api->get_walley_checkout(
+				array(
+					'private_id'    => $private_id,
+					'customer_type' => $customer_type,
+				)
+			);
+		} else {
+			$collector_order = new Collector_Checkout_Requests_Get_Checkout_Information( $private_id, $customer_type );
+			$collector_order = $collector_order->request();
+		}
 
 		$customer_data                     = array();
 		$customer_data['billing_country']  = $collector_order['data']['countryCode'];
@@ -333,37 +207,12 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 	}
 
 	/**
-	 * Collector Delivery Module shipping method update - triggered when collectorCheckoutShippingUpdated event is fired
-	 */
-	public static function update_delivery_module_shipping() {
-		if ( ! isset( $_REQUEST['nonce'] ) || ! wp_verify_nonce( wp_unslash( sanitize_key( $_REQUEST['nonce'] ) ), 'collector_nonce' ) ) {
-			exit( 'Nonce can not be verified.' );
-		}
-
-		wc_maybe_define_constant( 'WOOCOMMERCE_CHECKOUT', true );
-
-		$private_id      = WC()->session->get( 'collector_private_id' );
-		$customer_type   = WC()->session->get( 'collector_customer_type' );
-		$collector_order = new Collector_Checkout_Requests_Get_Checkout_Information( $private_id, $customer_type );
-		$collector_order = $collector_order->request();
-
-		$shipping_data = coc_get_shipping_data( $collector_order );
-
-		WC()->session->set( 'collector_delivery_module_data', $shipping_data );
-
-		$chosen_shipping_methods = array( 'collector_delivery_module' );
-		WC()->session->set( 'chosen_shipping_methods', apply_filters( 'coc_shipping_method', $chosen_shipping_methods, $shipping_data ) ); // Set chosen shipping method, with filter to allow overrides.
-
-		wp_send_json_success();
-	}
-
-	/**
 	 * Save customer order note to session.
 	 *
 	 * @return void
 	 */
 	public static function add_customer_order_note() {
-		$order_note = filter_input( INPUT_POST, 'order_note', FILTER_SANITIZE_STRING );
+		$order_note = filter_input( INPUT_POST, 'order_note', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 		WC()->session->set( 'collector_customer_order_note', $order_note );
 
 		wp_send_json_success();
@@ -375,14 +224,14 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 	 * @return void
 	 */
 	public static function get_checkout_thank_you() {
-		$order_id           = filter_input( INPUT_POST, 'order_id', FILTER_SANITIZE_STRING );
-		$purchase_status    = filter_input( INPUT_POST, 'purchase_status', FILTER_SANITIZE_STRING );
+		$order_id           = filter_input( INPUT_POST, 'order_id', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
+		$purchase_status    = filter_input( INPUT_POST, 'purchase_status', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 		$collector_settings = get_option( 'woocommerce_collector_checkout_settings' );
 		$test_mode          = $collector_settings['test_mode'];
 
 		// If something went wrong in get_customer_data() - display a "thank you page light".
 		if ( 'not-completed' === $purchase_status ) {
-			$public_token = filter_input( INPUT_POST, 'public_token', FILTER_SANITIZE_STRING );
+			$public_token = filter_input( INPUT_POST, 'public_token', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 			if ( WC()->session->get( 'collector_customer_type' ) ) {
 				$customer_type = WC()->session->get( 'collector_customer_type' );
 			} else {
@@ -441,8 +290,18 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 
 		CCO_WC()->logger::log( 'Payment complete triggered for private id ' . $private_id . '. Starting WooCommerce checkout form processing...' );
 
-		$customer_data   = new Collector_Checkout_Requests_Get_Checkout_Information( $private_id, $customer_type );
-		$collector_order = $customer_data->request();
+		// Use new or old API.
+		if ( self::use_new_api() ) {
+			$collector_order = CCO_WC()->api->get_walley_checkout(
+				array(
+					'private_id'    => $private_id,
+					'customer_type' => $customer_type,
+				)
+			);
+		} else {
+			$collector_order = new Collector_Checkout_Requests_Get_Checkout_Information( $private_id, $customer_type );
+			$collector_order = $collector_order->request();
+		}
 
 		if ( 'PurchaseCompleted' === $collector_order['data']['status'] ) {
 			// Save the payment method and payment id.
@@ -641,6 +500,75 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 		$redirect_url = $order->get_checkout_order_received_url();
 		$return       = array( 'redirect_url' => $redirect_url );
 		wp_send_json_success( $return );
+	}
+
+	/**
+	 * Reauthorizes / updates an order in Walleys system.
+	 *
+	 * @return void
+	 */
+	public static function walley_reauthorize_order() {
+
+		$nonce = isset( $_POST['nonce'] ) ? sanitize_key( $_POST['nonce'] ) : '';
+		if ( ! wp_verify_nonce( $nonce, 'walley_reauthorize_order' ) ) {
+			wp_send_json_error( 'bad_nonce' );
+			exit;
+		}
+
+		$order_id = filter_input( INPUT_POST, 'id', FILTER_SANITIZE_NUMBER_INT );
+		$order    = wc_get_order( $order_id );
+
+		if ( empty( $order->get_date_paid() ) ) {
+			wp_send_json_error( 'Can not sync Walley order since it has not been marked as paid yet.' );
+			wp_die();
+		}
+
+		if ( floatval( $order->get_total() ) > floatval( get_post_meta( $order_id, '_collector_original_order_total', true ) ) ) {
+			// Translators: Original order amount.
+			$message = sprintf( __( 'Updated total amount sent to Walley can not be higher than the original order amount (%1$s).', 'collector-checkout-for-woocommerce' ), get_post_meta( $order_id, '_collector_original_order_total', true ) );
+			$order->add_order_note( $message );
+			wp_send_json_error( $message );
+			wp_die();
+		}
+
+		// Not going to do this for non-Walley orders.
+		if ( 'collector_checkout' !== $order->get_payment_method() ) {
+			wp_send_json_error( 'Payment method is not Walley' );
+			wp_die();
+		}
+
+		$response = CCO_WC()->api->reauthorize_walley_order( $order_id );
+
+		if ( ! is_wp_error( $response ) ) {
+			if ( 202 === $response['status'] ) {
+				$order->add_order_note( __( 'Walley order successfully updated.', 'collector-checkout-for-woocommerce' ) );
+			} elseif ( 201 === $response['status'] ) {
+				// This should not happen as long as we do not allow a order total amount that is higher than the original order amount.
+				$order->add_order_note( __( 'Walley order sync started. Waiting for reauthorize response.', 'collector-checkout-for-woocommerce' ) );
+				update_post_meta( $order_id, '_walley_reauthorize_data', wp_json_encode( $response['header'] ) );
+			} else {
+				// Translators: Request response http status.
+				$order->add_order_note( sprintf( __( 'Walley order sync started. Unknown http status response. Status: %1$s.', 'collector-checkout-for-woocommerce' ), $response['status'] ) );
+			}
+
+			// Save received data to WP transient.
+			walley_save_order_data_to_transient(
+				array(
+					'order_id'     => $order_id,
+					'status'       => $response['status'],
+					'total_amount' => $order->get_total(),
+					'currency'     => $order->get_currency(),
+				)
+			);
+
+		} else {
+			// Translators: Request error message & request error code.
+			$order->add_order_note( sprintf( __( 'Could not update order lines in Walley. Error message: %1$s. Error code: %2$s</i>', 'collector-checkout-for-woocommerce' ), $response->get_error_message(), $response->get_error_code() ) );
+			wp_send_json_error( 'Could not update Walley order.' );
+			wp_die();
+		}
+		wp_send_json_success();
+		wp_die();
 	}
 }
 Collector_Checkout_Ajax_Calls::init();

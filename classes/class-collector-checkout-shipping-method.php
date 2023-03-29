@@ -71,45 +71,37 @@ if ( class_exists( 'WC_Shipping_Method' ) ) {
 		 */
 		public function calculate_shipping( $package = array() ) {
 			$cost = 0;
-			if ( null !== WC()->session->get( 'collector_private_id' ) ) {
-				$private_id    = WC()->session->get( 'collector_private_id' );
-				$customer_type = WC()->session->get( 'collector_customer_type' );
 
-				if ( method_exists( WC()->session, 'get' ) && ! empty( WC()->session->get( 'collector_delivery_module_data' )['label'] ) && ! empty( WC()->session->get( 'collector_delivery_module_data' )['cost'] ) ) {
-					$shipping_data = WC()->session->get( 'collector_delivery_module_data' );
-				} else {
-					$collector_order = new Collector_Checkout_Requests_Get_Checkout_Information( $private_id, $customer_type );
-					$collector_order = $collector_order->request();
-
-					if ( isset( $collector_order['data']['shipping'] ) ) {
-						$shipping_data = coc_get_shipping_data( $collector_order );
-						WC()->session->set( 'collector_delivery_module_data', $shipping_data );
-					} else {
-						$shipping_data = array(
-							'label'        => 'Collector',
-							'shipping_id'  => '',
-							'cost'         => 0,
-							'shipping_vat' => 0,
-						);
-					}
-				}
-
-				if ( ! isset( $shipping_data['label'] ) ) {
-					$shipping_data = $shipping_data[0];
-				}
-
-				if ( $shipping_data['shipping_vat'] > 0 ) {
-					$cost = $shipping_data['cost'] / ( ( $shipping_data['shipping_vat'] / 100 ) + 1 );
-				}
-				$args = array(
-					'id'      => $this->get_rate_id(),
-					'label'   => $shipping_data['label'],
-					'cost'    => round( $cost, 2 ),
-					'package' => $package,
-				);
-				WC()->session->set( 'collector_delivery_module_enabled', true );
-				$this->add_rate( $args );
+			if ( ! is_checkout() ) {
+				return;
 			}
+
+			if ( 'collector_checkout' !== WC()->session->get( 'chosen_payment_method' ) ) {
+				return;
+			}
+
+			// If Delivery module is not used for the currency/country, return.
+			if ( 'yes' !== is_collector_delivery_module( get_woocommerce_currency() ) ) {
+				return;
+			}
+
+			$shipping_data = WC()->session->get( 'collector_delivery_module_data' );
+
+			if ( empty( $shipping_data ) || ! isset( $shipping_data['cost'] ) || ! isset( $shipping_data['label'] ) ) {
+				return;
+			}
+
+			if ( $shipping_data['shipping_vat'] > 0 ) {
+				$cost = $shipping_data['cost'] / ( ( $shipping_data['shipping_vat'] / 100 ) + 1 );
+			}
+			$args = array(
+				'id'      => $this->get_rate_id(),
+				'label'   => $shipping_data['label'],
+				'cost'    => round( $cost, 2 ),
+				'package' => $package,
+			);
+
+			$this->add_rate( $args );
 		}
 	}
 

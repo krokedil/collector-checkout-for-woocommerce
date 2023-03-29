@@ -79,7 +79,7 @@ class Collector_Checkout_Requests_Helper_Order {
 	public static function get_order_line_items( $order_item ) {
 		return array(
 			'id'          => self::get_article_number( $order_item ),
-			'description' => $order_item->get_name(),
+			'description' => substr( $order_item->get_name(), 0, 50 ),
 			'quantity'    => $order_item->get_quantity(),
 			'vat'         => intval( round( ( $order_item->get_total_tax() / $order_item->get_total() ), 2 ) * 100 ),
 			'unitPrice'   => round( ( ( $order_item->get_total() + $order_item->get_total_tax() ) / $order_item->get_quantity() ), 2 ),
@@ -98,7 +98,7 @@ class Collector_Checkout_Requests_Helper_Order {
 
 		return array(
 			'id'          => 'fee|' . $order_fee->get_id(),
-			'description' => substr( $order_fee->get_name(), 0, 254 ),
+			'description' => substr( $order_fee->get_name(), 0, 50 ),
 			'quantity'    => $order_fee->get_quantity(),
 			'vat'         => ( ! empty( floatval( $order->get_total_tax() ) ) ) ? self::get_order_line_tax_rate( $order, current( $order->get_items( 'fee' ) ) ) : 0,
 			'unitPrice'   => round( ( ( $order_fee->get_total() + $order_fee->get_total_tax() ) / $order_fee->get_quantity() ), 2 ),

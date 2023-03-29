@@ -27,13 +27,13 @@ class Collector_Checkout_Requests_Helper_Order_Om {
 		$order_lines = array();
 
 		foreach ( $order->get_items() as $item ) {
-			$formatted_item = self::get_order_line_items( $item );
+			$formatted_item = self::get_order_line_items( $item, $order );
 			if ( is_array( $formatted_item ) ) {
 				array_push( $order_lines, $formatted_item );
 			}
 		}
 		foreach ( $order->get_fees() as $fee ) {
-			$formatted_item = self::get_order_line_fees( $fee );
+			$formatted_item = self::get_order_line_fees( $fee, $order );
 			if ( is_array( $formatted_item ) ) {
 				array_push( $order_lines, $formatted_item );
 			}
@@ -61,11 +61,12 @@ class Collector_Checkout_Requests_Helper_Order_Om {
 		$return_lines = array();
 
 		foreach ( $order_lines as $order_line ) {
+			$unit_price     = 'rounding-fee' === $order_line['id'] ? $order_line['UnitPrice'] : abs( $order_line['UnitPrice'] );
 			$return_lines[] = array(
-				'ArticleId'   => $order_line['ArticleId'],
-				'Description' => $order_line['Description'],
+				'id'          => $order_line['id'],
+				'Description' => substr( $order_line['Description'], 0, 50 ),
 				'Quantity'    => abs( $order_line['Quantity'] ),
-				'UnitPrice'   => $order_line['UnitPrice'],
+				'UnitPrice'   => self::format_number( $unit_price ),
 			);
 		}
 
@@ -81,19 +82,23 @@ class Collector_Checkout_Requests_Helper_Order_Om {
 	 */
 	public static function rounding_fee( &$order_lines, $order ) {
 		$rounding_item = array(
-			'ArticleId'   => 'rounding-fee',
+			'id'          => 'rounding-fee',
 			'Description' => __( 'Rounding fee', 'collector-checkout-for-woocommerce' ),
 			'Quantity'    => 1,
 		);
 
 		// Get WooCommerce order total.
-		$wc_total        = $order->get_total();
+		$wc_total = abs( $order->get_total() );
+
 		$collector_total = 0;
 
 		// Add all collector item amounts together.
 		foreach ( $order_lines as $order_line ) {
 			$collector_total += round( $order_line['UnitPrice'] * $order_line['Quantity'], 2 );
 		}
+
+		// Make $collector_total a positive number. Can be negative due to refunds.
+		$collector_total = abs( $collector_total );
 
 		// Set the unitprice for the rounding fee to the difference between WooCommerce and Collector.
 		$rounding_item['UnitPrice'] = self::format_number( $wc_total - $collector_total );
@@ -108,9 +113,10 @@ class Collector_Checkout_Requests_Helper_Order_Om {
 	 * Gets the formatted order line.
 	 *
 	 * @param WC_Order_Item_Product $order_item The WooCommerce order line item.
+	 * * @param object $order The WooCommerce order.
 	 * @return array
 	 */
-	public static function get_order_line_items( $order_item ) {
+	public static function get_order_line_items( $order_item, $order ) {
 
 		$unit_price = self::format_number( ( $order_item->get_total() + $order_item->get_total_tax() ) / $order_item->get_quantity() );
 
@@ -120,10 +126,11 @@ class Collector_Checkout_Requests_Helper_Order_Om {
 		}
 
 		return array(
-			'ArticleId'   => self::get_article_number( $order_item ),
-			'Description' => $order_item->get_name(),
+			'id'          => self::get_article_number( $order_item ),
+			'Description' => substr( $order_item->get_name(), 0, 50 ),
 			'Quantity'    => $order_item->get_quantity(),
 			'UnitPrice'   => $unit_price,
+			'vat'         => self::get_tax_rate( $order_item, $order ),
 		);
 	}
 
@@ -133,10 +140,8 @@ class Collector_Checkout_Requests_Helper_Order_Om {
 	 * @param WC_Order_Item_Fee $order_fee The order item fee.
 	 * @return array
 	 */
-	public static function get_order_line_fees( $order_fee ) {
-		$order_id = $order_fee->get_order_id();
-		$order    = wc_get_order( $order_id );
-
+	public static function get_order_line_fees( $order_fee, $order ) {
+		$order_id           = $order_fee->get_order_id();
 		$collector_settings = get_option( 'woocommerce_collector_checkout_settings' );
 		$invoice_fee_id     = isset( $collector_settings['collector_invoice_fee'] ) ? $collector_settings['collector_invoice_fee'] : '';
 
@@ -162,10 +167,11 @@ class Collector_Checkout_Requests_Helper_Order_Om {
 		}
 
 		return array(
-			'ArticleId'   => $sku,
-			'Description' => substr( $order_fee->get_name(), 0, 254 ),
+			'id'          => $sku,
+			'Description' => substr( $order_fee->get_name(), 0, 50 ),
 			'Quantity'    => $order_fee->get_quantity(),
 			'UnitPrice'   => $unit_price,
+			'vat'         => self::get_tax_rate( $order_fee, $order ),
 		);
 	}
 
@@ -193,10 +199,11 @@ class Collector_Checkout_Requests_Helper_Order_Om {
 		$unit_price = self::format_number( ( $order_item->get_total() + $order_item->get_total_tax() ) / $order_item->get_quantity() );
 
 		return array(
-			'ArticleId'   => $shipping_reference,
+			'id'          => $shipping_reference,
 			'Description' => self::get_name( $order_item ),
 			'Quantity'    => 1,
 			'UnitPrice'   => $unit_price,
+			'vat'         => self::get_tax_rate( $order_item, $order ),
 		);
 	}
 
@@ -234,7 +241,7 @@ class Collector_Checkout_Requests_Helper_Order_Om {
 	 * @return string
 	 */
 	public static function get_name( $order_item ) {
-		return substr( $order_item->get_name(), 0, 255 );
+		return substr( $order_item->get_name(), 0, 50 );
 	}
 
 	/**
@@ -244,6 +251,35 @@ class Collector_Checkout_Requests_Helper_Order_Om {
 	 * @return string
 	 */
 	public static function format_number( $value ) {
-		return number_format( round( $value, 2 ), 2, '.', '' );
+		return wc_format_decimal( $value, 2 );
+
+	}
+
+	/**
+	 * Get the tax rate.
+	 *
+	 * @param WC_Order_Item_Product|WC_Order_Item_Shipping|WC_Order_Item_Fee $order_item The WooCommerce order item.
+	 * @param WC_Order                                                       $order The WooCommerce order.
+	 * @return int
+	 */
+	public static function get_tax_rate( $order_item, $order ) {
+		// If we don't have any tax, return 0.
+		if ( '0' === $order_item->get_total_tax() ) {
+			return 0;
+		}
+
+		$tax_items = $order->get_items( 'tax' );
+		/**
+		 * Process the tax items.
+		 *
+		 * @var WC_Order_Item_Tax $tax_item The WooCommerce order tax item.
+		 */
+		foreach ( $tax_items as $tax_item ) {
+			$rate_id = $tax_item->get_rate_id();
+			if ( key( $order_item->get_taxes()['total'] ) === $rate_id ) {
+				return (string) round( WC_Tax::_get_tax_rate( $rate_id )['tax_rate'] );
+			}
+		}
+		return 0;
 	}
 }

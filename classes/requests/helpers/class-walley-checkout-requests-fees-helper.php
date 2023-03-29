@@ -12,7 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Class Collector_Checkout_Requests_Fees.
  */
-class Collector_Checkout_Requests_Fees {
+class Walley_Checkout_Requests_Fees_Helper {
 
 	/**
 	 * Invoice fee ID
@@ -29,30 +29,42 @@ class Collector_Checkout_Requests_Fees {
 	public $price = 0;
 
 	/**
-	 * Class constructor
+	 * Gets the invoice fee id (if set in settings).
+	 *
+	 * @return string
 	 */
-	public function __construct() {
-		$collector_settings   = get_option( 'woocommerce_collector_checkout_settings' );
-		$invoice_fee_id       = $collector_settings['collector_invoice_fee'] ?? '';
-		$this->invoice_fee_id = $invoice_fee_id;
+	public static function get_invoice_fee_id() {
+		$collector_settings = get_option( 'woocommerce_collector_checkout_settings' );
+		$invoice_fee_id     = $collector_settings['collector_invoice_fee'] ?? '';
+		return $invoice_fee_id;
+	}
 
+	/**
+	 * Gets the delivery module settings for the currency.
+	 *
+	 * @return string
+	 */
+	public static function get_delivery_module() {
+		$collector_settings = get_option( 'woocommerce_collector_checkout_settings' );
 		switch ( get_woocommerce_currency() ) {
 			case 'SEK':
-				$this->delivery_module = isset( $collector_settings['collector_delivery_module_se'] ) ? $collector_settings['collector_delivery_module_se'] : 'no';
+				$delivery_module = isset( $collector_settings['collector_delivery_module_se'] ) ? $collector_settings['collector_delivery_module_se'] : 'no';
 				break;
 			case 'NOK':
-				$this->delivery_module = isset( $collector_settings['collector_delivery_module_no'] ) ? $collector_settings['collector_delivery_module_no'] : 'no';
+				$delivery_module = isset( $collector_settings['collector_delivery_module_no'] ) ? $collector_settings['collector_delivery_module_no'] : 'no';
 				break;
 			case 'DKK':
-				$this->delivery_module = isset( $collector_settings['collector_delivery_module_dk'] ) ? $collector_settings['collector_delivery_module_dk'] : 'no';
+				$delivery_module = isset( $collector_settings['collector_delivery_module_dk'] ) ? $collector_settings['collector_delivery_module_dk'] : 'no';
 				break;
 			case 'EUR':
-				$this->delivery_module = isset( $collector_settings['collector_delivery_module_fi'] ) ? $collector_settings['collector_delivery_module_fi'] : 'no';
+				$delivery_module = isset( $collector_settings['collector_delivery_module_fi'] ) ? $collector_settings['collector_delivery_module_fi'] : 'no';
 				break;
 			default:
-				$this->delivery_module = isset( $collector_settings['collector_delivery_module_se'] ) ? $collector_settings['collector_delivery_module_se'] : 'no';
+				$delivery_module = isset( $collector_settings['collector_delivery_module_se'] ) ? $collector_settings['collector_delivery_module_se'] : 'no';
 				break;
 		}
+
+		return $delivery_module;
 	}
 
 	/**
@@ -60,15 +72,15 @@ class Collector_Checkout_Requests_Fees {
 	 *
 	 * @return array|string
 	 */
-	public function fees() {
+	public static function fees() {
 		$fees = array();
 
 		/**
 		 * If a delivery module is not used, the shipping is handled in WooCommerce, and must be sent in the fee.shipping object. Retrieves first available.
 		 * Note: if no shipping is available, fees.shipping is simply unset, NOT null.
 		 */
-		$update_shipping = apply_filters( 'coc_update_shipping', ( 'no' === $this->delivery_module ) ); // Filter on if we should update shipping with fees or not.
-		$shipping        = $this->get_shipping();
+		$update_shipping = apply_filters( 'coc_update_shipping', ( 'no' === self::get_delivery_module() ) ); // Filter on if we should update shipping with fees or not.
+		$shipping        = self::get_shipping();
 		if ( ( WC()->cart->show_shipping() && $update_shipping ) && ! empty( $shipping ) ) {
 			$fees['shipping'] = $shipping;
 		}
@@ -81,10 +93,10 @@ class Collector_Checkout_Requests_Fees {
 			unset( $fees['shipping'] );
 		}
 
-		if ( $this->invoice_fee_id ) {
-			$_product = wc_get_product( $this->invoice_fee_id );
+		if ( self::get_invoice_fee_id() ) {
+			$_product = wc_get_product( self::get_invoice_fee_id() );
 			if ( is_object( $_product ) ) {
-				$directinvoicenotification         = $this->get_invoice_fee( $_product );
+				$directinvoicenotification         = self::get_invoice_fee( $_product );
 				$fees['directinvoicenotification'] = $directinvoicenotification;
 			}
 		}
@@ -103,7 +115,7 @@ class Collector_Checkout_Requests_Fees {
 	 *
 	 * @return array|void
 	 */
-	public function get_shipping() {
+	public static function get_shipping() {
 		if ( WC()->cart->needs_shipping() ) {
 			WC()->cart->calculate_shipping();
 			$packages        = WC()->shipping->get_packages();
@@ -143,7 +155,7 @@ class Collector_Checkout_Requests_Fees {
 	 *
 	 * @return array
 	 */
-	public function get_invoice_fee( $_product ) {
+	public static function get_invoice_fee( $_product ) {
 
 		$price = wc_get_price_including_tax( $_product );
 
@@ -159,10 +171,26 @@ class Collector_Checkout_Requests_Fees {
 		}
 
 		return array(
-			'id'          => 'invoicefee|' . Collector_Checkout_Requests_Cart::get_sku( $_product, $_product->get_id() ),
-			'description' => substr( $_product->get_title(), 0, 50 ),
-			'unitPrice'   => wc_format_decimal( $price, 2 ),
+			'id'          => 'invoicefee|' . self::get_sku( $_product, $_product->get_id() ),
+			'description' => $_product->get_title(),
+			'unitPrice'   => round( $price, 2 ),
 			'vat'         => $vat_rate,
 		);
+	}
+
+	/**
+	 * Gets the product SKU.
+	 *
+	 * @param WC_Product $product WooCommerce product.
+	 * @param int        $product_id WooCommerce product ID.
+	 * @return string
+	 */
+	public static function get_sku( $product, $product_id ) {
+		if ( get_post_meta( $product_id, '_sku', true ) !== '' ) {
+			$part_number = $product->get_sku();
+		} else {
+			$part_number = $product->get_id();
+		}
+		return substr( $part_number, 0, 32 );
 	}
 }

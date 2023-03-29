@@ -96,7 +96,7 @@ class Collector_Checkout_Requests_Helper_Order_Fees {
 			$shipping_method_id = reset( $shipping_items )->get_method_id();
 			return array(
 				'id'          => 'shipping|' . substr( $shipping_method_id, 0, 50 ),
-				'description' => $order->get_shipping_method(),
+				'description' => substr( $order->get_shipping_method(), 0, 50 ),
 				'unitPrice'   => $order->get_shipping_total() + $order->get_shipping_tax(), // Float.
 				'vat'         => ( ! empty( floatval( $order->get_shipping_tax() ) ) ) ? $this->get_product_tax_rate( $order, current( $order->get_items( 'shipping' ) ) ) : 0, // Float.
 			);
@@ -104,7 +104,7 @@ class Collector_Checkout_Requests_Helper_Order_Fees {
 			// todo $shipping_method_id is here probably undefined.
 			return array(
 				'id'          => 'shipping|' . substr( $shipping_method_id, 0, 50 ),
-				'description' => $order->get_shipping_method(),
+				'description' => substr( $order->get_shipping_method(), 0, 50 ),
 				'unitPrice'   => 0, // Float.
 				'vat'         => 0, // Float.
 			);
@@ -135,7 +135,7 @@ class Collector_Checkout_Requests_Helper_Order_Fees {
 
 		return array(
 			'id'          => 'invoicefee|' . Collector_Checkout_Requests_Cart::get_sku( $_product, $_product->get_id() ),
-			'description' => $_product->get_title(),
+			'description' => substr( $_product->get_title(), 0, 50 ),
 			'unitPrice'   => round( $price, 2 ),
 			'vat'         => $vat_rate,
 		);

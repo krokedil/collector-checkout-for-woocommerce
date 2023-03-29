@@ -36,36 +36,8 @@ class Collector_Delivery_Module {
 	 * Plugin actions.
 	 */
 	public function __construct() {
-		add_action( 'woocommerce_checkout_update_order_review', array( $this, 'clear_shipping_and_recalculate' ) );
 		add_action( 'woocommerce_admin_order_data_after_shipping_address', array( $this, 'admin_order_meta' ), 10, 1 );
 		add_filter( 'wc_get_template', array( $this, 'override_shipping_template' ), 999, 2 );
-	}
-
-	/**
-	 * Clears the shipping calculations to prevent errors.
-	 *
-	 * @return void
-	 */
-	public function clear_shipping_and_recalculate() {
-		$available_gateways = WC()->payment_gateways()->get_available_payment_gateways();
-		reset( $available_gateways );
-
-		if ( 'collector_checkout' === WC()->session->get( 'chosen_payment_method' ) ) {
-			// If Collector Checkout is the chosen payment method.
-			WC()->session->set( 'collector_delivery_module_enabled', true );
-			WC()->session->__unset( 'shipping_for_package_0' );
-			WC()->cart->calculate_shipping();
-		} elseif ( ( null === WC()->session->get( 'chosen_payment_method' ) || '' === WC()->session->get( 'chosen_payment_method' ) ) && 'collector_checkout' === key( $available_gateways ) ) {
-			// If no payment method is chosen but Collector Checkout is the first payment method.
-			WC()->session->set( 'collector_delivery_module_enabled', true );
-			WC()->session->__unset( 'shipping_for_package_0' );
-			WC()->cart->calculate_shipping();
-		} else {
-			if ( null !== WC()->session->get( 'collector_delivery_module_enabled' ) ) {
-				WC()->session->__unset( 'shipping_for_package_0' );
-				WC()->session->__unset( 'collector_delivery_module_enabled' );
-			}
-		}
 	}
 
 	/**

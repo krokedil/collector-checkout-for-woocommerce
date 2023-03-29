@@ -25,7 +25,7 @@ class Collector_Checkout_Admin_Notices {
 	 */
 	public function __construct() {
 		$collector_settings = get_option( 'woocommerce_collector_checkout_settings' );
-		$this->enabled      = $collector_settings['enabled'];
+		$this->enabled      = $collector_settings['enabled'] ?? 'no';
 		add_action( 'admin_init', array( $this, 'check_settings' ) );
 	}
 

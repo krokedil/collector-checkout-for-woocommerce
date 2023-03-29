@@ -80,8 +80,8 @@ class Collector_Checkout_Requests_Cart {
 	public static function create_item( $sku, $product_name, $line_total, $quantity, $line_tax, $product = null ) {
 		$configured_item = array(
 			'id'          => $sku,
-			'description' => $product_name,
-			'unitPrice'   => round( ( $line_total + $line_tax ) / $quantity, 2 ), // Total price per unit including VAT.
+			'description' => substr( $product_name, 0, 50 ),
+			'unitPrice'   => wc_format_decimal( ( $line_total + $line_tax ) / $quantity, 2 ), // Total price per unit including VAT.
 			'quantity'    => $quantity,
 			'vat'         => ( empty( floatval( $line_total ) ) ) ? 0 : round( $line_tax / $line_total, 2 ) * 100,
 		);
@@ -130,11 +130,11 @@ class Collector_Checkout_Requests_Cart {
 
 		// Add all collector item amounts together.
 		foreach ( $collector_items as $collector_item ) {
-			$collector_total += round( $collector_item['unitPrice'] * $collector_item['quantity'], 2 );
+			$collector_total += wc_format_decimal( $collector_item['unitPrice'] * $collector_item['quantity'], 2 );
 		}
 
 		// Set the unitprice for the rounding fee to the difference between WooCommerce and Collector.
-		$rounding_item['unitPrice'] = round( $wc_total - $collector_total, 2 );
+		$rounding_item['unitPrice'] = wc_format_decimal( $wc_total - $collector_total, 2 );
 
 		// Add the rounding item to the collector items only if the price is not zero.
 		if ( ! empty( $rounding_item['unitPrice'] && abs( $rounding_item['unitPrice'] ) < 3 ) ) {
@@ -182,8 +182,8 @@ class Collector_Checkout_Requests_Cart {
 
 			$fee_item = array(
 				'id'          => 'fee|' . $fee->id,
-				'description' => $fee->name,
-				'unitPrice'   => $fee_amount,
+				'description' => substr( $fee->name, 0, 50 ),
+				'unitPrice'   => wc_format_decimal( $fee_amount, 2 ),
 				'quantity'    => 1,
 				'vat'         => $fee_tax_rate,
 			);

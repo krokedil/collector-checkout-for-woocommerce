@@ -35,7 +35,6 @@ function collector_wc_show_snippet() {
 	$collector_settings       = get_option( 'woocommerce_collector_checkout_settings' );
 	$test_mode                = $collector_settings['test_mode'];
 	$data_action_color_button = isset( $collector_settings['checkout_button_color'] ) && ! empty( $collector_settings['checkout_button_color'] ) ? ' data-action-color="' . $collector_settings['checkout_button_color'] . '"' : '';
-	$checkout_version         = isset( $collector_settings['checkout_version'] ) ? $collector_settings['checkout_version'] : 'v1';
 
 	if ( 'yes' === $test_mode ) {
 		$url = 'https://checkout-uat.collector.se/collector-checkout-loader.js';
@@ -52,11 +51,16 @@ function collector_wc_show_snippet() {
 
 	$public_token       = WC()->session->get( 'collector_public_token' );
 	$collector_currency = WC()->session->get( 'collector_currency' );
+	$private_id         = WC()->session->get( 'collector_private_id' );
 
-	if ( empty( $public_token ) || get_woocommerce_currency() !== $collector_currency ) {
+	if ( empty( $public_token ) || empty( $private_id ) || get_woocommerce_currency() !== $collector_currency ) {
 		// Get a new public token from Collector.
-		$init_checkout   = new Collector_Checkout_Requests_Initialize_Checkout( $customer_type );
-		$collector_order = $init_checkout->request();
+		if ( walley_use_new_api() ) {
+			$collector_order = CCO_WC()->api->initialize_walley_checkout( array( 'customer_type' => $customer_type ) );
+		} else {
+			$init_checkout   = new Collector_Checkout_Requests_Initialize_Checkout( $customer_type );
+			$collector_order = $init_checkout->request();
+		}
 
 		if ( is_wp_error( $collector_order ) ) {
 			$return = '<ul class="woocommerce-error"><li>' . sprintf( '%s <a href="%s" class="button wc-forward">%s</a>', __( 'Could not connect to Walley. Error message: ', 'collector-checkout-for-woocommerce' ) . $collector_order->get_error_message(), wc_get_checkout_url(), __( 'Try again', 'collector-checkout-for-woocommerce' ) ) . '</li></ul>';
@@ -83,9 +87,43 @@ function collector_wc_show_snippet() {
 			);
 
 			echo( "<script>console.log('Collector: " . wp_json_encode( $output ) . "');</script>" );
-			$return = '<div id="collector-container"><script src="' . $url . '" data-lang="' . $locale . '" data-version="' . $checkout_version . '" data-token="' . $public_token . '" data-variant="' . $customer_type . '"' . $data_action_color_button . ' ></script></div>'; // phpcs:ignore
+			$return = '<div id="collector-container"><script src="' . $url . '" data-lang="' . $locale . '" data-token="' . $public_token . '" data-variant="' . $customer_type . '"' . $data_action_color_button . ' ></script></div>'; // phpcs:ignore
 		}
 	} else {
+
+		// Check if purchase was completed, if it was redirect customer to thankyou page.
+		// Use new or old API.
+		if ( walley_use_new_api() ) {
+			$collector_order = CCO_WC()->api->get_walley_checkout(
+				array(
+					'private_id'    => $private_id,
+					'customer_type' => $customer_type,
+				)
+			);
+		} else {
+			$collector_order = new Collector_Checkout_Requests_Get_Checkout_Information( $private_id, $customer_type );
+			$collector_order = $collector_order->request();
+		}
+
+		// If the update results in a Purchase_Completed response, let's try to redirect the customer to thank you page.
+		if ( is_wp_error( $collector_order ) ) {
+			return;
+		}
+
+		if ( isset( $collector_order['data']['status'] ) && 'PurchaseCompleted' === $collector_order['data']['status'] ) {
+			$order_id = wc_collector_get_order_id_by_private_id( $private_id );
+
+			if ( ! empty( $order_id ) ) {
+				$order = wc_get_order( $order_id );
+				if ( $order ) {
+					CCO_WC()->logger::log( 'Trying to display checkout but status is PurchaseCompleted. Private id ' . $private_id . ', exist in order id ' . $order_id . '. Redirecting customer to thankyou page.' );
+					wp_safe_redirect( $order->get_checkout_order_received_url() );
+					exit;
+				}
+			} else {
+				CCO_WC()->logger::log( 'Trying to display checkout but status is PurchaseCompleted. Private id ' . $private_id . '. No correlating order id can be found.' );
+			}
+		}
 
 		$output = array(
 			'publicToken'   => $public_token,
@@ -93,7 +131,7 @@ function collector_wc_show_snippet() {
 			'customer_type' => $customer_type,
 		);
 		echo( "<script>console.log('Collector: " . wp_json_encode( $output ) . "');</script>" );
-		$return = '<div id="collector-container"><script src="' . $url . '" data-lang="' . $locale . '" data-version="' . $checkout_version . '" data-token="' . $public_token . '" data-variant="' . $customer_type . '"' . $data_action_color_button . ' ></script></div>'; // phpcs:ignore
+		$return = '<div id="collector-container"><script src="' . $url . '" data-lang="' . $locale . '" data-token="' . $public_token . '" data-variant="' . $customer_type . '"' . $data_action_color_button . ' ></script></div>'; // phpcs:ignore
 	}
 	echo wp_kses( $return, wc_collector_allowed_tags() );
 }
@@ -220,8 +258,8 @@ function wc_collector_add_invoice_fee_to_order( $order_id, $product_id ) {
  * @return boolean
  */
 function is_collector_confirmation() {
-	$payment_successful = filter_input( INPUT_GET, 'payment_successful', FILTER_SANITIZE_STRING );
-	$public_token       = filter_input( INPUT_GET, 'payment_successful', FILTER_SANITIZE_STRING );
+	$payment_successful = filter_input( INPUT_GET, 'payment_successful', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
+	$public_token       = filter_input( INPUT_GET, 'payment_successful', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 	if ( '1' === $payment_successful && ! empty( $public_token ) ) {
 		return true;
 	}
@@ -461,8 +499,24 @@ function wc_collector_confirm_order( $order_id, $private_id = null ) {
 		$customer_type = 'b2c';
 	}
 
-	$response        = new Collector_Checkout_Requests_Get_Checkout_Information( $private_id, $customer_type, $order->get_currency() );
-	$collector_order = $response->request();
+	// Use new or old API.
+	if ( walley_use_new_api() ) {
+		$collector_order = CCO_WC()->api->get_walley_checkout(
+			array(
+				'private_id'    => $private_id,
+				'customer_type' => $customer_type,
+			)
+		);
+	} else {
+		$response        = new Collector_Checkout_Requests_Get_Checkout_Information( $private_id, $customer_type, $order->get_currency() );
+		$collector_order = $response->request();
+	}
+
+	if ( is_wp_error( $collector_order ) ) {
+		$order->add_order_note( __( 'Could not retreive Walley order during wc_collector_confirm_order function.', 'collector-checkout-for-woocommerce' ) );
+		return;
+	}
+
 	$payment_status  = $collector_order['data']['purchase']['result'];
 	$payment_method  = $collector_order['data']['purchase']['paymentName'];
 	$payment_id      = $collector_order['data']['purchase']['purchaseIdentifier'];
@@ -470,9 +524,21 @@ function wc_collector_confirm_order( $order_id, $private_id = null ) {
 
 	// Check if we need to update reference in collectors system.
 	if ( empty( $collector_order['data']['reference'] ) ) {
-		$update_reference = new Collector_Checkout_Requests_Update_Reference( $order->get_order_number(), $private_id, $customer_type );
-		$update_reference->request();
-		CCO_WC()->logger::log( 'Update Collector order reference for order - ' . $order->get_order_number() );
+
+		// Use new or old API.
+		if ( walley_use_new_api() ) {
+			$update_reference = CCO_WC()->api->set_order_reference_in_walley(
+				array(
+					'order_id'      => $order_id,
+					'private_id'    => $private_id,
+					'customer_type' => $customer_type,
+				)
+			);
+		} else {
+			$update_reference = new Collector_Checkout_Requests_Update_Reference( $order->get_order_number(), $private_id, $customer_type );
+			$update_reference->request();
+			CCO_WC()->logger::log( 'Update Collector order reference for order - ' . $order->get_order_number() );
+		}
 	}
 
 	// Maybe add invoice fee to order.
@@ -712,7 +778,7 @@ function coc_get_shipping_data( $collector_order ) {
 			}
 
 			$shipping_data[] = array(
-				'label'        => $shipment['shippingChoice']['id'],
+				'label'        => $shipment['shippingChoice']['name'],
 				'shipping_id'  => $shipment['shippingChoice']['id'],
 				'cost'         => $cost,
 				'shipping_vat' => $shipment['shippingChoice']['metadata']['tax_rate'] ?? null,
@@ -759,4 +825,36 @@ function walley_print_error_message( $wp_error ) {
 		$message = is_array( $error ) ? implode( ' ', $error ) : $error;
 		$print( $message, 'error' );
 	}
+}
+
+/**
+ * Use new Walley API or not.
+ *
+ * @return bool
+ */
+function walley_use_new_api() {
+	$collector_settings   = get_option( 'woocommerce_collector_checkout_settings' );
+	$walley_api_client_id = $collector_settings['walley_api_client_id'] ?? '';
+	$walley_api_secret    = $collector_settings['walley_api_secret'] ?? '';
+
+	if ( ! empty( $walley_api_client_id ) && ! empty( $walley_api_secret ) ) {
+		return true;
+	} else {
+		return false;
+	}
+}
+
+/**
+ * Save Walley order data to transient in WordPress.
+ *
+ * @param array $walley_order the returned Walley order data.
+ * @return void
+ */
+function walley_save_order_data_to_transient( $walley_order ) {
+	$walley_order_status_data = array(
+		'status'       => $walley_order['status'] ?? '',
+		'total_amount' => $walley_order['total_amount'] ?? '',
+		'currency'     => $walley_order['currency'] ?? '',
+	);
+	set_transient( "walley_order_status_{$walley_order['order_id']}", $walley_order_status_data, 30 );
 }

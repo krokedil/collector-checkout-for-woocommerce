@@ -79,8 +79,17 @@ class  Walley_Checkout_Order_Management {
 			}
 
 			// Translators: Activated amount.
-			$order->add_order_note( sprintf( __( 'Order part activated with Walley Checkout. Activated amount %s', 'collector-checkout-for-woocommerce' ), wc_price( $order->get_total(), array( 'currency' => $order->get_order_currency() ) ) ) );
+			$order->add_order_note( sprintf( __( 'Order part activated with Walley Checkout. Activated amount %s', 'collector-checkout-for-woocommerce' ), wc_price( $order->get_total(), array( 'currency' => $order->get_currency() ) ) ) );
 			update_post_meta( $order_id, '_collector_order_activated', time() );
+
+			// Save received data to WP transient.
+			walley_save_order_data_to_transient(
+				array(
+					'order_id'     => $order_id,
+					'total_amount' => $order->get_total(),
+					'currency'     => $order->get_currency(),
+				)
+			);
 			return;
 		} else {
 			$response = CCO_WC()->api->capture_walley_order( $order_id );
@@ -99,6 +108,15 @@ class  Walley_Checkout_Order_Management {
 			$note = __( 'Walley Checkout order activated.', 'collector-checkout-for-woocommerce' );
 			$order->add_order_note( $note );
 			update_post_meta( $order_id, '_collector_order_activated', time() );
+
+			// Save received data to WP transient.
+			walley_save_order_data_to_transient(
+				array(
+					'order_id'     => $order_id,
+					'total_amount' => $order->get_total(),
+					'currency'     => $order->get_currency(),
+				)
+			);
 			return;
 		}
 	}
@@ -155,6 +173,15 @@ class  Walley_Checkout_Order_Management {
 		$note = __( 'Walley Checkout order cancelled.', 'collector-checkout-for-woocommerce' );
 		$order->add_order_note( $note );
 		update_post_meta( $order_id, '_collector_order_cancelled', time() );
+
+		// Save received data to WP transient.
+		walley_save_order_data_to_transient(
+			array(
+				'order_id'     => $order_id,
+				'total_amount' => $order->get_total(),
+				'currency'     => $order->get_currency(),
+			)
+		);
 	}
 
 	/**
@@ -195,11 +222,15 @@ class  Walley_Checkout_Order_Management {
 			return new WP_Error( 'error', __( 'Could not refund Walley reservation, Walley order ID is missing.', 'collector-checkout-for-woocommerce' ) );
 		}
 
+		// Currently we always need to do a refund by amount since rounding fee in refund can differ from original order and Walley does not accept that.
+		/*
 		if ( $this->order_contain_goodwill_refund( $order_id ) ) {
 			$response = CCO_WC()->api->refund_walley_order_by_amount( $order_id, $amount, $reason );
 		} else {
 			$response = CCO_WC()->api->refund_walley_order( $order_id, $amount, $reason );
 		}
+		*/
+		$response = CCO_WC()->api->refund_walley_order_by_amount( $order_id, $amount, $reason );
 
 		if ( is_wp_error( $response ) ) {
 			// If error save error message.
@@ -211,6 +242,15 @@ class  Walley_Checkout_Order_Management {
 
 			return $response;
 		}
+
+		// Save received data to WP transient.
+		walley_save_order_data_to_transient(
+			array(
+				'order_id' => $order_id,
+				'currency' => $order->get_currency(),
+			)
+		);
+
 		// Translators: Refunded amount.
 		$order->add_order_note( sprintf( __( 'Walley Checkout order refunded with %s.', 'collector-checkout-for-woocommerce' ), wc_price( $amount ) ) );
 		return true;
@@ -291,8 +331,8 @@ class  Walley_Checkout_Order_Management {
 	 **/
 	public function check_callback() {
 		if ( ! empty( $_SERVER['REQUEST_URI'] ) && false !== strpos( sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ), 'module/collectorcheckout/invoicestatus' ) ) {
-			$invoice_no     = filter_input( INPUT_GET, 'InvoiceNo', FILTER_SANITIZE_STRING );
-			$invoice_status = filter_input( INPUT_GET, 'InvoiceStatus', FILTER_SANITIZE_STRING );
+			$invoice_no     = filter_input( INPUT_GET, 'InvoiceNo', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
+			$invoice_status = filter_input( INPUT_GET, 'InvoiceStatus', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 			if ( ! empty( $invoice_no ) && ! empty( $invoice_status ) ) {
 				CCO_WC()->logger::log( 'Collector Invoice Status Change callback hit' );
 				$collector_payment_id = $invoice_no;

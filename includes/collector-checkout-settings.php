@@ -42,14 +42,14 @@ $settings = array(
 	'walley_api_client_id'            => array(
 		'title'       => __( 'API Client ID', 'collector-checkout-for-woocommerce' ),
 		'type'        => 'text',
-		'description' => __( 'Enter your Walley Checkout API Client ID. Used for Walley\'s new Management API. If entered this API will be used instead of the old SOAP based.', 'collector-checkout-for-woocommerce' ),
+		'description' => __( 'Enter your Walley Checkout API Client ID. Used for Walley\'s new Checkout and Management API. If entered this API will be used instead of the old API.', 'collector-checkout-for-woocommerce' ),
 		'default'     => '',
 		'desc_tip'    => false,
 	),
 	'walley_api_secret'               => array(
 		'title'       => __( 'API Secret', 'collector-checkout-for-woocommerce' ),
 		'type'        => 'text',
-		'description' => __( 'Enter your Walley Checkout API Secret. Used for Walley\'s new Management API. If entered this API will be used instead of the old SOAP based.', 'collector-checkout-for-woocommerce' ),
+		'description' => __( 'Enter your Walley Checkout API Secret. Used for Walley\'s new Checkout and Management API. If entered this API will be used instead of the old API.', 'collector-checkout-for-woocommerce' ),
 		'default'     => '',
 		'desc_tip'    => false,
 	),
@@ -176,16 +176,6 @@ $settings = array(
 	'checkout_settings_title'         => array(
 		'title' => __( 'Checkout settings', 'collector-checkout-for-woocommerce' ),
 		'type'  => 'title',
-	),
-	'checkout_version'                => array(
-		'title'       => __( 'Checkout version', 'collector-checkout-for-woocommerce' ),
-		'type'        => 'select',
-		'description' => __( 'A brand new Checkout is available, project name Checkout 2.0. The current solution (referred as Checkout 1.0) will be deprecated during 2022.', 'collector-checkout-for-woocommerce' ),
-		'options'     => array(
-			'v1' => __( 'Checkout 1.0', 'collector-checkout-for-woocommerce' ),
-			'v2' => __( 'Checkout 2.0', 'collector-checkout-for-woocommerce' ),
-		),
-		'default'     => 'v1',
 	),
 	'checkout_layout'                 => array(
 		'title'       => __( 'Checkout layout', 'collector-checkout-for-woocommerce' ),

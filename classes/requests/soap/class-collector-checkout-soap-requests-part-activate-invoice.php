@@ -165,7 +165,7 @@ class Collector_Checkout_SOAP_Requests_Part_Activate_Invoice {
 			}
 
 			// translators: 1. Due date.
-			$order->add_order_note( sprintf( __( 'Order part activated with Walley Checkout. Activated amount %s', 'collector-checkout-for-woocommerce' ), wc_price( $request->TotalAmount, array( 'currency' => $order->get_order_currency() ) ), $due_date ) );
+			$order->add_order_note( sprintf( __( 'Order part activated with Walley Checkout. Activated amount %s', 'collector-checkout-for-woocommerce' ), wc_price( $request->TotalAmount, array( 'currency' => $order->get_currency() ) ), $due_date ) );
 			update_post_meta( $order_id, '_collector_order_activated', time() );
 
 			$log = CCO_WC()->logger::format_log( $order_id, 'SOAP', 'CCO Part Activate order ', $args, '', wp_json_encode( $request ), '' );

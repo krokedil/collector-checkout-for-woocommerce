@@ -8,14 +8,14 @@
  * Plugin Name:     Walley Checkout for WooCommerce
  * Plugin URI:      https://krokedil.se/collector/
  * Description:     Extends WooCommerce. Provides a <a href="https://www.collector.se/" target="_blank">Walley Checkout</a> checkout for WooCommerce.
- * Version:         3.4.0
+ * Version:         3.5.0
  * Author:          Krokedil
  * Author URI:      https://krokedil.se/
  * Text Domain:     collector-checkout-for-woocommerce
  * Domain Path:     /languages
  *
  * WC requires at least: 5.0.0
- * WC tested up to: 7.2.3
+ * WC tested up to: 7.5.1
  *
  * Copyright:       © 2017-2023 Krokedil.
  * License:         GNU General Public License v3.0
@@ -28,7 +28,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 define( 'COLLECTOR_BANK_PLUGIN_DIR', untrailingslashit( plugin_dir_path( __FILE__ ) ) );
 define( 'COLLECTOR_BANK_PLUGIN_URL', untrailingslashit( plugin_dir_url( __FILE__ ) ) );
-define( 'COLLECTOR_BANK_VERSION', '3.4.0' );
+define( 'COLLECTOR_BANK_VERSION', '3.5.0' );
 define( 'COLLECTOR_DB_VERSION', '1' );
 
 if ( ! class_exists( 'Collector_Checkout' ) ) {
@@ -95,11 +95,6 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 
 			// Initiate the gateway.
 			add_action( 'plugins_loaded', array( $this, 'init' ) );
-			// Load scripts.
-			add_action( 'wp_enqueue_scripts', array( $this, 'load_scripts' ) );
-
-			// CSS for settings page.
-			add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_css' ) );
 
 			// Maybe create Collector db table.
 			add_action( 'init', array( $this, 'collector_maybe_create_db_table' ) );
@@ -139,17 +134,33 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-delivery-module.php';
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-product-fields.php';
 
+			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-walley-checkout-assets.php';
+			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-walley-checkout.php';
+
 			// Order management. SOAP will be deprecated.
 			if ( ! empty( $this->walley_api_client_id ) && ! empty( $this->walley_api_secret ) ) {
 
 				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-walley-checkout-api.php';
 				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-walley-checkout-order-management.php';
+				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-walley-checkout-meta-box.php';
 
-				// New OM class files.
+				// New request class files.
 				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/class-walley-checkout-request.php';
 				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/class-walley-checkout-request-get.php';
+				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/class-walley-checkout-request-put.php';
 				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/class-walley-checkout-request-post.php';
+
+				// New Checkout request class files.
+				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/checkouts/get/class-walley-checkout-request-get-checkout.php';
+				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/checkouts/post/class-walley-checkout-request-initialize-checkout.php';
+				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/checkouts/put/class-walley-checkout-request-update-cart.php';
+				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/checkouts/put/class-walley-checkout-request-update-fees.php';
+				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/checkouts/put/class-walley-checkout-request-update-metadata.php';
+				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/checkouts/put/class-walley-checkout-request-set-order-reference.php';
+
+				// New OM request class files.
 				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/manage-orders/get/class-walley-checkout-request-get-order.php';
+				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/manage-orders/post/class-walley-checkout-request-reauthorize-order.php';
 				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/manage-orders/post/class-walley-checkout-request-capture-order.php';
 				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/manage-orders/post/class-walley-checkout-request-part-capture-order.php';
 				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/manage-orders/post/class-walley-checkout-request-cancel-order.php';
@@ -164,6 +175,16 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 			} else {
 
 				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-post-checkout.php';
+
+				// Include the Checkout Request Classes.
+				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/class-collector-checkout-requests.php';
+				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/class-collector-checkout-requests-initialize-checkout.php';
+				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/class-collector-checkout-requests-update-fees.php';
+				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/class-collector-checkout-requests-update-cart.php';
+				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/class-collector-checkout-requests-update-metadata.php';
+				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/class-collector-checkout-requests-get-checkout-information.php';
+				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/class-collector-checkout-requests-update-reference.php';
+				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/class-collector-checkout-requests-paylink.php';
 
 				// Include the Soap Request Classes.
 				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/soap/class-collector-checkout-soap-requests-activate-invoice.php';
@@ -184,16 +205,6 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-gateway.php';
 			add_filter( 'woocommerce_payment_gateways', array( $this, 'add_collector_checkout_gateway' ) );
 
-			// Include the Request Classes.
-			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/class-collector-checkout-requests.php';
-			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/class-collector-checkout-requests-initialize-checkout.php';
-			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/class-collector-checkout-requests-update-fees.php';
-			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/class-collector-checkout-requests-update-cart.php';
-			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/class-collector-checkout-requests-update-metadata.php';
-			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/class-collector-checkout-requests-get-checkout-information.php';
-			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/class-collector-checkout-requests-update-reference.php';
-			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/class-collector-checkout-requests-paylink.php';
-
 			// Include the Request Helpers.
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/helpers/class-collector-checkout-requests-cart.php';
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/helpers/class-collector-checkout-requests-fees.php';
@@ -203,6 +214,8 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/helpers/class-collector-checkout-requests-helper-order.php';
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/helpers/class-collector-checkout-requests-helper-order-om.php';
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/helpers/class-collector-checkout-requests-helper-order-fees.php';
+
+			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/helpers/class-walley-checkout-requests-fees-helper.php';
 
 			// Set variables for shorthand access to classes.
 			$this->order_items = new Collector_Checkout_Requests_Helper_Order();
@@ -221,151 +234,6 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 
 			// Set class variables.
 			$this->logger = new Collector_Checkout_Logger();
-		}
-
-		/**
-		 * Load scripts.
-		 */
-		public function load_scripts() {
-			wp_enqueue_script( 'jquery' );
-			if ( is_checkout() ) {
-				wp_register_script( 'checkout', plugins_url( '/assets/js/checkout.js', __FILE__ ), array( 'jquery' ), COLLECTOR_BANK_VERSION, false );
-
-				if ( 'NOK' === get_woocommerce_currency() ) {
-					$locale = 'nb-NO';
-				} elseif ( 'DKK' === get_woocommerce_currency() ) {
-					$locale = 'en-DK';
-				} elseif ( 'EUR' === get_woocommerce_currency() ) {
-					$locale = 'fi-FI';
-				} else {
-					$locale = 'sv-SE';
-				}
-				$public_token = filter_input( INPUT_GET, 'public-token', FILTER_SANITIZE_STRING );
-
-				if ( WC()->session->get( 'collector_private_id' ) ) {
-					$checkout_initiated = 'yes';
-				} else {
-					$checkout_initiated = 'no';
-				}
-				$payment_successful = filter_input( INPUT_GET, 'payment_successful', FILTER_SANITIZE_STRING );
-				if ( empty( $payment_successful ) ) {
-					$payment_successful = '0';
-				} else {
-					$payment_successful = '1';
-				}
-				if ( is_wc_endpoint_url( 'order-received' ) ) {
-					$is_thank_you_page = 'yes';
-					$key               = filter_input( INPUT_GET, 'key', FILTER_SANITIZE_STRING );
-					if ( ! empty( $key ) ) {
-						$order_id = wc_get_order_id_by_order_key( sanitize_text_field( $key ) );
-					} else {
-						$order_id = '';
-					}
-					$purchase_status = filter_input( INPUT_GET, 'purchase-status', FILTER_SANITIZE_STRING );
-				} else {
-					$is_thank_you_page = 'no';
-					$order_id          = '';
-					$purchase_status   = '';
-				}
-				$collector_settings       = get_option( 'woocommerce_collector_checkout_settings' );
-				$data_action_color_button = isset( $collector_settings['checkout_button_color'] ) && ! empty( $collector_settings['checkout_button_color'] ) ? "data-action-color='" . $collector_settings['checkout_button_color'] . "'" : '';
-				$checkout_version         = isset( $collector_settings['checkout_version'] ) ? $collector_settings['checkout_version'] : 'v1';
-				switch ( get_woocommerce_currency() ) {
-					case 'SEK':
-						$delivery_module = isset( $collector_settings['collector_delivery_module_se'] ) ? $collector_settings['collector_delivery_module_se'] : 'no';
-						break;
-					case 'NOK':
-						$delivery_module = isset( $collector_settings['collector_delivery_module_no'] ) ? $collector_settings['collector_delivery_module_no'] : 'no';
-						break;
-					case 'DKK':
-						$delivery_module = isset( $collector_settings['collector_delivery_module_dk'] ) ? $collector_settings['collector_delivery_module_dk'] : 'no';
-						break;
-					case 'EUR':
-						$delivery_module = isset( $collector_settings['collector_delivery_module_fi'] ) ? $collector_settings['collector_delivery_module_fi'] : 'no';
-						break;
-					default:
-						$delivery_module = isset( $collector_settings['collector_delivery_module_se'] ) ? $collector_settings['collector_delivery_module_se'] : 'no';
-						break;
-				}
-				wp_localize_script(
-					'checkout',
-					'wc_collector_checkout',
-					array(
-						'ajaxurl'                       => admin_url( 'admin-ajax.php' ),
-						'locale'                        => $locale,
-						'is_thank_you_page'             => $is_thank_you_page,
-						'is_collector_confirmation'     => ( is_collector_confirmation() ) ? 'yes' : 'no',
-						'order_id'                      => $order_id,
-						'public_token'                  => $public_token,
-						'checkout_initiated'            => $checkout_initiated,
-						'payment_successful'            => $payment_successful,
-						'purchase_status'               => $purchase_status,
-						'data_action_color_button'      => $data_action_color_button,
-						'checkout_version'              => $checkout_version,
-						'default_customer_type'         => wc_collector_get_default_customer_type(),
-						'selected_customer_type'        => wc_collector_get_selected_customer_type(),
-						'delivery_module'               => $delivery_module,
-						'collector_nonce'               => wp_create_nonce( 'collector_nonce' ),
-						'refresh_checkout_fragment_url' => WC_AJAX::get_endpoint( 'update_fragment' ),
-						'get_public_token_url'          => WC_AJAX::get_endpoint( 'get_public_token' ),
-						'add_customer_order_note_url'   => WC_AJAX::get_endpoint( 'add_customer_order_note' ),
-						'get_checkout_thank_you_url'    => WC_AJAX::get_endpoint( 'get_checkout_thank_you' ),
-						'get_customer_data_url'         => WC_AJAX::get_endpoint( 'get_customer_data' ),
-						'customer_adress_updated_url'   => WC_AJAX::get_endpoint( 'customer_adress_updated' ),
-						'update_checkout_url'           => WC_AJAX::get_endpoint( 'update_checkout' ),
-						'checkout_error'                => WC_AJAX::get_endpoint( 'checkout_error' ),
-						'update_delivery_module_shipping_url' => WC_AJAX::get_endpoint( 'update_delivery_module_shipping' ),
-						'process_order_text'            => __( 'Please wait while we process your order.', 'collector-checkout-for-woocommerce' ),
-						'no_shipping_message'           => apply_filters( 'woocommerce_no_shipping_available_html', __( 'There are no shipping options available. Please ensure that your address has been entered correctly, or contact us if you need any help.', 'woocommerce' ) ),
-					)
-				);
-				wp_enqueue_script( 'checkout' );
-			}
-
-			// Load stylesheet for the checkout page.
-			wp_register_style(
-				'collector_checkout',
-				plugin_dir_url( __FILE__ ) . 'assets/css/style.css',
-				array(),
-				COLLECTOR_BANK_VERSION
-			);
-			wp_enqueue_style( 'collector_checkout' );
-
-			// Hide the Order overview data on thankyou page if it's a Collector Checkout purchase.
-			if ( is_wc_endpoint_url( 'order-received' ) ) {
-				$key = filter_input( INPUT_GET, 'key', FILTER_SANITIZE_STRING );
-				if ( ! empty( $key ) ) {
-					$order_id = wc_get_order_id_by_order_key( wc_clean( $key ) );
-					$order    = wc_get_order( $order_id );
-					if ( 'collector_checkout' === $order->get_payment_method() ) {
-						$custom_css = '
-		                .woocommerce-order-overview {
-				                        display: none;
-								}';
-						wp_add_inline_style( 'collector_checkout', $custom_css );
-					}
-				}
-			}
-
-		}
-
-		/**
-		 * Load Admin CSS
-		 *
-		 * @param string $hook      The current hook/settings page.
-		 **/
-		public function enqueue_admin_css( $hook ) {
-			if ( 'woocommerce_page_wc-settings' !== $hook ) {
-				return;
-			}
-
-			$section = filter_input( INPUT_GET, 'section', FILTER_SANITIZE_STRING );
-			if ( 'collector_checkout' !== $section ) {
-				return;
-			}
-
-			wp_register_style( 'collector-checkout-admin', plugin_dir_url( __FILE__ ) . 'assets/css/admin.css', false, COLLECTOR_BANK_VERSION );
-			wp_enqueue_style( 'collector-checkout-admin' );
 		}
 
 		/**
