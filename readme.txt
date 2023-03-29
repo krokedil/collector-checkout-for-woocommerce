@@ -3,10 +3,10 @@ Contributors: collectorbank, krokedil, NiklasHogefjord
 Tags: ecommerce, e-commerce, woocommerce, collector, checkout, walley
 Requires at least: 5.0
 Tested up to: 6.1.1
-Requires PHP: 7.0
+Requires PHP: 7.2
 Stable tag: 3.4.0
 WC requires at least: 5.0.0
-WC tested up to: 7.4.0
+WC tested up to: 7.5.1
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -39,6 +39,25 @@ For help setting up and configuring Walley Checkout for WooCommerce please refer
 
 
 == CHANGELOG ==
+= 2023.03.29    - version 3.5.0 =
+* Feature       - Adds support for new Walley Checkout API.
+* Feature       - Adds Walley metabox on order pages. Displays information about the Walley order. Available if using new API.
+* Feature       - Adds support for reauthorize (update) order. This can be done before order is captured. Available if using new API.
+* Feature       - Adds support for CustomFields in Walley Checkout.
+* Feature       - Adds filter walley_initialize_checkout_args, walley_update_cart_args, walley_update_fees_args, walley_update_metadata_args & walley_set_order_reference_args so other plugins can modify requests data when new Checkout API is used.
+* Tweak         - Move enqueuing of assets files to assets class.
+* Tweak         - Move delivery module and update update cart logic to backend instead of being reliant of custom ajax requests.
+* Tweak         - Removes fetching of delivery module data from Walley away from calculate_shipping function. This is now done in woocommerce_before_calculate_totals.
+* Tweak         - Always do refund by amount in new Management API since rounding order line can have a different amount than what it was in the original order. This causes error in Walley.
+* Tweak         - Change log file name from collector_checkout to walley_checkout.
+* Tweak         - Remove setting for Walley Checkout 2.0 logic. This is not used anymore.
+* Tweak         - Limit product names to 50 characters sent to Walley.
+* Fix           - Set correct shipping method name in checkout when using delivery module.
+* Fix           - Use wc_format_decimal to confirm limit prices to 2 decimals in update cart and update fee requests.
+* Fix           - Make sure unitPrice is sent as a positive number for refunds.
+* Fix           - Delete transient walley_checkout_access_token when Walley checkout settings is saved.
+* Fix           - PHP 8.1 deprecated notice fix.
+
 = 2023.01.11    - version 3.4.0 =
 * Feature       - Adds shipping profile name setting option. Defaults to Shipping if Walley nShift Delivery is used but no profile name is entered.
 * Feature       - Adds support for Part activate invoice (activation on order row level). Can be used together with Partial Delivery for WooCommerce plugin.
