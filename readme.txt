@@ -4,7 +4,7 @@ Tags: ecommerce, e-commerce, woocommerce, collector, checkout, walley
 Requires at least: 5.0
 Tested up to: 6.1.1
 Requires PHP: 7.2
-Stable tag: 3.4.0
+Stable tag: 3.5.1
 WC requires at least: 5.0.0
 WC tested up to: 7.5.1
 License: GPLv3
@@ -39,6 +39,9 @@ For help setting up and configuring Walley Checkout for WooCommerce please refer
 
 
 == CHANGELOG ==
+= 2023.03.29    - version 3.5.1 =
+* Tweak         - Readme file tweak.
+
 = 2023.03.29    - version 3.5.0 =
 * Feature       - Adds support for new Walley Checkout API.
 * Feature       - Adds Walley metabox on order pages. Displays information about the Walley order. Available if using new API.
