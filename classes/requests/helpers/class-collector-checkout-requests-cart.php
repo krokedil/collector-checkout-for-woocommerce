@@ -137,7 +137,7 @@ class Collector_Checkout_Requests_Cart {
 		$rounding_item['unitPrice'] = wc_format_decimal( $wc_total - $collector_total, 2 );
 
 		// Add the rounding item to the collector items only if the price is not zero.
-		if ( ! empty( $rounding_item['unitPrice'] && abs( $rounding_item['unitPrice'] ) < 3 ) ) {
+		if ( ! empty( floatval( $rounding_item['unitPrice'] ) && abs( floatval( $rounding_item['unitPrice'] ) ) < 3 ) ) {
 			$collector_items[] = $rounding_item;
 		}
 	}
