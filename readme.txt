@@ -2,9 +2,9 @@
 Contributors: collectorbank, krokedil, NiklasHogefjord
 Tags: ecommerce, e-commerce, woocommerce, collector, checkout, walley
 Requires at least: 5.0
-Tested up to: 6.1.1
+Tested up to: 6.2
 Requires PHP: 7.2
-Stable tag: 3.5.1
+Stable tag: 3.5.2
 WC requires at least: 5.0.0
 WC tested up to: 7.5.1
 License: GPLv3
@@ -39,6 +39,9 @@ For help setting up and configuring Walley Checkout for WooCommerce please refer
 
 
 == CHANGELOG ==
+= 2023.04.11    - version 3.5.2 =
+* Fix           - Do not add rounding order line if diff is 0.
+
 = 2023.03.29    - version 3.5.1 =
 * Tweak         - Readme file tweak.
 
