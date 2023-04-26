@@ -125,14 +125,14 @@
 
 	// Suspend Walley Checkout during WooCommerce checkout update.
     $(document).on('update_checkout', function () {
-        if ("collector_checkout" === $("input[name='payment_method']:checked").val() && checkout_initiated == 'yes') {
+        if ("collector_checkout" === $("input[name='payment_method']:checked").val() ) {
             window.collector.checkout.api.suspend();
         }
     });
     
     // Resume Walley checkout when updated_checkout is triggered by Woo.
     $(document).on('updated_checkout', function () {
-        if ("collector_checkout" === $("input[name='payment_method']:checked").val() && 'yes' === checkout_initiated && wc_collector_checkout.payment_successful == 0 ) {
+        if ("collector_checkout" === $("input[name='payment_method']:checked").val() && wc_collector_checkout.payment_successful == 0 ) {
             console.log('walley updated_checkout');
             window.collector.checkout.api.resume();
             // Display shipping price if Delivery module is active.
