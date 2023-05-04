@@ -508,6 +508,7 @@ class Collector_Api_Callbacks {
 			update_post_meta( $order_id, '_collector_delivery_module_reference', $collector_order['data']['shipping']['pendingShipment']['id'] );
 		}
 
+		update_post_meta( $order_id, '_collector_order_id', sanitize_key( $collector_order['data']['order']['orderId'] ) );
 		update_post_meta( $order_id, '_collector_payment_method', $collector_order['data']['purchase']['paymentName'] );
 		update_post_meta( $order_id, '_collector_payment_id', $collector_order['data']['purchase']['purchaseIdentifier'] );
 		update_post_meta( $order_id, '_collector_customer_type', $customer_type );
