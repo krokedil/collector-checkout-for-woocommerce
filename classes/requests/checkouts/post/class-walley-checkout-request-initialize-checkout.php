@@ -72,7 +72,7 @@ class Walley_Checkout_Request_Initialize_Checkout extends Walley_Checkout_Reques
 		// Only send validationUri & profileName if this is a purchase from the checkout.
 		if ( empty( $this->order_id ) ) {
 			if ( 'yes' === $this->activate_validation_callback ) {
-				$body['validationUri'] = $validation_uri;
+				// $body['validationUri'] = $validation_uri;
 			}
 			if ( 'yes' === $this->delivery_module ) {
 				$body['profileName'] = trim( $this->settings[ 'collector_custom_profile_' . strtolower( $this->country_code ) ] );
@@ -83,8 +83,8 @@ class Walley_Checkout_Request_Initialize_Checkout extends Walley_Checkout_Reques
 
 			$body['redirectPageUri'] = add_query_arg(
 				array(
-					'payment_successful' => '1',
-					'public-token'       => '{checkout.publictoken}',
+					'walley_confirm' => '1',
+					'public-token'   => '{checkout.publictoken}',
 				),
 				wc_get_checkout_url()
 			);

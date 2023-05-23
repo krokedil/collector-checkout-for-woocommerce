@@ -97,9 +97,12 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 			add_action( 'plugins_loaded', array( $this, 'init' ) );
 
 			// Maybe create Collector db table.
-			add_action( 'init', array( $this, 'collector_maybe_create_db_table' ) );
+			// @todo - will be removed in next version.
+			// add_action( 'init', array( $this, 'collector_maybe_create_db_table' ) );
+
 			// Maybe schedule action.
-			add_action( 'init', array( $this, 'collector_maybe_schedule_action' ) );
+			// @todo - will be removed in next version.
+			// add_action( 'init', array( $this, 'collector_maybe_schedule_action' ) );
 			// Clean Collector db.
 			add_action( 'collector_clean_db', array( $this, 'collector_clean_db_callback' ) );
 
@@ -126,7 +129,7 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-status.php';
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-templates.php';
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-gdpr.php';
-			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-confirmation.php';
+			// include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-confirmation.php';
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-pay-for-order-confirmation.php';
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-sessions.php';
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-db.php';
@@ -136,6 +139,7 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-walley-checkout-assets.php';
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-walley-checkout.php';
+			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-walley-checkout-confirmation.php';
 
 			// Order management. SOAP will be deprecated.
 			if ( ! empty( $this->walley_api_client_id ) && ! empty( $this->walley_api_secret ) ) {

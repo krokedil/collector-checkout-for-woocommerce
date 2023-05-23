@@ -233,6 +233,35 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 	 */
 	public function process_payment( $order_id, $retry = false ) {
 
+		$customer_type = WC()->session->get( 'collector_customer_type' );
+		$private_id    = WC()->session->get( 'collector_private_id' );
+		update_post_meta( $order_id, '_collector_customer_type', $customer_type );
+		update_post_meta( $order_id, '_collector_public_token', WC()->session->get( 'collector_public_token' ) );
+		update_post_meta( $order_id, '_collector_private_id', $private_id );
+
+		$walley_reference = $this->update_walley_reference( $order_id, $customer_type, $private_id );
+		if ( false === $walley_reference ) {
+			return array(
+				'result' => 'error',
+			);
+		}
+
+		$walley_order = $this->get_walley_order( $order_id, $customer_type, $private_id );
+
+		if ( is_wp_error( $walley_order ) ) {
+			return array(
+				'result' => 'error',
+			);
+		}
+
+		$walley_extra_fields = $this->save_walley_extra_fields( $order_id, $walley_order );
+
+		$walley_shipping = $this->save_walley_purchase_and_shipping_data( $order_id, $walley_order );
+
+		return array(
+			'result' => 'success',
+		);
+		/*
 		$order = wc_get_order( $order_id );
 		CCO_WC()->logger::log( 'Process payment triggered for order ID ' . $order_id . ' (order number ' . $order->get_order_number() . ').' );
 		$private_id    = get_post_meta( $order_id, '_collector_private_id', true );
@@ -304,6 +333,137 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 			'result'   => 'success',
 			'redirect' => $this->get_return_url( $order ),
 		);
+		*/
+	}
+
+	public function update_walley_reference( $order_id, $customer_type, $private_id ) {
+		// Update the Collector Order with the Order number.
+		if ( ! empty( $private_id ) && ! empty( $customer_type ) ) {
+
+			// Use new or old API.
+			if ( walley_use_new_api() ) {
+				$collector_order = CCO_WC()->api->set_order_reference_in_walley(
+					array(
+						'order_id'      => $order_id,
+						'private_id'    => $private_id,
+						'customer_type' => $customer_type,
+					)
+				);
+				if ( is_wp_error( $collector_order ) ) {
+					return false;
+				}
+			} else {
+				$update_reference = new Collector_Checkout_Requests_Update_Reference( $order->get_order_number(), $private_id, $customer_type );
+				$update_reference->request();
+				CCO_WC()->logger::log( 'Update Collector order reference for order - ' . $order->get_order_number() );
+				if ( is_wp_error( $update_reference ) ) {
+					return false;
+				}
+			}
+			return true;
+		}
+		return false;
+	}
+
+	public function get_walley_order( $order_id, $customer_type, $private_id ) {
+		// Use new or old API.
+		if ( walley_use_new_api() ) {
+			$walley_order = CCO_WC()->api->get_walley_checkout(
+				array(
+					'private_id'    => $private_id,
+					'customer_type' => $customer_type,
+				)
+			);
+		} else {
+			$walley_order = new Collector_Checkout_Requests_Get_Checkout_Information( $private_id, $customer_type );
+			$walley_order = $walley_order->request();
+		}
+		return $walley_order;
+	}
+
+	public function save_walley_extra_fields( $order_id, $walley_order ) {
+
+		// Save customFields data.
+		if ( isset( $walley_order['data']['customFields'] ) ) {
+
+			// Save the entire customFields object as json in order.
+			if ( true === apply_filters( 'walley_save_custom_fields_raw_data', true ) ) {
+				update_post_meta( $order_id, '_collector_custom_fields', wp_json_encode( $walley_order['data']['customFields'] ) );
+			}
+
+			// Save each individual custom field as id:value.
+			if ( true === apply_filters( 'walley_save_individual_custom_field', true ) ) {
+				foreach ( $walley_order['data']['customFields'] as $custom_field_group ) {
+
+					foreach ( $custom_field_group['fields'] as $custom_field ) {
+
+						$value = $custom_field['value'];
+						// If the returned value is true/false convert it to yes/no since it is easier to store as post meta value.
+						if ( is_bool( $value ) ) {
+							$value = $value ? 'yes' : 'no';
+						}
+						update_post_meta( $order_id, $custom_field['id'], sanitize_text_field( $value ) );
+					}
+				}
+			}
+		}
+	}
+
+	public function save_walley_purchase_and_shipping_data( $order_id, $walley_order ) {
+		$order               = wc_get_order( $order_id );
+		$payment_status      = $walley_order['data']['purchase']['result'] ?? '';
+		$payment_method      = $walley_order['data']['purchase']['paymentName'] ?? '';
+		$payment_id          = $walley_order['data']['purchase']['purchaseIdentifier'] ?? '';
+		$walley_order_id     = $walley_order['data']['order']['orderId'] ?? '';
+		$organization_number = $walley_order['data']['businessCustomer']['organizationNumber'] ?? '';
+		$invoice_reference   = $walley_order['data']['businessCustomer']['invoiceReference'] ?? '';
+
+		update_post_meta( $order_id, '_collector_payment_method', $payment_method );
+		update_post_meta( $order_id, '_collector_payment_id', $payment_id );
+		update_post_meta( $order_id, '_collector_order_id', sanitize_key( $walley_order_id ) );
+		update_post_meta( $order_id, '_collector_original_order_total', $order->get_total() );
+
+		if ( ! empty( $organization_number ) ) {
+			update_post_meta( $order_id, '_collector_org_nr', sanitize_key( $organization_number ) );
+		}
+
+		if ( ! empty( $invoice_reference ) ) {
+			update_post_meta( $order_id, '_collector_invoice_reference', sanitize_key( $invoice_reference ) );
+		}
+
+		wc_collector_save_shipping_reference_to_order( $order_id, $walley_order );
+
+		// Save shipping data.
+		if ( isset( $walley_order['data']['shipping'] ) ) {
+			update_post_meta( $order_id, '_collector_delivery_module_data', wp_json_encode( $walley_order['data']['shipping'], JSON_UNESCAPED_UNICODE ) );
+			update_post_meta( $order_id, '_collector_delivery_module_reference', $walley_order['data']['shipping']['pendingShipment']['id'] );
+		}
+	}
+
+	public function process_walley_payment( $order_id ) {
+		$order         = wc_get_order( $order_id );
+		$customer_type = get_post_meta( $order_id, '_collector_customer_type', true );
+		$private_id    = get_post_meta( $order_id, '_collector_private_id', true );
+
+		// Update the Collector Order with the Order number.
+		if ( ! empty( $private_id ) && ! empty( $customer_type ) ) {
+
+			// Use new or old API.
+			if ( walley_use_new_api() ) {
+				$collector_order = CCO_WC()->api->set_order_reference_in_walley(
+					array(
+						'order_id'      => $order_id,
+						'private_id'    => $private_id,
+						'customer_type' => $customer_type,
+					)
+				);
+			} else {
+				$update_reference = new Collector_Checkout_Requests_Update_Reference( $order->get_order_number(), $private_id, $customer_type );
+				$update_reference->request();
+				CCO_WC()->logger::log( 'Update Collector order reference for order - ' . $order->get_order_number() );
+			}
+		}
+
 	}
 
 	/**

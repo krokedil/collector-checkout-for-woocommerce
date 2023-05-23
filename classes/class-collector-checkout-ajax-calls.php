@@ -45,14 +45,18 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 	 */
 	public static function add_ajax_events() {
 		$ajax_events = array(
-			'get_public_token'         => true,
-			'add_customer_order_note'  => true,
-			'get_checkout_thank_you'   => true,
-			'get_customer_data'        => true,
-			'customer_adress_updated'  => true,
-			'update_fragment'          => true,
-			'checkout_error'           => true,
-			'walley_reauthorize_order' => true,
+			'get_public_token'             => true,
+			'add_customer_order_note'      => true,
+			'get_checkout_thank_you'       => true,
+			'get_customer_data'            => true,
+			'customer_adress_updated'      => true,
+			// 'update_fragment'              => true,
+			'checkout_error'               => true,
+			'walley_reauthorize_order'     => true,
+			'walley_change_payment_method' => true,
+			'walley_log_js'                => true,
+			'walley_get_order'             => true,
+
 		);
 		foreach ( $ajax_events as $ajax_event => $nopriv ) {
 			add_action( 'wp_ajax_woocommerce_' . $ajax_event, array( __CLASS__, $ajax_event ) );
@@ -62,6 +66,118 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 				add_action( 'wc_ajax_' . $ajax_event, array( __CLASS__, $ajax_event ) );
 			}
 		}
+	}
+
+	/**
+	 * Refresh checkout fragment.
+	 */
+	public static function walley_change_payment_method() {
+		$nonce = isset( $_POST['nonce'] ) ? sanitize_key( $_POST['nonce'] ) : '';
+		if ( ! wp_verify_nonce( $nonce, 'walley_change_payment_method' ) ) {
+			wp_send_json_error( 'bad_nonce' );
+			exit;
+		}
+		$available_gateways           = WC()->payment_gateways()->get_available_payment_gateways();
+		$switch_to_collector_checkout = isset( $_POST['collector_checkout'] ) ? sanitize_text_field( wp_unslash( $_POST['collector_checkout'] ) ) : '';
+		if ( 'false' === $switch_to_collector_checkout ) {
+			// Set chosen payment method to first gateway that is not Qliro One Checkout for WooCommerce.
+			$first_gateway = reset( $available_gateways );
+			if ( 'collector_checkout' !== $first_gateway->id ) {
+				WC()->session->set( 'chosen_payment_method', $first_gateway->id );
+			} else {
+				$second_gateway = next( $available_gateways );
+				WC()->session->set( 'chosen_payment_method', $second_gateway->id );
+			}
+		} else {
+			WC()->session->set( 'chosen_payment_method', 'collector_checkout' );
+		}
+
+		WC()->payment_gateways()->set_current_gateway( $available_gateways );
+
+		$redirect = wc_get_checkout_url();
+		$data     = array(
+			'redirect' => $redirect,
+		);
+
+		wp_send_json_success( $data );
+		wp_die();
+	}
+
+	/**
+	 * Gets the Walley order.
+	 */
+	public static function walley_get_order() {
+		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( sanitize_key( $_POST['nonce'] ), 'walley_get_order' ) ) {
+			wp_send_json_error( 'bad_nonce' );
+			exit;
+		}
+
+		// Get customer data from Collector.
+		$private_id    = WC()->session->get( 'collector_private_id' );
+		$customer_type = WC()->session->get( 'collector_customer_type' );
+
+		// Use new or old API.
+		if ( self::use_new_api() ) {
+			$collector_order = CCO_WC()->api->get_walley_checkout(
+				array(
+					'private_id'    => $private_id,
+					'customer_type' => $customer_type,
+				)
+			);
+		} else {
+			$collector_order = new Collector_Checkout_Requests_Get_Checkout_Information( $private_id, $customer_type );
+			$collector_order = $collector_order->request();
+		}
+
+		if ( is_wp_error( $collector_order ) ) {
+			$return = sprintf( __( 'Could not connect to Walley. Please reload the page and try again.', 'collector-checkout-for-woocommerce' ), $collector_order->get_error_message() );
+			wp_send_json_error( $return );
+		}
+
+		$customer_data                     = array();
+		$customer_data['billing_country']  = $collector_order['data']['countryCode'];
+		$customer_data['shipping_country'] = $collector_order['data']['countryCode'];
+		$customer_data['billing_email']    = $collector_order['data']['customer']['email'];
+		$customer_data['billing_phone']    = $collector_order['data']['customer']['mobilePhoneNumber'];
+		$customer_data['shipping_phone']   = $collector_order['data']['customer']['deliveryContactInformation']['mobilePhoneNumber'];
+
+		if ( 'BusinessCustomer' === $collector_order['data']['customerType'] ) {
+			$customer_data['billing_first_name'] = $collector_order['data']['businessCustomer']['firstName'];
+			$customer_data['billing_last_name']  = $collector_order['data']['businessCustomer']['lastName'];
+			$customer_data['billing_city']       = $collector_order['data']['businessCustomer']['invoiceAddress']['city'];
+			$customer_data['billing_address_1']  = $collector_order['data']['businessCustomer']['invoiceAddress']['address'];
+			$customer_data['billing_postcode']   = $collector_order['data']['businessCustomer']['invoiceAddress']['postalCode'];
+
+			$customer_data['shipping_first_name'] = $collector_order['data']['businessCustomer']['firstName'];
+			$customer_data['shipping_last_name']  = $collector_order['data']['businessCustomer']['lastName'];
+			$customer_data['shipping_city']       = $collector_order['data']['businessCustomer']['deliveryAddress']['city'];
+			$customer_data['shipping_address_1']  = $collector_order['data']['businessCustomer']['deliveryAddress']['address'];
+			$customer_data['shipping_postcode']   = $collector_order['data']['businessCustomer']['deliveryAddress']['postalCode'];
+		} else {
+			$customer_data['billing_first_name'] = $collector_order['data']['customer']['billingAddress']['firstName'];
+			$customer_data['billing_last_name']  = $collector_order['data']['customer']['billingAddress']['lastName'];
+			$customer_data['billing_city']       = $collector_order['data']['customer']['billingAddress']['city'];
+			$customer_data['billing_address_1']  = $collector_order['data']['customer']['billingAddress']['address'];
+			$customer_data['billing_postcode']   = $collector_order['data']['customer']['billingAddress']['postalCode'];
+
+			$customer_data['shipping_first_name'] = $collector_order['data']['customer']['deliveryAddress']['firstName'];
+			$customer_data['shipping_last_name']  = $collector_order['data']['customer']['deliveryAddress']['lastName'];
+			$customer_data['shipping_city']       = $collector_order['data']['customer']['deliveryAddress']['city'];
+			$customer_data['shipping_address_1']  = $collector_order['data']['customer']['deliveryAddress']['address'];
+			$customer_data['shipping_postcode']   = $collector_order['data']['customer']['deliveryAddress']['postalCode'];
+		}
+		/*
+		wp_send_json_success(
+			array(
+				'billingAddress'  => $billing_data,
+				'shippingAddress' => $shipping_data,
+				'customer'        => $customer,
+			)
+		);
+		wp_die();
+		*/
+
+		wp_send_json_success( $customer_data );
 	}
 
 	/**
@@ -159,6 +275,7 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 		$customer_data['billing_country']  = $collector_order['data']['countryCode'];
 		$customer_data['shipping_country'] = $collector_order['data']['countryCode'];
 		$customer_data['billing_email']    = $collector_order['data']['customer']['email'];
+		$customer_data['billing_phone']    = $collector_order['data']['customer']['mobilePhoneNumber'];
 
 		if ( 'BusinessCustomer' === $collector_order['data']['customerType'] ) {
 			$customer_data['billing_city']     = $collector_order['data']['businessCustomer']['invoiceAddress']['city'];
@@ -567,6 +684,25 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 			wp_send_json_error( 'Could not update Walley order.' );
 			wp_die();
 		}
+		wp_send_json_success();
+		wp_die();
+	}
+
+	/**
+	 * Logs messages from the JavaScript to the server log.
+	 *
+	 * @return void
+	 */
+	public static function walley_log_js() {
+		$nonce = isset( $_POST['nonce'] ) ? sanitize_key( $_POST['nonce'] ) : '';
+		if ( ! wp_verify_nonce( $nonce, 'walley_log_js' ) ) {
+			wp_send_json_error( 'bad_nonce' );
+			exit;
+		}
+		$posted_message = isset( $_POST['message'] ) ? sanitize_text_field( wp_unslash( $_POST['message'] ) ) : '';
+		$private_id     = WC()->session->get( 'collector_private_id' );
+		$message        = "Frontend JS $private_id: $posted_message";
+		CCO_WC()->logger::log( $message );
 		wp_send_json_success();
 		wp_die();
 	}
