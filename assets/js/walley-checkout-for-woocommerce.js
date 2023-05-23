@@ -98,8 +98,6 @@ jQuery( function( $ ) {
 		suspendWalleyCheckout: function() {
 			console.log('suspendWalleyCheckout');
 			if(window.walley !== undefined) {
-				// window.q1.lock();
-                //window.walley.checkout.api.suspend()
 				window.collector.checkout.api.suspend()
 			}
 		},

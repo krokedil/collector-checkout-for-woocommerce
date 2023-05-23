@@ -154,18 +154,6 @@ class Walley_Checkout {
 
 		self::maybe_update_cart( $private_id, $customer_type );
 
-		// Update database session id.
-		$collector_checkout_sessions = new Collector_Checkout_Sessions();
-		$collector_data              = array(
-			'session_id' => $collector_checkout_sessions->get_session_id(),
-		);
-		$args                        = array(
-			'private_id' => WC()->session->get( 'collector_private_id' ),
-			'data'       => $collector_data,
-		);
-
-		Collector_Checkout_DB::update_data( $args );
-
 		// If cart doesn't need payment anymore - reload the checkout page.
 		if ( ! WC()->cart->needs_payment() ) {
 			WC()->session->reload_checkout = true;

@@ -69,16 +69,6 @@ function collector_wc_show_snippet() {
 			WC()->session->set( 'collector_private_id', $collector_order['data']['privateId'] );
 			WC()->session->set( 'collector_currency', get_woocommerce_currency() );
 
-			$collector_checkout_sessions = new Collector_Checkout_Sessions();
-			$collector_data              = array(
-				'session_id' => $collector_checkout_sessions->get_session_id(),
-			);
-			$args                        = array(
-				'private_id' => $collector_order['data']['privateId'],
-				'data'       => $collector_data,
-			);
-			Collector_Checkout_DB::create_data_entry( $args );
-
 			$public_token = $collector_order['data']['publicToken'];
 			$output       = array(
 				'publicToken'   => $public_token,
@@ -154,15 +144,6 @@ function wc_collector_unset_sessions() {
 }
 
 /**
- * Calculates cart totals.
- */
-function collector_wc_calculate_totals() {
-	WC()->cart->calculate_fees();
-	WC()->cart->calculate_shipping();
-	WC()->cart->calculate_totals();
-}
-
-/**
  * Shows select another payment method button in Collector Checkout page.
  */
 function collector_wc_show_another_gateway_button() {
@@ -186,16 +167,6 @@ function collector_wc_show_customer_type_switcher() {
 		<li class="tab-link" data-tab="b2b"><?php esc_html_e( 'Company', 'collector-checkout-for-woocommerce' ); ?></li>
 	</ul>
 		<?php
-	}
-}
-
-/**
- * Shows Customer order notes in Collector Checkout page.
- */
-function collector_wc_show_customer_order_notes() {
-	if ( apply_filters( 'woocommerce_enable_order_notes_field', true ) ) {
-		$form_field = WC()->checkout()->get_checkout_fields( 'order' );
-		woocommerce_form_field( 'order_comments', $form_field['order_comments'] );
 	}
 }
 
@@ -264,18 +235,6 @@ function is_collector_confirmation() {
 		return true;
 	}
 	return false;
-}
-
-
-/**
- * Get Collector data from Database.
- *
- * @param string $private_id Collector private id.
- * @return object|null
- */
-function get_collector_data_from_db( $private_id ) {
-	$result = Collector_Checkout_DB::get_data_entry( $private_id );
-	return $result;
 }
 
 /**

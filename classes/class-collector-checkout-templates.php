@@ -43,9 +43,6 @@ class Collector_Checkout_Templates {
 		add_filter( 'wc_get_template', array( $this, 'override_template' ), 999, 2 );
 
 		// Template hooks.
-		add_action( 'collector_wc_before_checkout_form', 'collector_wc_calculate_totals', 1 );
-
-		// add_action( 'collector_wc_after_order_review', 'collector_wc_show_customer_order_notes', 10 );
 		add_action( 'collector_wc_after_order_review', 'collector_wc_show_another_gateway_button', 20 );
 		add_action( 'collector_wc_after_order_review', array( $this, 'add_extra_checkout_fields' ), 10 );
 
