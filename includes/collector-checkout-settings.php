@@ -215,14 +215,6 @@ $settings = array(
 		'default'     => '',
 		'desc_tip'    => true,
 	),
-	'activate_validation_callback'    => array(
-		'title'       => __( 'Validation Callback', 'collector-checkout-for-woocommerce' ),
-		'type'        => 'checkbox',
-		'label'       => __( 'Tick the checkbox to activate Walley Validation Callback.', 'collector-checkout-for-woocommerce' ),
-		/* Translators: link to docs */
-		'description' => sprintf( __( 'Triggered by Collector when customer clicks the Complete purchase button in Walley Checkout. <a href="%s" target="_blank">Read more about validation callback.</a>', 'collector-checkout-for-woocommerce' ), 'https://docs.krokedil.com/walley-checkout-for-woocommerce/get-started/introduction/' ),
-		'default'     => 'yes',
-	),
 	'requires_electronic_id_fields'   => array(
 		'title'       => __( 'Electronic ID fields', 'collector-checkout-for-woocommerce' ),
 		'type'        => 'checkbox',

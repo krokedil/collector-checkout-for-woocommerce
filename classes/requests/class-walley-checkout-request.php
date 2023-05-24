@@ -275,9 +275,8 @@ abstract class Walley_Checkout_Request {
 				$this->delivery_module = isset( $this->settings['collector_delivery_module_se'] ) ? $this->settings['collector_delivery_module_se'] : 'no';
 				break;
 		}
-		$this->country_code                 = $country_code;
-		$this->terms_page                   = esc_url( get_permalink( wc_get_page_id( 'terms' ) ) );
-		$this->activate_validation_callback = isset( $this->settings['activate_validation_callback'] ) ? $this->settings['activate_validation_callback'] : 'no';
+		$this->country_code = $country_code;
+		$this->terms_page   = esc_url( get_permalink( wc_get_page_id( 'terms' ) ) );
 	}
 
 	/**
