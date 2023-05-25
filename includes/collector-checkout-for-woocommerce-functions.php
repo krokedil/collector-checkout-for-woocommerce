@@ -929,6 +929,12 @@ function walley_confirm_order( $order_id, $private_id = null ) {
 
 	wc_collector_save_shipping_reference_to_order( $order_id, $collector_order );
 
+	// Save shipping data.
+	if ( isset( $collector_order['data']['shipping'] ) ) {
+		update_post_meta( $order_id, '_collector_delivery_module_data', wp_json_encode( $collector_order['data']['shipping'], JSON_UNESCAPED_UNICODE ) );
+		update_post_meta( $order_id, '_collector_delivery_module_reference', $collector_order['data']['shipping']['pendingShipment']['id'] );
+	}
+
 	// Tie this order to a user if we have one.
 	if ( email_exists( $collector_order['data']['customer']['email'] ) ) {
 		$user    = get_user_by( 'email', $collector_order['data']['customer']['email'] );
