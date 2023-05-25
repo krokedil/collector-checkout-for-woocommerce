@@ -15,10 +15,18 @@ jQuery( function( $ ) {
 
 		init: function () {
 			$( document ).ready( walleyCheckoutWc.documentReady );
+
+			// In thank you page we only want to display the Walley Checkout.
+			if ( walleyParams.is_thank_you_page === 'yes' ) {
+				return;
+			}
+
 			walleyCheckoutWc.bodyEl.on( 'change', 'input[name="payment_method"]', walleyCheckoutWc.maybeChangeToWalleyCheckout );
 			walleyCheckoutWc.bodyEl.on( 'click', walleyCheckoutWc.selectAnotherSelector, walleyCheckoutWc.changeFromWalleyCheckout );
-			walleyCheckoutWc.bodyEl.on( 'updated_checkout', walleyCheckoutWc.maybeDisplayShippingPrice );
 			walleyCheckoutWc.bodyEl.on( 'click', walleyCheckoutWc.customerTypeSelector, walleyCheckoutWc.changeCustomerType );
+			walleyCheckoutWc.bodyEl.on('update_checkout', walleyCheckoutWc.suspendWalleyCheckout);
+			walleyCheckoutWc.bodyEl.on('updated_checkout', walleyCheckoutWc.resumeWalleyCheckout);
+			walleyCheckoutWc.bodyEl.on( 'updated_checkout', walleyCheckoutWc.maybeDisplayShippingPrice );
 
             document.addEventListener( 'walleyCheckoutCustomerUpdated', function (event) { walleyCheckoutWc.updateAddress(event) } );
             document.addEventListener( 'walleyCheckoutLocked', function (event) { walleyCheckoutWc.blockForm() } );
@@ -71,8 +79,6 @@ jQuery( function( $ ) {
 			if( ! walleyParams.payForOrder && walleyCheckoutWc.paymentMethod === 'collector_checkout' ) {
 				walleyCheckoutWc.moveExtraCheckoutFields();
 			}
-			walleyCheckoutWc.bodyEl.on('update_checkout', walleyCheckoutWc.suspendWalleyCheckout);
-			walleyCheckoutWc.bodyEl.on('updated_checkout', walleyCheckoutWc.resumeWalleyCheckout);
 
 			walleyCheckoutWc.setCurrentCustomerType();
 
