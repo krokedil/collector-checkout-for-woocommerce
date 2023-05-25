@@ -545,7 +545,7 @@ function wc_collector_confirm_order( $order_id, $private_id = null ) {
  * @return void
  */
 function wc_collector_save_shipping_reference_to_order( $order_id, $collector_order ) {
-	$order_items = $collector_order['data']['order']['items'];
+	$order_items = $collector_order['data']['order']['items'] ?? array();
 	foreach ( $order_items as $item ) {
 		if ( strpos( $item['id'], 'shipping|' ) !== false ) {
 			update_post_meta( $order_id, '_collector_shipping_reference', $item['id'] );

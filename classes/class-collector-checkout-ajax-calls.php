@@ -135,7 +135,7 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 		$customer_data['shipping_country'] = $collector_order['data']['countryCode'];
 		$customer_data['billing_email']    = $collector_order['data']['customer']['email'];
 		$customer_data['billing_phone']    = $collector_order['data']['customer']['mobilePhoneNumber'];
-		$customer_data['shipping_phone']   = $collector_order['data']['customer']['deliveryContactInformation']['mobilePhoneNumber'];
+		$customer_data['shipping_phone']   = $collector_order['data']['customer']['deliveryContactInformation']['mobilePhoneNumber'] ?? '';
 
 		if ( 'BusinessCustomer' === $collector_order['data']['customerType'] ) {
 			$customer_data['billing_first_name'] = $collector_order['data']['businessCustomer']['firstName'];
