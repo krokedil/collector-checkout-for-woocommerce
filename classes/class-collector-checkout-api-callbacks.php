@@ -87,16 +87,24 @@ class Collector_Api_Callbacks {
 			$order = wc_get_order( $order_id_match );
 
 			if ( $order ) {
-				// Check order status & order total.
-				CCO_WC()->logger::log( 'API-callback hit. Private id ' . $private_id . '. already exist in order ID ' . $order_id_match . ' Checking order status...' );
-				$this->check_order_status( $private_id, $public_token, $customer_type, $order );
+
+				// Maybe abort the callback (if the order already has been processed in Woo).
+				if ( ! empty( $order->get_date_paid() ) ) {
+					CCO_WC()->logger::log( 'Aborting API callback. Order ' . $order->get_order_number() . '(order ID ' . $order_id_match . ', Private ID ' . $private_id . ') already processed.' );
+				} else {
+					CCO_WC()->logger::log( 'Order status not set correctly for order ' . $order->get_order_number() . '(order ID ' . $order_id_match . ', Private ID ' . $private_id . ') during checkout process. Setting order status to Processing/Completed in API callback.' );
+					// translators: Walley private ID.
+					$note = sprintf( __( 'Order status not set correctly during checkout process. Confirming purchase via callback from Walley.', 'collector-checkout-for-woocommerce' ), $private_id );
+					$order->add_order_note( $note );
+					walley_confirm_order( $order_id, $private_id );
+				}
 			} else {
 				// No order, why?
-				CCO_WC()->logger::log( 'API-callback hit. Private id ' . $private_id . '. already exist in order ID ' . $order_id_match . '. But we could not instantiate an order object' );
+				CCO_WC()->logger::log( 'API-callback executed. Private id ' . $private_id . '. already exist in order ID ' . $order_id_match . '. But we could not instantiate an order object' );
 			}
 		} else {
 			// No order found - create a new.
-			CCO_WC()->logger::log( 'API-callback hit. We could NOT find Private id ' . $private_id . '(with public token ' . $public_token . ' & customer type ' . $customer_type . '). Aborting process.' );
+			CCO_WC()->logger::log( 'API-callback executed. We could NOT find Private id ' . $private_id . '(with public token ' . $public_token . ' & customer type ' . $customer_type . '). Aborting process.' );
 		}
 
 	}
@@ -127,7 +135,7 @@ class Collector_Api_Callbacks {
 		}
 
 		if ( is_wp_error( $collector_order ) ) {
-			$order->add_order_note( __( 'Could not retreive Walley order during order status check (on API callback).', 'collector-checkout-for-woocommerce' ) );
+			$order->add_order_note( __( 'Could not retrieve Walley order during order status check (on API callback).', 'collector-checkout-for-woocommerce' ) );
 		}
 
 		if ( is_object( $order ) ) {
