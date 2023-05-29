@@ -958,3 +958,26 @@ function walley_confirm_order( $order_id, $private_id = null ) {
 	$order->add_order_note( sprintf( __( 'Purchase via %s', 'collector-checkout-for-woocommerce' ), wc_collector_get_payment_method_name( $payment_method ) ) );
 	return true;
 }
+
+/**
+ * Get current Walley purchase status.
+ *
+ * @param array $walley_order the returned Walley order data.
+ * @return string
+ */
+function get_walley_purchase_status( $walley_order ) {
+	$purchase_status = $walley_order['data']['status'] ?? '';
+	return $purchase_status;
+}
+
+/**
+ * Returns approved Walley payment statuses where it is ok to send update requests.
+ *
+ * @return array Approved payment steps.
+ */
+function walley_payment_status_approved_for_update_request() {
+	return array(
+		'Initialized',
+		'CustomerIdentified',
+	);
+}
