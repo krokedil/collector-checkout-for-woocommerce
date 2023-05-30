@@ -2,11 +2,11 @@
 Contributors: collectorbank, krokedil, NiklasHogefjord
 Tags: ecommerce, e-commerce, woocommerce, collector, checkout, walley
 Requires at least: 5.0
-Tested up to: 6.2
+Tested up to: 6.2.2
 Requires PHP: 7.2
 Stable tag: 3.5.4
 WC requires at least: 5.0.0
-WC tested up to: 7.6.0
+WC tested up to: 7.7.0
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -39,6 +39,14 @@ For help setting up and configuring Walley Checkout for WooCommerce please refer
 
 
 == CHANGELOG ==
+= 2023.05.29    - version 3.5.6-beta =
+* Feature       - Plugin rewrite. Plugin now supports Walley's front end validation JS event. WooCommerce order is created (as a Pending order) when customer clicks purchase button in Walley Checkout.
+* Feature       - Add support for handling extra checkout fields in checkout.
+* Tweak         - JS checkout file refactoring.
+* Tweak         - Adds js front end logging via ajax.
+* Fix           - Check Walley Checkout payment session status before trying to trigger update request to Walley.
+* Fix           - Update customer address correctly in Woo when walleyCheckoutCustomerUpdated event is triggered.
+
 = 2023.04.26    - version 3.5.4 =
 * Fix           - Remove checkout_initiated check in Walley js file used in checkout. This prevents potential issue where Walley Checkout isn't suspended when update request is sent to Walley.
 
