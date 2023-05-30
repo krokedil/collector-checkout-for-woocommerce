@@ -25,6 +25,7 @@ class Walley_Checkout {
 
 	/**
 	 * Update the shipping method in WooCommerce based on what Walley has sent us.
+	 * Also update customer in Woo with the customer address data received from Walley (if returned).
 	 *
 	 * @return void
 	 */
