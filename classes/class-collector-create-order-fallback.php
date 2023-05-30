@@ -256,7 +256,7 @@ class Collector_Create_Local_Order_Fallback {
 		} else {
 			$update_reference = new Collector_Checkout_Requests_Update_Reference( $order->get_order_number(), $private_id, $customer_type );
 			$update_reference->request();
-			CCO_WC()->logger::log( 'Update Collector order reference in Create Local Order Fallback - ' . $order->get_order_number() );
 		}
+		CCO_WC()->logger::log( 'Update Collector order reference in Create Local Order Fallback - ' . $order->get_order_number() );
 	}
 }
