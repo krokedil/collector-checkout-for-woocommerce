@@ -243,8 +243,20 @@ class Collector_Create_Local_Order_Fallback {
 	 * @return void
 	 */
 	public function update_order_reference_in_collector( $order, $customer_type, $private_id ) {
-		$update_reference = new Collector_Checkout_Requests_Update_Reference( $order->get_order_number(), $private_id, $customer_type );
-		$update_reference->request();
+
+		// Use new or old API.
+		if ( walley_use_new_api() ) {
+			$collector_order = CCO_WC()->api->set_order_reference_in_walley(
+				array(
+					'order_id'      => $order->get_id(),
+					'private_id'    => $private_id,
+					'customer_type' => $customer_type,
+				)
+			);
+		} else {
+			$update_reference = new Collector_Checkout_Requests_Update_Reference( $order->get_order_number(), $private_id, $customer_type );
+			$update_reference->request();
+		}
 		CCO_WC()->logger::log( 'Update Collector order reference in Create Local Order Fallback - ' . $order->get_order_number() );
 	}
 }
