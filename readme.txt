@@ -2,11 +2,11 @@
 Contributors: collectorbank, krokedil, NiklasHogefjord
 Tags: ecommerce, e-commerce, woocommerce, collector, checkout, walley
 Requires at least: 5.0
-Tested up to: 6.2
+Tested up to: 6.2.2
 Requires PHP: 7.2
-Stable tag: 3.5.5
+Stable tag: 3.5.6
 WC requires at least: 5.0.0
-WC tested up to: 7.6.0
+WC tested up to: 7.7.1
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -39,6 +39,9 @@ For help setting up and configuring Walley Checkout for WooCommerce please refer
 
 
 == CHANGELOG ==
+= 2023.05.31    - version 3.5.6 =
+* Fix           - Solve error with update order reference request that in some cases could happen in backup order creation process when using new Walley API.
+
 = 2023.05.04    - version 3.5.5 =
 * Fix           - Fixed an issue where the order id was not set when the order is created during backup process.
 
