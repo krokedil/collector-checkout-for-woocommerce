@@ -166,8 +166,8 @@ class Collector_Checkout_Requests_Initialize_Checkout extends Collector_Checkout
 
 			$formatted_request_body['redirectPageUri'] = add_query_arg(
 				array(
-					'payment_successful' => '1',
-					'public-token'       => '{checkout.publictoken}',
+					'walley_confirm' => '1',
+					'public-token'   => '{checkout.publictoken}',
 				),
 				wc_get_checkout_url()
 			);
