@@ -280,6 +280,7 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 					return false;
 				}
 			} else {
+				$order            = wc_get_order( $order_id );
 				$update_reference = new Collector_Checkout_Requests_Update_Reference( $order->get_order_number(), $private_id, $customer_type );
 				$update_reference->request();
 				CCO_WC()->logger::log( 'Update Collector order reference for order - ' . $order->get_order_number() );
