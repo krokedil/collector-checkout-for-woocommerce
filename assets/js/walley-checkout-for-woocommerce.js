@@ -212,7 +212,7 @@ jQuery( function( $ ) {
             if( $('.collector-shipping').length ) {
                 return;
             }
-            if ( 'collector_checkout' === walleyCheckoutWc.paymentMethod && 'yes' === walleyParams.delivery_module && 'no' === walleyParams.is_collector_confirmation ) {
+            if ( 'collector_checkout' === walleyCheckoutWc.paymentMethod && 'yes' === walleyParams.delivery_module ) {
                 if ( $('#shipping_method input[type="radio"]').length > 1 ) {
                     // Multiple shipping options available.
                     $( '#shipping_method input[type="radio"]:checked' ).each( function() {

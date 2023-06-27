@@ -78,14 +78,7 @@ class Walley_Checkout_Assets {
 			$locale = 'sv-SE';
 		}
 
-		$public_token       = filter_input( INPUT_GET, 'public-token', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
-		$payment_successful = filter_input( INPUT_GET, 'payment_successful', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
-
-		if ( empty( $payment_successful ) ) {
-			$payment_successful = '0';
-		} else {
-			$payment_successful = '1';
-		}
+		$public_token = filter_input( INPUT_GET, 'public-token', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 
 		if ( is_wc_endpoint_url( 'order-received' ) ) {
 			$is_thank_you_page = 'yes';
@@ -153,10 +146,8 @@ class Walley_Checkout_Assets {
 				'ajaxurl'                     => admin_url( 'admin-ajax.php' ),
 				'locale'                      => $locale,
 				'is_thank_you_page'           => $is_thank_you_page,
-				'is_collector_confirmation'   => ( is_collector_confirmation() ) ? 'yes' : 'no',
 				'order_id'                    => $order_id,
 				'public_token'                => $public_token,
-				'payment_successful'          => $payment_successful,
 				'purchase_status'             => $purchase_status,
 				'data_action_color_button'    => $data_action_color_button,
 				'default_customer_type'       => wc_collector_get_default_customer_type(),

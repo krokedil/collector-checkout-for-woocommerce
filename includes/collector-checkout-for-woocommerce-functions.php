@@ -13,11 +13,6 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 function collector_wc_show_snippet() {
 
-	// Don't display the checkout on confirmation page.
-	if ( is_collector_confirmation() ) {
-		return;
-	}
-
 	if ( 'NOK' === get_woocommerce_currency() ) {
 		$locale = 'nb-NO';
 	} elseif ( 'DKK' === get_woocommerce_currency() ) {
@@ -221,20 +216,6 @@ function wc_collector_add_invoice_fee_to_order( $order_id, $product_id ) {
 		$result = $order->calculate_totals( true );
 	}
 	return $result;
-}
-
-/**
- * Checking if it is Collector confirmation page.
- *
- * @return boolean
- */
-function is_collector_confirmation() {
-	$payment_successful = filter_input( INPUT_GET, 'payment_successful', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
-	$public_token       = filter_input( INPUT_GET, 'payment_successful', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
-	if ( '1' === $payment_successful && ! empty( $public_token ) ) {
-		return true;
-	}
-	return false;
 }
 
 /**
