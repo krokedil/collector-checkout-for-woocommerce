@@ -64,7 +64,7 @@ class  Walley_Checkout_Order_Management {
 		}
 
 		// Part activate or activate the entire order.
-		if ( 'yes' === $this->activate_individual_order_lines ) {
+		if ( 'yes' === $this->activate_individual_order_lines || apply_filters( 'wpd_delivery_order_type', 'shop_order_delivery', $order ) === $order->get_type() ) {
 			$response = CCO_WC()->api->part_capture_walley_order( $order_id );
 
 			if ( is_wp_error( $response ) ) {
