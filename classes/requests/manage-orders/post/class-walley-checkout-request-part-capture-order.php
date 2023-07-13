@@ -41,7 +41,7 @@ class Walley_Checkout_Request_Part_Capture_Order extends Walley_Checkout_Request
 		$order_id = $this->arguments['order_id'];
 		$order    = wc_get_order( $order_id );
 		$body     = array(
-			'amount' => $order->get_total(),
+			'amount' => Collector_Checkout_Requests_Helper_Order_Om::get_order_lines_total_amount( $order_id ),
 			'items'  => Collector_Checkout_Requests_Helper_Order_Om::get_order_lines( $order_id ),
 		);
 

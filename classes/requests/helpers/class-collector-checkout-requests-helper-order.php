@@ -32,7 +32,10 @@ class Collector_Checkout_Requests_Helper_Order {
 			array_push( $order_lines, self::get_order_line_fees( $fee ) );
 		}
 
-		self::rounding_fee( $order_lines, $order );
+		// Maybe add a rounding fee to Walley if needed.
+		if ( 'yes' === walley_add_rounding_order_line() ) {
+			self::rounding_fee( $order_lines, $order );
+		}
 		return array( 'items' => $order_lines );
 	}
 

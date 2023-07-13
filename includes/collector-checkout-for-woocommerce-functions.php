@@ -962,3 +962,27 @@ function walley_payment_status_approved_for_update_request() {
 		'CustomerIdentified',
 	);
 }
+
+/**
+ * Should we add a rounding order line to Walley or not (if needed).
+ *
+ * @return string
+ */
+function walley_add_rounding_order_line() {
+	$collector_settings      = get_option( 'woocommerce_collector_checkout_settings' );
+	$add_rounding_order_line = $collector_settings['add_rounding_order_line'] ?? '';
+	return $add_rounding_order_line;
+}
+
+/**
+ * Return delivery module shipping reference if it exist in order.
+ *
+ * @param int $order_id WooCommerce order ID.
+ *
+ * @return string
+ */
+function walley_get_shipping_reference_from_delivery_module_data( $order_id ) {
+	$collector_delivery_data = json_decode( get_post_meta( $order_id, '_collector_delivery_module_data', true ), true ) ?? array();
+	$shipping_reference      = $collector_delivery_data['shippingFeeId'] ?? '';
+	return $shipping_reference;
+}
