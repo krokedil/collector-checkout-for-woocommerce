@@ -8,7 +8,7 @@
  * Plugin Name:     Walley Checkout for WooCommerce
  * Plugin URI:      https://krokedil.se/collector/
  * Description:     Extends WooCommerce. Provides a <a href="https://www.collector.se/" target="_blank">Walley Checkout</a> checkout for WooCommerce.
- * Version:         3.5.6-beta2
+ * Version:         3.6.0-beta5
  * Author:          Krokedil
  * Author URI:      https://krokedil.se/
  * Text Domain:     collector-checkout-for-woocommerce
@@ -28,7 +28,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 define( 'COLLECTOR_BANK_PLUGIN_DIR', untrailingslashit( plugin_dir_path( __FILE__ ) ) );
 define( 'COLLECTOR_BANK_PLUGIN_URL', untrailingslashit( plugin_dir_url( __FILE__ ) ) );
-define( 'COLLECTOR_BANK_VERSION', '3.5.6-beta2' );
+define( 'COLLECTOR_BANK_VERSION', '3.6.0-beta5' );
 define( 'COLLECTOR_DB_VERSION', '1' );
 
 if ( ! class_exists( 'Collector_Checkout' ) ) {
@@ -144,6 +144,7 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 
 				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-walley-checkout-api.php';
 				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-walley-checkout-order-management.php';
+				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-walley-checkout-order-actions.php';
 				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-walley-checkout-meta-box.php';
 
 				// New request class files.
