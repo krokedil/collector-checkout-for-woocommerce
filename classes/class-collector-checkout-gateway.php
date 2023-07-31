@@ -181,6 +181,7 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 				$collector_b2c_no   = ( isset( $collector_settings['collector_merchant_id_no_b2c'] ) ) ? $collector_settings['collector_merchant_id_no_b2c'] : '';
 				$collector_b2b_no   = ( isset( $collector_settings['collector_merchant_id_no_b2b'] ) ) ? $collector_settings['collector_merchant_id_no_b2b'] : '';
 				$collector_b2c_dk   = ( isset( $collector_settings['collector_merchant_id_dk_b2c'] ) ) ? $collector_settings['collector_merchant_id_dk_b2c'] : '';
+				$collector_b2b_dk   = ( isset( $collector_settings['collector_merchant_id_dk_b2b'] ) ) ? $collector_settings['collector_merchant_id_dk_b2b'] : '';
 				$collector_b2c_fi   = ( isset( $collector_settings['collector_merchant_id_fi_b2c'] ) ) ? $collector_settings['collector_merchant_id_fi_b2c'] : '';
 				$collector_b2b_fi   = ( isset( $collector_settings['collector_merchant_id_fi_b2b'] ) ) ? $collector_settings['collector_merchant_id_fi_b2b'] : '';
 
@@ -195,7 +196,7 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 				if ( 'SEK' === get_woocommerce_currency() && ( ! $collector_b2c_se && ! $collector_b2b_se ) ) {
 					return false;
 				}
-				if ( 'DKK' === get_woocommerce_currency() && ( ! $collector_b2c_dk ) ) {
+				if ( 'DKK' === get_woocommerce_currency() && ( ! $collector_b2c_dk && ! $collector_b2b_dk ) ) {
 					return false;
 				}
 				if ( 'EUR' === get_woocommerce_currency() && ( ! $collector_b2c_fi && ! $collector_b2b_fi ) ) {
