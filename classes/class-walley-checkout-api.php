@@ -41,6 +41,18 @@ class Walley_Checkout_API {
 	}
 
 	/**
+	 * Update Walley checkout.
+	 *
+	 * @param array $args Data passed to init request.
+	 * @return array|WP_Error
+	 */
+	public function update_walley_checkout( $args ) {
+		$request  = new Walley_Checkout_Request_Update_Checkout( $args );
+		$response = $request->request();
+		return $this->check_for_api_error( $response );
+	}
+
+	/**
 	 * Update Walley checkout cart.
 	 *
 	 * @param array $args Data passed to init request.

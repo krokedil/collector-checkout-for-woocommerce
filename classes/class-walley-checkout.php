@@ -193,6 +193,8 @@ class Walley_Checkout {
 	/**
 	 * Maybe update metadata.
 	 *
+	 * @todo Remove this after confirmed with Redlight Media.
+	 *
 	 * @param string $private_id The Walley checkout session id.
 	 * @param string $customer_type The customer type (B2B|B2C).
 	 * @return void
@@ -246,24 +248,15 @@ class Walley_Checkout {
 	 * @return void
 	 */
 	public static function maybe_update_fees( $private_id, $customer_type ) {
-		// Use new or old API.
+
+		// New API.
 		if ( walley_use_new_api() ) {
-
-			// If Walley delivery module is used and there is no invoice fee - bail.
-			if ( empty( Walley_Checkout_Requests_Fees_Helper::fees() ) ) {
-				return;
-			}
-
-			$collector_order_fee = CCO_WC()->api->update_walley_fees(
-				array(
-					'private_id'    => $private_id,
-					'customer_type' => $customer_type,
-				)
-			);
-		} else {
-			$update_fees         = new Collector_Checkout_Requests_Update_Fees( $private_id, $customer_type );
-			$collector_order_fee = $update_fees->request();
+			return;
 		}
+
+		// Old API.
+		$update_fees         = new Collector_Checkout_Requests_Update_Fees( $private_id, $customer_type );
+		$collector_order_fee = $update_fees->request();
 
 		if ( is_checkout() ) {
 			$cart_item_total = Collector_Checkout_Requests_Cart::cart();
@@ -311,14 +304,17 @@ class Walley_Checkout {
 	public static function maybe_update_cart( $private_id, $customer_type ) {
 
 		// Use new or old API.
+
 		if ( walley_use_new_api() ) {
-			$collector_order_cart = CCO_WC()->api->update_walley_cart(
+			// New API - update entire checkout.
+			$collector_order_cart = CCO_WC()->api->update_walley_checkout(
 				array(
 					'private_id'    => $private_id,
 					'customer_type' => $customer_type,
 				)
 			);
 		} else {
+			// Old API update the cart.
 			$update_cart          = new Collector_Checkout_Requests_Update_Cart( $private_id, $customer_type );
 			$collector_order_cart = $update_cart->request();
 		}

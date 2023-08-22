@@ -986,3 +986,35 @@ function walley_get_shipping_reference_from_delivery_module_data( $order_id ) {
 	$shipping_reference      = $collector_delivery_data['shippingFeeId'] ?? '';
 	return $shipping_reference;
 }
+
+/**
+ * Maybe adds the free shipping tag.
+ *
+ * @return bool
+ */
+function walley_cart_contain_free_shipping_coupon() {
+	foreach ( WC()->cart->get_applied_coupons() as $coupon_code ) {
+		$coupon = new WC_Coupon( $coupon_code );
+		if ( $coupon->get_free_shipping() ) {
+			return true;
+		}
+	}
+	return false;
+}
+
+/**
+ * Get cart shipping classes.
+ *
+ * @return array
+ */
+function walley_get_cart_shipping_classes() {
+	$shipping_classes = array();
+	// Check all cart items.
+	foreach ( WC()->cart->get_cart() as $cart_item ) {
+
+		if ( ! empty( $cart_item['data']->get_shipping_class() ) ) {
+			$shipping_classes[ $cart_item['data']->get_shipping_class() ] = true;
+		}
+	}
+	return $shipping_classes;
+}
