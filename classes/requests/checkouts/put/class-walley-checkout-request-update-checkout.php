@@ -40,11 +40,24 @@ class Walley_Checkout_Request_Update_Checkout extends Walley_Checkout_Request_Pu
 	 * @return array
 	 */
 	protected function get_body() {
+		$cart      = apply_filters( 'walley_update_cart_args', empty( $this->order_id ) ? $this->cart()['items'] : CCO_WC()->order_items->get_order_lines( $this->order_id )['items'], $this->order_id );
+		$fees      = apply_filters( 'walley_update_fees_args', empty( $this->order_id ) ? Walley_Checkout_Requests_Fees_Helper::fees() : CCO_WC()->order_fees->get_order_fees( $this->order_id ), $this->order_id );
+		$meta_data = apply_filters( 'walley_update_metadata_args', array(), $this->order_id );
 
+		// Add cart data.
 		$body = array(
-			'cart' => empty( $this->order_id ) ? $this->cart()['items'] : CCO_WC()->order_items->get_order_lines( $this->order_id )['items'],
-			'fees' => empty( $this->order_id ) ? Walley_Checkout_Requests_Fees_Helper::fees() : CCO_WC()->order_fees->get_order_fees( $this->order_id ),
+			'cart' => $cart,
 		);
+
+		// Maybe add fees.
+		if ( ! empty( $fees ) ) {
+			$body['fees'] = $fees;
+		}
+
+		// Maybe add metadata.
+		if ( ! empty( $meta_data ) ) {
+			$body['metadata'] = $meta_data;
+		}
 
 		// Maybe add shipping classes.
 		if ( ! empty( walley_get_cart_shipping_classes() ) ) {
