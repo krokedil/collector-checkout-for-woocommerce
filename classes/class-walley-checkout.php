@@ -193,8 +193,6 @@ class Walley_Checkout {
 	/**
 	 * Maybe update metadata.
 	 *
-	 * @todo Remove this after confirmed with Redlight Media.
-	 *
 	 * @param string $private_id The Walley checkout session id.
 	 * @param string $customer_type The customer type (B2B|B2C).
 	 * @return void
@@ -204,19 +202,14 @@ class Walley_Checkout {
 		$metadata = apply_filters( 'coc_update_cart_metadata', array() );
 		if ( ! empty( $metadata ) ) {
 
-			// Use new or old API.
+			// New API.
 			if ( walley_use_new_api() ) {
-				$collecor_order_metadata = CCO_WC()->api->update_walley_metadata(
-					array(
-						'private_id'    => $private_id,
-						'customer_type' => $customer_type,
-						'metadata'      => $metadata,
-					)
-				);
-			} else {
-				$update_metadata         = new Collector_Checkout_Requests_Update_Metadata( $private_id, $customer_type, $metadata );
-				$collecor_order_metadata = $update_metadata->request();
+				return;
 			}
+
+			// Old API.
+			$update_metadata         = new Collector_Checkout_Requests_Update_Metadata( $private_id, $customer_type, $metadata );
+			$collecor_order_metadata = $update_metadata->request();
 
 			// Check that everything went alright.
 			if ( is_wp_error( $collecor_order_metadata ) ) {
