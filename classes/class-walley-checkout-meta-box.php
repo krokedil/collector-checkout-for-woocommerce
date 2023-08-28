@@ -70,7 +70,7 @@ class Walley_Checkout_Meta_Box {
 				$walley_order_total    = $walley_order['data']['totalAmount'] ?? '';
 				$walley_order_currency = $walley_order['data']['currency'] ?? '';
 				// Translators: Woo order total & Walley order total.
-				$order_total_mismatch = floatval( $order->get_total() ) !== floatval( $walley_order_total ) ? sprintf( __( '<i>Order total differs between systems (WooCommerce: %1$s, Walley: %2$s)</i>', 'collector-checkout-for-woocommerce' ), $order->get_total(), $walley_order_total ) : '';
+				$order_total_mismatch = floatval( Collector_Checkout_Requests_Helper_Order_Om::get_order_lines_total_amount( $order_id ) ) !== floatval( $walley_order_total ) ? sprintf( __( '<i>Order total differs between systems (WooCommerce: %1$s, Walley: %2$s)</i>', 'collector-checkout-for-woocommerce' ), Collector_Checkout_Requests_Helper_Order_Om::get_order_lines_total_amount( $order_id ), $walley_order_total ) : '';
 				// Save received data to WP transient.
 				walley_save_order_data_to_transient(
 					array(
@@ -86,7 +86,7 @@ class Walley_Checkout_Meta_Box {
 			$walley_order_total    = $walley_order_status_from_transient['total_amount'] ?? '';
 			$walley_order_currency = $walley_order_status_from_transient['currency'] ?? '';
 			// Translators: Woo order total & Walley order total.
-			$order_total_mismatch = floatval( $order->get_total() ) !== floatval( $walley_order_total ) ? sprintf( __( '<i>Order total differs between systems (WooCommerce: %1$s, Walley: %2$s)</i>', 'collector-checkout-for-woocommerce' ), $order->get_total(), $walley_order_total ) : '';
+			$order_total_mismatch = floatval( Collector_Checkout_Requests_Helper_Order_Om::get_order_lines_total_amount( $order_id ) ) !== floatval( $walley_order_total ) ? sprintf( __( '<i>Order total differs between systems (WooCommerce: %1$s, Walley: %2$s)</i>', 'collector-checkout-for-woocommerce' ), Collector_Checkout_Requests_Helper_Order_Om::get_order_lines_total_amount( $order_id ), $walley_order_total ) : '';
 		}
 
 		$keys_for_meta_box = array(

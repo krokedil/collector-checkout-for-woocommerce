@@ -40,17 +40,6 @@ class Walley_Checkout_Request_Initialize_Checkout extends Walley_Checkout_Reques
 	 */
 	protected function get_body() {
 
-		// Set validation URI query args.
-		$validation_uri = add_query_arg(
-			array(
-				'private-id'        => '{checkout.id}',
-				'public-token'      => '{checkout.publictoken}',
-				'customer-type'     => $this->customer_type,
-				'customer-currency' => $this->currency,
-			),
-			get_home_url() . '/wc-api/Collector_WC_Validation/'
-		);
-
 		$body = array(
 			'storeId'          => $this->store_id,
 			'countryCode'      => $this->country_code,
@@ -69,11 +58,8 @@ class Walley_Checkout_Request_Initialize_Checkout extends Walley_Checkout_Reques
 			'fees'             => empty( $this->order_id ) ? Walley_Checkout_Requests_Fees_Helper::fees() : CCO_WC()->order_fees->get_order_fees( $this->order_id ),
 		);
 
-		// Only send validationUri & profileName if this is a purchase from the checkout.
+		// Only send profileName if this is a purchase from the checkout.
 		if ( empty( $this->order_id ) ) {
-			if ( 'yes' === $this->activate_validation_callback ) {
-				$body['validationUri'] = $validation_uri;
-			}
 			if ( 'yes' === $this->delivery_module ) {
 				$body['profileName'] = trim( $this->settings[ 'collector_custom_profile_' . strtolower( $this->country_code ) ] );
 				if ( empty( $body['profileName'] ) ) {
@@ -83,8 +69,8 @@ class Walley_Checkout_Request_Initialize_Checkout extends Walley_Checkout_Reques
 
 			$body['redirectPageUri'] = add_query_arg(
 				array(
-					'payment_successful' => '1',
-					'public-token'       => '{checkout.publictoken}',
+					'walley_confirm' => '1',
+					'public-token'   => '{checkout.publictoken}',
 				),
 				wc_get_checkout_url()
 			);

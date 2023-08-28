@@ -45,14 +45,14 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 	 */
 	public static function add_ajax_events() {
 		$ajax_events = array(
-			'get_public_token'         => true,
-			'add_customer_order_note'  => true,
-			'get_checkout_thank_you'   => true,
-			'get_customer_data'        => true,
-			'customer_adress_updated'  => true,
-			'update_fragment'          => true,
-			'checkout_error'           => true,
-			'walley_reauthorize_order' => true,
+			'get_public_token'             => true,
+			'get_checkout_thank_you'       => true,
+			'customer_adress_updated'      => true,
+			'walley_reauthorize_order'     => true,
+			'walley_change_payment_method' => true,
+			'walley_log_js'                => true,
+			'walley_get_order'             => true,
+
 		);
 		foreach ( $ajax_events as $ajax_event => $nopriv ) {
 			add_action( 'wp_ajax_woocommerce_' . $ajax_event, array( __CLASS__, $ajax_event ) );
@@ -62,6 +62,77 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 				add_action( 'wc_ajax_' . $ajax_event, array( __CLASS__, $ajax_event ) );
 			}
 		}
+	}
+
+	/**
+	 * Refresh checkout fragment.
+	 */
+	public static function walley_change_payment_method() {
+		$nonce = isset( $_POST['nonce'] ) ? sanitize_key( $_POST['nonce'] ) : '';
+		if ( ! wp_verify_nonce( $nonce, 'walley_change_payment_method' ) ) {
+			wp_send_json_error( 'bad_nonce' );
+			exit;
+		}
+		$available_gateways           = WC()->payment_gateways()->get_available_payment_gateways();
+		$switch_to_collector_checkout = isset( $_POST['collector_checkout'] ) ? sanitize_text_field( wp_unslash( $_POST['collector_checkout'] ) ) : '';
+		if ( 'false' === $switch_to_collector_checkout ) {
+			// Set chosen payment method to first gateway that is not Qliro One Checkout for WooCommerce.
+			$first_gateway = reset( $available_gateways );
+			if ( 'collector_checkout' !== $first_gateway->id ) {
+				WC()->session->set( 'chosen_payment_method', $first_gateway->id );
+			} else {
+				$second_gateway = next( $available_gateways );
+				WC()->session->set( 'chosen_payment_method', $second_gateway->id );
+			}
+		} else {
+			WC()->session->set( 'chosen_payment_method', 'collector_checkout' );
+		}
+
+		WC()->payment_gateways()->set_current_gateway( $available_gateways );
+
+		$redirect = wc_get_checkout_url();
+		$data     = array(
+			'redirect' => $redirect,
+		);
+
+		wp_send_json_success( $data );
+		wp_die();
+	}
+
+	/**
+	 * Gets the Walley order.
+	 */
+	public static function walley_get_order() {
+		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( sanitize_key( $_POST['nonce'] ), 'walley_get_order' ) ) {
+			wp_send_json_error( 'bad_nonce' );
+			exit;
+		}
+
+		// Get customer data from Collector.
+		$private_id    = WC()->session->get( 'collector_private_id' );
+		$customer_type = WC()->session->get( 'collector_customer_type' );
+
+		// Use new or old API.
+		if ( self::use_new_api() ) {
+			$collector_order = CCO_WC()->api->get_walley_checkout(
+				array(
+					'private_id'    => $private_id,
+					'customer_type' => $customer_type,
+				)
+			);
+		} else {
+			$collector_order = new Collector_Checkout_Requests_Get_Checkout_Information( $private_id, $customer_type );
+			$collector_order = $collector_order->request();
+		}
+
+		if ( is_wp_error( $collector_order ) ) {
+			$return = sprintf( __( 'Could not connect to Walley. Please reload the page and try again.', 'collector-checkout-for-woocommerce' ), $collector_order->get_error_message() );
+			wp_send_json_error( $return );
+		}
+
+		$customer_data = Walley_Checkout_Session::get_customer_address( $collector_order );
+
+		wp_send_json_success( $customer_data );
 	}
 
 	/**
@@ -110,17 +181,6 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 				WC()->session->set( 'collector_customer_type', $customer_type );
 				WC()->session->set( 'collector_currency', get_woocommerce_currency() );
 
-				// Save session ID and Private ID to DB.
-				$collector_checkout_sessions = new Collector_Checkout_Sessions();
-				$collector_data              = array(
-					'session_id' => $collector_checkout_sessions->get_session_id(),
-				);
-				$args                        = array(
-					'private_id' => $collector_order['data']['privateId'],
-					'data'       => $collector_data,
-				);
-				$result                      = Collector_Checkout_DB::create_data_entry( $args );
-
 				wp_send_json_success( $return );
 			}
 		}
@@ -159,6 +219,7 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 		$customer_data['billing_country']  = $collector_order['data']['countryCode'];
 		$customer_data['shipping_country'] = $collector_order['data']['countryCode'];
 		$customer_data['billing_email']    = $collector_order['data']['customer']['email'];
+		$customer_data['billing_phone']    = $collector_order['data']['customer']['mobilePhoneNumber'];
 
 		if ( 'BusinessCustomer' === $collector_order['data']['customerType'] ) {
 			$customer_data['billing_city']     = $collector_order['data']['businessCustomer']['invoiceAddress']['city'];
@@ -207,18 +268,6 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 	}
 
 	/**
-	 * Save customer order note to session.
-	 *
-	 * @return void
-	 */
-	public static function add_customer_order_note() {
-		$order_note = filter_input( INPUT_POST, 'order_note', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
-		WC()->session->set( 'collector_customer_order_note', $order_note );
-
-		wp_send_json_success();
-	}
-
-	/**
 	 * Get thankyou iframe info.
 	 *
 	 * @return void
@@ -248,257 +297,6 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 			'customer_type' => $customer_type,
 		);
 
-		wp_send_json_success( $return );
-	}
-
-	/**
-	 * Get customer data from Collector when payment success url is triggered.
-	 */
-	public static function get_customer_data() {
-		$private_id    = WC()->session->get( 'collector_private_id' );
-		$customer_type = WC()->session->get( 'collector_customer_type' );
-
-		// Prevent duplicate orders if confirmation page is reloaded manually by customer.
-		$query          = new WC_Order_Query(
-			array(
-				'limit'          => -1,
-				'orderby'        => 'date',
-				'order'          => 'DESC',
-				'return'         => 'ids',
-				'payment_method' => 'collector_checkout',
-				'date_created'   => '>' . ( time() - DAY_IN_SECONDS ),
-			)
-		);
-		$orders         = $query->get_orders();
-		$order_id_match = '';
-		foreach ( $orders as $order_id ) {
-
-			$order_private_id = get_post_meta( $order_id, '_collector_private_id', true );
-
-			if ( $order_private_id === $private_id ) {
-				$order_id_match = $order_id;
-				break;
-			}
-		}
-		if ( $order_id_match ) {
-			$order = wc_get_order( $order_id_match );
-			CCO_WC()->logger::log( 'Payment complete triggered for private id ' . $private_id . ' but _collector_private_id already exist in this order. Redirecting customer to thankyou page.' );
-			$return                 = array();
-			$return['redirect_url'] = $order->get_checkout_order_received_url();
-			wp_send_json_error( $return );
-		}
-
-		CCO_WC()->logger::log( 'Payment complete triggered for private id ' . $private_id . '. Starting WooCommerce checkout form processing...' );
-
-		// Use new or old API.
-		if ( self::use_new_api() ) {
-			$collector_order = CCO_WC()->api->get_walley_checkout(
-				array(
-					'private_id'    => $private_id,
-					'customer_type' => $customer_type,
-				)
-			);
-		} else {
-			$collector_order = new Collector_Checkout_Requests_Get_Checkout_Information( $private_id, $customer_type );
-			$collector_order = $collector_order->request();
-		}
-
-		if ( 'PurchaseCompleted' === $collector_order['data']['status'] ) {
-			// Save the payment method and payment id.
-			$payment_method = $collector_order['data']['purchase']['paymentName'];
-			$payment_id     = $collector_order['data']['purchase']['purchaseIdentifier'];
-			WC()->session->set( 'collector_payment_method', $payment_method );
-			WC()->session->set( 'collector_payment_id', $payment_id );
-
-			// Return the data, customer note and create a nonce.
-			$return = array();
-
-			// Run customer data through helper function.
-			$return['customer_data'] = wc_collector_verify_customer_data( $collector_order );
-			$return['nonce']         = wp_create_nonce( 'woocommerce-process_checkout' );
-			if ( null !== WC()->session->get( 'collector_customer_order_note' ) ) {
-				$return['order_note'] = WC()->session->get( 'collector_customer_order_note' );
-			} else {
-				$return['order_note'] = '';
-			}
-			$return['shipping'] = WC()->session->get( 'collector_chosen_shipping' );
-			wp_send_json_success( $return );
-		} else {
-			// We didn't get a status PurchaseCompleted from Collector (but the Collector redirectPageUri has been triggered) so we redirect the customer to thank you page.
-			$return                 = array();
-			$url                    = add_query_arg(
-				array(
-					'purchase-status' => 'not-completed',
-					'public-token'    => sanitize_text_field( $_POST['public_token'] ), //phpcs:ignore
-				),
-				wc_get_endpoint_url( 'order-received', '', get_permalink( wc_get_page_id( 'checkout' ) ) )
-			);
-			$return['redirect_url'] = $url;
-			CCO_WC()->logger::log( 'Payment complete triggered for private id ' . $private_id . ' but status is not PurchaseCompleted in Collectors system. Current status: ' . var_export( $collector_order['data']['status'], true ) . '. Redirecting customer to simplified thankyou page.' ); //phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
-			wp_send_json_error( $return );
-		}
-	}
-
-	/**
-	 * WC Ajax updates fragment.
-	 *
-	 * @return void
-	 */
-	public static function update_fragment() {
-		WC()->cart->calculate_shipping();
-		WC()->cart->calculate_fees();
-		WC()->cart->calculate_totals();
-
-		$available_gateways = WC()->payment_gateways()->get_available_payment_gateways();
-		if ( 'false' === $_POST['collector'] ) { //phpcs:ignore
-			// Set chosen payment method to first gateway that is not Collector Checkout for WooCommerce.
-			$first_gateway = reset( $available_gateways );
-			if ( 'collector_checkout' !== $first_gateway->id ) {
-				WC()->session->set( 'chosen_payment_method', $first_gateway->id );
-			} else {
-				$second_gateway = next( $available_gateways );
-				WC()->session->set( 'chosen_payment_method', $second_gateway->id );
-			}
-		} else {
-			WC()->session->set( 'chosen_payment_method', 'collector_checkout' );
-		}
-		WC()->payment_gateways()->set_current_gateway( $available_gateways );
-		/* phpcs:ignore
-		ob_start();
-		if ( 'collector_checkout' !== WC()->session->get( 'chosen_payment_method' ) ) {
-
-			wc_get_template( 'checkout/form-checkout.php', array(
-				'checkout' => WC()->checkout(),
-			) );
-
-		} else {
-			include( COLLECTOR_BANK_PLUGIN_DIR . '/templates/form-checkout.php' );
-		}
-		$checkout_output = ob_get_clean();
-		*/
-		$redirect = wc_get_checkout_url();
-		$data     = array(
-			'redirect' => $redirect,
-		);
-		/* phpcs:ignore
-		$data = array(
-			'fragments' => array(
-				'checkout' => $checkout_output,
-			),
-		);
-		*/
-		wp_send_json_success( $data );
-	}
-
-	/**
-	 * Checkout error.
-	 *
-	 * @return void
-	 * @throws Exception If something goes wrong.
-	 */
-	public static function checkout_error() {
-		CCO_WC()->logger::log( 'Starting Create Order Fallback creation...' );
-		$customer_type = WC()->session->get( 'collector_customer_type' );
-		$private_id    = WC()->session->get( 'collector_private_id' );
-
-		// Prevent duplicate orders if confirmation page is reloaded manually by customer.
-		$collector_public_token = sanitize_key( $_POST['public_token'] ); //phpcs:ignore
-		$query                  = new WC_Order_Query(
-			array(
-				'limit'          => -1,
-				'orderby'        => 'date',
-				'order'          => 'DESC',
-				'return'         => 'ids',
-				'payment_method' => 'collector_checkout',
-				'date_created'   => '>' . ( time() - DAY_IN_SECONDS ),
-			)
-		);
-		$orders                 = $query->get_orders();
-		$order_id_match         = null;
-		foreach ( $orders as $order_id ) {
-			$order_collector_public_token = get_post_meta( $order_id, '_collector_public_token', true );
-			if ( strtolower( $order_collector_public_token ) === strtolower( $collector_public_token ) ) {
-				$order_id_match = $order_id;
-				break;
-			}
-		}
-		// _collector_public_token already exist in an order. Let's redirect the customer to the thankyou page for that order.
-		if ( $order_id_match ) {
-			CCO_WC()->logger::log( 'Checkout error triggered but _collector_public_token already exist in this order: ' . $order_id_match );
-			$order        = wc_get_order( $order_id_match );
-			$redirect_url = $order->get_checkout_order_received_url();
-			$return       = array( 'redirect_url' => $redirect_url );
-			wp_send_json_success( $return );
-		}
-
-		// If we get here its safe to create an order.
-		$create_order = new Collector_Create_Local_Order_Fallback();
-
-		// Create the order.
-		$order    = $create_order->create_order();
-		$order_id = $order->get_id();
-
-		// Add items to order.
-		$create_order->add_items_to_local_order( $order );
-
-		// Add fees to order.
-		$create_order->add_order_fees( $order );
-
-		// Maybe add invoice fee to order.
-		if ( 'DirectInvoice' === WC()->session->get( 'collector_payment_method' ) ) {
-			$collector_settings = get_option( 'woocommerce_collector_checkout_settings' );
-			$product_id         = $collector_settings['collector_invoice_fee'];
-			if ( $product_id ) {
-				wc_collector_add_invoice_fee_to_order( $order_id, $product_id );
-			}
-		}
-
-		// Add shipping to order.
-		$create_order->add_order_shipping( $order );
-
-		// Add tax rows to order.
-		$create_order->add_order_tax_rows( $order );
-
-		// Add coupons to order.
-		$create_order->add_order_coupons( $order );
-
-		// Add customer to order.
-		$create_order->add_customer_data_to_local_order( $order, $customer_type, $private_id );
-
-		// Add payment method.
-		$create_order->add_order_payment_method( $order );
-
-		// Make sure to run Sequential Order numbers if plugin exsists.
-		// @Todo - Se i we can run action woocommerce_checkout_update_order_meta in this process.
-		// so Sequential order numbers and other plugins can do their stuff themselves.
-		if ( class_exists( 'WC_Seq_Order_Number_Pro' ) ) {
-			$sequential = new WC_Seq_Order_Number_Pro();
-			$sequential->set_sequential_order_number( $order_id );
-		} elseif ( class_exists( 'WC_Seq_Order_Number' ) ) {
-			$sequential = new WC_Seq_Order_Number();
-			$sequential->set_sequential_order_number( $order_id, get_post( $order_id ) );
-		}
-
-		// Calculate order totals.
-		$create_order->calculate_order_totals( $order );
-
-		// Update the Collector Order with the Order ID.
-		$create_order->update_order_reference_in_collector( $order, $customer_type, $private_id );
-
-		// Add order note.
-		if ( isset( $_POST['error_message'] ) && ! empty( $_POST['error_message'] ) ) { //phpcs:ignore
-			$error_message = 'Error message: ' . wp_unslash( sanitize_text_field( sanitize_text_field( trim( $_POST['error_message'] ) ) ) ); //phpcs:ignore
-		} else {
-			$error_message = 'Error message could not be retreived';
-		}
-		// translators: The error message.
-		$note = sprintf( __( 'This order was made as a fallback due to an error in the checkout (%s). Please verify the order with Walley.', 'collector-checkout-for-woocommerce' ), $error_message );
-		$order->add_order_note( $note );
-		$order->set_status( 'on-hold' );
-		$order->save();
-
-		$redirect_url = $order->get_checkout_order_received_url();
-		$return       = array( 'redirect_url' => $redirect_url );
 		wp_send_json_success( $return );
 	}
 
@@ -567,6 +365,25 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 			wp_send_json_error( 'Could not update Walley order.' );
 			wp_die();
 		}
+		wp_send_json_success();
+		wp_die();
+	}
+
+	/**
+	 * Logs messages from the JavaScript to the server log.
+	 *
+	 * @return void
+	 */
+	public static function walley_log_js() {
+		$nonce = isset( $_POST['nonce'] ) ? sanitize_key( $_POST['nonce'] ) : '';
+		if ( ! wp_verify_nonce( $nonce, 'walley_log_js' ) ) {
+			wp_send_json_error( 'bad_nonce' );
+			exit;
+		}
+		$posted_message = isset( $_POST['message'] ) ? sanitize_text_field( wp_unslash( $_POST['message'] ) ) : '';
+		$private_id     = WC()->session->get( 'collector_private_id' );
+		$message        = "Frontend JS $private_id: $posted_message";
+		CCO_WC()->logger::log( $message );
 		wp_send_json_success();
 		wp_die();
 	}

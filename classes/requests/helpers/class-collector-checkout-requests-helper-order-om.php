@@ -46,7 +46,10 @@ class Collector_Checkout_Requests_Helper_Order_Om {
 			}
 		}
 
-		self::rounding_fee( $order_lines, $order );
+		// Maybe add a rounding fee to Walley if needed.
+		if ( 'yes' === walley_add_rounding_order_line() ) {
+			self::rounding_fee( $order_lines, $order );
+		}
 		return $order_lines;
 	}
 
@@ -184,9 +187,16 @@ class Collector_Checkout_Requests_Helper_Order_Om {
 	 */
 	public static function get_order_line_shipping( $order_item, $order ) {
 
+		// Try to get shipping reference from delivery module data.
+		$shipping_reference_from_delivery_module_data = walley_get_shipping_reference_from_delivery_module_data( $order->get_id() );
+
+		// Try to get shipping reference from regular purchase (shipping in woo).
 		$collector_shipping_reference = get_post_meta( $order->get_id(), '_collector_shipping_reference', true );
+
 		if ( isset( $collector_shipping_reference ) && ! empty( $collector_shipping_reference ) ) {
 			$shipping_reference = $collector_shipping_reference;
+		} elseif ( ! empty( $shipping_reference_from_delivery_module_data ) ) {
+			$shipping_reference = $shipping_reference_from_delivery_module_data;
 		} else {
 			if ( null !== $order_item->get_instance_id() ) {
 				$shipping_reference = 'shipping|' . $order_item->get_method_id() . ':' . $order_item->get_instance_id();
@@ -281,5 +291,23 @@ class Collector_Checkout_Requests_Helper_Order_Om {
 			}
 		}
 		return 0;
+	}
+
+	/**
+	 * Gets the order lines for the order.
+	 *
+	 * @param int $order_id The WooCommerce order id.
+	 * @return array
+	 */
+	public static function get_order_lines_total_amount( $order_id ) {
+		$total_amount = 0;
+		$order_lines  = self::get_order_lines( $order_id );
+
+		foreach ( $order_lines as $order_line ) {
+			error_log( 'orderrad: ' . var_export( floatval( $order_line['UnitPrice'] ) * $order_line['Quantity'], true ) . '. Unit price: ' . $order_line['UnitPrice'] );
+			$total_amount += floatval( $order_line['UnitPrice'] ) * $order_line['Quantity'];
+
+		}
+		return self::format_number( $total_amount );
 	}
 }

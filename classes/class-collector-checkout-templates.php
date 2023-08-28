@@ -40,13 +40,12 @@ class Collector_Checkout_Templates {
 		$this->checkout_layout = ( isset( $cco_settings['checkout_layout'] ) ) ? $cco_settings['checkout_layout'] : 'one_column_checkout';
 
 		// Override the checkout template.
-		add_filter( 'wc_get_template', array( $this, 'override_template' ), 10, 2 );
+		add_filter( 'wc_get_template', array( $this, 'override_template' ), 999, 2 );
 
 		// Template hooks.
-		add_action( 'collector_wc_before_checkout_form', 'collector_wc_calculate_totals', 1 );
-
-		add_action( 'collector_wc_after_order_review', 'collector_wc_show_customer_order_notes', 10 );
 		add_action( 'collector_wc_after_order_review', 'collector_wc_show_another_gateway_button', 20 );
+		add_action( 'collector_wc_after_order_review', array( $this, 'add_extra_checkout_fields' ), 10 );
+
 		add_action( 'collector_wc_before_iframe', 'collector_wc_show_customer_type_switcher', 20 );
 		add_action( 'collector_wc_after_iframe', array( $this, 'add_wc_form' ), 10 );
 
@@ -99,6 +98,18 @@ class Collector_Checkout_Templates {
 	}
 
 	/**
+	 * Adds the extra checkout field div to the checkout page.
+	 */
+	public function add_extra_checkout_fields() {
+		do_action( 'collector_wc_before_extra_fields' );
+		?>
+		<div id="walley-extra-checkout-fields">
+		</div>
+		<?php
+		do_action( 'collector_wc_after_extra_fields' );
+	}
+
+	/**
 	 * Adds the WC form and other fields to the checkout page.
 	 *
 	 * @return void
@@ -108,19 +119,11 @@ class Collector_Checkout_Templates {
 		<div aria-hidden="true" id="collector-wc-form" style="position:absolute; top:0; left:-99999px;">
 			<?php do_action( 'woocommerce_checkout_billing' ); ?>
 			<?php do_action( 'woocommerce_checkout_shipping' ); ?>
-			<?php
-			$payment_successful = filter_input( INPUT_GET, 'payment_successful', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
-			if ( ! empty( $payment_successful ) ) {//phpcs:ignore
-				// On confirmation page - render woocommerce_checkout_payment() to get the woocommerce-process-checkout-nonce correct.
-				woocommerce_checkout_payment();
-			} else {
-				// On regular Collector checkout page - use our own woocommerce-process-checkout-nonce (so we don't render the checkout form submit button).
-				?>
-				<div id="collector-nonce-wrapper">
-					<?php wp_nonce_field( 'woocommerce-process_checkout', 'woocommerce-process-checkout-nonce' ); ?>
-				</div>
-				<input id="payment_method_collector_checkout" type="radio" class="input-radio" name="payment_method" value="collector_checkout" checked="checked" />
-			<?php }; ?>
+			<div id="collector-nonce-wrapper">
+				<?php wp_nonce_field( 'woocommerce-process_checkout', 'woocommerce-process-checkout-nonce' ); ?>
+				<?php wc_get_template( 'checkout/terms.php' ); ?>
+			</div>
+			<input id="payment_method_collector_checkout" type="radio" class="input-radio" name="payment_method" value="collector_checkout" checked="checked" />
 		</div>
 		<?php
 	}

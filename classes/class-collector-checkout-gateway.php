@@ -233,48 +233,38 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 	 */
 	public function process_payment( $order_id, $retry = false ) {
 
-		$order = wc_get_order( $order_id );
-		CCO_WC()->logger::log( 'Process payment triggered for order ID ' . $order_id . ' (order number ' . $order->get_order_number() . ').' );
-		$private_id    = get_post_meta( $order_id, '_collector_private_id', true );
 		$customer_type = WC()->session->get( 'collector_customer_type' );
+		$private_id    = WC()->session->get( 'collector_private_id' );
+		update_post_meta( $order_id, '_collector_customer_type', $customer_type );
+		update_post_meta( $order_id, '_collector_public_token', WC()->session->get( 'collector_public_token' ) );
+		update_post_meta( $order_id, '_collector_private_id', $private_id );
 
-		// Use new or old API.
-		if ( walley_use_new_api() ) {
-			$collector_order = CCO_WC()->api->get_walley_checkout(
-				array(
-					'private_id'    => $private_id,
-					'customer_type' => $customer_type,
-				)
-			);
-		} else {
-			$collector_order = ( new Collector_Checkout_Requests_Get_Checkout_Information( $private_id, $customer_type ) )->request();
-		}
-
-		// Make sure that we don't proceed with a duplicate order.
-		$order_ids = wc_collector_get_orders_by_private_id( $private_id );
-		if ( is_array( $order_ids ) && count( $order_ids ) > 1 ) {
-			// translators: 1. Private id. 2. Order ids.
-			$order->add_order_note( sprintf( __( 'Private ID %1$s found in multiple orders (%2$s). Setting the order to On hold.', 'collector-checkout-for-woocommerce' ), $private_id, wp_json_encode( $order_ids ) ) );
-			$order->update_status( 'on-hold' );
-
+		$walley_reference = $this->update_walley_reference( $order_id, $customer_type, $private_id );
+		if ( false === $walley_reference ) {
 			return array(
-				'result'   => 'success',
-				'redirect' => $this->get_return_url( $order ),
+				'result' => 'error',
 			);
 		}
 
-		// Maybe add invoice fee to order.
-		if ( 'DirectInvoice' === WC()->session->get( 'collector_payment_method' ) ) {
-			$product_id = $this->get_option( 'collector_invoice_fee' );
-			if ( $product_id ) {
-				wc_collector_add_invoice_fee_to_order( $order_id, $product_id );
-			}
+		$walley_order = $this->get_walley_order( $order_id, $customer_type, $private_id );
+
+		if ( is_wp_error( $walley_order ) ) {
+			return array(
+				'result' => 'error',
+			);
 		}
 
-		WC()->session->__unset( 'collector_customer_order_note' );
+		$walley_extra_fields = $this->save_walley_extra_fields( $order_id, $walley_order );
 
+		$walley_shipping = $this->save_walley_purchase_and_shipping_data( $order_id, $walley_order );
+
+		return array(
+			'result' => 'success',
+		);
+	}
+
+	public function update_walley_reference( $order_id, $customer_type, $private_id ) {
 		// Update the Collector Order with the Order number.
-		$customer_type = get_post_meta( $order_id, '_collector_customer_type', true );
 		if ( ! empty( $private_id ) && ! empty( $customer_type ) ) {
 
 			// Use new or old API.
@@ -286,80 +276,52 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 						'customer_type' => $customer_type,
 					)
 				);
+				if ( is_wp_error( $collector_order ) ) {
+					return false;
+				}
 			} else {
+				$order            = wc_get_order( $order_id );
 				$update_reference = new Collector_Checkout_Requests_Update_Reference( $order->get_order_number(), $private_id, $customer_type );
 				$update_reference->request();
 				CCO_WC()->logger::log( 'Update Collector order reference for order - ' . $order->get_order_number() );
+				if ( is_wp_error( $update_reference ) ) {
+					return false;
+				}
 			}
+			return true;
 		}
-
-		$this->process_collector_payment_in_order( $order_id );
-
-		// Let other plugins hook into this sequence.
-		do_action( 'walley_process_payment', $order_id, $collector_order );
-
-		CCO_WC()->logger::log( 'Process Collector Payment for private_id ' . $private_id . '. WC order ID ' . $order_id . '. Redirecting customer to ' . $this->get_return_url( $order ) );
-
-		return array(
-			'result'   => 'success',
-			'redirect' => $this->get_return_url( $order ),
-		);
+		return false;
 	}
 
-	/**
-	 * Processes the Collector Payment and sets post metas.
-	 *
-	 * @param string $order_id The WooCommerce order id.
-	 * @return void
-	 */
-	public function process_collector_payment_in_order( $order_id ) {
-
-		$order         = wc_get_order( $order_id );
-		$private_id    = get_post_meta( $order_id, '_collector_private_id', true );
-		$customer_type = get_post_meta( $order_id, '_collector_customer_type', true );
-
+	public function get_walley_order( $order_id, $customer_type, $private_id ) {
 		// Use new or old API.
 		if ( walley_use_new_api() ) {
-			$collector_order = CCO_WC()->api->get_walley_checkout(
+			$walley_order = CCO_WC()->api->get_walley_checkout(
 				array(
 					'private_id'    => $private_id,
 					'customer_type' => $customer_type,
 				)
 			);
 		} else {
-			$collector_order = new Collector_Checkout_Requests_Get_Checkout_Information( $private_id, $customer_type );
-			$collector_order = $collector_order->request();
+			$walley_order = new Collector_Checkout_Requests_Get_Checkout_Information( $private_id, $customer_type );
+			$walley_order = $walley_order->request();
 		}
-		$payment_status  = $collector_order['data']['purchase']['result'];
-		$payment_method  = $collector_order['data']['purchase']['paymentName'];
-		$payment_id      = $collector_order['data']['purchase']['purchaseIdentifier'];
-		$walley_order_id = $collector_order['data']['order']['orderId'];
+		return $walley_order;
+	}
 
-		update_post_meta( $order_id, '_collector_payment_method', $payment_method );
-		update_post_meta( $order_id, '_collector_payment_id', $payment_id );
-		update_post_meta( $order_id, '_collector_order_id', sanitize_key( $walley_order_id ) );
-		update_post_meta( $order_id, '_collector_original_order_total', $order->get_total() );
-		wc_collector_save_shipping_reference_to_order( $order_id, $collector_order );
-
-		// Save shipping data.
-		if ( isset( $collector_order['data']['shipping'] ) ) {
-			update_post_meta( $order_id, '_collector_delivery_module_data', wp_json_encode( $collector_order['data']['shipping'], JSON_UNESCAPED_UNICODE ) );
-			update_post_meta( $order_id, '_collector_delivery_module_reference', $collector_order['data']['shipping']['pendingShipment']['id'] );
-			WC()->session->__unset( 'collector_delivery_module_enabled' );
-			WC()->session->__unset( 'collector_delivery_module_data' );
-		}
+	public function save_walley_extra_fields( $order_id, $walley_order ) {
 
 		// Save customFields data.
-		if ( isset( $collector_order['data']['customFields'] ) ) {
+		if ( isset( $walley_order['data']['customFields'] ) ) {
 
 			// Save the entire customFields object as json in order.
 			if ( true === apply_filters( 'walley_save_custom_fields_raw_data', true ) ) {
-				update_post_meta( $order_id, '_collector_custom_fields', wp_json_encode( $collector_order['data']['customFields'] ) );
+				update_post_meta( $order_id, '_collector_custom_fields', wp_json_encode( $walley_order['data']['customFields'] ) );
 			}
 
 			// Save each individual custom field as id:value.
 			if ( true === apply_filters( 'walley_save_individual_custom_field', true ) ) {
-				foreach ( $collector_order['data']['customFields'] as $custom_field_group ) {
+				foreach ( $walley_order['data']['customFields'] as $custom_field_group ) {
 
 					foreach ( $custom_field_group['fields'] as $custom_field ) {
 
@@ -373,63 +335,40 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 				}
 			}
 		}
-
-		// Tie this order to a user if we have one.
-		if ( email_exists( $collector_order['data']['customer']['email'] ) ) {
-			$user    = get_user_by( 'email', $collector_order['data']['customer']['email'] );
-			$user_id = $user->ID;
-			update_post_meta( $order_id, '_customer_user', $user_id );
-		}
-
-		if ( ! cco_check_order_totals( $order, $collector_order ) ) {
-			update_post_meta( $order_id, '_transaction_id', $payment_id );
-		}
-
-		if ( ! $order->has_status( 'on-hold' ) ) {
-			if ( 'Preliminary' === $payment_status || 'Completed' === $payment_status ) {
-				$order->payment_complete( $payment_id );
-			} elseif ( 'Signing' === $payment_status ) {
-				$order->add_order_note( __( 'Order is waiting for electronic signing by customer. Payment ID: ', 'collector-checkout-for-woocommerce' ) . $payment_id );
-				update_post_meta( $order_id, '_transaction_id', $payment_id );
-				$order->update_status( 'on-hold' );
-			} else {
-				$order->add_order_note( __( 'Order is PENDING APPROVAL by Collector. Payment ID: ', 'collector-checkout-for-woocommerce' ) . $payment_id );
-				update_post_meta( $order_id, '_transaction_id', $payment_id );
-				$order->update_status( 'on-hold' );
-			}
-		}
-		// Translators: Collector Payment method.
-		$order->add_order_note( sprintf( __( 'Purchase via %s', 'collector-checkout-for-woocommerce' ), wc_collector_get_payment_method_name( $payment_method ) ) );
-
-		// Check if there where any empty fields, if so send mail.
-		if ( WC()->session->get( 'collector_empty_fields' ) ) {
-			$email   = get_option( 'admin_email' );
-			$subject = __( 'Order data was missing from Walley', 'collector-checkout-for-woocommerce' );
-			$message = '<p>' . __( 'The following fields had missing data from Walley, please verify the order with Walley.', 'collector-checkout-for-woocommerce' );
-			foreach ( WC()->session->get( 'collector_empty_fields' ) as $field ) {
-				$message = $message . '<br>' . $field;
-			}
-			$message = $message . '<br><a href="' . get_edit_post_link( $order_id ) . '">' . __( 'Link to the order', 'collector-checkout-for-woocommerce' ) . '</a></p>';
-			wp_mail( $email, $subject, $message );
-			WC()->session->__unset( 'collector_empty_fields' );
-		}
-		// Check if there is a org nr set, if so add post meta.
-		if ( WC()->session->get( 'collector_org_nr' ) ) {
-			$org_nr = WC()->session->get( 'collector_org_nr' );
-			update_post_meta( $order_id, '_collector_org_nr', $org_nr );
-			WC()->session->__unset( 'collector_org_nr' );
-		}
-
-		// Check if there is a invoice refernce set, if so add post meta.
-		if ( WC()->session->get( 'collector_invoice_reference' ) ) {
-			$invoice_reference = WC()->session->get( 'collector_invoice_reference' );
-			update_post_meta( $order_id, '_collector_invoice_reference', $invoice_reference );
-			WC()->session->__unset( 'collector_invoice_reference' );
-		}
-
-		// Remove database table row data.
-		remove_collector_db_row_data( $private_id );
 	}
+
+	public function save_walley_purchase_and_shipping_data( $order_id, $walley_order ) {
+		$order               = wc_get_order( $order_id );
+		$payment_status      = $walley_order['data']['purchase']['result'] ?? '';
+		$payment_method      = $walley_order['data']['purchase']['paymentName'] ?? '';
+		$payment_id          = $walley_order['data']['purchase']['purchaseIdentifier'] ?? '';
+		$walley_order_id     = $walley_order['data']['order']['orderId'] ?? '';
+		$organization_number = $walley_order['data']['businessCustomer']['organizationNumber'] ?? '';
+		$invoice_reference   = $walley_order['data']['businessCustomer']['invoiceReference'] ?? '';
+
+		update_post_meta( $order_id, '_collector_payment_method', $payment_method );
+		update_post_meta( $order_id, '_collector_payment_id', $payment_id );
+		update_post_meta( $order_id, '_collector_order_id', sanitize_key( $walley_order_id ) );
+		update_post_meta( $order_id, '_collector_original_order_total', $order->get_total() );
+
+		if ( ! empty( $organization_number ) ) {
+			update_post_meta( $order_id, '_collector_org_nr', sanitize_key( $organization_number ) );
+		}
+
+		if ( ! empty( $invoice_reference ) ) {
+			update_post_meta( $order_id, '_collector_invoice_reference', sanitize_key( $invoice_reference ) );
+		}
+
+		wc_collector_save_shipping_reference_to_order( $order_id, $walley_order );
+
+		// Save shipping data.
+		if ( isset( $walley_order['data']['shipping'] ) ) {
+			update_post_meta( $order_id, '_collector_delivery_module_data', wp_json_encode( $walley_order['data']['shipping'], JSON_UNESCAPED_UNICODE ) );
+			update_post_meta( $order_id, '_collector_delivery_module_reference', $walley_order['data']['shipping']['pendingShipment']['id'] );
+		}
+	}
+
+
 
 	/**
 	 * Delete the Collector stored sessions.

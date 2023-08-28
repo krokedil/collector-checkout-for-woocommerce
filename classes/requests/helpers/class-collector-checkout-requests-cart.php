@@ -56,8 +56,11 @@ class Collector_Checkout_Requests_Cart {
 			}
 		}
 
-		// Compare and fix differences in total amounts due to rounding.
-		self::rounding_fee( $items );
+		// Maybe add a rounding fee to Walley if needed.
+		if ( 'yes' === walley_add_rounding_order_line() ) {
+			// Compare and fix differences in total amounts due to rounding.
+			self::rounding_fee( $items );
+		}
 
 		// Check if we need to make any id/sku's unique (required by Collector).
 		$items = self::maybe_make_ids_unique( $items );
