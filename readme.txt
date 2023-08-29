@@ -2,11 +2,11 @@
 Contributors: collectorbank, krokedil, NiklasHogefjord
 Tags: ecommerce, e-commerce, woocommerce, collector, checkout, walley
 Requires at least: 5.0
-Tested up to: 6.2.2
-Requires PHP: 7.2
-Stable tag: 3.5.6
-WC requires at least: 5.0.0
-WC tested up to: 7.9.0
+Tested up to: 6.3
+Requires PHP: 7.3
+Stable tag: 4.0.0
+WC requires at least: 6.0.0
+WC tested up to: 8.0.2
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -39,13 +39,22 @@ For help setting up and configuring Walley Checkout for WooCommerce please refer
 
 
 == CHANGELOG ==
-= 2023.05.29    - version 3.5.6-beta =
-* Feature       - Plugin rewrite. Plugin now supports Walley's front end validation JS event. WooCommerce order is created (as a Pending order) when customer clicks purchase button in Walley Checkout.
+= 2023.08.29    - version 4.0.0 =
+* Feature       - Major plugin rewrite. Plugin now supports Walley's front end validation JS event. WooCommerce order is created (as a Pending order) when customer clicks purchase button in Walley Checkout.
 * Feature       - Add support for handling extra checkout fields in checkout.
+* Feature       - Adds support for manually trigger Activate and Cancel order via WooCommerce Order Actions.
+* Tweak         - Only send rounding order line to Walley if activated via settings. 
 * Tweak         - JS checkout file refactoring.
 * Tweak         - Adds js front end logging via ajax.
+* Tweak         - New API now uses update checkout (as one single request) instead of update cart, update fees and update metadata as separate requests.
+* Tweak         - Use walley_confirm function also for old api.
+* Tweak         - Force part capture order if order is of type shop_order_delivery (Partial Delivery for WooCommerce plugin).
+* Fix           - Saving customer phone and email correctly to Woo order for B2B with new API.
 * Fix           - Check Walley Checkout payment session status before trying to trigger update request to Walley.
 * Fix           - Update customer address correctly in Woo when walleyCheckoutCustomerUpdated event is triggered.
+* Fix           - Make sure to pass order object to update reference request for old api.
+* Fix           - Add correct shipping SKU in order management requests if using Walley Delivery module with nShift.
+* Fix           - Improvements in logger logic, to avoid potential PHP issue with some plugins.
 
 = 2023.05.31    - version 3.5.6 =
 * Fix           - Solve error with update order reference request that in some cases could happen in backup order creation process when using new Walley API.
