@@ -20,6 +20,7 @@ class Walley_Checkout_Request_Reauthorize_Order extends Walley_Checkout_Request_
 	public function __construct( $arguments ) {
 		parent::__construct( $arguments );
 		$this->log_title = 'Reauthorize order';
+		$this->order_id  = $this->arguments['order_id'];
 	}
 
 	/**
@@ -28,7 +29,7 @@ class Walley_Checkout_Request_Reauthorize_Order extends Walley_Checkout_Request_
 	 * @return string
 	 */
 	protected function get_request_url() {
-		$walley_id = get_post_meta( $this->arguments['order_id'], '_collector_order_id', true );
+		$walley_id = get_post_meta( $this->order_id, '_collector_order_id', true );
 		return $this->get_api_url_base() . "/manage/orders/{$walley_id}/reauthorize";
 	}
 
@@ -38,14 +39,13 @@ class Walley_Checkout_Request_Reauthorize_Order extends Walley_Checkout_Request_
 	 * @return array
 	 */
 	protected function get_body() {
-		$order_id = $this->arguments['order_id'];
-		$order    = wc_get_order( $order_id );
-		$body     = array(
-			'amount' => Collector_Checkout_Requests_Helper_Order_Om::get_order_lines_total_amount( $order_id ),
-			'items'  => Collector_Checkout_Requests_Helper_Order_Om::get_order_lines( $order_id ),
+		$order = wc_get_order( $this->order_id );
+		$body  = array(
+			'amount' => Collector_Checkout_Requests_Helper_Order_Om::get_order_lines_total_amount( $this->order_id ),
+			'items'  => Collector_Checkout_Requests_Helper_Order_Om::get_order_lines( $this->order_id ),
 		);
 
-		return apply_filters( 'coc_order_reauthorize_args', $body, $this->arguments['order_id'] );
+		return apply_filters( 'coc_order_reauthorize_args', $body, $this->order_id );
 	}
 
 	/**
