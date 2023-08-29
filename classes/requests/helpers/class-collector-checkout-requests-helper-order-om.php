@@ -304,7 +304,6 @@ class Collector_Checkout_Requests_Helper_Order_Om {
 		$order_lines  = self::get_order_lines( $order_id );
 
 		foreach ( $order_lines as $order_line ) {
-			error_log( 'orderrad: ' . var_export( floatval( $order_line['UnitPrice'] ) * $order_line['Quantity'], true ) . '. Unit price: ' . $order_line['UnitPrice'] );
 			$total_amount += floatval( $order_line['UnitPrice'] ) * $order_line['Quantity'];
 
 		}
