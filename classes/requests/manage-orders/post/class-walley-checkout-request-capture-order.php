@@ -1,6 +1,6 @@
 <?php
 /**
- * Class for the request to capoture an order.
+ * Class for the request to capture an order.
  *
  * @package Collector_Checkout/Classes/Requests/POST
  */

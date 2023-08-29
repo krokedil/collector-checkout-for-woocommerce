@@ -116,7 +116,7 @@ class Collector_Checkout_Requests_Helper_Order_Om {
 	 * Gets the formatted order line.
 	 *
 	 * @param WC_Order_Item_Product $order_item The WooCommerce order line item.
-	 * * @param object $order The WooCommerce order.
+	 * @param object                $order The WooCommerce order.
 	 * @return array
 	 */
 	public static function get_order_line_items( $order_item, $order ) {
@@ -141,6 +141,7 @@ class Collector_Checkout_Requests_Helper_Order_Om {
 	 * Gets the formatted order line fees.
 	 *
 	 * @param WC_Order_Item_Fee $order_fee The order item fee.
+	 * @param object            $order The WooCommerce order.
 	 * @return array
 	 */
 	public static function get_order_line_fees( $order_fee, $order ) {

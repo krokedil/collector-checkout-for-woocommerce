@@ -182,7 +182,7 @@ class Walley_Checkout_API {
 	 *
 	 * @param int    $order_id The WooCommerce order id.
 	 * @param string $amount The refund amount.
-	 * @param string $reason The refund rason.
+	 * @param string $reason The refund reason.
 	 * @return array|WP_Error
 	 */
 	public function refund_walley_order( $order_id, $amount = null, $reason = '' ) {
@@ -219,7 +219,7 @@ class Walley_Checkout_API {
 	 *
 	 * @param int    $order_id The WooCommerce order id.
 	 * @param string $amount The refund amount.
-	 * @param string $reason The refund rason.
+	 * @param string $reason The refund reason.
 	 * @return array|WP_Error
 	 */
 	public function refund_walley_order_by_amount( $order_id, $amount = null, $reason = '' ) {
