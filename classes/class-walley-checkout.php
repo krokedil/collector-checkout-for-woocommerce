@@ -204,6 +204,7 @@ class Walley_Checkout {
 
 			// New API.
 			if ( walley_use_new_api() ) {
+				// In new API this is now handled via the update checkout endpoint (that takes care of update cart, fees & metadata).
 				return;
 			}
 
@@ -244,6 +245,7 @@ class Walley_Checkout {
 
 		// New API.
 		if ( walley_use_new_api() ) {
+			// In new API this is now handled via the update checkout endpoint (that takes care of update cart, fees & metadata).
 			return;
 		}
 
