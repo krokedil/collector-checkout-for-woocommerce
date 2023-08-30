@@ -39,7 +39,7 @@ For help setting up and configuring Walley Checkout for WooCommerce please refer
 
 
 == CHANGELOG ==
-= 2023.08.29    - version 4.0.0 =
+= 2023.08.30    - version 4.0.0 =
 * Feature       - Major plugin rewrite. Plugin now supports Walley's front end validation JS event. WooCommerce order is created (as a Pending order) when customer clicks purchase button in Walley Checkout.
 * Feature       - Add support for handling extra checkout fields in checkout.
 * Feature       - Adds support for manually trigger Activate and Cancel order via WooCommerce Order Actions.
