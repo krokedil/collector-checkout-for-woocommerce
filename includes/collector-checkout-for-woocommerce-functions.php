@@ -13,11 +13,6 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 function collector_wc_show_snippet() {
 
-	// Don't display the checkout on confirmation page.
-	if ( is_collector_confirmation() ) {
-		return;
-	}
-
 	if ( 'NOK' === get_woocommerce_currency() ) {
 		$locale = 'nb-NO';
 	} elseif ( 'DKK' === get_woocommerce_currency() ) {
@@ -68,16 +63,6 @@ function collector_wc_show_snippet() {
 			WC()->session->set( 'collector_public_token', $collector_order['data']['publicToken'] );
 			WC()->session->set( 'collector_private_id', $collector_order['data']['privateId'] );
 			WC()->session->set( 'collector_currency', get_woocommerce_currency() );
-
-			$collector_checkout_sessions = new Collector_Checkout_Sessions();
-			$collector_data              = array(
-				'session_id' => $collector_checkout_sessions->get_session_id(),
-			);
-			$args                        = array(
-				'private_id' => $collector_order['data']['privateId'],
-				'data'       => $collector_data,
-			);
-			Collector_Checkout_DB::create_data_entry( $args );
 
 			$public_token = $collector_order['data']['publicToken'];
 			$output       = array(
@@ -154,15 +139,6 @@ function wc_collector_unset_sessions() {
 }
 
 /**
- * Calculates cart totals.
- */
-function collector_wc_calculate_totals() {
-	WC()->cart->calculate_fees();
-	WC()->cart->calculate_shipping();
-	WC()->cart->calculate_totals();
-}
-
-/**
  * Shows select another payment method button in Collector Checkout page.
  */
 function collector_wc_show_another_gateway_button() {
@@ -186,16 +162,6 @@ function collector_wc_show_customer_type_switcher() {
 		<li class="tab-link" data-tab="b2b"><?php esc_html_e( 'Company', 'collector-checkout-for-woocommerce' ); ?></li>
 	</ul>
 		<?php
-	}
-}
-
-/**
- * Shows Customer order notes in Collector Checkout page.
- */
-function collector_wc_show_customer_order_notes() {
-	if ( apply_filters( 'woocommerce_enable_order_notes_field', true ) ) {
-		$form_field = WC()->checkout()->get_checkout_fields( 'order' );
-		woocommerce_form_field( 'order_comments', $form_field['order_comments'] );
 	}
 }
 
@@ -249,32 +215,6 @@ function wc_collector_add_invoice_fee_to_order( $order_id, $product_id ) {
 		}
 		$result = $order->calculate_totals( true );
 	}
-	return $result;
-}
-
-/**
- * Checking if it is Collector confirmation page.
- *
- * @return boolean
- */
-function is_collector_confirmation() {
-	$payment_successful = filter_input( INPUT_GET, 'payment_successful', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
-	$public_token       = filter_input( INPUT_GET, 'payment_successful', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
-	if ( '1' === $payment_successful && ! empty( $public_token ) ) {
-		return true;
-	}
-	return false;
-}
-
-
-/**
- * Get Collector data from Database.
- *
- * @param string $private_id Collector private id.
- * @return object|null
- */
-function get_collector_data_from_db( $private_id ) {
-	$result = Collector_Checkout_DB::get_data_entry( $private_id );
 	return $result;
 }
 
@@ -586,7 +526,7 @@ function wc_collector_confirm_order( $order_id, $private_id = null ) {
  * @return void
  */
 function wc_collector_save_shipping_reference_to_order( $order_id, $collector_order ) {
-	$order_items = $collector_order['data']['order']['items'];
+	$order_items = $collector_order['data']['order']['items'] ?? array();
 	foreach ( $order_items as $item ) {
 		if ( strpos( $item['id'], 'shipping|' ) !== false ) {
 			update_post_meta( $order_id, '_collector_shipping_reference', $item['id'] );
@@ -857,4 +797,224 @@ function walley_save_order_data_to_transient( $walley_order ) {
 		'currency'     => $walley_order['currency'] ?? '',
 	);
 	set_transient( "walley_order_status_{$walley_order['order_id']}", $walley_order_status_data, 30 );
+}
+
+/**
+ * Finds an Order ID based on a Walley public token.
+ *
+ * @param string $public_token Walley public token.
+ * @return int The ID of an order, or 0 if the order could not be found.
+ */
+function walley_get_order_id_by_public_token( $public_token ) {
+	$query_args = array(
+		'fields'      => 'ids',
+		'post_type'   => wc_get_order_types(),
+		'post_status' => array_keys( wc_get_order_statuses() ),
+		'meta_key'    => '_collector_public_token', // phpcs:ignore WordPress.DB.SlowDBQuery -- Slow DB Query is ok here, we need to limit to our meta key.
+		'meta_value'  => sanitize_text_field( wp_unslash( $public_token ) ), // phpcs:ignore WordPress.DB.SlowDBQuery -- Slow DB Query is ok here, we need to limit to our meta key.
+		'date_query'  => array(
+			array(
+				'after' => '120 day ago',
+			),
+		),
+	);
+
+	$orders = get_posts( $query_args );
+
+	if ( $orders ) {
+		$order_id = $orders[0];
+	} else {
+		$order_id = 0;
+	}
+
+	return $order_id;
+}
+
+/**
+ * Confirm order
+ *
+ * @param string $order_id WC order id.
+ * @param string $private_id Collector session id saved as _collector_private_id ID in WC order.
+ */
+function walley_confirm_order( $order_id, $private_id = null ) {
+	$order = wc_get_order( $order_id );
+
+	// Check if the order has been confirmed already.
+	if ( ! empty( $order->get_date_paid() ) ) {
+		return false;
+	}
+
+	if ( empty( $private_id ) ) {
+		$private_id = get_post_meta( $order_id, '_collector_private_id', true );
+	}
+
+	$customer_type = get_post_meta( $order_id, '_collector_customer_type', true );
+	if ( empty( $customer_type ) ) {
+		$customer_type = 'b2c';
+	}
+
+	// Use new or old API.
+	if ( walley_use_new_api() ) {
+		$collector_order = CCO_WC()->api->get_walley_checkout(
+			array(
+				'private_id'    => $private_id,
+				'customer_type' => $customer_type,
+			)
+		);
+	} else {
+		$response        = new Collector_Checkout_Requests_Get_Checkout_Information( $private_id, $customer_type, $order->get_currency() );
+		$collector_order = $response->request();
+	}
+
+	if ( is_wp_error( $collector_order ) ) {
+		$order->add_order_note( __( 'Could not retreive Walley order during walley_confirm_order function.', 'collector-checkout-for-woocommerce' ) );
+		return false;
+	}
+
+	$payment_status  = $collector_order['data']['purchase']['result'];
+	$payment_method  = $collector_order['data']['purchase']['paymentName'];
+	$payment_id      = $collector_order['data']['purchase']['purchaseIdentifier'];
+	$walley_order_id = $collector_order['data']['order']['orderId'];
+
+	// Check if we need to update reference in collectors system.
+	if ( empty( $collector_order['data']['reference'] ) ) {
+
+		// Use new or old API.
+		if ( walley_use_new_api() ) {
+			$update_reference = CCO_WC()->api->set_order_reference_in_walley(
+				array(
+					'order_id'      => $order_id,
+					'private_id'    => $private_id,
+					'customer_type' => $customer_type,
+				)
+			);
+		} else {
+			$update_reference = new Collector_Checkout_Requests_Update_Reference( $order->get_order_number(), $private_id, $customer_type );
+			$update_reference->request();
+			CCO_WC()->logger::log( 'Update Collector order reference for order - ' . $order->get_order_number() );
+		}
+	}
+
+	// Maybe add invoice fee to order.
+	if ( 'DirectInvoice' === $payment_method ) {
+		$collector_settings = get_option( 'woocommerce_collector_checkout_settings' );
+		$product_id         = $collector_settings['collector_invoice_fee'];
+		if ( $product_id ) {
+			wc_collector_add_invoice_fee_to_order( $order_id, $product_id );
+		}
+	}
+
+	update_post_meta( $order_id, '_collector_payment_method', $payment_method );
+	update_post_meta( $order_id, '_collector_payment_id', $payment_id );
+	update_post_meta( $order_id, '_collector_order_id', sanitize_key( $walley_order_id ) );
+
+	wc_collector_save_shipping_reference_to_order( $order_id, $collector_order );
+
+	// Save shipping data.
+	if ( isset( $collector_order['data']['shipping'] ) ) {
+		update_post_meta( $order_id, '_collector_delivery_module_data', wp_json_encode( $collector_order['data']['shipping'], JSON_UNESCAPED_UNICODE ) );
+		update_post_meta( $order_id, '_collector_delivery_module_reference', $collector_order['data']['shipping']['pendingShipment']['id'] );
+	}
+
+	// Tie this order to a user if we have one.
+	if ( email_exists( $collector_order['data']['customer']['email'] ) ) {
+		$user    = get_user_by( 'email', $collector_order['data']['customer']['email'] );
+		$user_id = $user->ID;
+		update_post_meta( $order_id, '_customer_user', $user_id );
+	}
+
+	if ( 'Preliminary' === $payment_status || 'Completed' === $payment_status ) {
+		$order->payment_complete( $payment_id );
+	} elseif ( 'Signing' === $payment_status ) {
+		$order->add_order_note( __( 'Order is waiting for electronic signing by customer. Payment ID: ', 'collector-checkout-for-woocommerce' ) . $payment_id );
+		update_post_meta( $order_id, '_transaction_id', $payment_id );
+		$order->update_status( 'on-hold' );
+	} else {
+		$order->add_order_note( __( 'Order is PENDING APPROVAL by Collector. Payment ID: ', 'collector-checkout-for-woocommerce' ) . $payment_id );
+		update_post_meta( $order_id, '_transaction_id', $payment_id );
+		$order->update_status( 'on-hold' );
+	}
+
+	// Translators: Collector Payment method.
+	$order->add_order_note( sprintf( __( 'Purchase via %s', 'collector-checkout-for-woocommerce' ), wc_collector_get_payment_method_name( $payment_method ) ) );
+	return true;
+}
+
+/**
+ * Get current Walley purchase status.
+ *
+ * @param array $walley_order the returned Walley order data.
+ * @return string
+ */
+function get_walley_purchase_status( $walley_order ) {
+	$purchase_status = $walley_order['data']['status'] ?? '';
+	return $purchase_status;
+}
+
+/**
+ * Returns approved Walley payment statuses where it is ok to send update requests.
+ *
+ * @return array Approved payment steps.
+ */
+function walley_payment_status_approved_for_update_request() {
+	return array(
+		'Initialized',
+		'CustomerIdentified',
+	);
+}
+
+/**
+ * Should we add a rounding order line to Walley or not (if needed).
+ *
+ * @return string
+ */
+function walley_add_rounding_order_line() {
+	$collector_settings      = get_option( 'woocommerce_collector_checkout_settings' );
+	$add_rounding_order_line = $collector_settings['add_rounding_order_line'] ?? '';
+	return $add_rounding_order_line;
+}
+
+/**
+ * Return delivery module shipping reference if it exist in order.
+ *
+ * @param int $order_id WooCommerce order ID.
+ *
+ * @return string
+ */
+function walley_get_shipping_reference_from_delivery_module_data( $order_id ) {
+	$collector_delivery_data = json_decode( get_post_meta( $order_id, '_collector_delivery_module_data', true ), true ) ?? array();
+	$shipping_reference      = $collector_delivery_data['shippingFeeId'] ?? '';
+	return $shipping_reference;
+}
+
+/**
+ * Maybe adds the free shipping tag.
+ *
+ * @return bool
+ */
+function walley_cart_contain_free_shipping_coupon() {
+	foreach ( WC()->cart->get_applied_coupons() as $coupon_code ) {
+		$coupon = new WC_Coupon( $coupon_code );
+		if ( $coupon->get_free_shipping() ) {
+			return true;
+		}
+	}
+	return false;
+}
+
+/**
+ * Get cart shipping classes.
+ *
+ * @return array
+ */
+function walley_get_cart_shipping_classes() {
+	$shipping_classes = array();
+	// Check all cart items.
+	foreach ( WC()->cart->get_cart() as $cart_item ) {
+
+		if ( ! empty( $cart_item['data']->get_shipping_class() ) ) {
+			$shipping_classes[ $cart_item['data']->get_shipping_class() ] = true;
+		}
+	}
+	return $shipping_classes;
 }

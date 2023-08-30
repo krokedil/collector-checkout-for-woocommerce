@@ -25,6 +25,7 @@ class Walley_Checkout {
 
 	/**
 	 * Update the shipping method in WooCommerce based on what Walley has sent us.
+	 * Also update customer in Woo with the customer address data received from Walley (if returned).
 	 *
 	 * @return void
 	 */
@@ -35,11 +36,6 @@ class Walley_Checkout {
 		}
 
 		if ( 'collector_checkout' !== WC()->session->get( 'chosen_payment_method' ) ) {
-			return;
-		}
-
-		// If Delivery module is not used for the currency/country, return.
-		if ( 'yes' !== is_collector_delivery_module( get_woocommerce_currency() ) ) {
 			return;
 		}
 
@@ -58,6 +54,7 @@ class Walley_Checkout {
 		if ( empty( $private_id ) ) {
 			return;
 		}
+
 		$customer_type = WC()->session->get( 'collector_customer_type' );
 		if ( empty( $customer_type ) ) {
 			return;
@@ -65,22 +62,24 @@ class Walley_Checkout {
 
 		// Use new or old API.
 		if ( walley_use_new_api() ) {
-			$collector_order = CCO_WC()->api->get_walley_checkout(
+			$this->collector_order = CCO_WC()->api->get_walley_checkout(
 				array(
 					'private_id'    => $private_id,
 					'customer_type' => $customer_type,
 				)
 			);
 		} else {
-			$collector_order = new Collector_Checkout_Requests_Get_Checkout_Information( $private_id, $customer_type );
-			$collector_order = $collector_order->request();
+			$this->collector_order = new Collector_Checkout_Requests_Get_Checkout_Information( $private_id, $customer_type );
+			$this->collector_order = $this->collector_order->request();
 		}
 
-		if ( is_wp_error( $collector_order ) ) {
+		if ( is_wp_error( $this->collector_order ) ) {
 			return;
 		}
 
-		if ( isset( $collector_order['data']['shipping'] ) ) {
+		$this->update_customer_in_woo( $this->collector_order );
+
+		if ( isset( $this->collector_order['data']['shipping'] ) ) {
 
 			/*
 			@todo:
@@ -89,7 +88,7 @@ class Walley_Checkout {
 				$shipping_data = $shipping_data[0];
 			}
 			*/
-			$shipping_data           = coc_get_shipping_data( $collector_order );
+			$shipping_data           = coc_get_shipping_data( $this->collector_order );
 			$chosen_shipping_methods = array( 'collector_delivery_module' );
 			WC()->session->set( 'collector_delivery_module_data', $shipping_data );
 			WC()->session->set( 'collector_delivery_module_enabled', true );
@@ -113,7 +112,7 @@ class Walley_Checkout {
 	}
 
 	/**
-	 * Update the Klarna order after calculations from WooCommerce has run.
+	 * Update the Walley order after calculations from WooCommerce has run.
 	 *
 	 * @return void
 	 */
@@ -140,11 +139,42 @@ class Walley_Checkout {
 
 		$private_id = WC()->session->get( 'collector_private_id' );
 		if ( empty( $private_id ) ) {
+			CCO_WC()->logger::log( 'Walley private id is missing in update Walley order function.' );
 			return walley_print_error_message( new WP_Error( 'error', __( 'Missing Walley private id. Possible API error', 'collector-checkout-for-woocommerce' ) ) );
 		}
 
 		$customer_type = WC()->session->get( 'collector_customer_type' );
 		if ( empty( $customer_type ) ) {
+			CCO_WC()->logger::log( 'Walley customer type is missing in update Walley order function.' );
+			return;
+		}
+
+		// Get Walley order. We should already have it from the update_shipping_method function. Otherwise try to get it again.
+		if ( empty( $this->collector_order ) ) {
+			// Use new or old API.
+			if ( walley_use_new_api() ) {
+				$this->collector_order = CCO_WC()->api->get_walley_checkout(
+					array(
+						'private_id'    => $private_id,
+						'customer_type' => $customer_type,
+					)
+				);
+			} else {
+				$this->collector_order = new Collector_Checkout_Requests_Get_Checkout_Information( $private_id, $customer_type );
+				$this->collector_order = $this->collector_order->request();
+			}
+		}
+
+		if ( is_wp_error( $this->collector_order ) ) {
+			CCO_WC()->logger::log( 'Walley GET order request failed in update Walley order function.' );
+			return;
+		}
+
+		$walley_status = get_walley_purchase_status( $this->collector_order );
+
+		// Make sure that payment status is ok.
+		if ( ! in_array( $walley_status, walley_payment_status_approved_for_update_request(), true ) ) {
+			CCO_WC()->logger::log( sprintf( 'Aborting Walley update function since Walley private id %s is in status %s.', $private_id, $walley_status ) );
 			return;
 		}
 
@@ -153,18 +183,6 @@ class Walley_Checkout {
 		self::maybe_update_fees( $private_id, $customer_type );
 
 		self::maybe_update_cart( $private_id, $customer_type );
-
-		// Update database session id.
-		$collector_checkout_sessions = new Collector_Checkout_Sessions();
-		$collector_data              = array(
-			'session_id' => $collector_checkout_sessions->get_session_id(),
-		);
-		$args                        = array(
-			'private_id' => WC()->session->get( 'collector_private_id' ),
-			'data'       => $collector_data,
-		);
-
-		Collector_Checkout_DB::update_data( $args );
 
 		// If cart doesn't need payment anymore - reload the checkout page.
 		if ( ! WC()->cart->needs_payment() ) {
@@ -184,19 +202,15 @@ class Walley_Checkout {
 		$metadata = apply_filters( 'coc_update_cart_metadata', array() );
 		if ( ! empty( $metadata ) ) {
 
-			// Use new or old API.
+			// New API.
 			if ( walley_use_new_api() ) {
-				$collecor_order_metadata = CCO_WC()->api->update_walley_metadata(
-					array(
-						'private_id'    => $private_id,
-						'customer_type' => $customer_type,
-						'metadata'      => $metadata,
-					)
-				);
-			} else {
-				$update_metadata         = new Collector_Checkout_Requests_Update_Metadata( $private_id, $customer_type, $metadata );
-				$collecor_order_metadata = $update_metadata->request();
+				// In new API this is now handled via the update checkout endpoint (that takes care of update cart, fees & metadata).
+				return;
 			}
+
+			// Old API.
+			$update_metadata         = new Collector_Checkout_Requests_Update_Metadata( $private_id, $customer_type, $metadata );
+			$collecor_order_metadata = $update_metadata->request();
 
 			// Check that everything went alright.
 			if ( is_wp_error( $collecor_order_metadata ) ) {
@@ -228,24 +242,16 @@ class Walley_Checkout {
 	 * @return void
 	 */
 	public static function maybe_update_fees( $private_id, $customer_type ) {
-		// Use new or old API.
+
+		// New API.
 		if ( walley_use_new_api() ) {
-
-			// If Walley delivery module is used and there is no invoice fee - bail.
-			if ( empty( Walley_Checkout_Requests_Fees_Helper::fees() ) ) {
-				return;
-			}
-
-			$collector_order_fee = CCO_WC()->api->update_walley_fees(
-				array(
-					'private_id'    => $private_id,
-					'customer_type' => $customer_type,
-				)
-			);
-		} else {
-			$update_fees         = new Collector_Checkout_Requests_Update_Fees( $private_id, $customer_type );
-			$collector_order_fee = $update_fees->request();
+			// In new API this is now handled via the update checkout endpoint (that takes care of update cart, fees & metadata).
+			return;
 		}
+
+		// Old API.
+		$update_fees         = new Collector_Checkout_Requests_Update_Fees( $private_id, $customer_type );
+		$collector_order_fee = $update_fees->request();
 
 		if ( is_checkout() ) {
 			$cart_item_total = Collector_Checkout_Requests_Cart::cart();
@@ -293,14 +299,17 @@ class Walley_Checkout {
 	public static function maybe_update_cart( $private_id, $customer_type ) {
 
 		// Use new or old API.
+
 		if ( walley_use_new_api() ) {
-			$collector_order_cart = CCO_WC()->api->update_walley_cart(
+			// New API - update entire checkout.
+			$collector_order_cart = CCO_WC()->api->update_walley_checkout(
 				array(
 					'private_id'    => $private_id,
 					'customer_type' => $customer_type,
 				)
 			);
 		} else {
+			// Old API update the cart.
 			$update_cart          = new Collector_Checkout_Requests_Update_Cart( $private_id, $customer_type );
 			$collector_order_cart = $update_cart->request();
 		}
@@ -336,4 +345,53 @@ class Walley_Checkout {
 		}
 
 	}
+
+	/**
+	 * Update WC customer with received address data.
+	 *
+	 * @param array $collector_order Walley order.
+	 * @return void
+	 */
+	public function update_customer_in_woo( $collector_order ) {
+
+		$customer_address = Walley_Checkout_Session::get_customer_address( $collector_order );
+		$customer_updated = false;
+
+		// Save postcode if returned.
+		if ( ! empty( $customer_address['billing_postcode'] ) ) {
+			WC()->customer->set_props(
+				array(
+					'shipping_postcode' => $customer_address['shipping_postcode'],
+					'billing_postcode'  => $customer_address['billing_postcode'],
+				)
+			);
+			$customer_updated = true;
+		}
+
+		// Save country if returned.
+		if ( ! empty( $customer_address['billing_country'] ) ) {
+			WC()->customer->set_props(
+				array(
+					'shipping_country' => $customer_address['shipping_country'],
+					'billing_country'  => $customer_address['billing_country'],
+				)
+			);
+			$customer_updated = true;
+		}
+
+		// Save email if returned.
+		if ( ! empty( $customer_address['billing_email'] ) ) {
+			WC()->customer->set_props(
+				array(
+					'billing_email' => $customer_address['billing_email'],
+				)
+			);
+			$customer_updated = true;
+		}
+
+		if ( $customer_updated ) {
+			WC()->customer->save();
+		}
+	}
+
 } new Walley_Checkout();

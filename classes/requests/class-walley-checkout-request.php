@@ -203,7 +203,7 @@ abstract class Walley_Checkout_Request {
 		$code   = wp_remote_retrieve_response_code( $response );
 
 		$body     = json_decode( $response['body'], true );
-		$order_id = $body['paymentId'] ?? $body['payment']['paymentId'] ?? null;
+		$order_id = $this->private_id ?? $this->order_id ?? null;
 		$log      = Collector_Checkout_Logger::format_log( $order_id, $method, $title, $request_args, $request_url, $response, $code );
 		Collector_Checkout_Logger::log( $log );
 	}
@@ -275,9 +275,8 @@ abstract class Walley_Checkout_Request {
 				$this->delivery_module = isset( $this->settings['collector_delivery_module_se'] ) ? $this->settings['collector_delivery_module_se'] : 'no';
 				break;
 		}
-		$this->country_code                 = $country_code;
-		$this->terms_page                   = esc_url( get_permalink( wc_get_page_id( 'terms' ) ) );
-		$this->activate_validation_callback = isset( $this->settings['activate_validation_callback'] ) ? $this->settings['activate_validation_callback'] : 'no';
+		$this->country_code = $country_code;
+		$this->terms_page   = esc_url( get_permalink( wc_get_page_id( 'terms' ) ) );
 	}
 
 	/**

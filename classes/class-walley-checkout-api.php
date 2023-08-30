@@ -41,6 +41,18 @@ class Walley_Checkout_API {
 	}
 
 	/**
+	 * Update Walley checkout.
+	 *
+	 * @param array $args Data passed to init request.
+	 * @return array|WP_Error
+	 */
+	public function update_walley_checkout( $args ) {
+		$request  = new Walley_Checkout_Request_Update_Checkout( $args );
+		$response = $request->request();
+		return $this->check_for_api_error( $response );
+	}
+
+	/**
 	 * Update Walley checkout cart.
 	 *
 	 * @param array $args Data passed to init request.
@@ -170,7 +182,7 @@ class Walley_Checkout_API {
 	 *
 	 * @param int    $order_id The WooCommerce order id.
 	 * @param string $amount The refund amount.
-	 * @param string $reason The refund rason.
+	 * @param string $reason The refund reason.
 	 * @return array|WP_Error
 	 */
 	public function refund_walley_order( $order_id, $amount = null, $reason = '' ) {
@@ -207,7 +219,7 @@ class Walley_Checkout_API {
 	 *
 	 * @param int    $order_id The WooCommerce order id.
 	 * @param string $amount The refund amount.
-	 * @param string $reason The refund rason.
+	 * @param string $reason The refund reason.
 	 * @return array|WP_Error
 	 */
 	public function refund_walley_order_by_amount( $order_id, $amount = null, $reason = '' ) {

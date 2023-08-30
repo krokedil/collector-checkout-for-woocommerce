@@ -20,6 +20,7 @@ class Walley_Checkout_Request_Refund_Order_By_Amount extends Walley_Checkout_Req
 	public function __construct( $arguments ) {
 		parent::__construct( $arguments );
 		$this->log_title = 'Refund order by amount';
+		$this->order_id  = $this->arguments['order_id'];
 	}
 
 	/**
@@ -28,7 +29,7 @@ class Walley_Checkout_Request_Refund_Order_By_Amount extends Walley_Checkout_Req
 	 * @return string
 	 */
 	protected function get_request_url() {
-		$walley_id = get_post_meta( $this->arguments['order_id'], '_collector_order_id', true );
+		$walley_id = get_post_meta( $this->order_id, '_collector_order_id', true );
 		return $this->get_api_url_base() . "/manage/orders/{$walley_id}/refund";
 	}
 
@@ -46,6 +47,6 @@ class Walley_Checkout_Request_Refund_Order_By_Amount extends Walley_Checkout_Req
 			'actionReference' => strval( $this->arguments['refund_order_id'] ),
 		);
 
-		return apply_filters( 'coc_order_refund_by_amount_args', $body, $this->arguments['order_id'], $this->arguments['refund_order_id'] );
+		return apply_filters( 'coc_order_refund_by_amount_args', $body, $this->order_id, $this->arguments['refund_order_id'] );
 	}
 }

@@ -20,6 +20,7 @@ class Walley_Checkout_Request_Get_Order extends Walley_Checkout_Request_Get {
 	public function __construct( $arguments ) {
 		parent::__construct( $arguments );
 		$this->log_title = 'Get order';
+		$this->order_id  = $this->arguments['order_id'] ?? '';
 	}
 
 	/**

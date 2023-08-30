@@ -215,14 +215,6 @@ $settings = array(
 		'default'     => '',
 		'desc_tip'    => true,
 	),
-	'activate_validation_callback'    => array(
-		'title'       => __( 'Validation Callback', 'collector-checkout-for-woocommerce' ),
-		'type'        => 'checkbox',
-		'label'       => __( 'Tick the checkbox to activate Walley Validation Callback.', 'collector-checkout-for-woocommerce' ),
-		/* Translators: link to docs */
-		'description' => sprintf( __( 'Triggered by Collector when customer clicks the Complete purchase button in Walley Checkout. <a href="%s" target="_blank">Read more about validation callback.</a>', 'collector-checkout-for-woocommerce' ), 'https://docs.krokedil.com/walley-checkout-for-woocommerce/get-started/introduction/' ),
-		'default'     => 'yes',
-	),
 	'requires_electronic_id_fields'   => array(
 		'title'       => __( 'Electronic ID fields', 'collector-checkout-for-woocommerce' ),
 		'type'        => 'checkbox',
@@ -241,17 +233,23 @@ $settings = array(
 		'label'   => __( 'Enable WooCommerce to manage orders in Walley backend (when order status changes to Cancelled and Completed in WooCommerce).', 'collector-checkout-for-woocommerce' ),
 		'default' => 'yes',
 	),
+	'display_invoice_no'              => array(
+		'title'   => __( 'Invoice number on order page', 'collector-checkout-for-woocommerce' ),
+		'type'    => 'checkbox',
+		'label'   => __( 'Display Walley Invoice Number after WooCommerce Order Number on WooCommerce order page (-> WooCommerce -> Orders).', 'collector-checkout-for-woocommerce' ),
+		'default' => 'yes',
+	),
 	'activate_individual_order_lines' => array(
 		'title'   => __( 'Activate individual order lines', 'collector-checkout-for-woocommerce' ),
 		'type'    => 'checkbox',
 		'label'   => __( 'If checked, each order line will be activated instead of the entire order.', 'collector-checkout-for-woocommerce' ),
 		'default' => 'no',
 	),
-	'display_invoice_no'              => array(
-		'title'   => __( 'Invoice number on order page', 'collector-checkout-for-woocommerce' ),
+	'add_rounding_order_line'         => array(
+		'title'   => __( 'Activate rounding order line', 'collector-checkout-for-woocommerce' ),
 		'type'    => 'checkbox',
-		'label'   => __( 'Display Walley Invoice Number after WooCommerce Order Number on WooCommerce order page (-> WooCommerce -> Orders).', 'collector-checkout-for-woocommerce' ),
-		'default' => 'yes',
+		'label'   => __( 'If checked, an extra rounding order line will be sent to Walley if the sum of all order lines does not match WooCommerce cart/order total.', 'collector-checkout-for-woocommerce' ),
+		'default' => 'no',
 	),
 	'test_mode_settings_title'        => array(
 		'title' => __( 'Test Mode Settings', 'collector-checkout-for-woocommerce' ),

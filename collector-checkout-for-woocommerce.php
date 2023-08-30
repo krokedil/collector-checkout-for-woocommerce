@@ -8,14 +8,14 @@
  * Plugin Name:     Walley Checkout for WooCommerce
  * Plugin URI:      https://krokedil.se/collector/
  * Description:     Extends WooCommerce. Provides a <a href="https://www.collector.se/" target="_blank">Walley Checkout</a> checkout for WooCommerce.
- * Version:         3.5.6
+ * Version:         4.0.0
  * Author:          Krokedil
  * Author URI:      https://krokedil.se/
  * Text Domain:     collector-checkout-for-woocommerce
  * Domain Path:     /languages
  *
- * WC requires at least: 5.0.0
- * WC tested up to: 7.7.1
+ * WC requires at least: 6.0.0
+ * WC tested up to: 8.0.2
  *
  * Copyright:       © 2017-2023 Krokedil.
  * License:         GNU General Public License v3.0
@@ -28,7 +28,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 define( 'COLLECTOR_BANK_PLUGIN_DIR', untrailingslashit( plugin_dir_path( __FILE__ ) ) );
 define( 'COLLECTOR_BANK_PLUGIN_URL', untrailingslashit( plugin_dir_url( __FILE__ ) ) );
-define( 'COLLECTOR_BANK_VERSION', '3.5.6' );
+define( 'COLLECTOR_BANK_VERSION', '4.0.0' );
 define( 'COLLECTOR_DB_VERSION', '1' );
 
 if ( ! class_exists( 'Collector_Checkout' ) ) {
@@ -97,9 +97,12 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 			add_action( 'plugins_loaded', array( $this, 'init' ) );
 
 			// Maybe create Collector db table.
-			add_action( 'init', array( $this, 'collector_maybe_create_db_table' ) );
+			// @todo - will be removed in next version.
+			// add_action( 'init', array( $this, 'collector_maybe_create_db_table' ) );
+
 			// Maybe schedule action.
-			add_action( 'init', array( $this, 'collector_maybe_schedule_action' ) );
+			// @todo - will be removed in next version.
+			// add_action( 'init', array( $this, 'collector_maybe_schedule_action' ) );
 			// Clean Collector db.
 			add_action( 'collector_clean_db', array( $this, 'collector_clean_db_callback' ) );
 
@@ -121,14 +124,11 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-ajax-calls.php';
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-admin-notices.php';
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-order-emails.php';
-			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-create-order-fallback.php';
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-api-callbacks.php';
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-status.php';
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-templates.php';
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-gdpr.php';
-			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-confirmation.php';
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-pay-for-order-confirmation.php';
-			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-sessions.php';
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-db.php';
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-shipping-method.php';
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-delivery-module.php';
@@ -136,12 +136,15 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-walley-checkout-assets.php';
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-walley-checkout.php';
+			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-walley-checkout-confirmation.php';
+			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-walley-checkout-session.php';
 
 			// Order management. SOAP will be deprecated.
 			if ( ! empty( $this->walley_api_client_id ) && ! empty( $this->walley_api_secret ) ) {
 
 				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-walley-checkout-api.php';
 				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-walley-checkout-order-management.php';
+				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-walley-checkout-order-actions.php';
 				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-walley-checkout-meta-box.php';
 
 				// New request class files.
@@ -153,9 +156,10 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 				// New Checkout request class files.
 				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/checkouts/get/class-walley-checkout-request-get-checkout.php';
 				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/checkouts/post/class-walley-checkout-request-initialize-checkout.php';
-				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/checkouts/put/class-walley-checkout-request-update-cart.php';
-				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/checkouts/put/class-walley-checkout-request-update-fees.php';
-				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/checkouts/put/class-walley-checkout-request-update-metadata.php';
+				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/checkouts/put/class-walley-checkout-request-update-checkout.php';
+				// include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/checkouts/put/class-walley-checkout-request-update-cart.php';
+				// include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/checkouts/put/class-walley-checkout-request-update-fees.php';
+				// include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/checkouts/put/class-walley-checkout-request-update-metadata.php';
 				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/checkouts/put/class-walley-checkout-request-set-order-reference.php';
 
 				// New OM request class files.
