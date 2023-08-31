@@ -254,6 +254,20 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 			);
 		}
 
+		$order         = wc_get_order( $order_id );
+		$shipping_cost = $walley_order['data']['fees']['shipping']['unitPrice'] ?? 0;
+		$cart_cost     = $walley_order['data']['cart']['totalAmount']; // Uses the same "major units" similar to WC_Order->get_total().
+		$total_amount  = $shipping_cost + $cart_cost;
+
+		if ( abs( $total_amount - $order->get_total() ) > 3 ) {
+			$message = __( 'It seems like the WooCommerce and Walley total amount differs. Please, try again.', 'collector-checkout-for-woocommerce' );
+
+			return array(
+				'result'  => 'error',
+				'message' => $message,
+			);
+		}
+
 		$walley_extra_fields = $this->save_walley_extra_fields( $order_id, $walley_order );
 
 		$walley_shipping = $this->save_walley_purchase_and_shipping_data( $order_id, $walley_order );
