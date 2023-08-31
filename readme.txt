@@ -4,7 +4,7 @@ Tags: ecommerce, e-commerce, woocommerce, collector, checkout, walley
 Requires at least: 5.0
 Tested up to: 6.3
 Requires PHP: 7.3
-Stable tag: 4.0.0
+Stable tag: 4.0.1
 WC requires at least: 6.0.0
 WC tested up to: 8.0.2
 License: GPLv3
@@ -39,6 +39,9 @@ For help setting up and configuring Walley Checkout for WooCommerce please refer
 
 
 == CHANGELOG ==
+= 2023.08.31    - version 4.0.1 =
+* Fix           - Save shipment prepared id correctly in WC order when using delivery module via nShift.
+
 = 2023.08.30    - version 4.0.0 =
 * Feature       - Major plugin rewrite. Plugin now supports Walley's front end validation JS event. WooCommerce order is created (as a Pending order) when customer clicks purchase button in Walley Checkout.
 * Feature       - Add support for handling extra checkout fields in checkout.
