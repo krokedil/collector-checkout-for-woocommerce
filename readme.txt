@@ -4,7 +4,7 @@ Tags: ecommerce, e-commerce, woocommerce, collector, checkout, walley
 Requires at least: 5.0
 Tested up to: 6.3
 Requires PHP: 7.3
-Stable tag: 4.0.2
+Stable tag: 4.0.3
 WC requires at least: 6.0.0
 WC tested up to: 8.0.2
 License: GPLv3
@@ -39,6 +39,10 @@ For help setting up and configuring Walley Checkout for WooCommerce please refer
 
 
 == CHANGELOG ==
+= 2023.08.31    - version 4.0.3 =
+* Fix           - Adds cart total comparison between WooCommerce & Walley when order is created in Woo, before customer can complete payment.
+* Fix           - Add billing and shipping company name in get_customer_address so Woo checkout form is populated correctly before placing Woo order.
+
 = 2023.08.31    - version 4.0.2 =
 * Tweak         - GitHub deployment to wordpress.org logic tweak.
 * Tweak         - Small front-end logging improvement.
