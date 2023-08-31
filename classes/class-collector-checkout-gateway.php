@@ -364,7 +364,6 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 		// Save shipping data.
 		if ( isset( $walley_order['data']['shipping'] ) ) {
 			update_post_meta( $order_id, '_collector_delivery_module_data', wp_json_encode( $walley_order['data']['shipping'], JSON_UNESCAPED_UNICODE ) );
-			update_post_meta( $order_id, '_collector_delivery_module_reference', $walley_order['data']['shipping']['pendingShipment']['id'] );
 		}
 	}
 
