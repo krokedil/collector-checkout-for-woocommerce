@@ -26,12 +26,14 @@ class Walley_Checkout_Session {
 		$customer_address['shipping_country'] = $walley_order['data']['countryCode'] ?? '';
 
 		if ( 'BusinessCustomer' === $walley_order['data']['customerType'] ) {
+			$customer_address['billing_company']    = $walley_order['data']['businessCustomer']['invoiceAddress']['companyName'] ?? '';
 			$customer_address['billing_first_name'] = $walley_order['data']['businessCustomer']['firstName'] ?? '';
 			$customer_address['billing_last_name']  = $walley_order['data']['businessCustomer']['lastName'] ?? '';
 			$customer_address['billing_city']       = $walley_order['data']['businessCustomer']['invoiceAddress']['city'] ?? '';
 			$customer_address['billing_address_1']  = $walley_order['data']['businessCustomer']['invoiceAddress']['address'] ?? '';
 			$customer_address['billing_postcode']   = $walley_order['data']['businessCustomer']['invoiceAddress']['postalCode'] ?? '';
 
+			$customer_address['shipping_company']    = $walley_order['data']['businessCustomer']['deliveryAddress']['companyName'] ?? '';
 			$customer_address['shipping_first_name'] = $walley_order['data']['businessCustomer']['firstName'] ?? '';
 			$customer_address['shipping_last_name']  = $walley_order['data']['businessCustomer']['lastName'] ?? '';
 			$customer_address['shipping_city']       = $walley_order['data']['businessCustomer']['deliveryAddress']['city'] ?? '';
