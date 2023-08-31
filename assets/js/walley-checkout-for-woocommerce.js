@@ -417,6 +417,7 @@ jQuery( function( $ ) {
 		},
 		failOrder: async function( event, errorMessage ) {
 			console.log('failOrder', errorMessage);
+			walleyCheckoutWc.logToFile( 'Checkout error | Error message: ' + errorMessage );
 			const errorClasses = 'woocommerce-NoticeGroup woocommerce-NoticeGroup-checkout';
 			const errorWrapper = `<div class="${ errorClasses }"><ul class="woocommerce-error" role="alert"><li>${ errorMessage }</li></ul></div>`;
 			// Re-enable the form.
