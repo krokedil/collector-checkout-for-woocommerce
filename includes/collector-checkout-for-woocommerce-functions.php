@@ -571,14 +571,14 @@ function wc_collector_allowed_tags() {
 }
 
 
-	/**
-	 * Check order totals
-	 *
-	 * @param WC_Order $order The WooCommerce order.
-	 * @param array    $collector_order The Collector order.
-	 *
-	 * @return bool TRUE If the WC and Collector total amounts match, otherwise FALSE.
-	 */
+/**
+ * Check order totals
+ *
+ * @param WC_Order $order The WooCommerce order.
+ * @param array    $collector_order The Collector order.
+ *
+ * @return bool TRUE If the WC and Collector total amounts match, otherwise FALSE.
+ */
 function cco_check_order_totals( $order, $collector_order ) {
 	// Check order total and compare it with Woo.
 	$woo_order_total       = intval( round( $order->get_total() * 100, 2 ) );
