@@ -398,13 +398,6 @@ function wc_collector_confirm_order( $order_id, $private_id = null ) {
 	update_post_meta( $order_id, '_collector_order_id', sanitize_key( $walley_order_id ) );
 	wc_collector_save_shipping_reference_to_order( $order_id, $collector_order );
 
-	// Tie this order to a user if we have one.
-	if ( email_exists( $collector_order['data']['customer']['email'] ) ) {
-		$user    = get_user_by( 'email', $collector_order['data']['customer']['email'] );
-		$user_id = $user->ID;
-		update_post_meta( $order_id, '_customer_user', $user_id );
-	}
-
 	if ( 'Preliminary' === $payment_status || 'Completed' === $payment_status ) {
 		$order->payment_complete( $payment_id );
 	} elseif ( 'Signing' === $payment_status ) {
@@ -817,13 +810,6 @@ function walley_confirm_order( $order_id, $private_id = null ) {
 	if ( isset( $collector_order['data']['shipping'] ) ) {
 		update_post_meta( $order_id, '_collector_delivery_module_data', wp_json_encode( $collector_order['data']['shipping'], JSON_UNESCAPED_UNICODE ) );
 		update_post_meta( $order_id, '_collector_delivery_module_reference', $collector_order['data']['shipping']['pendingShipment']['id'] );
-	}
-
-	// Tie this order to a user if we have one.
-	if ( email_exists( $collector_order['data']['customer']['email'] ) ) {
-		$user    = get_user_by( 'email', $collector_order['data']['customer']['email'] );
-		$user_id = $user->ID;
-		update_post_meta( $order_id, '_customer_user', $user_id );
 	}
 
 	if ( 'Preliminary' === $payment_status || 'Completed' === $payment_status ) {

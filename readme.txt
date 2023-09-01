@@ -2,11 +2,11 @@
 Contributors: collectorbank, krokedil, NiklasHogefjord
 Tags: ecommerce, e-commerce, woocommerce, collector, checkout, walley
 Requires at least: 5.0
-Tested up to: 6.3
+Tested up to: 6.3.1
 Requires PHP: 7.3
-Stable tag: 4.0.3
+Stable tag: 4.0.4
 WC requires at least: 6.0.0
-WC tested up to: 8.0.2
+WC tested up to: 8.0.3
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -39,6 +39,11 @@ For help setting up and configuring Walley Checkout for WooCommerce please refer
 
 
 == CHANGELOG ==
+= 2023.09.01    - version 4.0.4 =
+* Tweak         - Do not save _customer_user to order. From WC 8.0 this can result in non logged in users see a login prompt instead of the order received page.
+* Fix           - Improve cart total comparison logic in process_payment sequence.
+* Fix           - Improve error notice displayed in checkout if process_payment fails.
+
 = 2023.08.31    - version 4.0.3 =
 * Fix           - Adds cart total comparison between WooCommerce & Walley when order is created in Woo, before customer can complete payment.
 * Fix           - Add billing and shipping company name in get_customer_address so Woo checkout form is populated correctly before placing Woo order.

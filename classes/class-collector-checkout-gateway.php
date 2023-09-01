@@ -240,7 +240,11 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 		update_post_meta( $order_id, '_collector_private_id', $private_id );
 
 		$walley_reference = $this->update_walley_reference( $order_id, $customer_type, $private_id );
+
+		// Check that update reference request was ok.
 		if ( false === $walley_reference ) {
+			$message = __( 'There was a problem updating the reference number in Walley.', 'collector-checkout-for-woocommerce' );
+			wc_add_notice( $message, 'error' );
 			return array(
 				'result' => 'error',
 			);
@@ -248,29 +252,34 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 
 		$walley_order = $this->get_walley_order( $order_id, $customer_type, $private_id );
 
+		// Check that get order request was ok.
 		if ( is_wp_error( $walley_order ) ) {
+			$message = __( 'There was a problem retrieving the Walley order.', 'collector-checkout-for-woocommerce' );
+			wc_add_notice( $message, 'error' );
 			return array(
 				'result' => 'error',
 			);
 		}
 
-		$order         = wc_get_order( $order_id );
-		$shipping_cost = $walley_order['data']['fees']['shipping']['unitPrice'] ?? 0;
-		$cart_cost     = $walley_order['data']['cart']['totalAmount']; // Uses the same "major units" similar to WC_Order->get_total().
+		$order = wc_get_order( $order_id );
+		// $shipping_cost                 = $walley_order['data']['fees']['shipping']['unitPrice'] ?? 0; // Shipping.
+		$shipping_cost = $walley_order['data']['fees']['shipping']['unitPrice'] ?? $walley_order['data']['shipping']['shippingFee'] ?? 0;
+		$cart_cost     = $walley_order['data']['cart']['totalAmount']; // Cart.
 		$total_amount  = $shipping_cost + $cart_cost;
 
+		// Check that order totals match between Woo and Walley.
 		if ( abs( $total_amount - $order->get_total() ) > 3 ) {
+			CCO_WC()->logger::log( 'Order total mismatch in process_payment. Woo order total: ' . $order->get_total() . '. Walley order total: ' . $total_amount . ' (cart:' . $cart_cost . ', shipping: ' . $shipping_cost . ', delivery module: ' . $delivery_module_shipping_cost . ').' );
 			$message = __( 'It seems like the WooCommerce and Walley total amount differs. Please, try again.', 'collector-checkout-for-woocommerce' );
-
+			wc_add_notice( $message, 'error' );
 			return array(
-				'result'  => 'error',
-				'message' => $message,
+				'result' => 'error',
 			);
 		}
 
+		// Save data to order.
 		$walley_extra_fields = $this->save_walley_extra_fields( $order_id, $walley_order );
-
-		$walley_shipping = $this->save_walley_purchase_and_shipping_data( $order_id, $walley_order );
+		$walley_shipping     = $this->save_walley_purchase_and_shipping_data( $order_id, $walley_order );
 
 		return array(
 			'result' => 'success',

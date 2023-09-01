@@ -39,8 +39,6 @@ jQuery( function( $ ) {
 					walleyCheckoutWc.logToFile( 'onBeforePayment from Walley triggered' );
 					let placeOrder = await walleyCheckoutWc.placeWalleyOrder();
 	
-					 console.log('Async test', placeOrder);
-	
 					if( 'success' === placeOrder.result ) {
 						console.log('onBeforePayment success');
 						return Promise.resolve();
@@ -303,10 +301,10 @@ jQuery( function( $ ) {
 		placeWalleyOrder: async function() {
 			var walleyOrder = await walleyCheckoutWc.getWalleyOrder();
 			if( walleyOrder.success ) {
-				console.log('placeWalleyOrder if');
+				console.log('getWalleyOrder success');
 				walleyOrder = walleyCheckoutWc.submitOrder();
 			} else {
-				console.log('placeWalleyOrder else');
+				console.log('getWalleyOrder no success');
 			}
 			return walleyOrder;
 		},
