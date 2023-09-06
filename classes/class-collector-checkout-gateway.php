@@ -278,7 +278,7 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 		}
 
 		// Save data to order.
-		$walley_extra_fields = $this->save_walley_extra_fields( $order_id, $walley_order );
+		$walley_extra_fields = walley_save_custom_fields( $order_id, $walley_order );
 		$walley_shipping     = $this->save_walley_purchase_and_shipping_data( $order_id, $walley_order );
 
 		return array(
@@ -330,34 +330,6 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 			$walley_order = $walley_order->request();
 		}
 		return $walley_order;
-	}
-
-	public function save_walley_extra_fields( $order_id, $walley_order ) {
-
-		// Save customFields data.
-		if ( isset( $walley_order['data']['customFields'] ) ) {
-
-			// Save the entire customFields object as json in order.
-			if ( true === apply_filters( 'walley_save_custom_fields_raw_data', true ) ) {
-				update_post_meta( $order_id, '_collector_custom_fields', wp_json_encode( $walley_order['data']['customFields'] ) );
-			}
-
-			// Save each individual custom field as id:value.
-			if ( true === apply_filters( 'walley_save_individual_custom_field', true ) ) {
-				foreach ( $walley_order['data']['customFields'] as $custom_field_group ) {
-
-					foreach ( $custom_field_group['fields'] as $custom_field ) {
-
-						$value = $custom_field['value'];
-						// If the returned value is true/false convert it to yes/no since it is easier to store as post meta value.
-						if ( is_bool( $value ) ) {
-							$value = $value ? 'yes' : 'no';
-						}
-						update_post_meta( $order_id, $custom_field['id'], sanitize_text_field( $value ) );
-					}
-				}
-			}
-		}
 	}
 
 	public function save_walley_purchase_and_shipping_data( $order_id, $walley_order ) {
