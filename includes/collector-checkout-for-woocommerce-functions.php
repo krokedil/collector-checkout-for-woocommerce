@@ -921,12 +921,14 @@ function walley_get_cart_shipping_classes() {
  */
 function walley_save_custom_fields( $order_id, $walley_order ) {
 
+	$order = wc_get_order( $order_id );
+
 	// Save customFields data.
-	if ( isset( $walley_order['data']['customFields'] ) ) {
+	if ( is_object( $order ) && isset( $walley_order['data']['customFields'] ) ) {
 
 		// Save the entire customFields object as json in order.
 		if ( true === apply_filters( 'walley_save_custom_fields_raw_data', true ) ) {
-			update_post_meta( $order_id, '_collector_custom_fields', wp_json_encode( $walley_order['data']['customFields'] ) );
+			$order->update_meta_data( '_collector_custom_fields', wp_json_encode( $walley_order['data']['customFields'] ) );
 		}
 
 		// Save each individual custom field as id:value.
@@ -940,9 +942,11 @@ function walley_save_custom_fields( $order_id, $walley_order ) {
 					if ( is_bool( $value ) ) {
 						$value = $value ? 'yes' : 'no';
 					}
-					update_post_meta( $order_id, $custom_field['id'], sanitize_text_field( $value ) );
+					$order->update_meta_data( $custom_field['id'], sanitize_text_field( $value ) );
 				}
 			}
 		}
+
+		$order->save();
 	}
 }
