@@ -4,7 +4,7 @@ Tags: ecommerce, e-commerce, woocommerce, collector, checkout, walley
 Requires at least: 5.0
 Tested up to: 6.3.1
 Requires PHP: 7.3
-Stable tag: 4.0.4
+Stable tag: 4.0.5
 WC requires at least: 6.0.0
 WC tested up to: 8.0.3
 License: GPLv3
@@ -39,6 +39,9 @@ For help setting up and configuring Walley Checkout for WooCommerce please refer
 
 
 == CHANGELOG ==
+= 2023.09.06    - version 4.0.5 =
+* Tweak         - Save Custom Fields data to WooCommerce order also during confirm order step (when payment is done).
+
 = 2023.09.01    - version 4.0.4 =
 * Tweak         - Do not save _customer_user to order. From WC 8.0 this can result in non logged in users see a login prompt instead of the order received page.
 * Fix           - Improve cart total comparison logic in process_payment sequence.
