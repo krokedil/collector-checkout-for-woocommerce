@@ -806,6 +806,9 @@ function walley_confirm_order( $order_id, $private_id = null ) {
 
 	wc_collector_save_shipping_reference_to_order( $order_id, $collector_order );
 
+	// Save custom fields data.
+	walley_save_custom_fields( $order_id, $collector_order );
+
 	// Save shipping data.
 	if ( isset( $collector_order['data']['shipping'] ) ) {
 		update_post_meta( $order_id, '_collector_delivery_module_data', wp_json_encode( $collector_order['data']['shipping'], JSON_UNESCAPED_UNICODE ) );
@@ -906,4 +909,40 @@ function walley_get_cart_shipping_classes() {
 		}
 	}
 	return $shipping_classes;
+}
+
+/**
+ * Save custom fields to WooCommerce order if they exist in Walley order.
+ *
+ * @param int   $order_id WooCommerce order ID.
+ * @param array $walley_order Walley order data.
+ *
+ * @return void
+ */
+function walley_save_custom_fields( $order_id, $walley_order ) {
+
+	// Save customFields data.
+	if ( isset( $walley_order['data']['customFields'] ) ) {
+
+		// Save the entire customFields object as json in order.
+		if ( true === apply_filters( 'walley_save_custom_fields_raw_data', true ) ) {
+			update_post_meta( $order_id, '_collector_custom_fields', wp_json_encode( $walley_order['data']['customFields'] ) );
+		}
+
+		// Save each individual custom field as id:value.
+		if ( true === apply_filters( 'walley_save_individual_custom_field', true ) ) {
+			foreach ( $walley_order['data']['customFields'] as $custom_field_group ) {
+
+				foreach ( $custom_field_group['fields'] as $custom_field ) {
+
+					$value = $custom_field['value'];
+					// If the returned value is true/false convert it to yes/no since it is easier to store as post meta value.
+					if ( is_bool( $value ) ) {
+						$value = $value ? 'yes' : 'no';
+					}
+					update_post_meta( $order_id, $custom_field['id'], sanitize_text_field( $value ) );
+				}
+			}
+		}
+	}
 }
