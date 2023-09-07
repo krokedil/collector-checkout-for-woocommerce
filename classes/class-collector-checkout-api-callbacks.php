@@ -71,9 +71,9 @@ class Collector_Api_Callbacks {
 
 				// Maybe abort the callback (if the order already has been processed in Woo).
 				if ( ! empty( $order->get_date_paid() ) ) {
-					CCO_WC()->logger::log( 'Aborting API callback. Order ' . $order->get_order_number() . '(order ID ' . $order_id_match . ', Private ID ' . $private_id . ') already processed.' );
+					CCO_WC()->logger::log( 'Aborting API callback. Order ' . $order->get_order_number() . '(order ID ' . $order_id . ', Private ID ' . $private_id . ') already processed.' );
 				} else {
-					CCO_WC()->logger::log( 'Order status not set correctly for order ' . $order->get_order_number() . '(order ID ' . $order_id_match . ', Private ID ' . $private_id . ') during checkout process. Setting order status to Processing/Completed in API callback.' );
+					CCO_WC()->logger::log( 'Order status not set correctly for order ' . $order->get_order_number() . '(order ID ' . $order_id . ', Private ID ' . $private_id . ') during checkout process. Setting order status to Processing/Completed in API callback.' );
 					// translators: Walley private ID.
 					$note = sprintf( __( 'Order status not set correctly during checkout process. Confirming purchase via callback from Walley.', 'collector-checkout-for-woocommerce' ), $private_id );
 					$order->add_order_note( $note );
@@ -81,7 +81,7 @@ class Collector_Api_Callbacks {
 				}
 			} else {
 				// No order, why?
-				CCO_WC()->logger::log( 'API-callback executed. Private id ' . $private_id . '. already exist in order ID ' . $order_id_match . '. But we could not instantiate an order object' );
+				CCO_WC()->logger::log( 'API-callback executed. Private id ' . $private_id . '. already exist in order ID ' . $order_id . '. But we could not instantiate an order object' );
 			}
 		} else {
 			// No order found - create a new.
