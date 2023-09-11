@@ -4,7 +4,7 @@ Tags: ecommerce, e-commerce, woocommerce, collector, checkout, walley
 Requires at least: 5.0
 Tested up to: 6.3.1
 Requires PHP: 7.3
-Stable tag: 4.0.5
+Stable tag: 4.0.6
 WC requires at least: 6.0.0
 WC tested up to: 8.0.3
 License: GPLv3
@@ -39,6 +39,9 @@ For help setting up and configuring Walley Checkout for WooCommerce please refer
 
 
 == CHANGELOG ==
+= 2023.09.11    - version 4.0.6 =
+* Fix           - Improve query when trying to get WC order in callback logic. Avoids issues when multiple WC orders are created during one payment session.
+
 = 2023.09.06    - version 4.0.5 =
 * Tweak         - Save Custom Fields data to WooCommerce order also during confirm order step (when payment is done).
 
