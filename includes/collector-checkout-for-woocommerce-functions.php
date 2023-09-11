@@ -276,6 +276,8 @@ function wc_collector_get_order_id_by_private_id( $private_id = null ) {
 		'post_status' => array_keys( wc_get_order_statuses() ),
 		'meta_key'    => '_collector_private_id', // phpcs:ignore WordPress.DB.SlowDBQuery -- Slow DB Query is ok here, we need to limit to our meta key.
 		'meta_value'  => sanitize_text_field( wp_unslash( $private_id ) ), // phpcs:ignore WordPress.DB.SlowDBQuery -- Slow DB Query is ok here, we need to limit to our meta key.
+		'orderby'     => 'date',
+		'order'       => 'DESC',
 		'date_query'  => array(
 			array(
 				'after' => '120 day ago',
