@@ -388,8 +388,11 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 
 		if ( is_object( $order ) && 'collector_checkout' === $order->get_payment_method() ) {
 			CCO_WC()->logger::log( 'Thankyou page rendered for order ID - ' . $order->get_id() );
+
+			// Starting WC 8.1 the HTML snippet will be escaped, we now have to echo it directly,
+			// and return an empty string to overwrite the default $text string.
 			echo wp_kses_post( $html_snippet );
-			return $text;
+			return '';
 		}
 
 		$purchase_status = filter_input( INPUT_GET, 'purchase-status', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
@@ -400,7 +403,7 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 			CCO_WC()->logger::log( 'Rendering simplified thankyou page (only display Collector thank you iframe).' );
 
 			echo wp_kses_post( $html_snippet );
-			return $text;
+			return '';
 		}
 
 		return $text;
