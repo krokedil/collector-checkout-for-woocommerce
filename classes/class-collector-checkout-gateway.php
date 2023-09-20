@@ -384,19 +384,23 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 	 * @return string
 	 */
 	public function collector_thankyou_order_received_text( $text, $order ) {
+		$html_snippet = '<div class="collector-checkout-thankyou"></div>';
+
 		if ( is_object( $order ) && 'collector_checkout' === $order->get_payment_method() ) {
 			CCO_WC()->logger::log( 'Thankyou page rendered for order ID - ' . $order->get_id() );
-			return '<div class="collector-checkout-thankyou"></div>';
+			echo wp_kses_post( $html_snippet );
+			return $text;
 		}
-		$purchase_status = filter_input( INPUT_GET, 'purchase-status', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 
+		$purchase_status = filter_input( INPUT_GET, 'purchase-status', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 		if ( 'not-completed' === $purchase_status ) {
 			// Unset Collector token and id.
 			wc_collector_unset_sessions();
 			WC()->cart->empty_cart();
 			CCO_WC()->logger::log( 'Rendering simplified thankyou page (only display Collector thank you iframe).' );
 
-			return '<div class="collector-checkout-thankyou"></div>';
+			echo wp_kses_post( $html_snippet );
+			return $text;
 		}
 
 		return $text;
