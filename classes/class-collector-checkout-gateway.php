@@ -568,9 +568,9 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 	 *
 	 * If the "Walley Delivery Module" is enabled, the shipping option will not be available, only the default ones (if available).
 	 * This will result in a discrepancy between WooCommerce that has a default shipping cost, and Walley that does not include a shipping cost.
-	 * For this purpose, we want to WooCommerce to wait with calculating shipping until a shipping option from Walley is available.
+	 * For this purpose, we want WooCommerce to wait with calculating shipping until a shipping option from Walley is available.
 	 *
-	 * @param  bool $show_shipping
+	 * @param  bool $show_shipping Whether to show the shipping options.
 	 * @return bool
 	 */
 	public function show_shipping( $show_shipping ) {
@@ -599,10 +599,10 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 		}
 
 		if ( 'yes' === $delivery_module ) {
-
-			/* Once the "Walley Delivery Module" is available, display the shipping options. */
-			$chosen_shipping = WC()->session->get( 'chosen_shipping_methods' )[0];
-			if ( ! empty( $chosen_shipping ) && false !== strpos( $chosen_shipping, 'collector_delivery_module' ) ) {
+			/* If the delivery module is configured by Walley (displayed in iframe), its shipping data will be available in the session. We need to check if there is a corresponding WC shipping option. */
+			$delivery_module_data = WC()->session->get( 'collector_delivery_module_data', array() )[0] ?? '';
+			$chosen_shipping      = WC()->session->get( 'chosen_shipping_methods', array() )[0] ?? '';
+			if ( ! empty( $chosen_shipping ) && ( false !== strpos( $chosen_shipping, 'collector_delivery_module' ) || ( isset( $delivery_module_data['shipping_id'] ) && $delivery_module_data['shipping_id'] === $chosen_shipping ) ) ) {
 				return true;
 			}
 
