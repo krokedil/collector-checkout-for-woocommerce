@@ -37,12 +37,11 @@ class Collector_Checkout_Order_Emails {
 	 * @return void
 	 */
 	public function email_extra_information( $order, $sent_to_admin, $plain_text = false ) {
-		$order_id     = $order->get_id();
-		$gateway_used = get_post_meta( $order_id, '_payment_method', true );
+		$gateway_used = $order->get_meta( '_payment_method', true );
 		if ( 'collector_checkout' === $gateway_used ) {
 			$payment_details = '';
-			$payment_id      = get_post_meta( $order_id, '_collector_payment_id', true );
-			$payment_type    = wc_collector_get_payment_method_name( get_post_meta( $order_id, '_collector_payment_method', true ) );
+			$payment_id      = $order->get_meta( '_collector_payment_id', true );
+			$payment_type    = wc_collector_get_payment_method_name( $order->get_meta( '_collector_payment_method', true ) );
 			$order_date      = wc_format_datetime( $order->get_date_created() );
 
 			echo '<h2>' . esc_html__( 'Walley details', 'collector-checkout-for-woocommerce' ) . '</h2>';

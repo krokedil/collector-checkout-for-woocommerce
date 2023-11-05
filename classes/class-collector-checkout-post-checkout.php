@@ -56,7 +56,7 @@ class Collector_Checkout_Post_Checkout {
 			return;
 		}
 
-		if ( get_post_meta( $order_id, '_collector_order_activated', true ) ) {
+		if ( $order->get_meta( '_collector_order_activated', true ) ) {
 			$order->add_order_note( __( 'Could not activate Walley reservation, Walley reservation is already activated.', 'collector-checkout-for-woocommerce' ) );
 			return;
 		}
@@ -93,7 +93,7 @@ class Collector_Checkout_Post_Checkout {
 		}
 
 		// If this reservation was already cancelled, do nothing.
-		if ( get_post_meta( $order_id, '_collector_order_cancelled', true ) ) {
+		if ( $order->get_meta( '_collector_order_cancelled', true ) ) {
 			$order->add_order_note( __( 'Could not cancel Walley reservation, Walley reservation is already cancelled.', 'collector-checkout-for-woocommerce' ) );
 			return;
 		}
@@ -162,8 +162,7 @@ class Collector_Checkout_Post_Checkout {
 
 			$current_screen = get_current_screen();
 			if ( is_object( $current_screen ) && 'edit-shop_order' === $current_screen->id ) {
-				$collector_payment_id = null !== get_post_meta( $order->get_id(), '_collector_payment_id', true ) ? get_post_meta( $order->get_id(), '_collector_payment_id', true ) : '';
-				//phpcs:ignore $collector_payment_id = get_post_meta( $order->get_id(), '_collector_payment_id', true );
+				$collector_payment_id = null !== $order->get_meta( '_collector_payment_id', true ) ? $order->get_meta( '_collector_payment_id', true ) : '';
 				if ( $collector_payment_id ) {
 					$order_number .= ' (' . $collector_payment_id . ')';
 				}

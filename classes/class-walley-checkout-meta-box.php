@@ -48,9 +48,9 @@ class Walley_Checkout_Meta_Box {
 		$order_id           = get_the_ID();
 		$order              = wc_get_order( $order_id );
 
-		$payment_method             = get_post_meta( $order_id, '_collector_payment_method', true );
-		$payment_id                 = get_post_meta( $order_id, '_collector_payment_id', true );
-		$walley_order_id            = get_post_meta( $order_id, '_collector_order_id', true );
+		$payment_method             = $order->get_meta( '_collector_payment_method', true );
+		$payment_id                 = $order->get_meta( '_collector_payment_id', true );
+		$walley_order_id            = $order->get_meta( '_collector_order_id', true );
 		$title_payment_method       = __( 'Payment method', 'collector-checkout-for-woocommerce' );
 		$title_walley_order_id      = __( 'Walley order id', 'collector-checkout-for-woocommerce' );
 		$title_walley_order_status  = __( 'Walley order status', 'collector-checkout-for-woocommerce' );

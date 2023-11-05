@@ -216,7 +216,7 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 	 */
 	public function get_transaction_url( $order ) {
 		// Check if order is completed.
-		$invoice_url = get_post_meta( $order->get_id(), '_collector_invoice_url', true );
+		$invoice_url = $order->get_meta( '_collector_invoice_url', true );
 		if ( $invoice_url ) {
 			$this->view_transaction_url = $invoice_url;
 		}
@@ -233,11 +233,13 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 	 */
 	public function process_payment( $order_id, $retry = false ) {
 
+		$order		   = wc_get_order( $order_id );
 		$customer_type = WC()->session->get( 'collector_customer_type' );
 		$private_id    = WC()->session->get( 'collector_private_id' );
-		update_post_meta( $order_id, '_collector_customer_type', $customer_type );
-		update_post_meta( $order_id, '_collector_public_token', WC()->session->get( 'collector_public_token' ) );
-		update_post_meta( $order_id, '_collector_private_id', $private_id );
+		$order->update_meta_data( '_collector_customer_type', $customer_type );
+		$order->update_meta_data( '_collector_public_token', WC()->session->get( 'collector_public_token' ) );
+		$order->update_meta_data( '_collector_private_id', $private_id );
+		$order->save();
 
 		$walley_reference = $this->update_walley_reference( $order_id, $customer_type, $private_id );
 
@@ -341,25 +343,26 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 		$organization_number = $walley_order['data']['businessCustomer']['organizationNumber'] ?? '';
 		$invoice_reference   = $walley_order['data']['businessCustomer']['invoiceReference'] ?? '';
 
-		update_post_meta( $order_id, '_collector_payment_method', $payment_method );
-		update_post_meta( $order_id, '_collector_payment_id', $payment_id );
-		update_post_meta( $order_id, '_collector_order_id', sanitize_key( $walley_order_id ) );
-		update_post_meta( $order_id, '_collector_original_order_total', $order->get_total() );
+		$order->update_meta_data( '_collector_payment_method', $payment_method );
+		$order->update_meta_data( '_collector_payment_id', $payment_id );
+		$order->update_meta_data( '_collector_order_id', sanitize_key( $walley_order_id ) );
+		$order->update_meta_data( '_collector_original_order_total', $order->get_total() );
 
 		if ( ! empty( $organization_number ) ) {
-			update_post_meta( $order_id, '_collector_org_nr', sanitize_key( $organization_number ) );
+			$order->update_meta_data( '_collector_org_nr', sanitize_key( $organization_number ) );
 		}
 
 		if ( ! empty( $invoice_reference ) ) {
-			update_post_meta( $order_id, '_collector_invoice_reference', sanitize_key( $invoice_reference ) );
+			$order->update_meta_data( '_collector_invoice_reference', sanitize_key( $invoice_reference ) );
 		}
 
 		wc_collector_save_shipping_reference_to_order( $order_id, $walley_order );
 
 		// Save shipping data.
 		if ( isset( $walley_order['data']['shipping'] ) ) {
-			update_post_meta( $order_id, '_collector_delivery_module_data', wp_json_encode( $walley_order['data']['shipping'], JSON_UNESCAPED_UNICODE ) );
+			$order->update_meta_data( '_collector_delivery_module_data', wp_json_encode( $walley_order['data']['shipping'], JSON_UNESCAPED_UNICODE ) );
 		}
+		$order->save();
 	}
 
 
@@ -453,7 +456,7 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 	 * @return bool
 	 */
 	public function can_refund_order( $order ) {
-		if ( empty( get_post_meta( $order->get_id(), '_collector_order_activated', true ) ) ) {
+		if ( empty( $order->get_meta( '_collector_order_activated', true ) ) ) {
 			return false;
 		}
 		return parent::can_refund_order( $order );
@@ -553,12 +556,11 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 	 */
 	public function add_org_nr_to_order( $order ) {
 		if ( 'collector_checkout' === $order->get_payment_method() ) {
-			$order_id = $order->get_id();
-			if ( get_post_meta( $order_id, '_collector_org_nr' ) ) {
-				echo '<p class="form-field form-field-wide"><strong>' . __( 'Org Nr', 'collector-checkout-for-woocommerce' ) . ':</strong> ' . get_post_meta( $order_id, '_collector_org_nr', true ) . '</p>';// phpcs:ignore
+			if ( $order->get_meta( '_collector_org_nr' ) ) {
+				echo '<p class="form-field form-field-wide"><strong>' . __( 'Org Nr', 'collector-checkout-for-woocommerce' ) . ':</strong> ' . $order->get_meta( '_collector_org_nr', true ) . '</p>';// phpcs:ignore
 			}
-			if ( get_post_meta( $order_id, '_collector_invoice_reference' ) ) {
-				echo '<p class="form-field form-field-wide"><strong>' . __( 'Invoice reference', 'collector-checkout-for-woocommerce' ) . ':</strong> ' . get_post_meta( $order_id, '_collector_invoice_reference', true ) . '</p>';//phpcs:ignore
+			if ( $order->get_meta( '_collector_invoice_reference' ) ) {
+				echo '<p class="form-field form-field-wide"><strong>' . __( 'Invoice reference', 'collector-checkout-for-woocommerce' ) . ':</strong> ' . $order->get_meta( '_collector_invoice_reference', true ) . '</p>';//phpcs:ignore
 			}
 		}
 	}

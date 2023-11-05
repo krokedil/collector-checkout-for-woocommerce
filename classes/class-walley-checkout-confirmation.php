@@ -51,7 +51,6 @@ class Walley_Checkout_Confirmation {
 	public function confirm_order() {
 		$walley_confirm = filter_input( INPUT_GET, 'walley_confirm', FILTER_SANITIZE_SPECIAL_CHARS );
 		$public_token   = filter_input( INPUT_GET, 'public-token', FILTER_SANITIZE_SPECIAL_CHARS );
-
 		// Return if we dont have our parameters set.
 		if ( empty( $walley_confirm ) || empty( $public_token ) ) {
 			return;
@@ -64,9 +63,10 @@ class Walley_Checkout_Confirmation {
 		}
 
 		$result = walley_confirm_order( $order_id );
+		$order = wc_get_order($order_id);
 
 		if ( $result ) {
-			$walley_payment_id = get_post_meta( $order_id, '_collector_payment_id', true );
+			$walley_payment_id = $order->get_meta( '_collector_payment_id', true );
 			CCO_WC()->logger::log( "Order ID $order_id confirmed on the confirmation page. Walley payment ID: $walley_payment_id." );
 		}
 
