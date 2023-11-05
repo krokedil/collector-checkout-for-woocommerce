@@ -58,7 +58,7 @@ class Collector_Checkout_SOAP_Requests_Credit_Payment {
 		$this->password     = $collector_settings['collector_password'];
 		$order              = wc_get_order( $order_id );
 		$currency           = $order->get_currency();
-		$customer_type      = get_post_meta( $order_id, '_collector_customer_type', true );
+		$customer_type      = $order->get_meta( '_collector_customer_type', true );
 		switch ( $currency ) {
 			case 'SEK':
 				$country_code   = 'SE';
@@ -140,6 +140,7 @@ class Collector_Checkout_SOAP_Requests_Credit_Payment {
 	 * @throws SoapFault SOAP Fault.
 	 */
 	public function request_part_credit( $order_id, $amount, $reason ) {
+		$order = wc_get_order($order_id);
 		$soap = new SoapClient( $this->endpoint );
 		$args = $this->get_request_args( $order_id );
 
@@ -147,7 +148,7 @@ class Collector_Checkout_SOAP_Requests_Credit_Payment {
 		$headers[] = new SoapHeader( 'http://schemas.ecommerce.collector.se/v30/InvoiceService', 'Username', $this->username );
 		$headers[] = new SoapHeader( 'http://schemas.ecommerce.collector.se/v30/InvoiceService', 'Password', $this->password );
 		$soap->__setSoapHeaders( $headers );
-		$payment_id = get_post_meta( $order_id, '_collector_payment_id', true );
+		$payment_id = $order->get_meta( '_collector_payment_id', true );
 		$data       = Collector_Checkout_Create_Refund_Data::create_refund_data( $order_id, $amount, $reason, $payment_id );
 		try {
 			$request = $soap->PartCreditInvoice( $args );
@@ -155,7 +156,6 @@ class Collector_Checkout_SOAP_Requests_Credit_Payment {
 			$request = $e->getMessage();
 		}
 
-		$order = wc_get_order( $order_id );
 		if ( isset( $request->CorrelationId ) || null === $request->CorrelationId ) { // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
 			$order->add_order_note( sprintf( __( 'Order credited with Collector Bank', 'collector-checkout-for-woocommerce' ) ) );
 			$log = CCO_WC()->logger::format_log( $order_id, 'SOAP', 'CCO refund order (PartCreditInvoice)', $args, '', wp_json_encode( $request ), '' );
@@ -179,14 +179,15 @@ class Collector_Checkout_SOAP_Requests_Credit_Payment {
 	 */
 	public function get_request_args( $order_id ) {
 
-		$collector_invoice_data = json_decode( get_post_meta( $order_id, '_collector_activate_invoice_data', true ), true );
+		$order = wc_get_order($order_id);
+		$collector_invoice_data = json_decode( $order->get_meta( '_collector_activate_invoice_data', true ), true );
 
 		if ( is_array( $collector_invoice_data ) && isset( $collector_invoice_data[0]['NewInvoiceNo'] ) ) {
 			// The newest invoice is the latest one. Let's use that.
 			$reversed_invoice_data = array_reverse( $collector_invoice_data );
 			$invoice_no            = $reversed_invoice_data[0]['NewInvoiceNo'];
 		} else {
-			$invoice_no = get_post_meta( $order_id, '_collector_payment_id', true );
+			$invoice_no = $order->get_meta( '_collector_payment_id', true );
 		}
 		return array(
 			'StoreId'     => $this->store_id,

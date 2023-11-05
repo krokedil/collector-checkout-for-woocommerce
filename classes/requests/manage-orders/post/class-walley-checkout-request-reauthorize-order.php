@@ -29,7 +29,8 @@ class Walley_Checkout_Request_Reauthorize_Order extends Walley_Checkout_Request_
 	 * @return string
 	 */
 	protected function get_request_url() {
-		$walley_id = get_post_meta( $this->order_id, '_collector_order_id', true );
+		$order = wc_get_order( $this->order_id );
+		$walley_id = $order->get_meta( '_collector_order_id', true );
 		return $this->get_api_url_base() . "/manage/orders/{$walley_id}/reauthorize";
 	}
 

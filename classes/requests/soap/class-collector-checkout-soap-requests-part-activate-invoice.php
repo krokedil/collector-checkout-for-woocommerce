@@ -71,7 +71,7 @@ class Collector_Checkout_SOAP_Requests_Part_Activate_Invoice {
 		$this->password     = $collector_settings['collector_password'];
 		$order              = wc_get_order( $order_id );
 		$currency           = $order->get_currency();
-		$customer_type      = get_post_meta( $order_id, '_collector_customer_type', true );
+		$customer_type      = $order->get_meta( '_collector_customer_type', true );
 
 		switch ( $currency ) {
 			case 'SEK':

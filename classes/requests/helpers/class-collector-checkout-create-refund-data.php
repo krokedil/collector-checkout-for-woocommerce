@@ -226,7 +226,7 @@ class Collector_Checkout_Create_Refund_Data {
 		// The entire shipping price is refunded.
 		$shipping_reference = 'Shipping';
 
-		$collector_shipping_reference = get_post_meta( $original_order->get_id(), '_collector_shipping_reference', true );
+		$collector_shipping_reference = $original_order->get_meta( '_collector_shipping_reference', true );
 		if ( isset( $collector_shipping_reference ) && ! empty( $collector_shipping_reference ) ) {
 			$shipping_reference = $collector_shipping_reference;
 		} else {

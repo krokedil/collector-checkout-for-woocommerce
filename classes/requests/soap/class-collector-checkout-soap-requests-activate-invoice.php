@@ -71,7 +71,7 @@ class Collector_Checkout_SOAP_Requests_Activate_Invoice {
 		$this->password     = $collector_settings['collector_password'];
 		$order              = wc_get_order( $order_id );
 		$currency           = $order->get_currency();
-		$customer_type      = get_post_meta( $order_id, '_collector_customer_type', true );
+		$customer_type      = $order->get_meta( '_collector_customer_type', true );
 
 		switch ( $currency ) {
 			case 'SEK':
@@ -169,10 +169,11 @@ class Collector_Checkout_SOAP_Requests_Activate_Invoice {
 	 * @return array
 	 */
 	public function get_request_args( $order_id ) {
+		$order = wc_get_order($order_id);
 		return array(
 			'StoreId'     => $this->store_id,
 			'CountryCode' => $this->country_code,
-			'InvoiceNo'   => get_post_meta( $order_id, '_collector_payment_id' )[0],
+			'InvoiceNo'   => $order->get_meta( '_collector_payment_id' )[0],
 		);
 	}
 }
