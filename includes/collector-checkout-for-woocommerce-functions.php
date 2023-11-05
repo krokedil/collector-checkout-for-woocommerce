@@ -336,10 +336,10 @@ function wc_collector_confirm_order( $order_id, $private_id = null ) {
 	$order = wc_get_order( $order_id );
 
 	if ( empty( $private_id ) ) {
-		$private_id = get_post_meta( $order_id, '_collector_private_id', true );
+		$private_id = $order->get_meta( '_collector_private_id', true );
 	}
 
-	$customer_type = get_post_meta( $order_id, '_collector_customer_type', true );
+	$customer_type = $order->get_meta( '_collector_customer_type', true );
 	if ( empty( $customer_type ) ) {
 		$customer_type = 'b2c';
 	}
@@ -743,10 +743,10 @@ function walley_confirm_order( $order_id, $private_id = null ) {
 	}
 
 	if ( empty( $private_id ) ) {
-		$private_id = get_post_meta( $order_id, '_collector_private_id', true );
+		$private_id = $order->get_meta( '_collector_private_id', true );
 	}
 
-	$customer_type = get_post_meta( $order_id, '_collector_customer_type', true );
+	$customer_type = $order->get_meta( '_collector_customer_type', true );
 	if ( empty( $customer_type ) ) {
 		$customer_type = 'b2c';
 	}
@@ -876,7 +876,8 @@ function walley_add_rounding_order_line() {
  * @return string
  */
 function walley_get_shipping_reference_from_delivery_module_data( $order_id ) {
-	$collector_delivery_data = json_decode( get_post_meta( $order_id, '_collector_delivery_module_data', true ), true ) ?? array();
+	$order = wc_get_order($order_id);
+	$collector_delivery_data = json_decode( $order->get_meta( '_collector_delivery_module_data', true ), true ) ?? array();
 	$shipping_reference      = $collector_delivery_data['shippingFeeId'] ?? '';
 	return $shipping_reference;
 }

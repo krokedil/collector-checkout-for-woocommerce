@@ -192,14 +192,15 @@ class Collector_Checkout_SOAP_Requests_Part_Activate_Invoice {
 	 */
 	public function get_request_args( $order_id ) {
 
-		$collector_invoice_data = json_decode( get_post_meta( $order_id, '_collector_activate_invoice_data', true ), true );
+		$order = wc_get_order($order_id);
+		$collector_invoice_data = json_decode( $order->get_meta( '_collector_activate_invoice_data', true ), true );
 
 		if ( is_array( $collector_invoice_data ) && isset( $collector_invoice_data[0]['NewInvoiceNo'] ) ) {
 			// The newest invoice is the latest one. Let's use that.
 			$reversed_invoice_data = array_reverse( $collector_invoice_data );
 			$invoice_no            = $reversed_invoice_data[0]['NewInvoiceNo'];
 		} else {
-			$invoice_no = get_post_meta( $order_id, '_collector_payment_id', true );
+			$invoice_no = $order->get_meta( '_collector_payment_id', true );
 		}
 		return array(
 			'StoreId'     => $this->store_id,
