@@ -1,93 +1,94 @@
-# Copyright (C) 2022
+# Copyright (C) 2023
 # This file is distributed under the same license as the  package.
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: "
 "https://wordpress.org/support/plugin/collector-checkout-for-woocommerce\n"
-"POT-Creation-Date: 2022-10-24 13:33:00+00:00\n"
+"POT-Creation-Date: 2023-11-06 09:08:28+00:00\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2022-MO-DA HO:MI+ZONE\n"
+"PO-Revision-Date: 2023-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "X-Generator: grunt-wp-i18n 1.0.3\n"
 
-#: classes/class-collector-checkout-ajax-calls.php:75
-#: includes/collector-checkout-for-woocommerce-functions.php:62
+#: classes/class-collector-checkout-ajax-calls.php:129
+msgid "Could not connect to Walley. Please reload the page and try again."
+msgstr ""
+
+#: classes/class-collector-checkout-ajax-calls.php:168
+#: includes/collector-checkout-for-woocommerce-functions.php:61
 msgid "Could not connect to Walley. Error message: "
 msgstr ""
 
-#: classes/class-collector-checkout-ajax-calls.php:75
-#: includes/collector-checkout-for-woocommerce-functions.php:62
+#: classes/class-collector-checkout-ajax-calls.php:168
+#: includes/collector-checkout-for-woocommerce-functions.php:61
 msgid "Try again"
 msgstr ""
 
-#: classes/class-collector-checkout-ajax-calls.php:621
-#. translators: The error message.
+#: classes/class-collector-checkout-ajax-calls.php:326
+#. Translators: Original order amount.
 msgid ""
-"This order was made as a fallback due to an error in the checkout (%s). "
-"Please verify the order with Walley."
+"Updated total amount sent to Walley can not be higher than the original "
+"order amount (%1$s)."
 msgstr ""
 
-#: classes/class-collector-checkout-api-callbacks.php:319
+#: classes/class-collector-checkout-ajax-calls.php:342
+msgid "Walley order successfully updated."
+msgstr ""
+
+#: classes/class-collector-checkout-ajax-calls.php:345
+msgid "Walley order sync started. Waiting for reauthorize response."
+msgstr ""
+
+#: classes/class-collector-checkout-ajax-calls.php:349
+#. Translators: Request response http status.
+msgid "Walley order sync started. Unknown http status response. Status: %1$s."
+msgstr ""
+
+#: classes/class-collector-checkout-ajax-calls.php:364
+#. Translators: Request error message & request error code.
 msgid ""
-"Order created via Walley Checkout API callback. Please verify the order in "
-"Walley's system."
+"Could not update order lines in Walley. Error message: %1$s. Error code: "
+"%2$s</i>"
 msgstr ""
 
-#: classes/class-collector-checkout-api-callbacks.php:474
-#: classes/class-collector-checkout-gateway.php:333
-#: includes/collector-checkout-for-woocommerce-functions.php:510
-#. translators: The Collector order data.
-#. Translators: Collector Payment method.
-#. Translators: Collector Payment method.
-msgid "Purchase via %s"
+#: classes/class-collector-checkout-api-callbacks.php:78
+#. translators: Walley private ID.
+msgid ""
+"Order status not set correctly during checkout process. Confirming purchase "
+"via callback from Walley."
 msgstr ""
 
-#: classes/class-collector-checkout-api-callbacks.php:502
-#: classes/class-collector-checkout-gateway.php:323
-#: includes/collector-checkout-for-woocommerce-functions.php:500
+#: classes/class-collector-checkout-api-callbacks.php:119
+msgid "Could not retrieve Walley order during order status check (on API callback)."
+msgstr ""
+
+#: classes/class-collector-checkout-api-callbacks.php:154
+#: includes/collector-checkout-for-woocommerce-functions.php:406
+#: includes/collector-checkout-for-woocommerce-functions.php:823
 msgid "Order is waiting for electronic signing by customer. Payment ID: "
 msgstr ""
 
-#: classes/class-collector-checkout-api-callbacks.php:507
+#: classes/class-collector-checkout-api-callbacks.php:159
 msgid "Order is PENDING APPROVAL by Walley. Payment ID: "
 msgstr ""
 
-#: classes/class-collector-checkout-api-callbacks.php:538
-msgid "No session ID detected."
-msgstr ""
-
-#: classes/class-collector-checkout-api-callbacks.php:582
-msgid "Not all items are in stock."
-msgstr ""
-
-#: classes/class-collector-checkout-api-callbacks.php:596
-#: classes/class-collector-checkout-api-callbacks.php:600
-msgid "Mismatch between the Walley and WooCommerce order total."
-msgstr ""
-
-#: classes/class-collector-checkout-api-callbacks.php:625
-msgid ""
-"An account already exists with this email. Please login to complete the "
-"purchase."
-msgstr ""
-
-#: classes/class-collector-checkout-delivery-module.php:86
+#: classes/class-collector-checkout-delivery-module.php:58
 msgid "Service:"
 msgstr ""
 
-#: classes/class-collector-checkout-delivery-module.php:87
+#: classes/class-collector-checkout-delivery-module.php:59
 msgid "Pickup Point:"
 msgstr ""
 
-#: classes/class-collector-checkout-delivery-module.php:88
+#: classes/class-collector-checkout-delivery-module.php:60
 msgid "Shipment ID:"
 msgstr ""
 
-#: classes/class-collector-checkout-delivery-module.php:92
+#: classes/class-collector-checkout-delivery-module.php:64
 msgid "Shipment information"
 msgstr ""
 
@@ -100,49 +101,37 @@ msgstr ""
 msgid "Walley Checkout payment solution for WooCommerce."
 msgstr ""
 
-#: classes/class-collector-checkout-gateway.php:129
+#: classes/class-collector-checkout-gateway.php:136
 msgid "Walley Checkout (Collector)"
 msgstr ""
 
-#: classes/class-collector-checkout-gateway.php:240
-#. translators: 1. Private id. 2. Order ids.
+#: classes/class-collector-checkout-gateway.php:246
+msgid "There was a problem updating the reference number in Walley."
+msgstr ""
+
+#: classes/class-collector-checkout-gateway.php:257
+msgid "There was a problem retrieving the Walley order."
+msgstr ""
+
+#: classes/class-collector-checkout-gateway.php:273
 msgid ""
-"Private ID %1$s found in multiple orders (%2$s). Setting the order to On "
-"hold."
+"It seems like the WooCommerce and Walley total amount differs. Please, try "
+"again."
 msgstr ""
 
-#: classes/class-collector-checkout-gateway.php:327
-#: includes/collector-checkout-for-woocommerce-functions.php:504
-msgid "Order is PENDING APPROVAL by Collector. Payment ID: "
-msgstr ""
-
-#: classes/class-collector-checkout-gateway.php:338
-msgid "Order data was missing from Walley"
-msgstr ""
-
-#: classes/class-collector-checkout-gateway.php:339
-msgid ""
-"The following fields had missing data from Walley, please verify the order "
-"with Walley."
-msgstr ""
-
-#: classes/class-collector-checkout-gateway.php:343
-msgid "Link to the order"
-msgstr ""
-
-#: classes/class-collector-checkout-gateway.php:481
+#: classes/class-collector-checkout-gateway.php:523
 msgid "Failed to refund full order lines with Walley."
 msgstr ""
 
-#: classes/class-collector-checkout-gateway.php:485
+#: classes/class-collector-checkout-gateway.php:527
 msgid "Failed to refund partial order lines with Walley."
 msgstr ""
 
-#: classes/class-collector-checkout-gateway.php:502
+#: classes/class-collector-checkout-gateway.php:558
 msgid "Org Nr"
 msgstr ""
 
-#: classes/class-collector-checkout-gateway.php:505
+#: classes/class-collector-checkout-gateway.php:561
 msgid "Invoice reference"
 msgstr ""
 
@@ -158,19 +147,22 @@ msgstr ""
 msgid "Payment type: "
 msgstr ""
 
-#: classes/class-collector-checkout-post-checkout.php:59
+#: classes/class-collector-checkout-post-checkout.php:60
+#: classes/class-walley-checkout-order-management.php:57
 msgid ""
 "Could not activate Walley reservation, Walley reservation is already "
 "activated."
 msgstr ""
 
-#: classes/class-collector-checkout-post-checkout.php:90
+#: classes/class-collector-checkout-post-checkout.php:97
+#: classes/class-walley-checkout-order-management.php:146
 msgid ""
 "Could not cancel Walley reservation, Walley reservation is already "
 "cancelled."
 msgstr ""
 
-#: classes/class-collector-checkout-post-checkout.php:121
+#: classes/class-collector-checkout-post-checkout.php:128
+#: classes/class-walley-checkout-order-management.php:352
 #. translators: Invoice status.
 msgid "Invoice status callback from Walley. New Invoice status: %s"
 msgstr ""
@@ -199,31 +191,138 @@ msgid ""
 "shown below."
 msgstr ""
 
-#: classes/class-collector-create-order-fallback.php:57
-#: classes/class-collector-create-order-fallback.php:128
-#. translators: The error message.
-#. translators: The Error code.
-msgid "Error %d: Unable to create order. Please try again."
+#: classes/class-walley-checkout-assets.php:169
+msgid "Please wait while we process your order."
 msgstr ""
 
-#: classes/class-collector-create-order-fallback.php:78
-msgid "Error: Unable to create order. Please try again."
+#: classes/class-walley-checkout-assets.php:170
+msgid ""
+"There are no shipping options available. Please ensure that your address "
+"has been entered correctly, or contact us if you need any help."
 msgstr ""
 
-#: classes/class-collector-create-order-fallback.php:106
-msgid "Error: Unable to add shipping item. Please try again."
+#: classes/class-walley-checkout-meta-box.php:34
+msgid "Walley"
 msgstr ""
 
-#: classes/class-collector-create-order-fallback.php:145
-msgid "Error: Unable to add coupons. Please try again."
+#: classes/class-walley-checkout-meta-box.php:54
+msgid "Payment method"
+msgstr ""
+
+#: classes/class-walley-checkout-meta-box.php:55
+msgid "Walley order id"
+msgstr ""
+
+#: classes/class-walley-checkout-meta-box.php:56
+msgid "Walley order status"
+msgstr ""
+
+#: classes/class-walley-checkout-meta-box.php:57
+msgid "Walley order total"
+msgstr ""
+
+#: classes/class-walley-checkout-meta-box.php:58
+msgid "Order total mismatch"
+msgstr ""
+
+#: classes/class-walley-checkout-meta-box.php:73
+#: classes/class-walley-checkout-meta-box.php:89
+#. Translators: Woo order total & Walley order total.
+msgid "<i>Order total differs between systems (WooCommerce: %1$s, Walley: %2$s)</i>"
+msgstr ""
+
+#: classes/class-walley-checkout-order-actions.php:51
+msgid "Cancel Walley order"
+msgstr ""
+
+#: classes/class-walley-checkout-order-actions.php:52
+msgid "Activate Walley order"
+msgstr ""
+
+#: classes/class-walley-checkout-order-management.php:62
+msgid "Could not activate Walley reservation, Walley order ID is missing."
+msgstr ""
+
+#: classes/class-walley-checkout-order-management.php:74
+msgid "Part activate Walley Checkout order error: "
+msgstr ""
+
+#: classes/class-walley-checkout-order-management.php:82
+#: classes/requests/soap/class-collector-checkout-soap-requests-part-activate-invoice.php:168
+#. Translators: Activated amount.
+#. translators: 1. Due date.
+msgid "Order part activated with Walley Checkout. Activated amount %s"
+msgstr ""
+
+#: classes/class-walley-checkout-order-management.php:101
+msgid "Activate Walley Checkout order error: "
+msgstr ""
+
+#: classes/class-walley-checkout-order-management.php:108
+msgid "Walley Checkout order activated."
+msgstr ""
+
+#: classes/class-walley-checkout-order-management.php:151
+msgid "Could not cancel Walley reservation, Walley order ID is missing."
+msgstr ""
+
+#: classes/class-walley-checkout-order-management.php:166
+msgid "Cancel Walley Checkout order error: "
+msgstr ""
+
+#: classes/class-walley-checkout-order-management.php:173
+msgid "Walley Checkout order cancelled."
+msgstr ""
+
+#: classes/class-walley-checkout-order-management.php:210
+#: classes/class-walley-checkout-order-management.php:211
+msgid "Could not refund Walley order, Walley reservation is cancelled."
+msgstr ""
+
+#: classes/class-walley-checkout-order-management.php:216
+#: classes/class-walley-checkout-order-management.php:217
+msgid ""
+"There is nothing to refund. The order has not yet been captured in "
+"WooCommerce."
+msgstr ""
+
+#: classes/class-walley-checkout-order-management.php:221
+#: classes/class-walley-checkout-order-management.php:222
+msgid "Could not refund Walley reservation, Walley order ID is missing."
+msgstr ""
+
+#: classes/class-walley-checkout-order-management.php:239
+msgid "Refund Walley Checkout order error: "
+msgstr ""
+
+#: classes/class-walley-checkout-order-management.php:255
+#. Translators: Refunded amount.
+msgid "Walley Checkout order refunded with %s."
+msgstr ""
+
+#: classes/class-walley-checkout-order-management.php:276
+#. Translators: Walley payment status.
+msgid ""
+"Cancel Walley order request will not be triggered. Order have status "
+"<i>%s</i> in Walley Merchant Hub."
+msgstr ""
+
+#: classes/class-walley-checkout-order-management.php:281
+#. Translators: Request error message.
+msgid "Unable to get the Walley order. Error message: <i>%s</i>."
+msgstr ""
+
+#: classes/class-walley-checkout.php:143
+msgid "Missing Walley private id. Possible API error"
 msgstr ""
 
 #: classes/requests/helpers/class-collector-checkout-requests-cart.php:54
 msgid "Gift Card"
 msgstr ""
 
-#: classes/requests/helpers/class-collector-checkout-requests-cart.php:112
-#: classes/requests/helpers/class-collector-checkout-requests-helper-order.php:49
+#: classes/requests/helpers/class-collector-checkout-requests-cart.php:115
+#: classes/requests/helpers/class-collector-checkout-requests-helper-order-om.php:89
+#: classes/requests/helpers/class-collector-checkout-requests-helper-order.php:52
 msgid "Rounding fee"
 msgstr ""
 
@@ -274,6 +373,16 @@ msgstr ""
 msgid "Order credited with Collector Bank"
 msgstr ""
 
+#: classes/requests/soap/class-collector-checkout-soap-requests-part-activate-invoice.php:143
+#. Translators: Invoice due date.
+msgid "Invoice due date: %s."
+msgstr ""
+
+#: classes/requests/soap/class-collector-checkout-soap-requests-part-activate-invoice.php:178
+#. translators: 1. Failed request.
+msgid "Order failed to part activate with Walley Checkout - %s"
+msgstr ""
+
 #: classes/requests/soap/class-collector-checkout-soap-requests-part-credit-invoice.php:120
 #. translators: The error message.
 msgid "Collector credit invoice request ERROR: %s"
@@ -284,63 +393,72 @@ msgstr ""
 msgid "Nope"
 msgstr ""
 
-#: collector-checkout-for-woocommerce.php:283
-msgid "Please wait while we process your order."
-msgstr ""
-
-#: collector-checkout-for-woocommerce.php:284
-msgid ""
-"There are no shipping options available. Please ensure that your address "
-"has been entered correctly, or contact us if you need any help."
-msgstr ""
-
-#: collector-checkout-for-woocommerce.php:532
+#: collector-checkout-for-woocommerce.php:439
 msgid "Walley Invoice"
 msgstr ""
 
-#: collector-checkout-for-woocommerce.php:535
+#: collector-checkout-for-woocommerce.php:442
 msgid "Walley Account"
 msgstr ""
 
-#: collector-checkout-for-woocommerce.php:539
+#: collector-checkout-for-woocommerce.php:446
 msgid "Walley Part Payment"
 msgstr ""
 
-#: collector-checkout-for-woocommerce.php:542
+#: collector-checkout-for-woocommerce.php:449
 msgid "Walley Campaign"
 msgstr ""
 
-#: collector-checkout-for-woocommerce.php:545
+#: collector-checkout-for-woocommerce.php:452
 msgid "Walley Card"
 msgstr ""
 
-#: collector-checkout-for-woocommerce.php:549
+#: collector-checkout-for-woocommerce.php:456
 msgid "Walley Bank Transfer"
 msgstr ""
 
-#: includes/collector-checkout-for-woocommerce-functions.php:134
+#: includes/collector-checkout-for-woocommerce-functions.php:148
 msgid "Select another payment method"
 msgstr ""
 
-#: includes/collector-checkout-for-woocommerce-functions.php:147
+#: includes/collector-checkout-for-woocommerce-functions.php:161
 msgid "Person"
 msgstr ""
 
-#: includes/collector-checkout-for-woocommerce-functions.php:148
+#: includes/collector-checkout-for-woocommerce-functions.php:162
 msgid "Company"
 msgstr ""
 
-#: includes/collector-checkout-for-woocommerce-functions.php:210
+#: includes/collector-checkout-for-woocommerce-functions.php:214
 msgid "Unable to add Walley Checkout Invoice Fee to the order."
 msgstr ""
 
-#: includes/collector-checkout-for-woocommerce-functions.php:677
-#: includes/collector-checkout-for-woocommerce-functions.php:683
+#: includes/collector-checkout-for-woocommerce-functions.php:361
+msgid "Could not retreive Walley order during wc_collector_confirm_order function."
+msgstr ""
+
+#: includes/collector-checkout-for-woocommerce-functions.php:410
+#: includes/collector-checkout-for-woocommerce-functions.php:827
+msgid "Order is PENDING APPROVAL by Collector. Payment ID: "
+msgstr ""
+
+#: includes/collector-checkout-for-woocommerce-functions.php:416
+#: includes/collector-checkout-for-woocommerce-functions.php:833
+#. Translators: Collector Payment method.
+msgid "Purchase via %s"
+msgstr ""
+
+#: includes/collector-checkout-for-woocommerce-functions.php:583
+#: includes/collector-checkout-for-woocommerce-functions.php:589
 #. translators: Order total.
 #. translators: Order total notice.
 msgid ""
 "Order needs manual review. WooCommerce order total and Walley order total "
 "do not match. Walley order total: %s."
+msgstr ""
+
+#: includes/collector-checkout-for-woocommerce-functions.php:768
+msgid "Could not retreive Walley order during walley_confirm_order function."
 msgstr ""
 
 #: includes/collector-checkout-settings.php:17
@@ -370,176 +488,187 @@ msgid "Enter your Walley Checkout Username"
 msgstr ""
 
 #: includes/collector-checkout-settings.php:36
-msgid "Password"
-msgstr ""
-
-#: includes/collector-checkout-settings.php:38
-msgid "Enter your Walley Checkout Password"
-msgstr ""
-
-#: includes/collector-checkout-settings.php:43
 msgid "Shared Key"
 msgstr ""
 
-#: includes/collector-checkout-settings.php:45
+#: includes/collector-checkout-settings.php:38
 msgid "Enter your Walley Checkout Shared Key"
 msgstr ""
 
+#: includes/collector-checkout-settings.php:43
+msgid "API Client ID"
+msgstr ""
+
+#: includes/collector-checkout-settings.php:45
+msgid ""
+"Enter your Walley Checkout API Client ID. Used for Walley's new Checkout "
+"and Management API. If entered this API will be used instead of the old API."
+msgstr ""
+
 #: includes/collector-checkout-settings.php:50
+msgid "API Secret"
+msgstr ""
+
+#: includes/collector-checkout-settings.php:52
+msgid ""
+"Enter your Walley Checkout API Secret. Used for Walley's new Checkout and "
+"Management API. If entered this API will be used instead of the old API."
+msgstr ""
+
+#: includes/collector-checkout-settings.php:57
+msgid "Password"
+msgstr ""
+
+#: includes/collector-checkout-settings.php:59
+msgid ""
+"Enter your Walley Checkout Password. Used for Walley's old SOAP based "
+"Payments API (for order management)."
+msgstr ""
+
+#: includes/collector-checkout-settings.php:64
 msgid "Sweden"
 msgstr ""
 
-#: includes/collector-checkout-settings.php:54
+#: includes/collector-checkout-settings.php:68
 msgid "Merchant ID Sweden B2C"
 msgstr ""
 
-#: includes/collector-checkout-settings.php:56
+#: includes/collector-checkout-settings.php:70
 msgid "Enter your Walley Checkout Merchant ID for B2C purchases in Sweden"
 msgstr ""
 
-#: includes/collector-checkout-settings.php:61
+#: includes/collector-checkout-settings.php:75
 msgid "Merchant ID Sweden B2B"
 msgstr ""
 
-#: includes/collector-checkout-settings.php:63
+#: includes/collector-checkout-settings.php:77
 msgid "Enter your Walley Checkout Merchant ID for B2B purchases in Sweden"
 msgstr ""
 
-#: includes/collector-checkout-settings.php:68
-msgid "Shipping Module Sweden"
+#: includes/collector-checkout-settings.php:82
+#: includes/collector-checkout-settings.php:112
+#: includes/collector-checkout-settings.php:142
+#: includes/collector-checkout-settings.php:165
+msgid "Walley nShift Delivery"
 msgstr ""
 
-#: includes/collector-checkout-settings.php:70
-msgid "Activate Shipping Module for Sweden"
+#: includes/collector-checkout-settings.php:84
+msgid "Activate Walley nShift Delivery Sweden"
 msgstr ""
 
-#: includes/collector-checkout-settings.php:74
-msgid "Norway"
-msgstr ""
-
-#: includes/collector-checkout-settings.php:78
-msgid "Merchant ID Norway B2C"
-msgstr ""
-
-#: includes/collector-checkout-settings.php:80
-msgid "Enter your Walley Checkout Merchant ID for B2C purchases in Norway"
-msgstr ""
-
-#: includes/collector-checkout-settings.php:85
-msgid "Merchant ID Norway B2B"
-msgstr ""
-
-#: includes/collector-checkout-settings.php:87
-msgid "Enter your Walley Checkout Merchant ID for B2B purchases in Norway"
-msgstr ""
-
-#: includes/collector-checkout-settings.php:92
-msgid "Shipping Module Norway"
+#: includes/collector-checkout-settings.php:88
+msgid "Custom Profile Sweden"
 msgstr ""
 
 #: includes/collector-checkout-settings.php:94
-msgid "Activate Shipping Module for Norway"
+msgid "Norway"
 msgstr ""
 
 #: includes/collector-checkout-settings.php:98
-msgid "Finland"
+msgid "Merchant ID Norway B2C"
 msgstr ""
 
-#: includes/collector-checkout-settings.php:102
-msgid "Merchant ID Finland B2C"
+#: includes/collector-checkout-settings.php:100
+msgid "Enter your Walley Checkout Merchant ID for B2C purchases in Norway"
 msgstr ""
 
-#: includes/collector-checkout-settings.php:104
-msgid "Enter your Walley Checkout Merchant ID for B2C purchases in Finland"
+#: includes/collector-checkout-settings.php:105
+msgid "Merchant ID Norway B2B"
 msgstr ""
 
-#: includes/collector-checkout-settings.php:109
-msgid "Merchant ID Finland B2B"
+#: includes/collector-checkout-settings.php:107
+msgid "Enter your Walley Checkout Merchant ID for B2B purchases in Norway"
 msgstr ""
 
-#: includes/collector-checkout-settings.php:111
-msgid "Enter your Walley Checkout Merchant ID for B2B purchases in Finland"
-msgstr ""
-
-#: includes/collector-checkout-settings.php:116
-msgid "Shipping Module Finland"
+#: includes/collector-checkout-settings.php:114
+msgid "Activate Walley nShift Delivery Norway"
 msgstr ""
 
 #: includes/collector-checkout-settings.php:118
-msgid "Activate Shipping Module for Finland"
+msgid "Custom Profile Norway"
 msgstr ""
 
-#: includes/collector-checkout-settings.php:122
-msgid "Denmark"
-msgstr ""
-
-#: includes/collector-checkout-settings.php:126
-msgid "Merchant ID Denmark B2C"
+#: includes/collector-checkout-settings.php:124
+msgid "Finland"
 msgstr ""
 
 #: includes/collector-checkout-settings.php:128
-msgid "Enter your Walley Checkout Merchant ID for B2C purchases in Denmark"
+msgid "Merchant ID Finland B2C"
 msgstr ""
 
-#: includes/collector-checkout-settings.php:133
-msgid "Shipping Module Denmark"
+#: includes/collector-checkout-settings.php:130
+msgid "Enter your Walley Checkout Merchant ID for B2C purchases in Finland"
 msgstr ""
 
 #: includes/collector-checkout-settings.php:135
-msgid "Activate Shipping Module for Denmark"
+msgid "Merchant ID Finland B2B"
 msgstr ""
 
-#: includes/collector-checkout-settings.php:139
-msgid "Checkout settings"
+#: includes/collector-checkout-settings.php:137
+msgid "Enter your Walley Checkout Merchant ID for B2B purchases in Finland"
 msgstr ""
 
-#: includes/collector-checkout-settings.php:143
-msgid "Checkout version"
-msgstr ""
-
-#: includes/collector-checkout-settings.php:145
-msgid ""
-"A brand new Checkout is available, project name Checkout 2.0. The current "
-"solution (referred as Checkout 1.0) will be deprecated during 2022."
-msgstr ""
-
-#: includes/collector-checkout-settings.php:147
-msgid "Checkout 1.0"
+#: includes/collector-checkout-settings.php:144
+msgid "Activate Walley nShift Delivery Finland"
 msgstr ""
 
 #: includes/collector-checkout-settings.php:148
-msgid "Checkout 2.0"
+msgid "Custom Profile Finland"
 msgstr ""
 
-#: includes/collector-checkout-settings.php:153
-msgid "Checkout layout"
-msgstr ""
-
-#: includes/collector-checkout-settings.php:156
-msgid "One column checkout"
-msgstr ""
-
-#: includes/collector-checkout-settings.php:157
-msgid "Two column checkout (Walley Checkout in right column)"
+#: includes/collector-checkout-settings.php:154
+msgid "Denmark"
 msgstr ""
 
 #: includes/collector-checkout-settings.php:158
+msgid "Merchant ID Denmark B2C"
+msgstr ""
+
+#: includes/collector-checkout-settings.php:160
+msgid "Enter your Walley Checkout Merchant ID for B2C purchases in Denmark"
+msgstr ""
+
+#: includes/collector-checkout-settings.php:167
+msgid "Activate Walley nShift Delivery Denmark"
+msgstr ""
+
+#: includes/collector-checkout-settings.php:171
+msgid "Custom Profile Denmark"
+msgstr ""
+
+#: includes/collector-checkout-settings.php:177
+msgid "Checkout settings"
+msgstr ""
+
+#: includes/collector-checkout-settings.php:181
+msgid "Checkout layout"
+msgstr ""
+
+#: includes/collector-checkout-settings.php:184
+msgid "One column checkout"
+msgstr ""
+
+#: includes/collector-checkout-settings.php:185
+msgid "Two column checkout (Walley Checkout in right column)"
+msgstr ""
+
+#: includes/collector-checkout-settings.php:186
 msgid "Two column checkout (Walley Checkout in left column)"
 msgstr ""
 
-#: includes/collector-checkout-settings.php:159
+#: includes/collector-checkout-settings.php:187
 msgid "Two column checkout (Walley Checkout in left column) - Storefront light"
 msgstr ""
 
-#: includes/collector-checkout-settings.php:161
+#: includes/collector-checkout-settings.php:189
 msgid "Select the Checkout layout."
 msgstr ""
 
-#: includes/collector-checkout-settings.php:166
+#: includes/collector-checkout-settings.php:194
 msgid "Invoice fee ID"
 msgstr ""
 
-#: includes/collector-checkout-settings.php:169
+#: includes/collector-checkout-settings.php:197
 #. Translators: link to docs
 msgid ""
 "Create a hidden (simple) product that acts as the invoice fee. Enter the "
@@ -547,131 +676,133 @@ msgid ""
 "disable. <a href=\"%s\" target=\"_blank\">Read more</a>."
 msgstr ""
 
-#: includes/collector-checkout-settings.php:174
+#: includes/collector-checkout-settings.php:202
 msgid "Default customer"
 msgstr ""
 
-#: includes/collector-checkout-settings.php:176
+#: includes/collector-checkout-settings.php:204
 msgid ""
 "Sets the default customer/checkout type for Walley Checkout (if offering "
 "both B2B & B2C)"
 msgstr ""
 
-#: includes/collector-checkout-settings.php:178
+#: includes/collector-checkout-settings.php:206
 msgid "B2C"
 msgstr ""
 
-#: includes/collector-checkout-settings.php:179
+#: includes/collector-checkout-settings.php:207
 msgid "B2B"
 msgstr ""
 
-#: includes/collector-checkout-settings.php:184
+#: includes/collector-checkout-settings.php:212
 msgid "Checkout button color"
 msgstr ""
 
-#: includes/collector-checkout-settings.php:186
+#: includes/collector-checkout-settings.php:214
 msgid "Background color of call to action buttons in Walley Checkout."
 msgstr ""
 
-#: includes/collector-checkout-settings.php:191
-msgid "Validation Callback"
-msgstr ""
-
-#: includes/collector-checkout-settings.php:193
-msgid "Tick the checkbox to activate Walley Validation Callback."
-msgstr ""
-
-#: includes/collector-checkout-settings.php:195
-#. Translators: link to docs
-msgid ""
-"Triggered by Collector when customer clicks the Complete purchase button in "
-"Walley Checkout. <a href=\"%s\" target=\"_blank\">Read more about "
-"validation callback.</a>"
-msgstr ""
-
-#: includes/collector-checkout-settings.php:199
+#: includes/collector-checkout-settings.php:219
 msgid "Electronic ID fields"
 msgstr ""
 
-#: includes/collector-checkout-settings.php:201
+#: includes/collector-checkout-settings.php:221
 msgid ""
 "Tick the checkbox to activate Requires Electronic ID Fields settings in "
 "product pages."
 msgstr ""
 
-#: includes/collector-checkout-settings.php:203
+#: includes/collector-checkout-settings.php:223
 #. Translators: link to docs
 msgid "<a href=\"%s\" target=\"_blank\">Read more about this.</a>"
 msgstr ""
 
-#: includes/collector-checkout-settings.php:207
+#: includes/collector-checkout-settings.php:227
 msgid "Order management settings"
 msgstr ""
 
-#: includes/collector-checkout-settings.php:211
+#: includes/collector-checkout-settings.php:231
 msgid "Manage orders"
 msgstr ""
 
-#: includes/collector-checkout-settings.php:213
+#: includes/collector-checkout-settings.php:233
 msgid ""
 "Enable WooCommerce to manage orders in Walley backend (when order status "
 "changes to Cancelled and Completed in WooCommerce)."
 msgstr ""
 
-#: includes/collector-checkout-settings.php:217
+#: includes/collector-checkout-settings.php:237
 msgid "Invoice number on order page"
 msgstr ""
 
-#: includes/collector-checkout-settings.php:219
+#: includes/collector-checkout-settings.php:239
 msgid ""
 "Display Walley Invoice Number after WooCommerce Order Number on WooCommerce "
 "order page (-> WooCommerce -> Orders)."
 msgstr ""
 
-#: includes/collector-checkout-settings.php:223
+#: includes/collector-checkout-settings.php:243
+msgid "Activate individual order lines"
+msgstr ""
+
+#: includes/collector-checkout-settings.php:245
+msgid "If checked, each order line will be activated instead of the entire order."
+msgstr ""
+
+#: includes/collector-checkout-settings.php:249
+msgid "Activate rounding order line"
+msgstr ""
+
+#: includes/collector-checkout-settings.php:251
+msgid ""
+"If checked, an extra rounding order line will be sent to Walley if the sum "
+"of all order lines does not match WooCommerce cart/order total."
+msgstr ""
+
+#: includes/collector-checkout-settings.php:255
 msgid "Test Mode Settings"
 msgstr ""
 
-#: includes/collector-checkout-settings.php:227
+#: includes/collector-checkout-settings.php:259
 msgid "Test mode"
 msgstr ""
 
-#: includes/collector-checkout-settings.php:229
+#: includes/collector-checkout-settings.php:261
 msgid "Enable Test mode for Walley Checkout."
 msgstr ""
 
-#: includes/collector-checkout-settings.php:233
+#: includes/collector-checkout-settings.php:265
 msgid "Debug"
 msgstr ""
 
-#: includes/collector-checkout-settings.php:235
+#: includes/collector-checkout-settings.php:267
 msgid "Enable logging."
 msgstr ""
 
-#: includes/collector-checkout-settings.php:237
+#: includes/collector-checkout-settings.php:269
 #. Translators: link to logs
 msgid "Log Walley events, in <code>%s</code>"
 msgstr ""
 
-#: includes/collector-checkout-settings.php:250
+#: includes/collector-checkout-settings.php:282
 msgid "Display checkout privacy policy text"
 msgstr ""
 
-#: includes/collector-checkout-settings.php:251
+#: includes/collector-checkout-settings.php:283
 msgid ""
 "Select if you want to show the <em>Checkout privacy policy</em> text on the "
 "checkout page, and where you want to display it."
 msgstr ""
 
-#: includes/collector-checkout-settings.php:255
+#: includes/collector-checkout-settings.php:287
 msgid "Do not display"
 msgstr ""
 
-#: includes/collector-checkout-settings.php:256
+#: includes/collector-checkout-settings.php:288
 msgid "Display above checkout"
 msgstr ""
 
-#: includes/collector-checkout-settings.php:257
+#: includes/collector-checkout-settings.php:289
 msgid "Display below checkout"
 msgstr ""
 
@@ -695,4 +826,8 @@ msgstr ""
 
 #: templates/collector-cart-shipping.php:24
 msgid "Shipping"
+msgstr ""
+
+#: templates/walley-checkout-meta-box.php:21
+msgid "Update order to Walley"
 msgstr ""

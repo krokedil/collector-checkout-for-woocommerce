@@ -4,7 +4,7 @@ Tags: ecommerce, e-commerce, woocommerce, collector, checkout, walley
 Requires at least: 5.0
 Tested up to: 6.3.1
 Requires PHP: 7.3
-Stable tag: 4.0.7
+Stable tag: 4.0.8
 WC requires at least: 6.0.0
 WC tested up to: 8.1.1
 License: GPLv3
@@ -39,6 +39,10 @@ For help setting up and configuring Walley Checkout for WooCommerce please refer
 
 
 == CHANGELOG ==
+= 2023.10.06    - version 4.0.8 =
+* Fix           - Resolved compatibility issues with Redlight Media's shipping plugins. This, by extension, also solved an issue with "WooCommerce Stripe Gateway" (by WooCommerce) where the shipping options would no longer appear in the order review, resulting in order total discrepancy in the checkout page which would prevent the customer from placing the order. 
+* Tweak         - Update the plugin URLs.
+
 = 2023.09.20    - version 4.0.7 =
 * Fix           - Due to a change introduced in WooCommerce version 8.1, the "thank you" snippet wouldn't be rendered as expected. This has now been fixed.
 
