@@ -6,8 +6,8 @@
  *
  * @wordpress-plugin
  * Plugin Name:     Walley Checkout for WooCommerce
- * Plugin URI:      https://krokedil.se/collector/
- * Description:     Extends WooCommerce. Provides a <a href="https://www.collector.se/" target="_blank">Walley Checkout</a> checkout for WooCommerce.
+ * Plugin URI:      https://krokedil.se/produkt/walley-checkout/
+ * Description:     Extends WooCommerce. Provides a <a href="https://www.walley.se/foretag/checkout/" target="_blank">Walley Checkout</a> checkout for WooCommerce.
  * Version:         4.0.7
  * Author:          Krokedil
  * Author URI:      https://krokedil.se/
