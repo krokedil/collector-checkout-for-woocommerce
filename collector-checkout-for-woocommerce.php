@@ -6,16 +6,16 @@
  *
  * @wordpress-plugin
  * Plugin Name:     Walley Checkout for WooCommerce
- * Plugin URI:      https://krokedil.se/collector/
- * Description:     Extends WooCommerce. Provides a <a href="https://www.collector.se/" target="_blank">Walley Checkout</a> checkout for WooCommerce.
- * Version:         4.0.7
+ * Plugin URI:      https://krokedil.se/produkt/walley-checkout/
+ * Description:     Extends WooCommerce. Provides a <a href="https://www.walley.se/foretag/checkout/" target="_blank">Walley Checkout</a> checkout for WooCommerce.
+ * Version:         4.0.8
  * Author:          Krokedil
  * Author URI:      https://krokedil.se/
  * Text Domain:     collector-checkout-for-woocommerce
  * Domain Path:     /languages
  *
  * WC requires at least: 6.0.0
- * WC tested up to: 8.0.3
+ * WC tested up to: 8.1.1
  *
  * Copyright:       © 2017-2023 Krokedil.
  * License:         GNU General Public License v3.0
@@ -28,7 +28,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 define( 'COLLECTOR_BANK_PLUGIN_DIR', untrailingslashit( plugin_dir_path( __FILE__ ) ) );
 define( 'COLLECTOR_BANK_PLUGIN_URL', untrailingslashit( plugin_dir_url( __FILE__ ) ) );
-define( 'COLLECTOR_BANK_VERSION', '4.0.7' );
+define( 'COLLECTOR_BANK_VERSION', '4.0.8' );
 define( 'COLLECTOR_DB_VERSION', '1' );
 
 if ( ! class_exists( 'Collector_Checkout' ) ) {
