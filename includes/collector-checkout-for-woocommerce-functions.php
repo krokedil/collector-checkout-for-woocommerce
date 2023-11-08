@@ -808,9 +808,10 @@ function walley_confirm_order( $order_id, $private_id = null ) {
 		}
 	}
 
-	update_post_meta( $order_id, '_collector_payment_method', $payment_method );
-	update_post_meta( $order_id, '_collector_payment_id', $payment_id );
-	update_post_meta( $order_id, '_collector_order_id', sanitize_key( $walley_order_id ) );
+	$order->update_meta_data( '_collector_payment_method', $payment_method );
+	$order->update_meta_data( '_collector_payment_id', $payment_id );
+	$order->update_meta_data( '_collector_order_id', sanitize_key( $walley_order_id ) );
+	$order->save();
 
 	wc_collector_save_shipping_reference_to_order( $order_id, $collector_order );
 
@@ -819,8 +820,9 @@ function walley_confirm_order( $order_id, $private_id = null ) {
 
 	// Save shipping data.
 	if ( isset( $collector_order['data']['shipping'] ) ) {
-		update_post_meta( $order_id, '_collector_delivery_module_data', wp_json_encode( $collector_order['data']['shipping'], JSON_UNESCAPED_UNICODE ) );
-		update_post_meta( $order_id, '_collector_delivery_module_reference', $collector_order['data']['shipping']['pendingShipment']['id'] );
+		$order->update_meta_data( '_collector_delivery_module_data', wp_json_encode( $collector_order['data']['shipping'], JSON_UNESCAPED_UNICODE ) );
+		$order->update_meta_data( '_collector_delivery_module_reference', $collector_order['data']['shipping']['pendingShipment']['id'] );
+		$order->save();
 	}
 
 	if ( 'Preliminary' === $payment_status || 'Completed' === $payment_status ) {
