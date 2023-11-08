@@ -395,21 +395,25 @@ function wc_collector_confirm_order( $order_id, $private_id = null ) {
 		}
 	}
 
-	update_post_meta( $order_id, '_collector_payment_method', $payment_method );
-	update_post_meta( $order_id, '_collector_payment_id', $payment_id );
-	update_post_meta( $order_id, '_collector_order_id', sanitize_key( $walley_order_id ) );
+	$order->update_meta_data( '_collector_payment_method', $payment_method );
+	$order->update_meta_data( '_collector_payment_id', $payment_id );
+	$order->update_meta_data( '_collector_order_id', sanitize_key( $walley_order_id ) );
+	$order->save();
 	wc_collector_save_shipping_reference_to_order( $order_id, $collector_order );
 
 	if ( 'Preliminary' === $payment_status || 'Completed' === $payment_status ) {
 		$order->payment_complete( $payment_id );
 	} elseif ( 'Signing' === $payment_status ) {
 		$order->add_order_note( __( 'Order is waiting for electronic signing by customer. Payment ID: ', 'collector-checkout-for-woocommerce' ) . $payment_id );
-		update_post_meta( $order_id, '_transaction_id', $payment_id );
+		$order->update_meta_data( '_transaction_id', $payment_id );
+		$order->save();
+
 		$order->update_status( 'on-hold' );
 	} else {
 		$order->add_order_note( __( 'Order is PENDING APPROVAL by Collector. Payment ID: ', 'collector-checkout-for-woocommerce' ) . $payment_id );
-		update_post_meta( $order_id, '_transaction_id', $payment_id );
-		$order->update_status( 'on-hold' );
+		$order->add_meta_data( '_transaction_id', $payment_id );
+		$order->save();
+		$order->update_meta_data( 'on-hold' );
 	}
 
 	// Translators: Collector Payment method.
@@ -424,10 +428,12 @@ function wc_collector_confirm_order( $order_id, $private_id = null ) {
  * @return void
  */
 function wc_collector_save_shipping_reference_to_order( $order_id, $collector_order ) {
+	$order = wc_get_order( $order_id );
 	$order_items = $collector_order['data']['order']['items'] ?? array();
 	foreach ( $order_items as $item ) {
 		if ( strpos( $item['id'], 'shipping|' ) !== false ) {
-			update_post_meta( $order_id, '_collector_shipping_reference', $item['id'] );
+			$order->update_meta_data( '_collector_shipping_reference', $item['id'] );
+			$order->save();
 		}
 	}
 }

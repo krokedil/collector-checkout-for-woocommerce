@@ -137,7 +137,8 @@ class Collector_Checkout_SOAP_Requests_Part_Activate_Invoice {
 		if ( isset( $request->TotalAmount ) ) { // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
 
 			if ( isset( $request->InvoiceUrl ) ) { // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
-				update_post_meta( $order_id, '_collector_invoice_url', wc_clean( $request->InvoiceUrl ) );// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
+				$order->update_meta_data( '_collector_invoice_url', wc_clean( $request->InvoiceUrl ) );// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
+				$order->save();
 				$due_date = gmdate( get_option( 'date_format' ) . ' - ' . get_option( 'time_format' ), strtotime( $request->DueDate ) ); // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
 				// Translators: Invoice due date.
 				$due_date = sprintf( __( 'Invoice due date: %s.', 'collector-checkout-for-woocommerce' ), $due_date );
@@ -157,16 +158,18 @@ class Collector_Checkout_SOAP_Requests_Part_Activate_Invoice {
 							(array) $request,
 						);
 					}
-					update_post_meta( $parent_order_id, '_collector_activate_invoice_data', wp_json_encode( $collector_new_invoice_no ) );
+					$order->update_meta_data( '_collector_activate_invoice_data', wp_json_encode( $collector_new_invoice_no ) );
+					$order->save();
 				}
 
-				update_post_meta( $order_id, '_collector_activate_invoice_data', wp_json_encode( (array) $request ) );
-
+				$order->update_meta_data( '_collector_activate_invoice_data', wp_json_encode( (array) $request ) );
+				$order->save();
 			}
 
 			// translators: 1. Due date.
 			$order->add_order_note( sprintf( __( 'Order part activated with Walley Checkout. Activated amount %s', 'collector-checkout-for-woocommerce' ), wc_price( $request->TotalAmount, array( 'currency' => $order->get_currency() ) ), $due_date ) );
-			update_post_meta( $order_id, '_collector_order_activated', time() );
+			$order->update_meta_data( $order_id, '_collector_order_activated', time() );
+			$order->save();
 
 			$log = CCO_WC()->logger::format_log( $order_id, 'SOAP', 'CCO Part Activate order ', $args, '', wp_json_encode( $request ), '' );
 			CCO_WC()->logger::log( $log );

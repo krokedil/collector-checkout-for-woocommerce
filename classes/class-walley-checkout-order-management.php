@@ -80,7 +80,8 @@ class  Walley_Checkout_Order_Management {
 
 			// Translators: Activated amount.
 			$order->add_order_note( sprintf( __( 'Order part activated with Walley Checkout. Activated amount %s', 'collector-checkout-for-woocommerce' ), wc_price( $order->get_total(), array( 'currency' => $order->get_currency() ) ) ) );
-			update_post_meta( $order_id, '_collector_order_activated', time() );
+			$order->update_meta_data( '_collector_order_activated', time() );
+			$order->save();
 
 			// Save received data to WP transient.
 			walley_save_order_data_to_transient(
@@ -107,7 +108,8 @@ class  Walley_Checkout_Order_Management {
 
 			$note = __( 'Walley Checkout order activated.', 'collector-checkout-for-woocommerce' );
 			$order->add_order_note( $note );
-			update_post_meta( $order_id, '_collector_order_activated', time() );
+			$order->update_meta_data( '_collector_order_activated', time() );
+			$order->save();
 
 			// Save received data to WP transient.
 			walley_save_order_data_to_transient(
@@ -147,7 +149,7 @@ class  Walley_Checkout_Order_Management {
 			return;
 		}
 
-		if ( empty( get_post_meta( $order_id, '_collector_order_id', true ) ) ) {
+		if ( $order->get_meta( '_collector_order_id', true ) ) {
 			$order->add_order_note( __( 'Could not cancel Walley reservation, Walley order ID is missing.', 'collector-checkout-for-woocommerce' ) );
 			return;
 		}
@@ -172,7 +174,8 @@ class  Walley_Checkout_Order_Management {
 
 		$note = __( 'Walley Checkout order cancelled.', 'collector-checkout-for-woocommerce' );
 		$order->add_order_note( $note );
-		update_post_meta( $order_id, '_collector_order_cancelled', time() );
+		$order->update_meta_data( '_collector_order_cancelled', time() );
+		$order->save();
 
 		// Save received data to WP transient.
 		walley_save_order_data_to_transient(
