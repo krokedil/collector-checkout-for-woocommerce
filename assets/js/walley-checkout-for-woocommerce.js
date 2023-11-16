@@ -35,35 +35,113 @@ jQuery( function( $ ) {
 
 			if( window.walley ) {
 				window.walley.checkout.api.onBeforePayment(async function() {
-					console.log('onBeforePayment from Walley triggered');
 					walleyCheckoutWc.logToFile( 'onBeforePayment from Walley triggered' );
-					try {
-						let placeOrderResult = await walleyCheckoutWc.placeWalleyOrder();
-						console.log('placeOrderResult', placeOrderResult);
-						if (placeOrderResult.result === 'success') {
-							console.log('onBeforePayment success');
-							walleyCheckoutWc.logToFile('Successfully placed order.');
-							return Promise.resolve();
-						} else {
-							let messages = placeOrderResult.messages.replace(/<\/?[^>]+(>|$)/g, "").replace(/(\t|\n)/gm, "");
 
-							throw new Error(messages);
-						}
+					// Setup a timeout that will be used if the onBeforePaymentHandler takes too long to return a rejected promise.
+					const timeout = new Promise((resolve, reject) => {
+						setTimeout(() => {
+							reject({
+								"title": "Place order issue.",
+								"message": "Timeout"
+							});
+						}, 9500); // 9.5 seconds
+					});
+
+					try {
+
+						// Setup a handler that will be used to place the order.
+						const handler = new Promise(async (resolve) => {
+							await walleyCheckoutWc.placeWalleyOrderNew();
+							clearTimeout(timeout);
+							resolve();
+						});
+
+						// Race the timeout against the onBeforePaymentHandler.
+						await Promise.race([handler, timeout])
+
+						// If we get here, the order was placed successfully.
+						walleyCheckoutWc.logToFile('Successfully placed order.');
 					} catch (error) {
 						console.log('onBeforePayment error', error);
-						let errorMessage = error.message ?? error.statusText ?? 'Failed to place the order.';
+						clearTimeout(timeout);
+						const message  = error.message.replace(/<\/?[^>]+(>|$)/g, "").replace(/(\t|\n)/gm, "") ?? 'Unknown error.';
 
-						await walleyCheckoutWc.failOrder('submission', errorMessage);
+						walleyCheckoutWc.failOrder( null, message );
 
 						return Promise.reject(
 							{
 								"title": "Place order issue.",
-								"message": errorMessage
+								"message": message
 							}
 						);
 					}
 				});
 			}
+		},
+
+		extractErrorMessage: function(error) {
+			// Check if error is a jqXHR object
+			if (error && error.responseText) {
+				try {
+					// Attempt to parse JSON response
+					let jsonResponse = JSON.parse(error.responseText);
+					return jsonResponse.message || jsonResponse.error || 'Unknown AJAX error';
+				} catch {
+					// Fallback for non-JSON response
+					return error.statusText || 'Unknown AJAX error';
+				}
+			} else if (error instanceof Error) {
+				// Standard Error object
+				return error.message;
+			} else {
+				// Fallback for other types of errors
+				return 'Unknown error';
+			}
+		},
+
+		placeWalleyOrderNew: async function() {
+			$('.woocommerce-checkout-review-order-table').block({
+				message: null,
+				overlayCSS: {
+					background: '#fff',
+					opacity: 0.6
+				}
+			});
+
+			try {
+				const walleyOrderResponse = await this.getWalleyOrderNew();
+				if (!walleyOrderResponse.success) {
+					throw new Error('Failed to get the Walley order.');
+				}
+				walleyCheckoutWc.setAddressData(walleyOrderResponse.data);
+
+				const submitOrderResponse = await this.submitOrderNew();
+				if (submitOrderResponse.result !== 'success') {
+					throw new Error(submitOrderResponse.messages);
+				}
+			} catch (error) {
+				// Extract and log the error message
+				let errorMessage = this.extractErrorMessage(error);
+				throw new Error(errorMessage);
+			}
+		},
+
+		getWalleyOrderNew: function () {
+			return $.ajax({
+				type: 'POST',
+				data: { nonce: walleyParams.get_order_nonce },
+				dataType: 'json',
+				url: walleyParams.get_order_url,
+			});
+		},
+
+		submitOrderNew: function () {
+			return $.ajax({
+				type: 'POST',
+				url: walleyParams.submitOrder,
+				data: $('form.checkout').serialize(),
+				dataType: 'json',
+			});
 		},
 
 		/**
@@ -301,29 +379,7 @@ jQuery( function( $ ) {
 				$('#shipping_email').blur();
 			}
 		},
-		placeWalleyOrder: async function() {
-			let walleyOrder = await this.getWalleyOrder();
-			if (walleyOrder.success) {
-				console.log('getWalleyOrder success');
-				return this.submitOrder();
-			} else {
-				return walleyOrder;
-			}
-		},
-		getWalleyOrder: function () {
-			return $.ajax({
-				type: 'POST',
-				data: { nonce: walleyParams.get_order_nonce },
-				dataType: 'json',
-				url: walleyParams.get_order_url,
-				error: function (error) {
-					console.error('getWalleyOrder AJAX error', error);
-				},
-				complete: function (response) {
-					walleyCheckoutWc.setAddressData(response.responseJSON.data);
-				}
-			});
-		},
+
 		/*
 		 * Sets the WooCommerce form field data.
 		 */
@@ -357,38 +413,11 @@ jQuery( function( $ ) {
 			$('#shipping_phone').val(addressData.shipping_phone);
 			$('#shipping_country').val(addressData.shipping_country);
 		},
-		/**
-		 * Submit the order using the WooCommerce AJAX function.
-		 */
-		submitOrder: function () {
-			$('.woocommerce-checkout-review-order-table').block({
-				message: null,
-				overlayCSS: {
-					background: '#fff',
-					opacity: 0.6
-				}
-			});
 
-			return $.ajax({
-				type: 'POST',
-				url: walleyParams.submitOrder,
-				data: $('form.checkout').serialize(),
-				dataType: 'json',
-				error: function (error) {
-					console.error('submitOrder AJAX error', error);
-					let message;
-					try {
-						message = JSON.stringify(error);
-					} catch (e) {
-						message = 'Failed to parse error message.';
-					}
-					walleyCheckoutWc.logToFile('AJAX error | ' + message);
-				}
-			});
-		},
 		failOrder: async function( event, errorMessage ) {
 			console.log('failOrder', errorMessage);
 			walleyCheckoutWc.logToFile( 'Checkout error | Error message: ' + errorMessage );
+
 			const errorClasses = 'woocommerce-NoticeGroup woocommerce-NoticeGroup-checkout';
 			const errorWrapper = `<div class="${ errorClasses }"><ul class="woocommerce-error" role="alert"><li>${ errorMessage }</li></ul></div>`;
 			// Re-enable the form.
