@@ -26,7 +26,7 @@ class Collector_Checkout_Requests_Helper_Order {
 		$order_lines = array();
 
 		foreach ( $order->get_items() as $item ) {
-			array_push( $order_lines, self::get_order_line_items( $item ) );
+			array_push( $order_lines, self::get_order_line_items( $item, $order ) );
 		}
 		foreach ( $order->get_fees() as $fee ) {
 			array_push( $order_lines, self::get_order_line_fees( $fee ) );
@@ -79,12 +79,12 @@ class Collector_Checkout_Requests_Helper_Order {
 	 * @param WC_Order_Item_Product $order_item The WooCommerce order line item.
 	 * @return array
 	 */
-	public static function get_order_line_items( $order_item ) {
+	public static function get_order_line_items( $order_item, $order ) {
 		return array(
 			'id'          => self::get_article_number( $order_item ),
 			'description' => substr( $order_item->get_name(), 0, 50 ),
 			'quantity'    => $order_item->get_quantity(),
-			'vat'         => intval( round( ( $order_item->get_total_tax() / $order_item->get_total() ), 2 ) * 100 ),
+			'vat'         => self::get_tax_rate( $order_item, $order ),
 			'unitPrice'   => round( ( ( $order_item->get_total() + $order_item->get_total_tax() ) / $order_item->get_quantity() ), 2 ),
 		);
 	}
@@ -184,6 +184,34 @@ class Collector_Checkout_Requests_Helper_Order {
 			}
 		}
 		// If we get here, there is no tax set for the order item. Return zero.
+		return 0;
+	}
+
+	/**
+	 * Get the tax rate.
+	 *
+	 * @param WC_Order_Item_Product|WC_Order_Item_Shipping|WC_Order_Item_Fee $order_item The WooCommerce order item.
+	 * @param WC_Order                                                       $order The WooCommerce order.
+	 * @return int
+	 */
+	public static function get_tax_rate( $order_item, $order ) {
+		// If we don't have any tax, return 0.
+		if ( '0' === $order_item->get_total_tax() ) {
+			return 0;
+		}
+
+		$tax_items = $order->get_items( 'tax' );
+		/**
+		 * Process the tax items.
+		 *
+		 * @var WC_Order_Item_Tax $tax_item The WooCommerce order tax item.
+		 */
+		foreach ( $tax_items as $tax_item ) {
+			$rate_id = $tax_item->get_rate_id();
+			if ( key( $order_item->get_taxes()['total'] ) === $rate_id ) {
+				return (string) round( WC_Tax::_get_tax_rate( $rate_id )['tax_rate'] );
+			}
+		}
 		return 0;
 	}
 }
