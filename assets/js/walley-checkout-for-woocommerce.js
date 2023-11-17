@@ -39,7 +39,7 @@ jQuery( function( $ ) {
 					const timeout = new Promise((resolve, reject) => {
 						setTimeout(() => {
 							reject({
-								"title": "Place order issue.",
+								"title": "Place WooCommerce order issue.",
 								"message": "Timeout"
 							});
 						}, 9500); // 9.5 seconds
@@ -66,7 +66,7 @@ jQuery( function( $ ) {
 
 						return Promise.reject(
 							{
-								"title": "Place order issue.",
+								"title": "Place WooCommerce order issue.",
 								"message": message
 							}
 						);
