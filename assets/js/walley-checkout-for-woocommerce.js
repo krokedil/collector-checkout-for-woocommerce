@@ -35,8 +35,6 @@ jQuery( function( $ ) {
 
 			if( window.walley ) {
 				window.walley.checkout.api.onBeforePayment(async function() {
-					walleyCheckoutWc.logToFile( 'onBeforePayment from Walley triggered' );
-
 					// Setup a timeout that will be used if the onBeforePaymentHandler takes too long to return a rejected promise.
 					const timeout = new Promise((resolve, reject) => {
 						setTimeout(() => {
@@ -48,7 +46,6 @@ jQuery( function( $ ) {
 					});
 
 					try {
-
 						// Setup a handler that will be used to place the order.
 						const handler = new Promise(async (resolve) => {
 							await walleyCheckoutWc.placeWalleyOrderNew();
@@ -59,10 +56,9 @@ jQuery( function( $ ) {
 						// Race the timeout against the onBeforePaymentHandler.
 						await Promise.race([handler, timeout])
 
-						// If we get here, the order was placed successfully.
+						// If we get here, the order was placed successfully. If the timeout wins, an error is thrown and caught below.
 						walleyCheckoutWc.logToFile('Successfully placed order.');
 					} catch (error) {
-						console.log('onBeforePayment error', error);
 						clearTimeout(timeout);
 						const message  = error.message.replace(/<\/?[^>]+(>|$)/g, "").replace(/(\t|\n)/gm, "") ?? 'Unknown error.';
 
