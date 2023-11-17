@@ -48,7 +48,7 @@ jQuery( function( $ ) {
 					try {
 						// Setup a handler that will be used to place the order.
 						const handler = new Promise(async (resolve) => {
-							await walleyCheckoutWc.placeWalleyOrderNew();
+							await walleyCheckoutWc.placeWalleyOrder();
 							clearTimeout(timeout);
 							resolve();
 						});
@@ -95,7 +95,7 @@ jQuery( function( $ ) {
 			}
 		},
 
-		placeWalleyOrderNew: async function() {
+		placeWalleyOrder: async function() {
 			$('.woocommerce-checkout-review-order-table').block({
 				message: null,
 				overlayCSS: {
@@ -105,13 +105,13 @@ jQuery( function( $ ) {
 			});
 
 			try {
-				const walleyOrderResponse = await this.getWalleyOrderNew();
+				const walleyOrderResponse = await this.getWalleyOrder();
 				if (!walleyOrderResponse.success) {
 					throw new Error('Failed to get the Walley order.');
 				}
 				walleyCheckoutWc.setAddressData(walleyOrderResponse.data);
 
-				const submitOrderResponse = await this.submitOrderNew();
+				const submitOrderResponse = await this.submitOrder();
 				if (submitOrderResponse.result !== 'success') {
 					throw new Error(submitOrderResponse.messages);
 				}
@@ -122,7 +122,7 @@ jQuery( function( $ ) {
 			}
 		},
 
-		getWalleyOrderNew: function () {
+		getWalleyOrder: function () {
 			return $.ajax({
 				type: 'POST',
 				data: { nonce: walleyParams.get_order_nonce },
@@ -131,7 +131,7 @@ jQuery( function( $ ) {
 			});
 		},
 
-		submitOrderNew: function () {
+		submitOrder: function () {
 			return $.ajax({
 				type: 'POST',
 				url: walleyParams.submitOrder,
