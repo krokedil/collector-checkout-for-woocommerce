@@ -2,11 +2,11 @@
 Contributors: collectorbank, krokedil, NiklasHogefjord
 Tags: ecommerce, e-commerce, woocommerce, collector, checkout, walley
 Requires at least: 5.0
-Tested up to: 6.3.1
+Tested up to: 6.4.1
 Requires PHP: 7.3
-Stable tag: 4.0.8
+Stable tag: 4.0.9
 WC requires at least: 6.0.0
-WC tested up to: 8.1.1
+WC tested up to: 8.3.0
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -39,8 +39,12 @@ For help setting up and configuring Walley Checkout for WooCommerce please refer
 
 
 == CHANGELOG ==
+= 2023.11.21    - version 4.0.9 =
+* Enhancement   - Ensures logging of any error messages generated during the checkout process.
+* Enhancement   - Adds a timeout to the order placement to prevent the checkout from locking.
+
 = 2023.10.06    - version 4.0.8 =
-* Fix           - Resolved compatibility issues with Redlight Media's shipping plugins. This, by extension, also solved an issue with "WooCommerce Stripe Gateway" (by WooCommerce) where the shipping options would no longer appear in the order review, resulting in order total discrepancy in the checkout page which would prevent the customer from placing the order. 
+* Fix           - Resolved compatibility issues with Redlight Media's shipping plugins. This, by extension, also solved an issue with "WooCommerce Stripe Gateway" (by WooCommerce) where the shipping options would no longer appear in the order review, resulting in order total discrepancy in the checkout page which would prevent the customer from placing the order.
 * Tweak         - Update the plugin URLs.
 
 = 2023.09.20    - version 4.0.7 =
@@ -72,7 +76,7 @@ For help setting up and configuring Walley Checkout for WooCommerce please refer
 * Feature       - Major plugin rewrite. Plugin now supports Walley's front end validation JS event. WooCommerce order is created (as a Pending order) when customer clicks purchase button in Walley Checkout.
 * Feature       - Add support for handling extra checkout fields in checkout.
 * Feature       - Adds support for manually trigger Activate and Cancel order via WooCommerce Order Actions.
-* Tweak         - Only send rounding order line to Walley if activated via settings. 
+* Tweak         - Only send rounding order line to Walley if activated via settings.
 * Tweak         - JS checkout file refactoring.
 * Tweak         - Adds js front end logging via ajax.
 * Tweak         - New API now uses update checkout (as one single request) instead of update cart, update fees and update metadata as separate requests.
@@ -129,7 +133,7 @@ For help setting up and configuring Walley Checkout for WooCommerce please refer
 * Tweak         - Send shipping cost to Walley first when shipping is available in Woo.
 * Tweak         - Limit rounding fee to small amount.
 * Tweak         - Adds customer currency to validation url. Used to get correct store id in GET collector session request.
-* Fix           - Improve order total calculation in rounding fee logic related to Delivery Module settings. 
+* Fix           - Improve order total calculation in rounding fee logic related to Delivery Module settings.
 * Fix           - Try to set customer address and city if possible when collectorCheckoutCustomerUpdated JS event is triggered.
 * Fix           - Check if shipping object exists in Woo before trying to trigger update fee request to Walley (that is used to update shipping).
 * Fix           - Wait for the delivery module to load before calculating shipping.
@@ -175,7 +179,7 @@ For help setting up and configuring Walley Checkout for WooCommerce please refer
 * Fix           - Do not check if the cart is available on any page other than the checkout page.
 
 = 2022.03.02    - version 3.1.2 =
-* Fix           - Fix PHP 7.x backward compatibility issue. 
+* Fix           - Fix PHP 7.x backward compatibility issue.
 
 = 2022.02.28    - version 3.1.1 =
 * Enhancement   - PHPCS changes.
@@ -226,7 +230,7 @@ For help setting up and configuring Walley Checkout for WooCommerce please refer
 = 2021.02.25    - version 2.2.3 =
 * Tweak         - Improved error response handling in requests. Don't try to create a new Collector session if we get 900, 400 or 423 http responses during update requests.
 * Tweak         - Try to redirect to thankyou page if response is Purchase_Completed from Collector and we find a matching order in WooCommerce.
-* Fix           - Fix B2B / B2C switcher bug in checkout. 
+* Fix           - Fix B2B / B2C switcher bug in checkout.
 
 = 2021.02.22    - version 2.2.2 =
 * Fix           - Do not try to make a update fees request to Collector if not needed. Could cause multiple init requests and constant reloading of checkout page.
@@ -379,7 +383,7 @@ For help setting up and configuring Walley Checkout for WooCommerce please refer
 
 = 2018.04.19  	- version 0.9.4 =
 * Fix			- Change how Collector order activation response is interpret so activations also works for part payment.
-* Tweak         - Create new Collector session if currency is changed.  
+* Tweak         - Create new Collector session if currency is changed.
 
 = 2018.04.09  	- version 0.9.3 =
 * Fix			- Send WooCommerce fees correctly to Collector.
@@ -397,7 +401,7 @@ For help setting up and configuring Walley Checkout for WooCommerce please refer
 * Tweak         - Make initialize request to Collector before checkout page is rendered to avoid error/timeout and get a faster loading checkout.
 * Tweak         - Improved logging.
 * Tweak         - Avoid making update cart request directly after initialize request.
-* Fix           - WC 3.3 session bug fix that caused orders not being created correctly in backup order creation (server-to-server). 
+* Fix           - WC 3.3 session bug fix that caused orders not being created correctly in backup order creation (server-to-server).
 * Fix           - Create new checkout session in WooCommerce & Collector if update fees/update cart has error.
 * Fix           - Determine selected payment method on paymentName returned from Collector since paymentMethod has been debrecated.
 
@@ -450,7 +454,7 @@ For help setting up and configuring Walley Checkout for WooCommerce please refer
 * Fix			- Limit fee id to max 50 characters when sending cart data to Collector.
 
 = 2017.12.26  	- version 0.6.1 =
-* Fix			- Moved check if class WC_Payment_Gateway exists before including files. Avoid errors during update process. 
+* Fix			- Moved check if class WC_Payment_Gateway exists before including files. Avoid errors during update process.
 
 = 2017.12.22  	- version 0.6.0 =
 * Tweak			- Backup order creation on notificationUri server callback from Collector (scheduled 30 seconds after purchase) if error occur in frontend.
