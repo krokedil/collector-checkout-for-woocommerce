@@ -35,6 +35,8 @@ jQuery( function( $ ) {
 
 			if( window.walley ) {
 				window.walley.checkout.api.onBeforePayment(async function() {
+					walleyCheckoutWc.logToFile( 'onBeforePayment from Walley triggered' );
+
 					// Setup a timeout that will be used if the onBeforePaymentHandler takes too long to return a rejected promise.
 					const timeout = new Promise((resolve, reject) => {
 						setTimeout(() => {
