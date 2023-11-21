@@ -34,35 +34,114 @@ jQuery( function( $ ) {
             document.addEventListener( 'walleyCheckoutShippingUpdated', function (event) { walleyCheckoutWc.shippingMethodChanged() } );
 
 			if( window.walley ) {
-				window.walley.checkout.api.onBeforePayment(async function() { 
-					console.log('onBeforePayment from Walley triggered');
+				window.walley.checkout.api.onBeforePayment(async function() {
 					walleyCheckoutWc.logToFile( 'onBeforePayment from Walley triggered' );
-					let placeOrder = await walleyCheckoutWc.placeWalleyOrder();
-	
-					if( 'success' === placeOrder.result ) {
-						console.log('onBeforePayment success');
-						return Promise.resolve();
-					} else {
-						console.log('onBeforePayment fail');
 
-						// Strip HTML code from messages.
-						let messages = placeOrder.messages.replace(/<\/?[^>]+(>|$)/g, "");
-						console.log('error ', messages);
-						
-						let failOrder = await walleyCheckoutWc.failOrder( 'submission', messages );
+					// Setup a timeout that will be used if the onBeforePaymentHandler takes too long to return a rejected promise.
+					const timeout = new Promise((resolve, reject) => {
+						setTimeout(() => {
+							reject({
+								"title": "Place WooCommerce order issue.",
+								"message": "Timeout"
+							});
+						}, 9500); // 9.5 seconds
+					});
 
+					try {
+						// Setup a handler that will be used to place the order.
+						const handler = new Promise(async (resolve) => {
+							await walleyCheckoutWc.placeWalleyOrder();
+							clearTimeout(timeout);
+							resolve();
+						});
+
+						// Race the timeout against the onBeforePaymentHandler.
+						await Promise.race([handler, timeout])
+
+						// If we get here, the order was placed successfully. If the timeout wins, an error is thrown and caught below.
+						walleyCheckoutWc.logToFile('Successfully placed order.');
+					} catch (error) {
+						clearTimeout(timeout);
+						const message  = error.message.replace(/<\/?[^>]+(>|$)/g, "").replace(/(\t|\n)/gm, "") ?? 'Unknown error.';
+
+						walleyCheckoutWc.failOrder( null, message );
 
 						return Promise.reject(
 							{
-								"title": "Place order issue.",
-								"message": 'ff'
+								"title": "Place WooCommerce order issue.",
+								"message": message
 							}
 						);
 					}
 				});
 			}
 		},
-		
+
+		extractErrorMessage: function(error) {
+			// Check if error is a jqXHR object
+			if (error && error.responseText) {
+				try {
+					// Attempt to parse JSON response
+					let jsonResponse = JSON.parse(error.responseText);
+					return jsonResponse.message || jsonResponse.error || 'Unknown AJAX error';
+				} catch {
+					// Fallback for non-JSON response
+					return error.statusText || 'Unknown AJAX error';
+				}
+			} else if (error instanceof Error) {
+				// Standard Error object
+				return error.message;
+			} else {
+				// Fallback for other types of errors
+				return 'Unknown error';
+			}
+		},
+
+		placeWalleyOrder: async function() {
+			$('.woocommerce-checkout-review-order-table').block({
+				message: null,
+				overlayCSS: {
+					background: '#fff',
+					opacity: 0.6
+				}
+			});
+
+			try {
+				const walleyOrderResponse = await this.getWalleyOrder();
+				if (!walleyOrderResponse.success) {
+					throw new Error('Failed to get the Walley order.');
+				}
+				walleyCheckoutWc.setAddressData(walleyOrderResponse.data);
+
+				const submitOrderResponse = await this.submitOrder();
+				if (submitOrderResponse.result !== 'success') {
+					throw new Error(submitOrderResponse.messages);
+				}
+			} catch (error) {
+				// Extract and log the error message
+				let errorMessage = this.extractErrorMessage(error);
+				throw new Error(errorMessage);
+			}
+		},
+
+		getWalleyOrder: function () {
+			return $.ajax({
+				type: 'POST',
+				data: { nonce: walleyParams.get_order_nonce },
+				dataType: 'json',
+				url: walleyParams.get_order_url,
+			});
+		},
+
+		submitOrder: function () {
+			return $.ajax({
+				type: 'POST',
+				url: walleyParams.submitOrder,
+				data: $('form.checkout').serialize(),
+				dataType: 'json',
+			});
+		},
+
 		/**
 		 * Triggers on document ready.
 		 */
@@ -231,7 +310,7 @@ jQuery( function( $ ) {
                 }
             }
         },
-		
+
 		/**
 		 * Moves all non standard fields to the extra checkout fields.
 		 */
@@ -298,35 +377,7 @@ jQuery( function( $ ) {
 				$('#shipping_email').blur();
 			}
 		},
-		placeWalleyOrder: async function() {
-			var walleyOrder = await walleyCheckoutWc.getWalleyOrder();
-			if( walleyOrder.success ) {
-				console.log('getWalleyOrder success');
-				walleyOrder = walleyCheckoutWc.submitOrder();
-			} else {
-				console.log('getWalleyOrder no success');
-			}
-			return walleyOrder;
-		},
-		getWalleyOrder: function () {
-			var ajax = $.ajax({
-				type: 'POST',
-				data: {
-					nonce: walleyParams.get_order_nonce,
-				},
-				dataType: 'json',
-				url: walleyParams.get_order_url,
-				success: function (data) {
-				},
-				error: function (data) {
-					console.log('getWalleyOrder error', data);
-				},
-				complete: function (data) {
-					walleyCheckoutWc.setAddressData(data.responseJSON.data );
-				}
-			});
-			return ajax;
-		},
+
 		/*
 		 * Sets the WooCommerce form field data.
 		 */
@@ -360,72 +411,19 @@ jQuery( function( $ ) {
 			$('#shipping_phone').val(addressData.shipping_phone);
 			$('#shipping_country').val(addressData.shipping_country);
 		},
-		/**
-		 * Submit the order using the WooCommerce AJAX function.
-		 */
-		submitOrder: function () {
-			$('.woocommerce-checkout-review-order-table').block({
-				message: null,
-				overlayCSS: {
-					background: '#fff',
-					opacity: 0.6
-				}
-			});
-			var ajax = $.ajax({
-				type: 'POST',
-				url: walleyParams.submitOrder,
-				data: $('form.checkout').serialize(),
-				dataType: 'json',
-				success: function (data) {
-					console.log('submitOrder success data', data);
-					try {
-						if ('success' === data.result) {
-							console.log('submit order success', data);
-							walleyCheckoutWc.logToFile( 'Successfully placed order.' );
-							// return Promise.resolve();
-						} else {
-							// throw 'Result failed';
-						}
-					} catch (err) {
-						console.log('catch error');
-						console.error(err);
-						if (data.messages) {
-							// Strip HTML code from messages.
-							let messages = data.messages.replace(/<\/?[^>]+(>|$)/g, "");
-							console.log('error ', messages);
-							walleyCheckoutWc.logToFile( 'Checkout error | ' + messages );
-							// walleyCheckoutWc.failOrder( 'submission', messages, callback );
-						} else {
-							walleyCheckoutWc.logToFile( 'Checkout error | No message' );
-							// walleyCheckoutWc.failOrder( 'submission', 'Checkout error', callback );
-						}
-					}
-				},
-				error: function (data) {
-					try {
-						walleyCheckoutWc.logToFile( 'AJAX error | ' + JSON.stringify(data) );
-					} catch( e ) {
-						walleyCheckoutWc.logToFile( 'AJAX error | Failed to parse error message.' );
-					}
-					// walleyCheckoutWc.failOrder( 'ajax-error', 'Internal Server Error', callback )
-				}
-			});
-			console.log('submitOrder ajax', ajax);
-			return ajax;
-		},
+
 		failOrder: async function( event, errorMessage ) {
 			console.log('failOrder', errorMessage);
 			walleyCheckoutWc.logToFile( 'Checkout error | Error message: ' + errorMessage );
+
 			const errorClasses = 'woocommerce-NoticeGroup woocommerce-NoticeGroup-checkout';
 			const errorWrapper = `<div class="${ errorClasses }"><ul class="woocommerce-error" role="alert"><li>${ errorMessage }</li></ul></div>`;
 			// Re-enable the form.
 			$( 'body' ).trigger( 'updated_checkout' );
-			
+
 			$( walleyCheckoutWc.checkoutFormSelector ).removeClass( 'processing' );
 			$( walleyCheckoutWc.checkoutFormSelector ).unblock();
 			$( '.woocommerce-checkout-review-order-table' ).unblock();
-
-
 
 			// Print error messages, and trigger checkout_error, and scroll to notices.
 			$( '.woocommerce-NoticeGroup-checkout,' +
@@ -475,7 +473,7 @@ jQuery( function( $ ) {
 		},
 		getNewCheckoutIframe: function( customer ) {
 			console.log( 'getNewCheckoutIframe', customer );
-			
+
 			var data = {
 				'action': 'get_public_token',
 				'customer_type': customer
@@ -486,11 +484,11 @@ jQuery( function( $ ) {
 					$('body').addClass('collector-checkout-selected');
 					// Empty any checkout content to prevent duplicate
 					$('#collector-container').empty();
-					
+
 					var publicToken = data.data.publicToken;
 					var testmode = data.data.test_mode;
 					console.log('checkout initiated ' + JSON.stringify(data.data));
-					
+
 					if(testmode === 'yes') {
 						$('#collector-container').append('<script src="https://checkout-uat.collector.se/collector-checkout-loader.js" data-lang="' + walleyParams.locale + '" data-token="' + publicToken + '" data-variant="' + customer + '"' + walleyParams.data_action_color_button + ' >');
 					} else {
@@ -507,7 +505,7 @@ jQuery( function( $ ) {
 		},
 		/**
 		 * Logs the message to the Walley log in WooCommerce.
-		 * @param {string} message 
+		 * @param {string} message
 		 */
 		logToFile: function( message ) {
 			$.ajax(
