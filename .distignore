@@ -9,3 +9,5 @@ README.md
 gulpfile.js
 package.json
 package-lock.json
+composer.lock
+composer.json
