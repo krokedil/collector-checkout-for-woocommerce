@@ -112,7 +112,6 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 			header( 'HTTP/1.1 400 Bad Request' );
 		}
 		die();
-
 	}
 
 	/**
@@ -141,7 +140,7 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 					$this->generate_settings_html();
 					?>
 				</table>
-			</div>	
+			</div>
 			<div class="collector-settings-sidebar">
 				<h4>Kom igång</h4><p><ul>
 					<li><a href="https://docs.krokedil.com/walley-checkout-for-woocommerce/" target="_blank">Dokumentation</a></li>
@@ -162,7 +161,6 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 	 * Check if this gateway is enabled and available in the user's country
 	 */
 	public function is_available() {
-
 		if ( 'yes' === $this->enabled ) {
 
 			if ( is_checkout() ) {
@@ -175,30 +173,14 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 			}
 
 			if ( ! is_admin() ) {
-				$collector_settings = get_option( 'woocommerce_collector_checkout_settings' );
-				$collector_b2c_se   = ( isset( $collector_settings['collector_merchant_id_se_b2c'] ) ) ? $collector_settings['collector_merchant_id_se_b2c'] : '';
-				$collector_b2b_se   = ( isset( $collector_settings['collector_merchant_id_se_b2b'] ) ) ? $collector_settings['collector_merchant_id_se_b2b'] : '';
-				$collector_b2c_no   = ( isset( $collector_settings['collector_merchant_id_no_b2c'] ) ) ? $collector_settings['collector_merchant_id_no_b2c'] : '';
-				$collector_b2b_no   = ( isset( $collector_settings['collector_merchant_id_no_b2b'] ) ) ? $collector_settings['collector_merchant_id_no_b2b'] : '';
-				$collector_b2c_dk   = ( isset( $collector_settings['collector_merchant_id_dk_b2c'] ) ) ? $collector_settings['collector_merchant_id_dk_b2c'] : '';
-				$collector_b2c_fi   = ( isset( $collector_settings['collector_merchant_id_fi_b2c'] ) ) ? $collector_settings['collector_merchant_id_fi_b2c'] : '';
-				$collector_b2b_fi   = ( isset( $collector_settings['collector_merchant_id_fi_b2b'] ) ) ? $collector_settings['collector_merchant_id_fi_b2b'] : '';
-
+				$currency = get_woocommerce_currency();
 				// Currency check.
-				if ( ! in_array( get_woocommerce_currency(), array( 'NOK', 'SEK', 'DKK', 'EUR' ), true ) ) {
+				if ( ! in_array( $currency, array( 'NOK', 'SEK', 'DKK', 'EUR' ), true ) ) {
 					return false;
 				}
-				// Store ID check.
-				if ( 'NOK' === get_woocommerce_currency() && ( ! $collector_b2c_no && ! $collector_b2b_no ) ) {
-					return false;
-				}
-				if ( 'SEK' === get_woocommerce_currency() && ( ! $collector_b2c_se && ! $collector_b2b_se ) ) {
-					return false;
-				}
-				if ( 'DKK' === get_woocommerce_currency() && ( ! $collector_b2c_dk ) ) {
-					return false;
-				}
-				if ( 'EUR' === get_woocommerce_currency() && ( ! $collector_b2c_fi && ! $collector_b2b_fi ) ) {
+
+				// If there are no available customer types, return false.
+				if ( ! wc_collector_get_available_customer_types() ) {
 					return false;
 				}
 			}
@@ -477,7 +459,6 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 		} else {
 			return $this->process_soap_refund( $order_id, $amount, $reason );
 		}
-
 	}
 
 	/**
@@ -621,5 +602,4 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 		// Need to clear transients if credentials is changed.
 		delete_transient( 'walley_checkout_access_token' );
 	}
-
 }
