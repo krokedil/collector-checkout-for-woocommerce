@@ -1,0 +1,36 @@
+{
+    "name": "krokedil/walley-checkout-for-woocommerce",
+    "description": "Extends WooCommerce. Provides a <a href=\"https://www.walley.se/foretag/checkout/\" target=\"_blank\">Walley Checkout</a> checkout for WooCommerce.",
+    "type": "wordpress-plugin",
+    "require-dev": {
+        "wp-coding-standards/wpcs": "^3.0",
+        "php-stubs/woocommerce-stubs": "^8.2"
+    },
+    "license": "GPL-v3",
+    "require": {
+        "php": "~7.4 || ~8.0",
+        "krokedil/shop-widgets": "^0.1.0"
+    },
+    "repositories": {
+        "krokedil/shop-widgets": {
+            "type": "vcs",
+            "url": "git@github.com:krokedil/shop-widgets.git"
+        }
+    },
+    "config": {
+        "platform": {
+            "php": "7.4"
+        },
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": true
+        }
+    },
+    "scripts": {
+        "phpcs": [
+            "phpcs --standard=phpcs.xml --extensions=php --ignore=vendor/,tests/"
+        ],
+        "phpcbf": [
+            "phpcbf --standard=phpcs.xml --extensions=php --ignore=vendor/,tests/"
+        ]
+    }
+}
