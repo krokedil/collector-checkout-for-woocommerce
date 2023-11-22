@@ -45,6 +45,13 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 		public $logger;
 
 		/**
+		 * Reference to the Part Payment Widget class.
+		 *
+		 * @var Walley_Part_Payment_Widget
+		 */
+		public $part_payment_widget;
+
+		/**
 		 * The reference the *Singleton* instance of this class.
 		 *
 		 * @var $instance
@@ -105,7 +112,6 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 			// add_action( 'init', array( $this, 'collector_maybe_schedule_action' ) );
 			// Clean Collector db.
 			add_action( 'collector_clean_db', array( $this, 'collector_clean_db_callback' ) );
-
 		}
 
 		/**
@@ -116,6 +122,11 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 		public function init() {
 
 			if ( ! class_exists( 'WC_Payment_Gateway' ) ) {
+				return;
+			}
+
+			// Include the autoloader from composer. If it fails, we'll just return and not load the plugin. But an admin notice will show to the merchant.
+			if ( ! $this->init_composer() ) {
 				return;
 			}
 
@@ -138,6 +149,7 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-walley-checkout.php';
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-walley-checkout-confirmation.php';
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-walley-checkout-session.php';
+			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-walley-part-payment-widget.php';
 
 			// Order management. SOAP will be deprecated.
 			if ( ! empty( $this->walley_api_client_id ) && ! empty( $this->walley_api_secret ) ) {
@@ -171,6 +183,9 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/manage-orders/post/class-walley-checkout-request-refund-order.php';
 				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/manage-orders/post/class-walley-checkout-request-refund-order-by-amount.php';
 				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/oauth2/class-walley-checkout-request-access-token.php';
+
+				// New Widget request class files.
+				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/widgets/post/class-walley-create-widget-token.php';
 
 				// Set class variables related to new Management API.
 				$this->api              = new Walley_Checkout_API();
@@ -232,12 +247,13 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 			define( 'COLLECTOR_BANK_SOAP_TEST', 'https://ecommercetest.collector.se/v3.0/InvoiceServiceV33.svc?wsdl' );
 
 			// Translations.
-			load_plugin_textdomain( 'collector-checkout-for-woocommerce', false, plugin_basename( dirname( __FILE__ ) ) . '/languages' );
+			load_plugin_textdomain( 'collector-checkout-for-woocommerce', false, plugin_basename( __DIR__ ) . '/languages' );
 
 			add_filter( 'plugin_action_links_' . plugin_basename( __FILE__ ), array( $this, 'add_action_links' ) );
 
 			// Set class variables.
-			$this->logger = new Collector_Checkout_Logger();
+			$this->logger              = new Collector_Checkout_Logger();
+			$this->part_payment_widget = new Walley_Part_Payment_Widget();
 		}
 
 		/**
@@ -293,6 +309,52 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 		public function collector_clean_db_callback() {
 			$current_date = date( 'Y-m-d H:i:s', time() ); // phpcs:ignore
 			Collector_Checkout_DB::delete_old_data_entry( $current_date );
+		}
+
+		/**
+		 * Try to load the autoloader from Composer.
+		 *
+		 * @return mixed
+		 */
+		public function init_composer() {
+			$autoloader = COLLECTOR_BANK_PLUGIN_DIR . '/vendor/autoload.php';
+
+			if ( ! is_readable( $autoloader ) ) {
+				self::missing_autoloader();
+				return false;
+			}
+
+			$autoloader_result = require $autoloader;
+			if ( ! $autoloader_result ) {
+				return false;
+			}
+
+			return $autoloader_result;
+		}
+
+		/**
+		 * Print error message if the composer autoloader is missing.
+		 *
+		 * @return void
+		 */
+		protected static function missing_autoloader() {
+			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+				error_log( // phpcs:ignore
+					esc_html__( 'Your installation of Walley Checkout for WooCommerce is not complete. If you installed this plugin directly from Github please refer to the readme.dev.txt file in the plugin.', 'collector-checkout-for-woocommerce' )
+				);
+			}
+			add_action(
+				'admin_notices',
+				function () {
+					?>
+				<div class="notice notice-error">
+					<p>
+						<?php echo esc_html__( 'Your installation of Walley Checkout for WooCommerce is not complete. If you installed this plugin directly from Github please refer to the readme.dev.txt file in the plugin.', 'collector-checkout-for-woocommerce' ); ?>
+					</p>
+				</div>
+				<?php
+				}
+			);
 		}
 	}
 
@@ -403,7 +465,6 @@ function wc_collector_get_default_customer_type() {
 	if ( 'DKK' === get_woocommerce_currency() ) {
 		return 'b2c';
 	}
-
 }
 
 /**
