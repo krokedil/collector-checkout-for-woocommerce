@@ -93,7 +93,7 @@ class Walley_Part_Payment_Widget {
 	 * @param array $settings The plugin settings.
 	 */
 	public function append_settings( $settings ) {
-		$cart_widget_settings = $this->cart_widget->get_setting_fields( __( 'Cart Part Payment Widget', 'collector-checkout-for-woocommerce' ) );
+		$cart_widget_settings    = $this->cart_widget->get_setting_fields( __( 'Cart Part Payment Widget', 'collector-checkout-for-woocommerce' ) );
 		$product_widget_settings = $this->product_widget->get_setting_fields( __( 'Product Part Payment Widget', 'collector-checkout-for-woocommerce' ) );
 
 		$settings = array_merge( $settings, $product_widget_settings, $cart_widget_settings );
@@ -126,7 +126,7 @@ class Walley_Part_Payment_Widget {
 	 * @return string
 	 */
 	public function get_data_tags_string() {
-		$token = $this->get_cart_token();
+		$token  = $this->get_cart_token();
 		$amount = $this->get_amount();
 
 		$data_tags = array(
@@ -157,17 +157,17 @@ class Walley_Part_Payment_Widget {
 
 		if ( false === $token ) {
 			// If not, get a new token.
-			if( ! property_exists( CCO_WC(), 'api' ) ) {
+			if ( ! property_exists( CCO_WC(), 'api' ) ) {
 				return '';
 			}
 
 			$response = CCO_WC()->api->create_widget_token();
 
-			if( is_wp_error( $response ) ) {
+			if ( is_wp_error( $response ) ) {
 				return '';
 			}
 
-			$token = $response['data']['widgetToken'];
+			$token   = $response['data']['widgetToken'];
 			$expires = strtotime( $response['data']['expiresAt'] );
 
 			// Set the transient for the token.

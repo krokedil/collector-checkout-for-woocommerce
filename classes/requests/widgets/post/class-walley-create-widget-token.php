@@ -25,17 +25,19 @@ class Walley_Create_Widget_Token extends Walley_Checkout_Request_Post {
 
 	/**
 	 * Builds the request args for a POST request.
+	 *
 	 * @return array
 	 */
 	protected function get_body() {
-		return array( "storeId" => $this->store_id );
+		return array( 'storeId' => $this->store_id );
 	}
 
 	/**
 	 * Get the request url.
+	 *
 	 * @return string
 	 */
 	protected function get_request_url() {
-		 return $this->get_api_url_base() . "/widgets";
+		return $this->get_api_url_base() . '/widgets';
 	}
 }
