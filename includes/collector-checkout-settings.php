@@ -161,6 +161,13 @@ $settings = array(
 		'default'     => '',
 		'desc_tip'    => true,
 	),
+	'collector_merchant_id_dk_b2b'    => array(
+		'title'       => __( 'Merchant ID Denmark B2B', 'collector-checkout-for-woocommerce' ),
+		'type'        => 'text',
+		'description' => __( 'Enter your Walley Checkout Merchant ID for B2B purchases in Denmark', 'collector-checkout-for-woocommerce' ),
+		'default'     => '',
+		'desc_tip'    => true,
+	),
 	'collector_delivery_module_dk'    => array(
 		'title'   => __( 'Walley nShift Delivery', 'collector-checkout-for-woocommerce' ),
 		'type'    => 'checkbox',
