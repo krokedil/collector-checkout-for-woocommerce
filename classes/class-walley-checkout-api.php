@@ -251,10 +251,21 @@ class Walley_Checkout_API {
 			'location' => $location,
 		);
 		$request  = new Walley_Checkout_Request_Get_Reauthorize( $args );
+
 		$response = $request->request();
 		return $this->check_for_api_error( $response );
 	}
 
+	/**
+	 * Create a widget token.
+	 *
+	 * @return array|WP_Error
+	 */
+	public function create_widget_token() {
+		$request  = new Walley_Create_Widget_Token( array() );
+		$response = $request->request();
+		return $this->check_for_api_error( $response );
+	}
 
 	/**
 	 * Checks for WP Errors and returns either the response as array.
