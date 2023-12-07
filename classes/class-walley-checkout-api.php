@@ -238,6 +238,17 @@ class Walley_Checkout_API {
 	}
 
 	/**
+	 * Create a widget token.
+	 *
+	 * @return array|WP_Error
+	 */
+	public function create_widget_token() {
+		$request  = new Walley_Create_Widget_Token( array() );
+		$response = $request->request();
+		return $this->check_for_api_error( $response );
+	}
+
+	/**
 	 * Checks for WP Errors and returns either the response as array.
 	 *
 	 * @param array $response The response from the request.
