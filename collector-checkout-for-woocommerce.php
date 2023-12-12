@@ -174,6 +174,7 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 
 				// New OM request class files.
 				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/manage-orders/get/class-walley-checkout-request-get-order.php';
+				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/manage-orders/get/class-walley-checkout-request-get-reauthorize.php';
 				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/manage-orders/post/class-walley-checkout-request-reauthorize-order.php';
 				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/manage-orders/post/class-walley-checkout-request-capture-order.php';
 				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/manage-orders/post/class-walley-checkout-request-part-capture-order.php';

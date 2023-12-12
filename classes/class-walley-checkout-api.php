@@ -238,6 +238,25 @@ class Walley_Checkout_API {
 	}
 
 	/**
+	 * Get a reauthorize result.
+	 *
+	 * @param int    $order_id The WooCommerce order id.
+	 * @param string $location The location of the reauthorize request result.
+	 *
+	 * @return array|WP_Error
+	 */
+	public function get_reauthorize_result( $order_id, $location ) {
+		$args     = array(
+			'order_id' => $order_id,
+			'location' => $location,
+		);
+		$request  = new Walley_Checkout_Request_Get_Reauthorize( $args );
+
+		$response = $request->request();
+		return $this->check_for_api_error( $response );
+	}
+
+	/**
 	 * Create a widget token.
 	 *
 	 * @return array|WP_Error
