@@ -39,12 +39,12 @@ jQuery( function( $ ) {
 
 					// Setup a timeout that will be used if the onBeforePaymentHandler takes too long to return a rejected promise.
 					const timeout = new Promise((resolve, reject) => {
-						setTimeout(() => {
-							reject({
-								"title": "Place WooCommerce order issue.",
-								"message": "Timeout"
-							});
-						}, 9500); // 9.5 seconds
+					setTimeout(() => {
+						reject({
+							title: "Place WooCommerce order issue.",
+							message: "Timeout",
+						});
+						}, 29000); // 29 seconds
 					});
 
 					try {
