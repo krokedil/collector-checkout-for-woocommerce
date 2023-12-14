@@ -13,7 +13,6 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Class Collector_Checkout_Gateway
  */
 class Collector_Checkout_Gateway extends WC_Payment_Gateway {
-
 	/**
 	 * Class constructor.
 	 */
@@ -51,6 +50,7 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 		$this->supports = array(
 			'products',
 			'refunds',
+			'upsell',
 		);
 
 		add_action(
@@ -112,7 +112,6 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 			header( 'HTTP/1.1 400 Bad Request' );
 		}
 		die();
-
 	}
 
 	/**
@@ -141,7 +140,7 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 					$this->generate_settings_html();
 					?>
 				</table>
-			</div>	
+			</div>
 			<div class="collector-settings-sidebar">
 				<h4>Kom igång</h4><p><ul>
 					<li><a href="https://docs.krokedil.com/walley-checkout-for-woocommerce/" target="_blank">Dokumentation</a></li>
@@ -162,7 +161,6 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 	 * Check if this gateway is enabled and available in the user's country
 	 */
 	public function is_available() {
-
 		if ( 'yes' === $this->enabled ) {
 
 			if ( is_checkout() ) {
@@ -175,30 +173,14 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 			}
 
 			if ( ! is_admin() ) {
-				$collector_settings = get_option( 'woocommerce_collector_checkout_settings' );
-				$collector_b2c_se   = ( isset( $collector_settings['collector_merchant_id_se_b2c'] ) ) ? $collector_settings['collector_merchant_id_se_b2c'] : '';
-				$collector_b2b_se   = ( isset( $collector_settings['collector_merchant_id_se_b2b'] ) ) ? $collector_settings['collector_merchant_id_se_b2b'] : '';
-				$collector_b2c_no   = ( isset( $collector_settings['collector_merchant_id_no_b2c'] ) ) ? $collector_settings['collector_merchant_id_no_b2c'] : '';
-				$collector_b2b_no   = ( isset( $collector_settings['collector_merchant_id_no_b2b'] ) ) ? $collector_settings['collector_merchant_id_no_b2b'] : '';
-				$collector_b2c_dk   = ( isset( $collector_settings['collector_merchant_id_dk_b2c'] ) ) ? $collector_settings['collector_merchant_id_dk_b2c'] : '';
-				$collector_b2c_fi   = ( isset( $collector_settings['collector_merchant_id_fi_b2c'] ) ) ? $collector_settings['collector_merchant_id_fi_b2c'] : '';
-				$collector_b2b_fi   = ( isset( $collector_settings['collector_merchant_id_fi_b2b'] ) ) ? $collector_settings['collector_merchant_id_fi_b2b'] : '';
-
+				$currency = get_woocommerce_currency();
 				// Currency check.
-				if ( ! in_array( get_woocommerce_currency(), array( 'NOK', 'SEK', 'DKK', 'EUR' ), true ) ) {
+				if ( ! in_array( $currency, array( 'NOK', 'SEK', 'DKK', 'EUR' ), true ) ) {
 					return false;
 				}
-				// Store ID check.
-				if ( 'NOK' === get_woocommerce_currency() && ( ! $collector_b2c_no && ! $collector_b2b_no ) ) {
-					return false;
-				}
-				if ( 'SEK' === get_woocommerce_currency() && ( ! $collector_b2c_se && ! $collector_b2b_se ) ) {
-					return false;
-				}
-				if ( 'DKK' === get_woocommerce_currency() && ( ! $collector_b2c_dk ) ) {
-					return false;
-				}
-				if ( 'EUR' === get_woocommerce_currency() && ( ! $collector_b2c_fi && ! $collector_b2b_fi ) ) {
+
+				// If there are no available customer types, return false.
+				if ( ! wc_collector_get_available_customer_types() ) {
 					return false;
 				}
 			}
@@ -362,8 +344,6 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 		}
 	}
 
-
-
 	/**
 	 * Delete the Collector stored sessions.
 	 *
@@ -385,6 +365,15 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 	 */
 	public function collector_thankyou_order_received_text( $text, $order ) {
 		$html_snippet = '<div class="collector-checkout-thankyou"></div>';
+
+		// Only print the snippet if the order was not upsold. If it has, the iframe wont show the same order amount as the WC order.
+		$upsell_uuids    = $order->get_meta( '_ppu_upsell_ids', true );
+		$has_been_upsold = ! empty( $upsell_uuids );
+
+		if ( $has_been_upsold ) {
+			CCO_WC()->logger::log( 'Order has been upsold. Not rendering thankyou page snippet.' );
+			return $text;
+		}
 
 		if ( is_object( $order ) && 'collector_checkout' === $order->get_payment_method() ) {
 			CCO_WC()->logger::log( 'Thankyou page rendered for order ID - ' . $order->get_id() );
@@ -477,7 +466,6 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 		} else {
 			return $this->process_soap_refund( $order_id, $amount, $reason );
 		}
-
 	}
 
 	/**
@@ -622,4 +610,98 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 		delete_transient( 'walley_checkout_access_token' );
 	}
 
+	/**
+	 * Check if upsell should be available for the Klarna order or not.
+	 *
+	 * @param int $order_id The WooCommerce order id.
+	 * @return bool
+	 */
+	public function upsell_available( $order_id ) {
+		$order = wc_get_order( $order_id );
+
+		if ( empty( $order ) ) {
+			return false;
+		}
+
+		// Get the payment method from the order meta.
+		$payment_method = $order->get_meta( '_collector_payment_method', true );
+
+		// Ensure the payment method is valid.
+		if ( ! in_array( $payment_method, array( 'Invoice', 'DirectInvoice', 'Account', 'Instalment', 'InterestFreeAccount' ), true ) ) {
+			return false;
+		}
+
+		return true;
+	}
+
+	/**
+	 * Make an upsell request to Walley.
+	 *
+	 * @param int    $order_id The WooCommerce order id.
+	 * @param string $upsell_uuid The unique id for the upsell request.
+	 *
+	 * @return bool|WP_Error
+	 */
+	public function upsell( $order_id, $upsell_uuid ) {
+		$response = CCO_WC()->api->reauthorize_walley_order( $order_id );
+
+		Collector_Checkout_Logger::log( 'Upsell request result: ' . wp_json_encode( $response ), true ); // Input var okay.
+
+		if ( is_wp_error( $response ) ) {
+			return $response;
+		}
+
+		// If the status is 201 we need to query the header url to get the result of the request.
+		if ( 201 === $response['status'] ) {
+			$location = $response['header'] ?? '';
+
+			if ( empty( $location ) ) {
+				return new WP_Error( 'collector_error', __( 'Could not get the reauthorize result from Walley.', 'collector-checkout-for-woocommerce' ) );
+			}
+
+			$i      = 0;
+			$result = false;
+			while ( $i < 5 && false === $result ) {
+				sleep( 1 );
+				$result = $this->get_reauthorize_result( $order_id, $location );
+				++$i;
+			}
+
+			if ( false === $result ) {
+				// TODO - Might need better error handling here? For example if the request is still pending after 5 seconds, how should we handle that case?
+				return new WP_Error( 'collector_error', __( 'Could not get the reauthorize result from Walley.', 'collector-checkout-for-woocommerce' ) );
+			}
+
+			if ( 'Completed' !== $result ) {
+				return new WP_Error( 'collector_error', __( 'Walley did not approve the Upsell.', 'collector-checkout-for-woocommerce' ) );
+			}
+		}
+
+		return true;
+	}
+
+	/**
+	 * Get the reauthorize result from Walley.
+	 *
+	 * @param int    $order_id The WooCommerce order id.
+	 * @param string $location The location header from the reauthorize request.
+	 *
+	 * @return bool
+	 */
+	private function get_reauthorize_result( $order_id, $location ) {
+		$response = CCO_WC()->api->get_reauthorize_result( $order_id, $location );
+
+		if ( is_wp_error( $response ) ) {
+			return false;
+		}
+
+		$status = $response['data']['status'] ?? '';
+
+		// If the status is not either completed or failed, then we need to try again.
+		if ( ! in_array( $status, array( 'Completed', 'Failed' ), true ) ) {
+			return false;
+		}
+
+		return $status;
+	}
 }

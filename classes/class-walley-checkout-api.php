@@ -122,7 +122,7 @@ class Walley_Checkout_API {
 		$args     = array( 'walley_id' => $walley_id );
 		$request  = new Walley_Checkout_Request_Get_Order( $args );
 		$response = $request->request();
-		return $this->check_for_api_error( $response );
+		return $response;
 	}
 
 	/**
@@ -135,7 +135,7 @@ class Walley_Checkout_API {
 		$args     = array( 'order_id' => $order_id );
 		$request  = new Walley_Checkout_Request_Reauthorize_Order( $args );
 		$response = $request->request();
-		return $this->check_for_api_error( $response );
+		return $response;
 	}
 
 	/**
@@ -148,7 +148,7 @@ class Walley_Checkout_API {
 		$args     = array( 'order_id' => $order_id );
 		$request  = new Walley_Checkout_Request_Capture_Order( $args );
 		$response = $request->request();
-		return $this->check_for_api_error( $response );
+		return $response;
 	}
 
 	/**
@@ -161,7 +161,7 @@ class Walley_Checkout_API {
 		$args     = array( 'order_id' => $order_id );
 		$request  = new Walley_Checkout_Request_Part_Capture_Order( $args );
 		$response = $request->request();
-		return $this->check_for_api_error( $response );
+		return $response;
 	}
 
 	/**
@@ -174,7 +174,7 @@ class Walley_Checkout_API {
 		$args     = array( 'order_id' => $order_id );
 		$request  = new Walley_Checkout_Request_Cancel_Order( $args );
 		$response = $request->request();
-		return $this->check_for_api_error( $response );
+		return $response;
 	}
 
 	/**
@@ -211,7 +211,7 @@ class Walley_Checkout_API {
 		);
 		$request  = new Walley_Checkout_Request_Refund_Order( $args );
 		$response = $request->request();
-		return $this->check_for_api_error( $response );
+		return $response;
 	}
 
 	/**
@@ -234,7 +234,37 @@ class Walley_Checkout_API {
 		);
 		$request  = new Walley_Checkout_Request_Refund_Order_By_Amount( $args );
 		$response = $request->request();
-		return $this->check_for_api_error( $response );
+		return $response;
+	}
+
+	/**
+	 * Get a reauthorize result.
+	 *
+	 * @param int    $order_id The WooCommerce order id.
+	 * @param string $location The location of the reauthorize request result.
+	 *
+	 * @return array|WP_Error
+	 */
+	public function get_reauthorize_result( $order_id, $location ) {
+		$args    = array(
+			'order_id' => $order_id,
+			'location' => $location,
+		);
+		$request = new Walley_Checkout_Request_Get_Reauthorize( $args );
+
+		$response = $request->request();
+		return $response;
+	}
+
+	/**
+	 * Create a widget token.
+	 *
+	 * @return array|WP_Error
+	 */
+	public function create_widget_token() {
+		$request  = new Walley_Create_Widget_Token( array() );
+		$response = $request->request();
+		return $response;
 	}
 
 	/**
