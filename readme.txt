@@ -4,7 +4,7 @@ Tags: ecommerce, e-commerce, woocommerce, collector, checkout, walley
 Requires at least: 5.0
 Tested up to: 6.4.1
 Requires PHP: 7.3
-Stable tag: 4.0.9
+Stable tag: 4.0.10
 WC requires at least: 6.0.0
 WC tested up to: 8.3.0
 License: GPLv3
@@ -39,6 +39,9 @@ For help setting up and configuring Walley Checkout for WooCommerce please refer
 
 
 == CHANGELOG ==
+= 2023.12.14    - version 4.0.10 =
+* Enhancement   - Increased the timeout for placing a WooCommerce order to 29 seconds from 9.5 to match Walleys updated timeout of 30 seconds.
+
 = 2023.11.21    - version 4.0.9 =
 * Enhancement   - Ensures logging of any error messages generated during the checkout process.
 * Enhancement   - Adds a timeout to the order placement to prevent the checkout from locking.
