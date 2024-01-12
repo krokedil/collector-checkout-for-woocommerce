@@ -68,15 +68,26 @@ class Collector_Api_Callbacks {
 			$order = wc_get_order( $order_id );
 
 			if ( $order ) {
+				// Get the metadata for if the order is pending a callback from walley.
+				$pending_callback = $order->get_meta( '_walley_pending_callback', true );
 
 				// Maybe abort the callback (if the order already has been processed in Woo).
 				if ( ! empty( $order->get_date_paid() ) ) {
 					CCO_WC()->logger::log( 'Aborting API callback. Order ' . $order->get_order_number() . '(order ID ' . $order_id . ', Private ID ' . $private_id . ') already processed.' );
 				} else {
-					CCO_WC()->logger::log( 'Order status not set correctly for order ' . $order->get_order_number() . '(order ID ' . $order_id . ', Private ID ' . $private_id . ') during checkout process. Setting order status to Processing/Completed in API callback.' );
-					// translators: Walley private ID.
-					$note = sprintf( __( 'Order status not set correctly during checkout process. Confirming purchase via callback from Walley.', 'collector-checkout-for-woocommerce' ), $private_id );
-					$order->add_order_note( $note );
+					if ( 'yes' !== $pending_callback ) {
+						CCO_WC()->logger::log( 'Order status not set correctly for order ' . $order->get_order_number() . '(order ID ' . $order_id . ', Private ID ' . $private_id . ') during checkout process. Setting order status to Processing/Completed in API callback.' );
+						// translators: Walley private ID.
+						$note = sprintf( __( 'Order status not set correctly during checkout process. Confirming purchase via callback from Walley.', 'collector-checkout-for-woocommerce' ), $private_id );
+						$order->add_order_note( $note );
+					} else {
+						CCO_WC()->logger::log( 'Pending order received a callback from Walley ' . $order->get_order_number() . '(order ID ' . $order_id . ', Private ID ' . $private_id . '). Confirming order.' );
+						// translators: Walley private ID.
+						$note = sprintf( __( 'Callback from Walley received.', 'collector-checkout-for-woocommerce' ), $private_id );
+						$order->add_order_note( $note );
+						$order->update_meta_data( '_walley_pending_callback', 'no' );
+						$order->save();
+					}
 					walley_confirm_order( $order_id, $private_id );
 				}
 			} else {
@@ -87,7 +98,6 @@ class Collector_Api_Callbacks {
 			// No order found - create a new.
 			CCO_WC()->logger::log( 'API-callback executed. We could NOT find Private id ' . $private_id . '(with public token ' . $public_token . ' & customer type ' . $customer_type . '). Aborting process.' );
 		}
-
 	}
 
 	/**
