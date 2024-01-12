@@ -19,12 +19,10 @@ function collector_wc_show_snippet() {
 		$locale = 'da-DK';
 	} elseif ( 'EUR' === get_woocommerce_currency() ) {
 		$locale = 'fi-FI';
-	} else {
-		if ( 'sv_SE' === get_locale() ) {
+	} elseif ( 'sv_SE' === get_locale() ) {
 			$locale = 'sv-SE';
-		} else {
-			$locale = 'en-SE';
-		}
+	} else {
+		$locale = 'en-SE';
 	}
 
 	$collector_settings       = get_option( 'woocommerce_collector_checkout_settings' );
@@ -655,10 +653,8 @@ function walley_print_error_message( $wp_error ) {
 		if ( function_exists( 'wc_add_notice' ) ) {
 			$print = 'wc_add_notice';
 		}
-	} else {
-		if ( function_exists( 'wc_print_notice' ) ) {
+	} elseif ( function_exists( 'wc_print_notice' ) ) {
 			$print = 'wc_print_notice';
-		}
 	}
 
 	if ( ! isset( $print ) ) {
@@ -960,4 +956,167 @@ function walley_save_custom_fields( $order_id, $walley_order ) {
 
 		$order->save();
 	}
+}
+
+/**
+ * Returns a list of supported currencies with the country code they are supported for.
+ *
+ * @return array
+ */
+function walley_get_supported_currencies() {
+	return array(
+		'SEK' => 'se',
+		'NOK' => 'no',
+		'DKK' => 'dk',
+		'EUR' => 'fi',
+	);
+}
+
+/**
+ * Checks if a currency is supported by Walley.
+ *
+ * @param string $currency The currency to check.
+ *
+ * @return bool
+ */
+function walley_is_currency_supported( $currency ) {
+	$supported_currencies = walley_get_supported_currencies();
+	return isset( $supported_currencies[ $currency ] );
+}
+
+/**
+ * Gets the country code for a currency.
+ *
+ * @param string $currency The currency to get the country code for.
+ *
+ * @return string|bool
+ */
+function walley_get_currency_country( $currency ) {
+	$supported_currencies = walley_get_supported_currencies();
+
+	if ( ! isset( $supported_currencies[ $currency ] ) ) {
+		return false;
+	}
+
+	return $supported_currencies[ $currency ];
+}
+
+/**
+ * Helper function - get available customer types.
+ *
+ * @return string|bool
+ */
+function wc_collector_get_available_customer_types() {
+	$collector_settings = get_option( 'woocommerce_collector_checkout_settings' );
+
+	$currency = get_woocommerce_currency();
+	$country  = walley_get_currency_country( $currency );
+
+	// If the currency is not supported by Walley, return false.
+	if ( ! $country ) {
+		return false;
+	}
+
+	// Get the merchant id for the selected country, for both B2C and B2B.
+	$b2c_set = ! empty( $collector_settings[ "collector_merchant_id_{$country}_b2c" ] ?? false );
+	$b2b_set = ! empty( $collector_settings[ "collector_merchant_id_{$country}_b2b" ] ?? false );
+
+	// Build the return value dynamically based on the availability of b2c and b2b.
+	$result = 'collector-';
+	if ( $b2c_set ) {
+		$result .= 'b2c';
+	}
+	if ( $b2b_set ) {
+		$result .= ( $b2c_set ? '-b2b' : 'b2b' );
+	}
+
+	// Return the result or false if neither b2c nor b2b is available.
+	return ( $b2c_set || $b2b_set ) ? $result : false;
+}
+
+/**
+ * Helper function - get default customer type.
+ *
+ * @return string
+ */
+function wc_collector_get_default_customer_type() {
+	$collector_settings    = get_option( 'woocommerce_collector_checkout_settings' );
+	$default_customer_type = $collector_settings['collector_default_customer'] ?? '';
+
+	$currency = get_woocommerce_currency();
+	$country  = walley_get_currency_country( $currency );
+
+	// If no country, return the default customer type.
+	if ( ! $country ) {
+		return $default_customer_type;
+	}
+
+	$b2c_set = ! empty( $collector_settings[ "collector_merchant_id_{$country}_b2c" ] ?? false );
+	$b2b_set = ! empty( $collector_settings[ "collector_merchant_id_{$country}_b2b" ] ?? false );
+
+	// If the default type is not available but the other is, switch to the other type.
+	if ( 'b2c' === $default_customer_type && ! $b2c_set && $b2b_set ) {
+		return 'b2b';
+	} elseif ( 'b2b' === $default_customer_type && ! $b2b_set && $b2c_set ) {
+		return 'b2c';
+	}
+
+	// In all other cases, return the default type.
+	return $default_customer_type;
+}
+
+/**
+ * Helper function - get selected customer type.
+ *
+ * @return string
+ */
+function wc_collector_get_selected_customer_type() {
+	$selected_customer_type = false;
+	if ( isset( WC()->session ) && method_exists( WC()->session, 'get' ) ) {
+		$selected_customer_type = WC()->session->get( 'collector_customer_type' );
+	}
+
+	if ( empty( $selected_customer_type ) ) {
+		$selected_customer_type = wc_collector_get_default_customer_type();
+	}
+
+	return $selected_customer_type;
+}
+
+/**
+ * Get localized and formatted payment method name.
+ *
+ * @param string $payment_method Collectors naming of the payment type.
+ *
+ * @return string
+ */
+function wc_collector_get_payment_method_name( $payment_method ) {
+	switch ( $payment_method ) {
+
+		case 'Direct Invoice':
+		case 'DirectInvoice':
+			$payment_method = __( 'Walley Invoice', 'collector-checkout-for-woocommerce' );
+			break;
+		case 'Account':
+			$payment_method = __( 'Walley Account', 'collector-checkout-for-woocommerce' );
+			break;
+		case 'Part Payment':
+		case 'PartPayment':
+			$payment_method = __( 'Walley Part Payment', 'collector-checkout-for-woocommerce' );
+			break;
+		case 'Campaign':
+			$payment_method = __( 'Walley Campaign', 'collector-checkout-for-woocommerce' );
+			break;
+		case 'Card':
+			$payment_method = __( 'Walley Card', 'collector-checkout-for-woocommerce' );
+			break;
+		case 'Bank Transfer':
+		case 'BankTransfer':
+			$payment_method = __( 'Walley Bank Transfer', 'collector-checkout-for-woocommerce' );
+			break;
+		default:
+			break;
+	}
+
+	return $payment_method;
 }

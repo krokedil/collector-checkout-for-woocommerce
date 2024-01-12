@@ -13,15 +13,37 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Class Walley_Checkout_Assets
  */
 class Walley_Checkout_Assets {
+	/**
+	 * The plugin settings.
+	 *
+	 * @var array
+	 */
+	protected $settings;
+
+	/**
+	 * If the gateway is enabled or not.
+	 *
+	 * @var string
+	 */
+	protected $enabled;
+
+	/**
+	 * The plugin test mode setting.
+	 *
+	 * @var string
+	 */
+	protected $test_mode;
 
 	/**
 	 * Class constructor.
 	 */
 	public function __construct() {
-
 		$this->settings  = get_option( 'woocommerce_collector_checkout_settings', array() );
 		$this->enabled   = $this->settings['enabled'] ?? 'no';
 		$this->test_mode = $this->settings['test_mode'] ?? 'no';
+
+		// Register widget scripts.
+		add_action( 'init', array( $this, 'register_widget_assets' ) );
 
 		// Load scripts.
 		// add_action( 'wp_enqueue_scripts', array( $this, 'register_checkout_scripts' ) );
@@ -33,7 +55,6 @@ class Walley_Checkout_Assets {
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_css' ) );
 		// JS for metabox.
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_metabox_scripts' ) );
-
 	}
 
 	/**
@@ -50,7 +71,6 @@ class Walley_Checkout_Assets {
 		}
 
 		wp_register_script( 'walley_checkout', COLLECTOR_BANK_PLUGIN_URL . '/assets/js/walley-checkout-for-woocommerce.js', array( 'jquery' ), COLLECTOR_BANK_VERSION, false );
-
 	}
 
 	/**
@@ -171,7 +191,6 @@ class Walley_Checkout_Assets {
 			)
 		);
 		wp_enqueue_script( 'walley_checkout' );
-
 	}
 
 	/**
@@ -261,4 +280,16 @@ class Walley_Checkout_Assets {
 		wp_enqueue_style( 'walley-metabox-css' );
 	}
 
-} new Walley_Checkout_Assets();
+	/**
+	 * Register the widget script for the part payment widget.
+	 */
+	public function register_widget_assets() {
+		$base_src = 'yes' === $this->test_mode ? 'https://api.uat.walleydev.com' : 'https://api.walleypay.com';
+		$src      = "{$base_src}/walley-checkout-loader.js";
+
+		wp_register_script( 'walley-checkout-loader', $src, array(), null, true );
+		wp_register_script( 'walley-part-payment-widget', COLLECTOR_BANK_PLUGIN_URL . '/assets/js/walley-part-payment-widget.js', array( 'walley-checkout-loader' ), COLLECTOR_BANK_VERSION, true );
+		wp_register_style( 'walley-part-payment-widget', COLLECTOR_BANK_PLUGIN_URL . '/assets/css/walley-part-payment-widget.css', array(), COLLECTOR_BANK_VERSION, false );
+	}
+}
+new Walley_Checkout_Assets();
