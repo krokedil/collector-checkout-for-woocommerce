@@ -130,7 +130,6 @@ class Collector_Checkout_Create_Refund_Data {
 			}
 		}
 
-		// update_post_meta( $refund_order_id, '_krokedil_refunded', 'true' ); phpcs:ignore Squiz.PHP.CommentedOutCode.Found.
 		return $data;
 	}
 	/**
@@ -229,12 +228,10 @@ class Collector_Checkout_Create_Refund_Data {
 		$collector_shipping_reference = $original_order->get_meta( '_collector_shipping_reference', true );
 		if ( isset( $collector_shipping_reference ) && ! empty( $collector_shipping_reference ) ) {
 			$shipping_reference = $collector_shipping_reference;
-		} else {
-			if ( null !== $shipping->get_instance_id() ) {
+		} elseif ( null !== $shipping->get_instance_id() ) {
 				$shipping_reference = 'shipping|' . $shipping->get_method_id() . ':' . $shipping->get_instance_id();
-			} else {
-				$shipping_reference = 'shipping|' . $shipping->get_method_id();
-			}
+		} else {
+			$shipping_reference = 'shipping|' . $shipping->get_method_id();
 		}
 
 		$free_shipping = false;
@@ -311,6 +308,4 @@ class Collector_Checkout_Create_Refund_Data {
 		/* Always retrieve the most recent (current) refund (index 0). */
 		return $order->get_refunds()[0]->get_id();
 	}
-
-
 }

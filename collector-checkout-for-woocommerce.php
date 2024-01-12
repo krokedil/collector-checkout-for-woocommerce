@@ -111,6 +111,8 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 			// add_action( 'init', array( $this, 'collector_maybe_schedule_action' ) );
 			// Clean Collector db.
 			add_action( 'collector_clean_db', array( $this, 'collector_clean_db_callback' ) );
+
+			add_action( 'before_woocommerce_init', array( $this, 'declare_wc_compatibility' ) );
 		}
 
 		/**
@@ -355,6 +357,18 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 					<?php
 				}
 			);
+		}
+
+		/**
+		 * Declare compatibility with WooCommerce features.
+		 *
+		 * @return void
+		 */
+		public function declare_wc_compatibility() {
+			// Declare HPOS compatibility.
+			if ( class_exists( \Automattic\WooCommerce\Utilities\FeaturesUtil::class ) ) {
+				\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', __FILE__, true );
+			}
 		}
 	}
 

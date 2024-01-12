@@ -94,15 +94,12 @@ function collector_wc_show_snippet() {
 		}
 
 		if ( isset( $collector_order['data']['status'] ) && 'PurchaseCompleted' === $collector_order['data']['status'] ) {
-			$order_id = wc_collector_get_order_id_by_private_id( $private_id );
+			$order = wc_collector_get_order_by_private_id( $private_id );
 
-			if ( ! empty( $order_id ) ) {
-				$order = wc_get_order( $order_id );
-				if ( $order ) {
-					CCO_WC()->logger::log( 'Trying to display checkout but status is PurchaseCompleted. Private id ' . $private_id . ', exist in order id ' . $order_id . '. Redirecting customer to thankyou page.' );
-					wp_safe_redirect( $order->get_checkout_order_received_url() );
-					exit;
-				}
+			if ( ! empty( $order ) ) {
+				CCO_WC()->logger::log( 'Trying to display checkout but status is PurchaseCompleted. Private id ' . $private_id . ', exist in order id ' . $order->get_id() . '. Redirecting customer to thankyou page.' );
+				wp_safe_redirect( $order->get_checkout_order_received_url() );
+				exit;
 			} else {
 				CCO_WC()->logger::log( 'Trying to display checkout but status is PurchaseCompleted. Private id ' . $private_id . '. No correlating order id can be found.' );
 			}
@@ -166,12 +163,16 @@ function collector_wc_show_customer_type_switcher() {
 /**
  * Unset Collector public token and private id
  *
- * @param string $order_id WooCommerce order id.
- * @param string $product_id WooCommerce product id.
+ * @param WC_Order|int $order The WooCommerce order or order id.
+ * @param string       $product_id WooCommerce product id.
  */
-function wc_collector_add_invoice_fee_to_order( $order_id, $product_id ) {
+function wc_collector_add_invoice_fee_to_order( $order, $product_id ) {
+	// Get the order object if the order is passed as an id.
+	if ( ! is_object( $order ) ) {
+		$order = wc_get_order( $order );
+	}
+
 	$result  = false;
-	$order   = wc_get_order( $order_id );
 	$product = wc_get_product( $product_id );
 
 	if ( is_object( $product ) && is_object( $order ) ) {
@@ -257,81 +258,59 @@ function is_collector_delivery_module( $currency = false ) {
 }
 
 /**
- * Finds an Order ID based on a private ID (the Collector session id during purchase).
+ * Finds an Order based on a private ID (the Collector session id during purchase).
  *
  * @param string $private_id Collector session id saved as _collector_private_id ID in WC order.
- * @return int The ID of an order, or 0 if the order could not be found.
+ *
+ * @return WC_Order|bool The WooCommerce order if found or false if not found.
  */
-function wc_collector_get_order_id_by_private_id( $private_id = null ) {
-
+function wc_collector_get_order_by_private_id( $private_id = null ) {
 	if ( empty( $private_id ) ) {
 		return false;
 	}
 
-	$query_args = array(
-		'fields'      => 'ids',
-		'post_type'   => wc_get_order_types(),
-		'post_status' => array_keys( wc_get_order_statuses() ),
-		'meta_key'    => '_collector_private_id', // phpcs:ignore WordPress.DB.SlowDBQuery -- Slow DB Query is ok here, we need to limit to our meta key.
-		'meta_value'  => sanitize_text_field( wp_unslash( $private_id ) ), // phpcs:ignore WordPress.DB.SlowDBQuery -- Slow DB Query is ok here, we need to limit to our meta key.
-		'orderby'     => 'date',
-		'order'       => 'DESC',
-		'date_query'  => array(
-			array(
-				'after' => '120 day ago',
-			),
-		),
+	$args = array(
+		'meta_key'     => '_collector_private_id',
+		'meta_value'   => $private_id,
+		'meta_compare' => '=',
+		'order'        => 'DESC',
+		'orderby'      => 'date',
+		'limit'        => 1,
+		'date_after'   => '120 day ago',
 	);
 
-	$orders = get_posts( $query_args );
+	$orders = wc_get_orders( $args );
 
-	if ( $orders ) {
-		$order_id = $orders[0];
-	} else {
-		$order_id = 0;
+	// If the orders array is empty, return false.
+	if ( empty( $orders ) ) {
+		return false;
 	}
 
-	return $order_id;
-}
+	// Get the first order in the array.
+	$order = reset( $orders );
 
-/**
- * Finds all Orders based on a private ID (the Collector session id during purchase).
- *
- * @param string $private_id Collector session id saved as _collector_private_id ID in WC order.
- * @return array WC orders that have the specific private id saved as meta.
- */
-function wc_collector_get_orders_by_private_id( $private_id = null ) {
+	// Validate that the order actually has the metadata we're looking for, and that it is the same.
+	$meta_value = $order->get_meta( '_collector_private_id', true );
 
-	if ( empty( $private_id ) ) {
-		return array();
+	// If the meta value is not the same as the Private id, return false.
+	if ( $meta_value !== $private_id ) {
+		return false;
 	}
 
-	$query_args = array(
-		'fields'      => 'ids',
-		'post_type'   => wc_get_order_types(),
-		'post_status' => array_keys( wc_get_order_statuses() ),
-		'meta_key'    => '_collector_private_id', // phpcs:ignore WordPress.DB.SlowDBQuery -- Slow DB Query is ok here, we need to limit to our meta key.
-		'meta_value'  => sanitize_text_field( wp_unslash( $private_id ) ), // phpcs:ignore WordPress.DB.SlowDBQuery -- Slow DB Query is ok here, we need to limit to our meta key.
-		'date_query'  => array(
-			array(
-				'after' => '120 day ago',
-			),
-		),
-	);
-
-	$order_ids = get_posts( $query_args );
-
-	return $order_ids;
+	return $order;
 }
 
 /**
  * Confirm order
  *
- * @param string $order_id WC order id.
- * @param string $private_id Collector session id saved as _collector_private_id ID in WC order.
+ * @param WC_Order|int $order The WooCommerce order or order id.
+ * @param string       $private_id Collector session id saved as _collector_private_id ID in WC order.
  */
-function wc_collector_confirm_order( $order_id, $private_id = null ) {
-	$order = wc_get_order( $order_id );
+function wc_collector_confirm_order( $order, $private_id = null ) {
+	// Get the order object if the order is passed as an id.
+	if ( ! is_object( $order ) ) {
+		$order = wc_get_order( $order );
+	}
 
 	if ( empty( $private_id ) ) {
 		$private_id = $order->get_meta( '_collector_private_id', true );
@@ -372,7 +351,7 @@ function wc_collector_confirm_order( $order_id, $private_id = null ) {
 		if ( walley_use_new_api() ) {
 			$update_reference = CCO_WC()->api->set_order_reference_in_walley(
 				array(
-					'order_id'      => $order_id,
+					'order_id'      => $order->get_id(),
 					'private_id'    => $private_id,
 					'customer_type' => $customer_type,
 				)
@@ -389,7 +368,7 @@ function wc_collector_confirm_order( $order_id, $private_id = null ) {
 		$collector_settings = get_option( 'woocommerce_collector_checkout_settings' );
 		$product_id         = $collector_settings['collector_invoice_fee'];
 		if ( $product_id ) {
-			wc_collector_add_invoice_fee_to_order( $order_id, $product_id );
+			wc_collector_add_invoice_fee_to_order( $order->get_id(), $product_id );
 		}
 	}
 
@@ -397,21 +376,20 @@ function wc_collector_confirm_order( $order_id, $private_id = null ) {
 	$order->update_meta_data( '_collector_payment_id', $payment_id );
 	$order->update_meta_data( '_collector_order_id', sanitize_key( $walley_order_id ) );
 	$order->save();
-	wc_collector_save_shipping_reference_to_order( $order_id, $collector_order );
+	wc_collector_save_shipping_reference_to_order( $order->get_id(), $collector_order );
 
 	if ( 'Preliminary' === $payment_status || 'Completed' === $payment_status ) {
 		$order->payment_complete( $payment_id );
 	} elseif ( 'Signing' === $payment_status ) {
 		$order->add_order_note( __( 'Order is waiting for electronic signing by customer. Payment ID: ', 'collector-checkout-for-woocommerce' ) . $payment_id );
 		$order->update_meta_data( '_transaction_id', $payment_id );
-		$order->save();
-
 		$order->update_status( 'on-hold' );
+		$order->save();
 	} else {
 		$order->add_order_note( __( 'Order is PENDING APPROVAL by Collector. Payment ID: ', 'collector-checkout-for-woocommerce' ) . $payment_id );
 		$order->add_meta_data( '_transaction_id', $payment_id );
+		$order->update_status( 'on-hold' );
 		$order->save();
-		$order->update_meta_data( 'on-hold' );
 	}
 
 	// Translators: Collector Payment method.
@@ -421,12 +399,16 @@ function wc_collector_confirm_order( $order_id, $private_id = null ) {
 /**
  * Saving shipping reference to order
  *
- * @param int   $order_id WooCommerce order id.
- * @param array $collector_order Collector payment data.
+ * @param WC_Order|int $order The WooCommerce order or order id.
+ * @param array        $collector_order Collector payment data.
  * @return void
  */
-function wc_collector_save_shipping_reference_to_order( $order_id, $collector_order ) {
-	$order = wc_get_order( $order_id );
+function wc_collector_save_shipping_reference_to_order( $order, $collector_order ) {
+	// Get the order object if the order is passed as an id.
+	if ( ! is_object( $order ) ) {
+		$order = wc_get_order( $order );
+	}
+
 	$order_items = $collector_order['data']['order']['items'] ?? array();
 	foreach ( $order_items as $item ) {
 		if ( strpos( $item['id'], 'shipping|' ) !== false ) {
@@ -443,7 +425,6 @@ function wc_collector_save_shipping_reference_to_order( $order_id, $collector_or
  * @return array
  */
 function wc_collector_allowed_tags() {
-
 	$allowed_tags = array(
 		'a'          => array(
 			'class' => array(),
@@ -733,11 +714,14 @@ function walley_get_order_id_by_public_token( $public_token ) {
 /**
  * Confirm order
  *
- * @param string $order_id WC order id.
- * @param string $private_id Collector session id saved as _collector_private_id ID in WC order.
+ * @param WC_Order|int $order The WooCommerce order or order id.
+ * @param string       $private_id Collector session id saved as _collector_private_id ID in WC order.
  */
-function walley_confirm_order( $order_id, $private_id = null ) {
-	$order = wc_get_order( $order_id );
+function walley_confirm_order( $order, $private_id = null ) {
+	// Get the order object if the order is passed as an id.
+	if ( ! is_object( $order ) ) {
+		$order = wc_get_order( $order );
+	}
 
 	// Check if the order has been confirmed already.
 	if ( ! empty( $order->get_date_paid() ) ) {
@@ -783,7 +767,7 @@ function walley_confirm_order( $order_id, $private_id = null ) {
 		if ( walley_use_new_api() ) {
 			$update_reference = CCO_WC()->api->set_order_reference_in_walley(
 				array(
-					'order_id'      => $order_id,
+					'order_id'      => $order->get_id(),
 					'private_id'    => $private_id,
 					'customer_type' => $customer_type,
 				)
@@ -800,41 +784,40 @@ function walley_confirm_order( $order_id, $private_id = null ) {
 		$collector_settings = get_option( 'woocommerce_collector_checkout_settings' );
 		$product_id         = $collector_settings['collector_invoice_fee'];
 		if ( $product_id ) {
-			wc_collector_add_invoice_fee_to_order( $order_id, $product_id );
+			wc_collector_add_invoice_fee_to_order( $order, $product_id );
 		}
 	}
 
 	$order->update_meta_data( '_collector_payment_method', $payment_method );
 	$order->update_meta_data( '_collector_payment_id', $payment_id );
 	$order->update_meta_data( '_collector_order_id', sanitize_key( $walley_order_id ) );
-	$order->save();
 
-	wc_collector_save_shipping_reference_to_order( $order_id, $collector_order );
+	wc_collector_save_shipping_reference_to_order( $order, $collector_order );
 
 	// Save custom fields data.
-	walley_save_custom_fields( $order_id, $collector_order );
+	walley_save_custom_fields( $order, $collector_order );
 
 	// Save shipping data.
 	if ( isset( $collector_order['data']['shipping'] ) ) {
 		$order->update_meta_data( '_collector_delivery_module_data', wp_json_encode( $collector_order['data']['shipping'], JSON_UNESCAPED_UNICODE ) );
 		$order->update_meta_data( '_collector_delivery_module_reference', $collector_order['data']['shipping']['pendingShipment']['id'] );
-		$order->save();
 	}
 
 	if ( 'Preliminary' === $payment_status || 'Completed' === $payment_status ) {
 		$order->payment_complete( $payment_id );
 	} elseif ( 'Signing' === $payment_status ) {
 		$order->add_order_note( __( 'Order is waiting for electronic signing by customer. Payment ID: ', 'collector-checkout-for-woocommerce' ) . $payment_id );
-		update_post_meta( $order_id, '_transaction_id', $payment_id );
+		$order->update_meta_data( '_transaction_id', $payment_id );
 		$order->update_status( 'on-hold' );
 	} else {
 		$order->add_order_note( __( 'Order is PENDING APPROVAL by Collector. Payment ID: ', 'collector-checkout-for-woocommerce' ) . $payment_id );
-		update_post_meta( $order_id, '_transaction_id', $payment_id );
+		$order->update_meta_data( '_transaction_id', $payment_id );
 		$order->update_status( 'on-hold' );
 	}
 
 	// Translators: Collector Payment method.
 	$order->add_order_note( sprintf( __( 'Purchase via %s', 'collector-checkout-for-woocommerce' ), wc_collector_get_payment_method_name( $payment_method ) ) );
+	$order->save();
 	return true;
 }
 
@@ -880,7 +863,7 @@ function walley_add_rounding_order_line() {
  * @return string
  */
 function walley_get_shipping_reference_from_delivery_module_data( $order_id ) {
-	$order = wc_get_order($order_id);
+	$order                   = wc_get_order( $order_id );
 	$collector_delivery_data = json_decode( $order->get_meta( '_collector_delivery_module_data', true ), true ) ?? array();
 	$shipping_reference      = $collector_delivery_data['shippingFeeId'] ?? '';
 	return $shipping_reference;
@@ -921,14 +904,16 @@ function walley_get_cart_shipping_classes() {
 /**
  * Save custom fields to WooCommerce order if they exist in Walley order.
  *
- * @param int   $order_id WooCommerce order ID.
- * @param array $walley_order Walley order data.
+ * @param WC_Order|int $order The WooCommerce order or order id.
+ * @param array        $walley_order Walley order data.
  *
  * @return void
  */
-function walley_save_custom_fields( $order_id, $walley_order ) {
-
-	$order = wc_get_order( $order_id );
+function walley_save_custom_fields( $order, $walley_order ) {
+	// Get the order object if the order is passed as an id.
+	if ( ! is_object( $order ) ) {
+		$order = wc_get_order( $order );
+	}
 
 	// Save customFields data.
 	if ( is_object( $order ) && isset( $walley_order['data']['customFields'] ) ) {

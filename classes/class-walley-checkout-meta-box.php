@@ -27,11 +27,11 @@ class Walley_Checkout_Meta_Box {
 	 * @return void
 	 */
 	public function add_meta_box( $post_type ) {
-		if ( 'shop_order' === $post_type ) {
+		if ( in_array( $post_type, array( 'woocommerce_page_wc-orders', 'shop_order' ), true ) ) {
 			$order_id = get_the_ID();
 			$order    = wc_get_order( $order_id );
 			if ( 'collector_checkout' === $order->get_payment_method() && walley_use_new_api() ) {
-				add_meta_box( 'walley_checkout_meta_box', __( 'Walley', 'collector-checkout-for-woocommerce' ), array( $this, 'meta_box_content' ), 'shop_order', 'side', 'core' );
+				add_meta_box( 'walley_checkout_meta_box', __( 'Walley', 'collector-checkout-for-woocommerce' ), array( $this, 'meta_box_content' ), $post_type, 'side', 'core' );
 			}
 		}
 	}
@@ -40,13 +40,20 @@ class Walley_Checkout_Meta_Box {
 	/**
 	 * Adds content for the meta box.
 	 *
+	 * @param WC_Order $order The WooCommerce order.
+	 *
 	 * @return void
 	 */
-	public function meta_box_content() {
+	public function meta_box_content( $order = null ) {
+		if ( ! $order instanceof WC_Order ) {
+			$order_id = get_the_ID();
+			$order    = wc_get_order( $order_id );
+		} else {
+			$order_id = $order->get_id();
+		}
+
 		$collector_settings = get_option( 'woocommerce_collector_checkout_settings' );
 		$manage_orders      = $collector_settings['manage_collector_orders'];
-		$order_id           = get_the_ID();
-		$order              = wc_get_order( $order_id );
 
 		$payment_method             = $order->get_meta( '_collector_payment_method', true );
 		$payment_id                 = $order->get_meta( '_collector_payment_id', true );
@@ -118,7 +125,4 @@ class Walley_Checkout_Meta_Box {
 		$keys_for_meta_box = apply_filters( 'walley_checkout_meta_box_keys', $keys_for_meta_box );
 		include COLLECTOR_BANK_PLUGIN_DIR . '/templates/walley-checkout-meta-box.php';
 	}
-
-
-
 } new Walley_Checkout_Meta_Box();
