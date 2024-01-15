@@ -40,11 +40,11 @@ For help setting up and configuring Walley Checkout for WooCommerce please refer
 
 == CHANGELOG ==
 
-= 2023.12.xx    - version 4.1.0 =
+= 2024.01.15    - version 4.1.0 =
 * Feature       - Add support for Post Purchase Upsell to allow customers to add products to the order on the thankyou page.
 * Feature       - Add support for Danish B2B Merchant IDs.
 * Feature       - Adds support for Walley Part Payment Widget on the cart and product pages in WooCommerce.
-* Fix           - Fixed an issue causing customers to see a error page when placing an order with only virtual and downloadable products.
+* Fix           - Fixed an issue where orders with only digital and downloadable products would not be automatically completed
 * Fix           - Fixed several PHP notices from PHP version 8.2.
 
 = 2023.12.14    - version 4.0.10 =
