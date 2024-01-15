@@ -105,7 +105,7 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 		);
 
 		if ( empty( $scheduled_actions ) ) {
-			as_schedule_single_action( time() + 120, 'collector_check_for_order', array( $private_id, $public_token, $customer_type ) );
+			as_schedule_single_action( time() + 30, 'collector_check_for_order', array( $private_id, $public_token, $customer_type ) );
 			header( 'HTTP/1.1 200 OK' );
 		} else {
 			CCO_WC()->logger::log( 'collector_check_for_order callback already scheduled. ' . wp_json_encode( $scheduled_actions ) ); // Input var okay.
