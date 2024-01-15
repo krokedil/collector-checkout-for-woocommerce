@@ -69,7 +69,7 @@ class Walley_Checkout_Confirmation {
 		// This is to prevent an error from attempting to complete an order before it has been moved to the order management api in Walley.
 		if ( ! $order->needs_processing() ) {
 			$order->update_meta_data( '_walley_pending_callback', 'yes' );
-			$order->update_status( 'on-hold', __( 'The order has been completed, but awaiting callback from Walley to confirm the order.', 'collector-checkout-for-woocommerce' ) );
+			$order->update_status( 'on-hold', __( 'The payment has been completed, but awaiting callback from Walley to confirm the order.', 'collector-checkout-for-woocommerce' ) );
 			$order->save();
 			wp_safe_redirect( $order->get_checkout_order_received_url() );
 			exit;
