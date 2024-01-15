@@ -143,7 +143,7 @@ abstract class Walley_Checkout_Request {
 	/**
 	 * Make the request.
 	 *
-	 * @return object|WP_Error
+	 * @return array|WP_Error
 	 */
 	public function request() {
 		$url      = $this->get_request_url();
