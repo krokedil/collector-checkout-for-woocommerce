@@ -63,12 +63,15 @@ jQuery( function( $ ) {
 					} catch (error) {
 						clearTimeout(timeout);
 						const message  = error.message.replace(/<\/?[^>]+(>|$)/g, "").replace(/(\t|\n)/gm, "") ?? 'Unknown error.';
+						const title = error.title.replace(/<\/?[^>]+(>|$)/g, "").replace(/(\t|\n)/gm, "") ?? '';
 
-						walleyCheckoutWc.failOrder( null, message );
+						// Do not modify the original message as it will be sent separately to Walley.
+						const message_to_customer = (title) ? `${message}: ${title}` : message;
+						walleyCheckoutWc.failOrder( null, message_to_customer );
 
 						return Promise.reject(
 							{
-								"title": "Place WooCommerce order issue.",
+								"title": title,
 								"message": message
 							}
 						);
