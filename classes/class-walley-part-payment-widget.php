@@ -217,7 +217,7 @@ class Walley_Part_Payment_Widget {
 
 		// If the product is a variable product, get the min price.
 		if ( $product->is_type( 'variable' ) ) {
-			return $product->get_variation_price( 'min' ) * 100;
+			return floatval( $product->get_variation_price( 'min' ) ) * 100;
 		}
 
 		// Else return the price.
