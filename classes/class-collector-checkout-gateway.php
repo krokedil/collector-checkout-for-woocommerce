@@ -364,10 +364,20 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 	 * @return string
 	 */
 	public function collector_thankyou_order_received_text( $text, $order ) {
+		// The $order might be FALSE. This can happen if the customer visits the order received page directly and the order does not exist or if the order number and/or the key is invalid.
+		if ( empty( $order ) ) {
+			return $text;
+		}
+
+		// Check if the payment method is Collector since the hook 'woocommerce_thankyou_order_received_text' is triggered for all payment methods.
+		if ( 'collector_checkout' !== $order->get_payment_method() ) {
+			return $text;
+		}
+
 		$html_snippet = '<div class="collector-checkout-thankyou"></div>';
 
 		// Only print the snippet if the order was not upsold. If it has, the iframe wont show the same order amount as the WC order.
-		$upsell_uuids    = $order->get_meta( '_ppu_upsell_ids', true );
+		$upsell_uuids    = $order->get_meta( '_ppu_upsell_ids' );
 		$has_been_upsold = ! empty( $upsell_uuids );
 
 		if ( $has_been_upsold ) {
@@ -375,27 +385,22 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 			return $text;
 		}
 
-		if ( is_object( $order ) && 'collector_checkout' === $order->get_payment_method() ) {
-			CCO_WC()->logger::log( 'Thankyou page rendered for order ID - ' . $order->get_id() );
-
-			// Starting WC 8.1 the HTML snippet will be escaped, we now have to echo it directly,
-			// and return an empty string to overwrite the default $text string.
-			echo wp_kses_post( $html_snippet );
-			return '';
-		}
-
+		// Maybe render simplified thankyou page.
 		$purchase_status = filter_input( INPUT_GET, 'purchase-status', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 		if ( 'not-completed' === $purchase_status ) {
 			// Unset Collector token and id.
 			wc_collector_unset_sessions();
 			WC()->cart->empty_cart();
-			CCO_WC()->logger::log( 'Rendering simplified thankyou page (only display Collector thank you iframe).' );
 
-			echo wp_kses_post( $html_snippet );
-			return '';
+			CCO_WC()->logger::log( 'Rendering simplified thankyou page (only display Collector thank you iframe).' );
+		} else {
+			CCO_WC()->logger::log( 'Thankyou page rendered for order ID - ' . $order->get_id() );
 		}
 
-		return $text;
+		// Starting WC 8.1 the HTML snippet will be escaped, we now have to echo it directly.
+		echo wp_kses_post( $html_snippet );
+		// And return an empty string to overwrite the default $text string.
+		return '';
 	}
 
 	/**

@@ -49,8 +49,12 @@ jQuery( function( $ ) {
 
 					try {
 						// Setup a handler that will be used to place the order.
-						const handler = new Promise(async (resolve) => {
+						const handler = new Promise(async (resolve, reject) => {
+							try {
 							await walleyCheckoutWc.placeWalleyOrder();
+							} catch (error) {
+								reject(error);
+							}
 							clearTimeout(timeout);
 							resolve();
 						});
@@ -62,19 +66,26 @@ jQuery( function( $ ) {
 						walleyCheckoutWc.logToFile('Successfully placed order.');
 					} catch (error) {
 						clearTimeout(timeout);
-						const message  = error.message.replace(/<\/?[^>]+(>|$)/g, "").replace(/(\t|\n)/gm, "") ?? 'Unknown error.';
-						const title = error.title.replace(/<\/?[^>]+(>|$)/g, "").replace(/(\t|\n)/gm, "") ?? '';
+						let message = ''
+						$(error.message.replace(/(\t|\n)/gm, "")).find('li').filter(e => e !== undefined).each((i, e) => {
+							message += `<li>${e.textContent.replace(/<\/?[^>]+(>|$)/g, "")}</li>`
+						})
+
+						// If we could not extract any HTML from the error, use the original error message.
+						if (!message) {
+							message = error.message.replace(/<\/?[^>]+(>|$)/g, "").replace(/(\t|\n)/gm, "") ?? 'Something went wrong.'
+						}
+
+						let title = ''
+						if (error.title) {
+							title = error.title.replace(/<\/?[^>]+(>|$)/g, "").replace(/(\t|\n)/gm, "") ?? '';
+						}
 
 						// Do not modify the original message as it will be sent separately to Walley.
 						const message_to_customer = (title) ? `${message}: ${title}` : message;
 						walleyCheckoutWc.failOrder( null, message_to_customer );
 
-						return Promise.reject(
-							{
-								"title": title,
-								"message": message
-							}
-						);
+						return Promise.reject({title: title, message: message});
 					}
 				});
 			}
