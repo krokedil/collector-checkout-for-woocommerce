@@ -138,7 +138,6 @@ class Collector_Checkout_SOAP_Requests_Activate_Invoice {
 
 			if ( isset( $request->InvoiceUrl ) ) { // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
 				$order->update_meta_data( '_collector_invoice_url', wc_clean( $request->InvoiceUrl ) );// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
-				$order->save();
 				$due_date = gmdate( get_option( 'date_format' ) . ' - ' . get_option( 'time_format' ), strtotime( $request->DueDate ) ); // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
 				$due_date = sprintf( __( 'Invoice due date: %s', 'collector-checkout-for-woocommerce' ), $due_date );
 			}
@@ -146,10 +145,10 @@ class Collector_Checkout_SOAP_Requests_Activate_Invoice {
 			// translators: 1. Due date.
 			$order->add_order_note( sprintf( __( 'Order activated with Walley Checkout. %s', 'collector-checkout-for-woocommerce' ), $due_date ) );
 			$order->update_meta_data( '_collector_order_activated', time() );
-			$order->save();
 			$log = CCO_WC()->logger::format_log( $order_id, 'SOAP', 'CCO Activate order ', $args, '', wp_json_encode( $request ), '' );
 			CCO_WC()->logger::log( $log );
 
+			$order->save();
 		} else {
 			$order->update_status( $order->get_status() );
 			$failed_request = wp_json_encode( $request );
@@ -170,7 +169,7 @@ class Collector_Checkout_SOAP_Requests_Activate_Invoice {
 	 * @return array
 	 */
 	public function get_request_args( $order_id ) {
-		$order = wc_get_order($order_id);
+		$order = wc_get_order( $order_id );
 		return array(
 			'StoreId'     => $this->store_id,
 			'CountryCode' => $this->country_code,

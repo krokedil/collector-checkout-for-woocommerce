@@ -138,17 +138,14 @@ class Collector_Checkout_SOAP_Requests_Part_Activate_Invoice {
 
 			if ( isset( $request->InvoiceUrl ) ) { // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
 				$order->update_meta_data( '_collector_invoice_url', wc_clean( $request->InvoiceUrl ) );// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
-				$order->save();
 				$due_date = gmdate( get_option( 'date_format' ) . ' - ' . get_option( 'time_format' ), strtotime( $request->DueDate ) ); // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
 				// Translators: Invoice due date.
 				$due_date = sprintf( __( 'Invoice due date: %s.', 'collector-checkout-for-woocommerce' ), $due_date );
 			}
 
 			if ( isset( $request->NewInvoiceNo ) && ! empty( $request->NewInvoiceNo ) ) {
-
-				$parent_order_id = $order->get_parent_id();
-
 				// Save info to parent order (if one exists).
+				$parent_order_id = $order->get_parent_id();
 				if ( ! empty( $parent_order_id ) ) {
 					$collector_new_invoice_no = json_decode( get_post_meta( $parent_order_id, '_collector_activate_invoice_data', true ), true );
 					if ( is_array( $collector_new_invoice_no ) ) {
@@ -159,11 +156,9 @@ class Collector_Checkout_SOAP_Requests_Part_Activate_Invoice {
 						);
 					}
 					$order->update_meta_data( '_collector_activate_invoice_data', wp_json_encode( $collector_new_invoice_no ) );
-					$order->save();
 				}
 
 				$order->update_meta_data( '_collector_activate_invoice_data', wp_json_encode( (array) $request ) );
-				$order->save();
 			}
 
 			// translators: 1. Due date.
@@ -195,7 +190,7 @@ class Collector_Checkout_SOAP_Requests_Part_Activate_Invoice {
 	 */
 	public function get_request_args( $order_id ) {
 
-		$order = wc_get_order($order_id);
+		$order                  = wc_get_order( $order_id );
 		$collector_invoice_data = json_decode( $order->get_meta( '_collector_activate_invoice_data', true ), true );
 
 		if ( is_array( $collector_invoice_data ) && isset( $collector_invoice_data[0]['NewInvoiceNo'] ) ) {

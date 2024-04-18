@@ -375,7 +375,6 @@ function wc_collector_confirm_order( $order, $private_id = null ) {
 	$order->update_meta_data( '_collector_payment_method', $payment_method );
 	$order->update_meta_data( '_collector_payment_id', $payment_id );
 	$order->update_meta_data( '_collector_order_id', sanitize_key( $walley_order_id ) );
-	$order->save();
 	wc_collector_save_shipping_reference_to_order( $order->get_id(), $collector_order );
 
 	if ( 'Preliminary' === $payment_status || 'Completed' === $payment_status ) {
@@ -384,16 +383,15 @@ function wc_collector_confirm_order( $order, $private_id = null ) {
 		$order->add_order_note( __( 'Order is waiting for electronic signing by customer. Payment ID: ', 'collector-checkout-for-woocommerce' ) . $payment_id );
 		$order->update_meta_data( '_transaction_id', $payment_id );
 		$order->update_status( 'on-hold' );
-		$order->save();
 	} else {
 		$order->add_order_note( __( 'Order is PENDING APPROVAL by Collector. Payment ID: ', 'collector-checkout-for-woocommerce' ) . $payment_id );
 		$order->add_meta_data( '_transaction_id', $payment_id );
 		$order->update_status( 'on-hold' );
-		$order->save();
 	}
 
 	// Translators: Collector Payment method.
 	$order->add_order_note( sprintf( __( 'Purchase via %s', 'collector-checkout-for-woocommerce' ), wc_collector_get_payment_method_name( $payment_method ) ) );
+	$order->save();
 }
 
 /**
