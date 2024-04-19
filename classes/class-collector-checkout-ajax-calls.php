@@ -277,7 +277,7 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 		$purchase_status    = filter_input( INPUT_POST, 'purchase_status', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 		$collector_settings = get_option( 'woocommerce_collector_checkout_settings' );
 		$test_mode          = $collector_settings['test_mode'];
-		// $order				= wc_get_order( $order_id );
+		$order              = wc_get_order( $order_id );
 
 		// If something went wrong in get_customer_data() - display a "thank you page light".
 		if ( 'not-completed' === $purchase_status ) {
@@ -288,11 +288,8 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 				$customer_type = 'b2c';
 			}
 		} else {
-			$public_token  = get_post_meta( $order_id, '_collector_public_token', true );
-			$customer_type = get_post_meta( $order_id, '_collector_customer_type', true );
-
-			// $public_token  = $order->get_meta( '_collector_public_token', true );
-			// $customer_type = $order->get_meta('_collector_customer_type', true );
+			$public_token  = $order->get_meta( '_collector_public_token' );
+			$customer_type = $order->get_meta( '_collector_customer_type' );
 		}
 
 		$return = array(
@@ -347,7 +344,7 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 			} elseif ( 201 === $response['status'] ) {
 				// This should not happen as long as we do not allow a order total amount that is higher than the original order amount.
 				$order->add_order_note( __( 'Walley order sync started. Waiting for reauthorize response.', 'collector-checkout-for-woocommerce' ) );
-				$order->update_meta_data('_walley_reauthorize_data', wp_json_encode( $response['header'] ));
+				$order->update_meta_data( '_walley_reauthorize_data', wp_json_encode( $response['header'] ) );
 				$order->save();
 			} else {
 				// Translators: Request response http status.

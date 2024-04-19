@@ -8,6 +8,9 @@
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
+
+use Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController;
+
 /**
  * Echoes Collector Checkout iframe snippet.
  */
@@ -685,28 +688,34 @@ function walley_save_order_data_to_transient( $walley_order ) {
  * @return int The ID of an order, or 0 if the order could not be found.
  */
 function walley_get_order_id_by_public_token( $public_token ) {
-	$query_args = array(
-		'fields'      => 'ids',
-		'post_type'   => wc_get_order_types(),
-		'post_status' => array_keys( wc_get_order_statuses() ),
-		'meta_key'    => '_collector_public_token', // phpcs:ignore WordPress.DB.SlowDBQuery -- Slow DB Query is ok here, we need to limit to our meta key.
-		'meta_value'  => sanitize_text_field( wp_unslash( $public_token ) ), // phpcs:ignore WordPress.DB.SlowDBQuery -- Slow DB Query is ok here, we need to limit to our meta key.
-		'date_query'  => array(
-			array(
-				'after' => '120 day ago',
-			),
-		),
+	$order = walley_get_order_by_key( '_collector_public_token', $public_token );
+	return empty( $order ) ? 0 : $order->get_id();
+}
+
+/**
+ * Get order by metadata key and value.
+ *
+ * @param string $key The meta key.
+ * @param mixed  $value The expected metadata value.
+ * @return bool|WC_Order The Woo order or false if not found.
+ */
+function walley_get_order_by_key( $key, $value ) {
+	$orders = wc_get_orders(
+		array(
+			'meta_key'   => $key,
+			'meta_value' => $value,
+			'limit'      => 1,
+			'orderby'    => 'date',
+			'order'      => 'DESC',
+		)
 	);
 
-	$orders = get_posts( $query_args );
-
-	if ( $orders ) {
-		$order_id = $orders[0];
-	} else {
-		$order_id = 0;
+	$order = reset( $orders );
+	if ( empty( $order ) || $value !== $order->get_meta( $key ) ) {
+		return false;
 	}
 
-	return $order_id;
+	return $order;
 }
 
 /**
@@ -1102,4 +1111,81 @@ function wc_collector_get_payment_method_name( $payment_method ) {
 	}
 
 	return $payment_method;
+}
+
+/**
+ * Similar to WP's get_the_ID() with HPOS support. Used for retrieving the current order/post ID.
+ *
+ * Unlike get_the_ID() function, if `id` is missing, we'll default to the `post` query parameter when HPOS is disabled.
+ *
+ * @return int|false the order ID or false.
+ */
+//phpcs:ignore
+function walley_get_the_ID() {
+	$hpos_enabled = walley_is_hpos_enabled();
+	$order_id     = $hpos_enabled ? filter_input( INPUT_GET, 'id', FILTER_SANITIZE_NUMBER_INT ) : get_the_ID();
+	if ( empty( $order_id ) ) {
+		if ( ! $hpos_enabled ) {
+			$order_id = absint( filter_input( INPUT_GET, 'post', FILTER_SANITIZE_NUMBER_INT ) );
+			return empty( $order_id ) ? false : $order_id;
+		}
+		return false;
+	}
+
+	return absint( $order_id );
+}
+
+/**
+ * Whether HPOS is enabled.
+ *
+ * @return bool true if HPOS is enabled, otherwise false.
+ */
+function walley_is_hpos_enabled() {
+	// CustomOrdersTableController was introduced in WC 6.4.
+	if ( class_exists( CustomOrdersTableController::class ) ) {
+		return wc_get_container()->get( CustomOrdersTableController::class )->custom_orders_table_usage_is_enabled();
+	}
+
+	return false;
+}
+/**
+ * Retrieves the post type of the current post or of a given post.
+ *
+ * Compatible with HPOS.
+ *
+ * @param int|WP_Post|WC_Order|null $post Order ID, post object or order object.
+ * @return string|null|false Return type of passed id, post or order object on success, false or null on failure.
+ */
+function walley_get_post_type( $post = null ) {
+	if ( ! walley_is_hpos_enabled() ) {
+		return get_post_type( $post );
+	}
+
+	return ! class_exists( 'Automattic\WooCommerce\Utilities\OrderUtil' ) ? false : Automattic\WooCommerce\Utilities\OrderUtil::get_order_type( $post );
+}
+
+/**
+ * Retrieves the post type of the current post or of a given post.
+ *
+ * @param int|WP_Post|WC_Order|null $post Order ID, post object or order object.
+ * @return true if order type, otherwise false.
+ */
+function walley_is_order_type( $post = null ) {
+	return in_array( walley_get_post_type( $post ), array( 'woocommerce_page_wc-orders', 'shop_order' ), true );
+}
+
+/**
+ * Whether the current page is an order page.
+ *
+ * @return bool
+ */
+function walley_is_order_page() {
+	if ( function_exists( 'get_current_screen' ) ) {
+		$screen = get_current_screen();
+		if ( ! empty( $screen ) ) {
+			return 'shop_order' === $screen->post_type;
+		}
+	}
+
+	return walley_is_order_type( walley_get_the_ID() );
 }

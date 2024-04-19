@@ -186,26 +186,12 @@ class Walley_Checkout_API {
 	 * @return array|WP_Error
 	 */
 	public function refund_walley_order( $order_id, $amount = null, $reason = '' ) {
-
-		$query_args = array(
-			'fields'         => 'id=>parent',
-			'post_type'      => 'shop_order_refund',
-			'post_status'    => 'any',
-			'posts_per_page' => - 1,
-		);
-
-		$refunds         = get_posts( $query_args );
-		$refund_order_id = array_search( $order_id, $refunds, true );
-		if ( is_array( $refund_order_id ) ) {
-			foreach ( $refund_order_id as $key => $value ) {
-				$refund_order_id = $value;
-				break;
-			}
-		}
+		$order        = wc_get_order( $order_id );
+		$refund_order = $order->get_refunds()[0];
 
 		$args     = array(
 			'order_id'        => $order_id,
-			'refund_order_id' => $refund_order_id,
+			'refund_order_id' => $refund_order->get_id(),
 			'amount'          => $amount,
 			'reason'          => $reason,
 		);

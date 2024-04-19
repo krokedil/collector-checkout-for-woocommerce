@@ -112,17 +112,9 @@ class Collector_Checkout_Post_Checkout {
 			if ( ! empty( $invoice_no ) && ! empty( $invoice_status ) ) {
 				CCO_WC()->logger::log( 'Collector Invoice Status Change callback hit' );
 				$collector_payment_id = $invoice_no;
-				$query_args           = array(
-					'post_type'   => wc_get_order_types(),
-					'post_status' => array_keys( wc_get_order_statuses() ),
-					'meta_key'    => '_collector_payment_id', // phpcs:ignore WordPress.DB.SlowDBQuery -- Slow DB Query is ok here, we need to limit to our meta key.
-					'meta_value'  => $collector_payment_id, // phpcs:ignore WordPress.DB.SlowDBQuery -- Slow DB Query is ok here, we need to limit to our meta key.
-				);
-				$orders               = get_posts( $query_args );
-				$order_id             = $orders[0]->ID;
-				$order                = wc_get_order( $order_id );
+				$order                = walley_get_order_by_key( '_collector_payment_id', $collector_payment_id );
 
-				if ( is_object( $order ) ) {
+				if ( ! empty( $order ) ) {
 					// Add order note about the callback
 					// translators: Invoice status.
 					$order->add_order_note( sprintf( __( 'Invoice status callback from Walley. New Invoice status: %s', 'collector-checkout-for-woocommerce' ), $invoice_no ) );
@@ -148,7 +140,7 @@ class Collector_Checkout_Post_Checkout {
 	}
 
 	/**
-	 * Display Collector payment id after WC order number on order overwiev page
+	 * Display Collector payment id after WC order number on orders overview page
 	 *
 	 * @param string   $order_number The WooCommerce order number.
 	 * @param WC_Order $order The WooCommerce order.
@@ -161,9 +153,9 @@ class Collector_Checkout_Post_Checkout {
 			}
 
 			$current_screen = get_current_screen();
-			if ( is_object( $current_screen ) && 'edit-shop_order' === $current_screen->id ) {
-				$collector_payment_id = null !== $order->get_meta( '_collector_payment_id', true ) ? $order->get_meta( '_collector_payment_id', true ) : '';
-				if ( $collector_payment_id ) {
+			if ( isset( $current_screen ) && in_array( $current_screen->id, array( 'woocommerce_page_wc-orders', 'edit-shop_order' ) ) ) {
+				$collector_payment_id = $order->get_meta( '_collector_payment_id' );
+				if ( ! empty( $collector_payment_id ) ) {
 					$order_number .= ' (' . $collector_payment_id . ')';
 				}
 			}

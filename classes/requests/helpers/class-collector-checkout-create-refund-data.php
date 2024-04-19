@@ -135,27 +135,13 @@ class Collector_Checkout_Create_Refund_Data {
 	/**
 	 * Gets refunded order
 	 *
-	 * @param int $order_id The WooCommerce order id.
+	 * @param int $order_id The Woo order ID.
 	 * @return string
 	 */
 	public static function get_refunded_order( $order_id ) {
-		$query_args      = array(
-			'fields'         => 'id=>parent',
-			'post_type'      => 'shop_order_refund',
-			'post_status'    => 'any',
-			'posts_per_page' => -1,
-		);
-		$refunds         = get_posts( $query_args );
-		$refund_order_id = array_search( $order_id, $refunds, true );
-		if ( is_array( $refund_order_id ) ) {
-			foreach ( $refund_order_id as $key => $value ) {
-				if ( ! get_post_meta( $value, '_krokedil_refunded' ) ) {
-					$refund_order_id = $value;
-					break;
-				}
-			}
-		}
-		return $refund_order_id;
+		$order = wc_get_order( $order_id );
+		return $order->get_refunds()[0];
+
 	}
 	/**
 	 * Calculates tax.

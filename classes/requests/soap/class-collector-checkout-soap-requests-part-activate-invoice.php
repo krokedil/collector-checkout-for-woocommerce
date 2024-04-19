@@ -147,7 +147,8 @@ class Collector_Checkout_SOAP_Requests_Part_Activate_Invoice {
 				// Save info to parent order (if one exists).
 				$parent_order_id = $order->get_parent_id();
 				if ( ! empty( $parent_order_id ) ) {
-					$collector_new_invoice_no = json_decode( get_post_meta( $parent_order_id, '_collector_activate_invoice_data', true ), true );
+					$parent_order             = wc_get_order( $parent_order_id );
+					$collector_new_invoice_no = json_decode( $parent_order->get_meta( '_collector_activate_invoice_data' ), true );
 					if ( is_array( $collector_new_invoice_no ) ) {
 						$collector_new_invoice_no[] = (array) $request;
 					} else {

@@ -29,7 +29,7 @@ class Walley_Checkout_Request_Refund_Order extends Walley_Checkout_Request_Post 
 	 * @return string
 	 */
 	protected function get_request_url() {
-		$order = wc_get_order( $this->order_id );
+		$order     = wc_get_order( $this->order_id );
 		$walley_id = $order->get_meta( '_collector_order_id', true );
 		return $this->get_api_url_base() . "/manage/orders/{$walley_id}/refund";
 	}
@@ -41,7 +41,6 @@ class Walley_Checkout_Request_Refund_Order extends Walley_Checkout_Request_Post 
 	 */
 	protected function get_body() {
 		$refund_order_id = $this->arguments['refund_order_id'];
-		$refund_order    = wc_get_order( $refund_order_id );
 		$body            = array(
 			'amount' => $this->arguments['amount'],
 			'items'  => Collector_Checkout_Requests_Helper_Order_Om::get_refund_items( $refund_order_id ),
