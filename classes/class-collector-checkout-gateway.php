@@ -215,7 +215,7 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 	 */
 	public function process_payment( $order_id, $retry = false ) {
 
-		$order		   = wc_get_order( $order_id );
+		$order         = wc_get_order( $order_id );
 		$customer_type = WC()->session->get( 'collector_customer_type' );
 		$private_id    = WC()->session->get( 'collector_private_id' );
 		$order->update_meta_data( '_collector_customer_type', $customer_type );
@@ -262,8 +262,8 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 		}
 
 		// Save data to order.
-		$walley_extra_fields = walley_save_custom_fields( $order_id, $walley_order );
-		$walley_shipping     = $this->save_walley_purchase_and_shipping_data( $order_id, $walley_order );
+		walley_save_custom_fields( $order_id, $walley_order );
+		$this->save_walley_purchase_and_shipping_data( $order_id, $walley_order );
 
 		return array(
 			'result' => 'success',
@@ -318,7 +318,6 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 
 	public function save_walley_purchase_and_shipping_data( $order_id, $walley_order ) {
 		$order               = wc_get_order( $order_id );
-		$payment_status      = $walley_order['data']['purchase']['result'] ?? '';
 		$payment_method      = $walley_order['data']['purchase']['paymentName'] ?? '';
 		$payment_id          = $walley_order['data']['purchase']['purchaseIdentifier'] ?? '';
 		$walley_order_id     = $walley_order['data']['order']['orderId'] ?? '';

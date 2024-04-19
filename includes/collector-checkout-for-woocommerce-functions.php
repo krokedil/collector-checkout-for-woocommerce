@@ -179,8 +179,7 @@ function wc_collector_add_invoice_fee_to_order( $order, $product_id ) {
 	$product = wc_get_product( $product_id );
 
 	if ( is_object( $product ) && is_object( $order ) ) {
-		$tax_display_mode = get_option( 'woocommerce_tax_display_shop' );
-		$price            = wc_get_price_excluding_tax( $product );
+		$price = wc_get_price_excluding_tax( $product );
 
 		if ( $product->is_taxable() ) {
 			$product_tax = true;
@@ -406,7 +405,7 @@ function wc_collector_confirm_order( $order, $private_id = null ) {
  */
 function wc_collector_save_shipping_reference_to_order( $order, $collector_order ) {
 	// Get the order object if the order is passed as an id.
-	if ( ! is_object( $order ) ) {
+	if ( ! $order instanceof WC_Order ) {
 		$order = wc_get_order( $order );
 	}
 
@@ -414,9 +413,10 @@ function wc_collector_save_shipping_reference_to_order( $order, $collector_order
 	foreach ( $order_items as $item ) {
 		if ( strpos( $item['id'], 'shipping|' ) !== false ) {
 			$order->update_meta_data( '_collector_shipping_reference', $item['id'] );
-			$order->save();
 		}
 	}
+
+	$order->save();
 }
 
 /**
@@ -725,8 +725,8 @@ function walley_get_order_by_key( $key, $value ) {
  * @param string       $private_id Collector session id saved as _collector_private_id ID in WC order.
  */
 function walley_confirm_order( $order, $private_id = null ) {
-	// Get the order object if the order is passed as an id.
-	if ( ! is_object( $order ) ) {
+	// Get the Woo order if the order is passed as an int.
+	if ( ! $order instanceof WC_Order ) {
 		$order = wc_get_order( $order );
 	}
 
@@ -759,6 +759,8 @@ function walley_confirm_order( $order, $private_id = null ) {
 
 	if ( is_wp_error( $collector_order ) ) {
 		$order->add_order_note( __( 'Could not retreive Walley order during walley_confirm_order function.', 'collector-checkout-for-woocommerce' ) );
+		$order->save();
+
 		return false;
 	}
 
@@ -926,12 +928,12 @@ function walley_save_custom_fields( $order, $walley_order ) {
 	if ( is_object( $order ) && isset( $walley_order['data']['customFields'] ) ) {
 
 		// Save the entire customFields object as json in order.
-		if ( true === apply_filters( 'walley_save_custom_fields_raw_data', true ) ) {
+		if ( apply_filters( 'walley_save_custom_fields_raw_data', true ) ) {
 			$order->update_meta_data( '_collector_custom_fields', wp_json_encode( $walley_order['data']['customFields'] ) );
 		}
 
 		// Save each individual custom field as id:value.
-		if ( true === apply_filters( 'walley_save_individual_custom_field', true ) ) {
+		if ( apply_filters( 'walley_save_individual_custom_field', true ) ) {
 			foreach ( $walley_order['data']['customFields'] as $custom_field_group ) {
 
 				foreach ( $custom_field_group['fields'] as $custom_field ) {

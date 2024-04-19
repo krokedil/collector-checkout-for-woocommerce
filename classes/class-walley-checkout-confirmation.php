@@ -62,15 +62,14 @@ class Walley_Checkout_Confirmation {
 			return;
 		}
 
-		$result = walley_confirm_order( $order_id );
-		$order = wc_get_order($order_id);
+		$order  = wc_get_order( $order_id );
+		$result = walley_confirm_order( $order );
 
 		if ( $result ) {
 			$walley_payment_id = $order->get_meta( '_collector_payment_id', true );
 			CCO_WC()->logger::log( "Order ID $order_id confirmed on the confirmation page. Walley payment ID: $walley_payment_id." );
 		}
 
-		$order = wc_get_order( $order_id );
 		wp_safe_redirect( $order->get_checkout_order_received_url() );
 		exit;
 	}
