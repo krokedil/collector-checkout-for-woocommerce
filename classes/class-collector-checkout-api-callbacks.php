@@ -61,19 +61,38 @@ class Collector_Api_Callbacks {
 	public function collector_check_for_order_callback( $private_id, $public_token, $customer_type = 'b2c' ) {
 		CCO_WC()->logger::log( 'Check for order in API-callback. Private id: ' . $private_id . '. Public token: ' . $public_token );
 
-		$order = wc_collector_get_order_by_private_id( $private_id );
+		$order_id = wc_collector_get_order_id_by_private_id( $private_id );
 
 		// Did we get a match?
-		if ( ! empty( $order ) ) {
-			// Maybe abort the callback (if the order already has been processed in Woo).
-			if ( ! empty( $order->get_date_paid() ) ) {
-				CCO_WC()->logger::log( 'Aborting API callback. Order ' . $order->get_order_number() . '(order ID ' . $order->get_id() . ', Private ID ' . $private_id . ') already processed.' );
+		if ( ! empty( $order_id ) ) {
+			$order = wc_get_order( $order_id );
+
+			if ( $order ) {
+				// Get the metadata for if the order is pending a callback from walley.
+				$pending_callback = $order->get_meta( '_walley_pending_callback', true );
+
+				// Maybe abort the callback (if the order already has been processed in Woo).
+				if ( ! empty( $order->get_date_paid() ) ) {
+					CCO_WC()->logger::log( 'Aborting API callback. Order ' . $order->get_order_number() . '(order ID ' . $order_id . ', Private ID ' . $private_id . ') already processed.' );
+				} else {
+					if ( 'yes' !== $pending_callback ) {
+						CCO_WC()->logger::log( 'Order status not set correctly for order ' . $order->get_order_number() . '(order ID ' . $order_id . ', Private ID ' . $private_id . ') during checkout process. Setting order status to Processing/Completed in API callback.' );
+						// translators: Walley private ID.
+						$note = sprintf( __( 'Order status not set correctly during checkout process. Confirming purchase via callback from Walley.', 'collector-checkout-for-woocommerce' ), $private_id );
+						$order->add_order_note( $note );
+					} else {
+						CCO_WC()->logger::log( 'Pending order received a callback from Walley ' . $order->get_order_number() . '(order ID ' . $order_id . ', Private ID ' . $private_id . '). Confirming order.' );
+						// translators: Walley private ID.
+						$note = sprintf( __( 'Callback from Walley received.', 'collector-checkout-for-woocommerce' ), $private_id );
+						$order->add_order_note( $note );
+						$order->update_meta_data( '_walley_pending_callback', 'no' );
+						$order->save();
+					}
+					walley_confirm_order( $order_id, $private_id );
+				}
 			} else {
-				CCO_WC()->logger::log( 'Order status not set correctly for order ' . $order->get_order_number() . '(order ID ' . $order->get_id() . ', Private ID ' . $private_id . ') during checkout process. Setting order status to Processing/Completed in API callback.' );
-				// translators: Walley private ID.
-				$note = sprintf( __( 'Order status not set correctly during checkout process. Confirming purchase via callback from Walley.', 'collector-checkout-for-woocommerce' ), $private_id );
-				$order->add_order_note( $note );
-				walley_confirm_order( $order, $private_id );
+				// No order, why?
+				CCO_WC()->logger::log( 'API-callback executed. Private id ' . $private_id . '. already exist in order ID ' . $order_id . '. But we could not instantiate an order object' );
 			}
 		} else {
 			// No order found - create a new.
@@ -143,8 +162,7 @@ class Collector_Api_Callbacks {
 			CCO_WC()->logger::log( 'Order status not set correctly for order ' . $order->get_order_number() . ' during checkout process. Setting order status to Processing/Completed.' );
 		} elseif ( 'Signing' === $collector_order['data']['purchase']['result'] ) {
 			$order->add_order_note( __( 'Order is waiting for electronic signing by customer. Payment ID: ', 'collector-checkout-for-woocommerce' ) . $collector_order['data']['purchase']['purchaseIdentifier'] );
-			$order->update_meta_data( '_transaction_id', $collector_order['data']['purchase']['purchaseIdentifier'] );
-			$order->save();
+			update_post_meta( $order->get_id(), '_transaction_id', $collector_order['data']['purchase']['purchaseIdentifier'] );
 			$order->update_status( 'on-hold' );
 			CCO_WC()->logger::log( 'Order status not set correctly for order ' . $order->get_order_number() . ' during checkout process. Setting order status to On hold.' );
 		} else {
