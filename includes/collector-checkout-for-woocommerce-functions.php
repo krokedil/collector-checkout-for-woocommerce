@@ -925,7 +925,7 @@ function walley_save_custom_fields( $order, $walley_order ) {
 	}
 
 	// Save customFields data.
-	if ( is_object( $order ) && isset( $walley_order['data']['customFields'] ) ) {
+	if ( ! empty( $order ) && isset( $walley_order['data']['customFields'] ) ) {
 
 		// Save the entire customFields object as json in order.
 		if ( apply_filters( 'walley_save_custom_fields_raw_data', true ) ) {

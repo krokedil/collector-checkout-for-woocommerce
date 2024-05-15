@@ -212,7 +212,7 @@ class Walley_Checkout_Assets {
 			if ( ! empty( $key ) ) {
 				$order_id = wc_get_order_id_by_order_key( wc_clean( $key ) );
 				$order    = wc_get_order( $order_id );
-				if ( 'collector_checkout' === $order->get_payment_method() ) {
+				if ( ! empty( $order ) && 'collector_checkout' === $order->get_payment_method() ) {
 					$custom_css = '
 		                .woocommerce-order-overview {
 				                        display: none;
