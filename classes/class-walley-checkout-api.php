@@ -119,6 +119,11 @@ class Walley_Checkout_API {
 	 * @return array|WP_Error
 	 */
 	public function get_walley_order( $walley_id ) {
+		// If the walley ID is missing, the request will still be successful as Walley will return the 10 most recent transactions which is not the desired behavior.
+		if ( empty( $walley_id ) ) {
+			return new WP_Error( 'walley_get_order_error', __( 'Walley order id is missing.', 'collector-checkout-for-woocommerce' ) );
+		}
+
 		$args     = array( 'walley_id' => $walley_id );
 		$request  = new Walley_Checkout_Request_Get_Order( $args );
 		$response = $request->request();
