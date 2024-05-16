@@ -57,25 +57,12 @@ class Walley_Checkout_Confirmation {
 		}
 
 		$order_id = walley_get_order_id_by_public_token( $public_token );
-
 		if ( empty( $order_id ) ) {
 			return;
 		}
 
-		$order = wc_get_order( $order_id );
-
-		// If the order does not need processing, set the status to on-hold, and redirect.
-		// This is to prevent an error from attempting to complete an order before it has been moved to the order management api in Walley.
-		if ( ! $order->needs_processing() ) {
-			$order->update_meta_data( '_walley_pending_callback', 'yes' );
-			$order->update_status( 'on-hold', __( 'The payment has been completed, but awaiting callback from Walley to confirm the order.', 'collector-checkout-for-woocommerce' ) );
-			$order->save();
-			wp_safe_redirect( $order->get_checkout_order_received_url() );
-			exit;
-		}
-
+		$order  = wc_get_order( $order_id );
 		$result = walley_confirm_order( $order_id );
-
 		if ( $result ) {
 			$walley_payment_id = $order->get_meta( '_collector_payment_id', true );
 			CCO_WC()->logger::log( "Order ID $order_id confirmed on the confirmation page. Walley payment ID: $walley_payment_id." );
