@@ -161,32 +161,33 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 	 * Check if this gateway is enabled and available in the user's country
 	 */
 	public function is_available() {
-		if ( 'yes' === $this->enabled ) {
-
-			if ( is_checkout() ) {
-				$cart_item_total = Collector_Checkout_Requests_Cart::cart();
-
-				// Update checkout and annul payment method if the total cart item amount is 0.
-				if ( empty( $cart_item_total['items'] ) ) {
-					return false;
-				}
-			}
-
-			if ( ! is_admin() ) {
-				$currency = get_woocommerce_currency();
-				// Currency check.
-				if ( ! in_array( $currency, array( 'NOK', 'SEK', 'DKK', 'EUR' ), true ) ) {
-					return false;
-				}
-
-				// If there are no available customer types, return false.
-				if ( ! wc_collector_get_available_customer_types() ) {
-					return false;
-				}
-			}
-			return true;
+		if ( 'yes' !== $this->enabled ) {
+			return false;
 		}
-		return false;
+
+		if ( is_checkout() ) {
+			$cart_item_total = Collector_Checkout_Requests_Cart::cart();
+
+			// Update checkout and annul payment method if the total cart item amount is 0.
+			if ( empty( $cart_item_total['items'] ) ) {
+				return false;
+			}
+		}
+
+		if ( ! is_admin() ) {
+			$currency = get_woocommerce_currency();
+			// Currency check.
+			if ( ! in_array( $currency, array( 'NOK', 'SEK', 'DKK', 'EUR' ), true ) ) {
+				return false;
+			}
+
+			// If there are no available customer types, return false.
+			if ( ! wc_collector_get_available_customer_types() ) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 	/**
