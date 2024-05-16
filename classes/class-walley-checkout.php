@@ -131,6 +131,14 @@ class Walley_Checkout {
 			return;
 		}
 
+		// The cart has been updated. Check if it is empty.
+		// A cart is considered "empty" if the total amount is 0 even if it has items (e.g., 100% discount).
+		$cart_item_total = Collector_Checkout_Requests_Cart::cart();
+		if ( empty( $cart_item_total['items'] ) ) {
+			WC()->session->reload_checkout = true;
+			return;
+		}
+
 		// Trigger get if the ajax event is among the approved ones.
 		$ajax = filter_input( INPUT_GET, 'wc-ajax', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 		if ( ! in_array( $ajax, array( 'update_order_review' ), true ) ) {
