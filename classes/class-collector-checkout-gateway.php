@@ -245,7 +245,6 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 			);
 		}
 
-		$order = wc_get_order( $order_id );
 		// $shipping_cost                 = $walley_order['data']['fees']['shipping']['unitPrice'] ?? 0; // Shipping.
 		$shipping_cost = $walley_order['data']['fees']['shipping']['unitPrice'] ?? $walley_order['data']['shipping']['shippingFee'] ?? 0;
 		$cart_cost     = $walley_order['data']['cart']['totalAmount']; // Cart.
