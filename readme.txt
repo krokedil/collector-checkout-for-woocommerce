@@ -2,11 +2,11 @@
 Contributors: collectorbank, krokedil, NiklasHogefjord
 Tags: ecommerce, e-commerce, woocommerce, collector, checkout, walley
 Requires at least: 5.0
-Tested up to: 6.4.1
+Tested up to: 6.4.2
 Requires PHP: 7.3
-Stable tag: 4.1.0
+Stable tag: 4.1.1
 WC requires at least: 6.0.0
-WC tested up to: 8.5.0
+WC tested up to: 8.5.1
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -39,6 +39,10 @@ For help setting up and configuring Walley Checkout for WooCommerce please refer
 
 
 == CHANGELOG ==
+= 2024.05.27    - version 4.1.1 =
+* Fix           - The actual reason for a checkout error will now be displayed as intended instead of the generic "Timeout".
+* Fix           - Fix a critical error when attempting to access a property on a missing order on the confirmation/"thank you" page.
+* Fix           - Fixed a PHP warning due to type conversion.
 
 = 2024.01.15    - version 4.1.0 =
 * Feature       - Add support for Post Purchase Upsell to allow customers to add products to the order on the thankyou page.
