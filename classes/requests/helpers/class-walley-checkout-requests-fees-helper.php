@@ -107,7 +107,6 @@ class Walley_Checkout_Requests_Fees_Helper {
 		}
 
 		return $fees;
-
 	}
 
 	/**
@@ -186,7 +185,7 @@ class Walley_Checkout_Requests_Fees_Helper {
 	 * @return string
 	 */
 	public static function get_sku( $product, $product_id = 0 ) {
-		$part_number = ! empty( $product->get_sku() ) ? $product->get_sku() : $part_number = $product->get_id();
+		$part_number = ! empty( $product->get_sku() ) ? $product->get_sku() : $product->get_id();
 		return substr( $part_number, 0, 32 );
 	}
 }

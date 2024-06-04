@@ -155,7 +155,7 @@ class Collector_Checkout_Requests_Cart {
 	 * @return string
 	 */
 	public static function get_sku( $product, $product_id = 0 ) {
-		$part_number = ! empty( $product->get_sku() ) ? $product->get_sku() : $part_number = $product->get_id();
+		$part_number = ! empty( $product->get_sku() ) ? $product->get_sku() : $product->get_id();
 		return substr( $part_number, 0, 32 );
 	}
 
@@ -214,7 +214,7 @@ class Collector_Checkout_Requests_Cart {
 				foreach ( $items as $key => $item ) {
 					if ( $id_name === $item['id'] ) {// TODO Use strict comparisons === !
 						$items[ $key ]['id'] = $item['id'] . '_' . $i;
-						$i++;
+						++$i;
 					}
 				}
 			}
