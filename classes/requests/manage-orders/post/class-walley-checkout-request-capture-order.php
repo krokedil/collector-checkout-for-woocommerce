@@ -13,6 +13,13 @@ defined( 'ABSPATH' ) || exit;
 class Walley_Checkout_Request_Capture_Order extends Walley_Checkout_Request_Post {
 
 	/**
+	 * The Woo order ID.
+	 *
+	 * @var int
+	 */
+	private $order_id;
+
+	/**
 	 * Class constructor.
 	 *
 	 * @param array $arguments The request arguments.
@@ -29,7 +36,7 @@ class Walley_Checkout_Request_Capture_Order extends Walley_Checkout_Request_Post
 	 * @return string
 	 */
 	protected function get_request_url() {
-		$order = wc_get_order($this->order_id);
+		$order     = wc_get_order( $this->order_id );
 		$walley_id = $order->get_meta( '_collector_order_id', true );
 		return $this->get_api_url_base() . "/manage/orders/{$walley_id}/capture";
 	}
@@ -40,8 +47,7 @@ class Walley_Checkout_Request_Capture_Order extends Walley_Checkout_Request_Post
 	 * @return array
 	 */
 	protected function get_body() {
-		$order = wc_get_order( $this->order_id );
-		$body  = array(
+		$body = array(
 			'amount' => Collector_Checkout_Requests_Helper_Order_Om::get_order_lines_total_amount( $this->order_id ),
 		);
 

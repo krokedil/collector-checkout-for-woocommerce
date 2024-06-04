@@ -140,9 +140,9 @@ class Collector_Checkout_SOAP_Requests_Credit_Payment {
 	 * @throws SoapFault SOAP Fault.
 	 */
 	public function request_part_credit( $order_id, $amount, $reason ) {
-		$order = wc_get_order($order_id);
-		$soap = new SoapClient( $this->endpoint );
-		$args = $this->get_request_args( $order_id );
+		$order = wc_get_order( $order_id );
+		$soap  = new SoapClient( $this->endpoint );
+		$args  = $this->get_request_args( $order_id );
 
 		$headers   = array();
 		$headers[] = new SoapHeader( 'http://schemas.ecommerce.collector.se/v30/InvoiceService', 'Username', $this->username );
@@ -179,7 +179,7 @@ class Collector_Checkout_SOAP_Requests_Credit_Payment {
 	 */
 	public function get_request_args( $order_id ) {
 
-		$order = wc_get_order($order_id);
+		$order                  = wc_get_order( $order_id );
 		$collector_invoice_data = json_decode( $order->get_meta( '_collector_activate_invoice_data', true ), true );
 
 		if ( is_array( $collector_invoice_data ) && isset( $collector_invoice_data[0]['NewInvoiceNo'] ) ) {
