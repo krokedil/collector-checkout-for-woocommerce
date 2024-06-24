@@ -47,8 +47,7 @@ class Collector_Delivery_Module {
 	 * @return mixed Prints the html displayed in order admin.
 	 */
 	public function admin_order_meta( $order ) {
-		$order_id                = $order->get_id();
-		$collector_delivery_data = json_decode( get_post_meta( $order_id, '_collector_delivery_module_data', true ), true );
+		$collector_delivery_data = json_decode( $order->get_meta( '_collector_delivery_module_data', true ), true );
 
 		if ( ! empty( $collector_delivery_data ) ) {
 			$pickup_service = isset( $collector_delivery_data['carrierName'] ) ? $collector_delivery_data['carrierName'] : '';

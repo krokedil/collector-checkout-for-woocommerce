@@ -53,12 +53,12 @@ class  Walley_Checkout_Order_Management {
 			return;
 		}
 
-		if ( get_post_meta( $order_id, '_collector_order_activated', true ) ) {
+		if ( $order->get_meta( '_collector_order_activated', true ) ) {
 			$order->add_order_note( __( 'Could not activate Walley reservation, Walley reservation is already activated.', 'collector-checkout-for-woocommerce' ) );
 			return;
 		}
 
-		if ( empty( get_post_meta( $order_id, '_collector_order_id', true ) ) ) {
+		if ( empty( $order->get_meta( '_collector_order_id', true ) ) ) {
 			$order->add_order_note( __( 'Could not activate Walley reservation, Walley order ID is missing.', 'collector-checkout-for-woocommerce' ) );
 			return;
 		}
@@ -80,7 +80,8 @@ class  Walley_Checkout_Order_Management {
 
 			// Translators: Activated amount.
 			$order->add_order_note( sprintf( __( 'Order part activated with Walley Checkout. Activated amount %s', 'collector-checkout-for-woocommerce' ), wc_price( $order->get_total(), array( 'currency' => $order->get_currency() ) ) ) );
-			update_post_meta( $order_id, '_collector_order_activated', time() );
+			$order->update_meta_data( '_collector_order_activated', time() );
+			$order->save();
 
 			// Save received data to WP transient.
 			walley_save_order_data_to_transient(
@@ -107,7 +108,8 @@ class  Walley_Checkout_Order_Management {
 
 			$note = __( 'Walley Checkout order activated.', 'collector-checkout-for-woocommerce' );
 			$order->add_order_note( $note );
-			update_post_meta( $order_id, '_collector_order_activated', time() );
+			$order->update_meta_data( '_collector_order_activated', time() );
+			$order->save();
 
 			// Save received data to WP transient.
 			walley_save_order_data_to_transient(
@@ -142,12 +144,12 @@ class  Walley_Checkout_Order_Management {
 		}
 
 		// If this reservation was already cancelled, do nothing.
-		if ( get_post_meta( $order_id, '_collector_order_cancelled', true ) ) {
+		if ( $order->get_meta( '_collector_order_cancelled', true ) ) {
 			$order->add_order_note( __( 'Could not cancel Walley reservation, Walley reservation is already cancelled.', 'collector-checkout-for-woocommerce' ) );
 			return;
 		}
 
-		if ( empty( get_post_meta( $order_id, '_collector_order_id', true ) ) ) {
+		if ( $order->get_meta( '_collector_order_id', true ) ) {
 			$order->add_order_note( __( 'Could not cancel Walley reservation, Walley order ID is missing.', 'collector-checkout-for-woocommerce' ) );
 			return;
 		}
@@ -172,7 +174,8 @@ class  Walley_Checkout_Order_Management {
 
 		$note = __( 'Walley Checkout order cancelled.', 'collector-checkout-for-woocommerce' );
 		$order->add_order_note( $note );
-		update_post_meta( $order_id, '_collector_order_cancelled', time() );
+		$order->update_meta_data( '_collector_order_cancelled', time() );
+		$order->save();
 
 		// Save received data to WP transient.
 		walley_save_order_data_to_transient(
@@ -206,18 +209,18 @@ class  Walley_Checkout_Order_Management {
 		}
 
 		// If this reservation was already cancelled, do nothing.
-		if ( get_post_meta( $order_id, '_collector_order_cancelled', true ) ) {
+		if ( $order->get_meta( '_collector_order_cancelled', true ) ) {
 			$order->add_order_note( __( 'Could not refund Walley order, Walley reservation is cancelled.', 'collector-checkout-for-woocommerce' ) );
 			return new WP_Error( 'error', __( 'Could not refund Walley order, Walley reservation is cancelled.', 'collector-checkout-for-woocommerce' ) );
 		}
 
 		// If this reservation was not activated, do nothing.
-		if ( empty( get_post_meta( $order_id, '_collector_order_activated', true ) ) ) {
+		if ( empty( $order->get_meta( '_collector_order_activated', true ) ) ) {
 			$order->add_order_note( __( 'There is nothing to refund. The order has not yet been captured in WooCommerce.', 'collector-checkout-for-woocommerce' ) );
 			return new WP_Error( 'error', __( 'There is nothing to refund. The order has not yet been captured in WooCommerce.', 'collector-checkout-for-woocommerce' ) );
 		}
 
-		if ( empty( get_post_meta( $order_id, '_collector_order_id', true ) ) ) {
+		if ( empty( $order->get_meta( '_collector_order_id', true ) ) ) {
 			$order->add_order_note( __( 'Could not refund Walley reservation, Walley order ID is missing.', 'collector-checkout-for-woocommerce' ) );
 			return new WP_Error( 'error', __( 'Could not refund Walley reservation, Walley order ID is missing.', 'collector-checkout-for-woocommerce' ) );
 		}
@@ -265,7 +268,7 @@ class  Walley_Checkout_Order_Management {
 	 */
 	public function is_ok_to_cancel( $order_id ) {
 		$wc_order  = wc_get_order( $order_id );
-		$walley_id = get_post_meta( $order_id, '_collector_order_id', true );
+		$walley_id = $order->get_meta( '_collector_order_id', true );
 		$response  = CCO_WC()->api->get_walley_order( $walley_id );
 		if ( ! is_wp_error( $response ) ) {
 
@@ -336,17 +339,10 @@ class  Walley_Checkout_Order_Management {
 			if ( ! empty( $invoice_no ) && ! empty( $invoice_status ) ) {
 				CCO_WC()->logger::log( 'Collector Invoice Status Change callback hit' );
 				$collector_payment_id = $invoice_no;
-				$query_args           = array(
-					'post_type'   => wc_get_order_types(),
-					'post_status' => array_keys( wc_get_order_statuses() ),
-					'meta_key'    => '_collector_payment_id', // phpcs:ignore WordPress.DB.SlowDBQuery -- Slow DB Query is ok here, we need to limit to our meta key.
-					'meta_value'  => $collector_payment_id, // phpcs:ignore WordPress.DB.SlowDBQuery -- Slow DB Query is ok here, we need to limit to our meta key.
-				);
-				$orders               = get_posts( $query_args );
-				$order_id             = $orders[0]->ID;
-				$order                = wc_get_order( $order_id );
 
-				if ( is_object( $order ) ) {
+				$order = walley_get_order_by_key( '_collector_payment_id', $collector_payment_id );
+
+				if ( ! empty( $order ) ) {
 					// Add order note about the callback
 					// translators: Invoice status.
 					$order->add_order_note( sprintf( __( 'Invoice status callback from Walley. New Invoice status: %s', 'collector-checkout-for-woocommerce' ), $invoice_no ) );
@@ -372,7 +368,7 @@ class  Walley_Checkout_Order_Management {
 	}
 
 	/**
-	 * Display Collector payment id after WC order number on order overwiev page
+	 * Display Collector payment id after WC order number on orders overview page
 	 *
 	 * @param string   $order_number The WooCommerce order number.
 	 * @param WC_Order $order The WooCommerce order.
@@ -385,10 +381,9 @@ class  Walley_Checkout_Order_Management {
 			}
 
 			$current_screen = get_current_screen();
-			if ( is_object( $current_screen ) && 'edit-shop_order' === $current_screen->id ) {
-				$collector_payment_id = null !== get_post_meta( $order->get_id(), '_collector_payment_id', true ) ? get_post_meta( $order->get_id(), '_collector_payment_id', true ) : '';
-				//phpcs:ignore $collector_payment_id = get_post_meta( $order->get_id(), '_collector_payment_id', true );
-				if ( $collector_payment_id ) {
+			if ( isset( $current_screen ) && in_array( $current_screen->id, array( 'woocommerce_page_wc-orders', 'edit-shop_order' ) ) ) {
+				$collector_payment_id = $order->get_meta( '_collector_payment_id' );
+				if ( ! empty( $collector_payment_id ) ) {
 					$order_number .= ' (' . $collector_payment_id . ')';
 				}
 			}

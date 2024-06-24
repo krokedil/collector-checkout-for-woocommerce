@@ -92,7 +92,8 @@ class Collector_Checkout_Requests_Cart {
 		// Only check this on product line items.
 		if ( $product && 'yes' === self::get_add_product_electronic_id_fields() ) {
 			$product_id                              = $product->is_type( 'variation' ) ? $product->get_parent_id() : $product->get_id();
-			$collector_requires_electronic_id        = 'yes' === get_post_meta( $product_id, '_collector_requires_electronic_id', true ) ? true : false;
+			$product                                 = wc_get_product( $product_id );
+			$collector_requires_electronic_id        = 'yes' === $product->get_meta( '_collector_requires_electronic_id' ) ? true : false;
 			$configured_item['requiresElectronicId'] = $collector_requires_electronic_id;
 		}
 
@@ -153,12 +154,8 @@ class Collector_Checkout_Requests_Cart {
 	 * @param int        $product_id WooCommerce product ID.
 	 * @return string
 	 */
-	public static function get_sku( $product, $product_id ) {
-		if ( get_post_meta( $product_id, '_sku', true ) !== '' ) {
-			$part_number = $product->get_sku();
-		} else {
-			$part_number = $product->get_id();
-		}
+	public static function get_sku( $product, $product_id = 0 ) {
+		$part_number = ! empty( $product->get_sku() ) ? $product->get_sku() : $product->get_id();
 		return substr( $part_number, 0, 32 );
 	}
 
@@ -217,7 +214,7 @@ class Collector_Checkout_Requests_Cart {
 				foreach ( $items as $key => $item ) {
 					if ( $id_name === $item['id'] ) {// TODO Use strict comparisons === !
 						$items[ $key ]['id'] = $item['id'] . '_' . $i;
-						$i++;
+						++$i;
 					}
 				}
 			}

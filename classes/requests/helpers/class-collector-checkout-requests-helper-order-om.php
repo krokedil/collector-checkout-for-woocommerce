@@ -192,7 +192,7 @@ class Collector_Checkout_Requests_Helper_Order_Om {
 		$shipping_reference_from_delivery_module_data = walley_get_shipping_reference_from_delivery_module_data( $order->get_id() );
 
 		// Try to get shipping reference from regular purchase (shipping in woo).
-		$collector_shipping_reference = get_post_meta( $order->get_id(), '_collector_shipping_reference', true );
+		$collector_shipping_reference = $order->get_meta( '_collector_shipping_reference', true );
 
 		if ( isset( $collector_shipping_reference ) && ! empty( $collector_shipping_reference ) ) {
 			$shipping_reference = $collector_shipping_reference;

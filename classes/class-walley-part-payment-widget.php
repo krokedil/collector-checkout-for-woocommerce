@@ -213,7 +213,7 @@ class Walley_Part_Payment_Widget {
 	 */
 	public function get_product_amount() {
 		// Get the product that we are currently on.
-		$product = wc_get_product( get_the_ID() );
+		$product = wc_get_product();
 
 		// If the product is a variable product, get the min price.
 		if ( $product->is_type( 'variable' ) ) {

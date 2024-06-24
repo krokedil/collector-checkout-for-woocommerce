@@ -130,33 +130,18 @@ class Collector_Checkout_Create_Refund_Data {
 			}
 		}
 
-		// update_post_meta( $refund_order_id, '_krokedil_refunded', 'true' ); phpcs:ignore Squiz.PHP.CommentedOutCode.Found.
 		return $data;
 	}
 	/**
 	 * Gets refunded order
 	 *
-	 * @param int $order_id The WooCommerce order id.
+	 * @param int $order_id The Woo order ID.
 	 * @return string
 	 */
 	public static function get_refunded_order( $order_id ) {
-		$query_args      = array(
-			'fields'         => 'id=>parent',
-			'post_type'      => 'shop_order_refund',
-			'post_status'    => 'any',
-			'posts_per_page' => -1,
-		);
-		$refunds         = get_posts( $query_args );
-		$refund_order_id = array_search( $order_id, $refunds, true );
-		if ( is_array( $refund_order_id ) ) {
-			foreach ( $refund_order_id as $key => $value ) {
-				if ( ! get_post_meta( $value, '_krokedil_refunded' ) ) {
-					$refund_order_id = $value;
-					break;
-				}
-			}
-		}
-		return $refund_order_id;
+		$order = wc_get_order( $order_id );
+		return $order->get_refunds()[0];
+
 	}
 	/**
 	 * Calculates tax.
@@ -226,15 +211,13 @@ class Collector_Checkout_Create_Refund_Data {
 		// The entire shipping price is refunded.
 		$shipping_reference = 'Shipping';
 
-		$collector_shipping_reference = get_post_meta( $original_order->get_id(), '_collector_shipping_reference', true );
+		$collector_shipping_reference = $original_order->get_meta( '_collector_shipping_reference', true );
 		if ( isset( $collector_shipping_reference ) && ! empty( $collector_shipping_reference ) ) {
 			$shipping_reference = $collector_shipping_reference;
-		} else {
-			if ( null !== $shipping->get_instance_id() ) {
+		} elseif ( null !== $shipping->get_instance_id() ) {
 				$shipping_reference = 'shipping|' . $shipping->get_method_id() . ':' . $shipping->get_instance_id();
-			} else {
-				$shipping_reference = 'shipping|' . $shipping->get_method_id();
-			}
+		} else {
+			$shipping_reference = 'shipping|' . $shipping->get_method_id();
 		}
 
 		$free_shipping = false;
@@ -311,6 +294,4 @@ class Collector_Checkout_Create_Refund_Data {
 		/* Always retrieve the most recent (current) refund (index 0). */
 		return $order->get_refunds()[0]->get_id();
 	}
-
-
 }
