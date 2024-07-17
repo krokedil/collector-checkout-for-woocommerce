@@ -221,7 +221,7 @@ class Walley_Part_Payment_Widget {
 		}
 
 		// Else return the price.
-		return $product->get_price() * 100;
+		return floatval( $product->get_price() ) * 100;
 	}
 
 	/**
