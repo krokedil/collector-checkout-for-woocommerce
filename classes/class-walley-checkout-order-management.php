@@ -10,7 +10,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Class Walley_Checkout_Order_Management
  */
-class  Walley_Checkout_Order_Management {
+class Walley_Checkout_Order_Management {
 
 	/**
 	 * Class constructor
@@ -149,7 +149,8 @@ class  Walley_Checkout_Order_Management {
 			return;
 		}
 
-		if ( $order->get_meta( '_collector_order_id', true ) ) {
+		// Since we cannot cancel a Walley order unless we have the Walley order ID, we need to check if it exists.
+		if ( empty( $order->get_meta( '_collector_order_id' ) ) ) {
 			$order->add_order_note( __( 'Could not cancel Walley reservation, Walley order ID is missing.', 'collector-checkout-for-woocommerce' ) );
 			return;
 		}
@@ -267,7 +268,7 @@ class  Walley_Checkout_Order_Management {
 	 * @return bool
 	 */
 	public function is_ok_to_cancel( $order_id ) {
-		$wc_order  = wc_get_order( $order_id );
+		$order     = wc_get_order( $order_id );
 		$walley_id = $order->get_meta( '_collector_order_id', true );
 		$response  = CCO_WC()->api->get_walley_order( $walley_id );
 		if ( ! is_wp_error( $response ) ) {
@@ -276,12 +277,12 @@ class  Walley_Checkout_Order_Management {
 				return true;
 			} else {
 				// Translators: Walley payment status.
-				$wc_order->add_order_note( sprintf( __( 'Cancel Walley order request will not be triggered. Order have status <i>%s</i> in Walley Merchant Hub.', 'dibs-easy-for-woocommerce' ), $response['data']['status'] ) );
+				$order->add_order_note( sprintf( __( 'Cancel Walley order request will not be triggered. Order have status <i>%s</i> in Walley Merchant Hub.', 'dibs-easy-for-woocommerce' ), $response['data']['status'] ) );
 				return false;
 			}
 		}
 		// Translators: Request error message.
-		$wc_order->add_order_note( sprintf( __( 'Unable to get the Walley order. Error message: <i>%s</i>.', 'dibs-easy-for-woocommerce' ), $response->get_error_message() ) );
+		$order->add_order_note( sprintf( __( 'Unable to get the Walley order. Error message: <i>%s</i>.', 'dibs-easy-for-woocommerce' ), $response->get_error_message() ) );
 		return false;
 	}
 
