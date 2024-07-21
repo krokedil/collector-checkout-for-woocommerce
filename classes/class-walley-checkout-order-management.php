@@ -144,7 +144,7 @@ class Walley_Checkout_Order_Management {
 		}
 
 		// If this reservation was already cancelled, do nothing.
-		if ( $order->get_meta( '_collector_order_cancelled', true ) ) {
+		if ( $order->get_meta( '_collector_order_cancelled' ) ) {
 			$order->add_order_note( __( 'Could not cancel Walley reservation, Walley reservation is already cancelled.', 'collector-checkout-for-woocommerce' ) );
 			return;
 		}
@@ -269,7 +269,7 @@ class Walley_Checkout_Order_Management {
 	 */
 	public function is_ok_to_cancel( $order_id ) {
 		$order     = wc_get_order( $order_id );
-		$walley_id = $order->get_meta( '_collector_order_id', true );
+		$walley_id = $order->get_meta( '_collector_order_id' );
 		$response  = CCO_WC()->api->get_walley_order( $walley_id );
 		if ( ! is_wp_error( $response ) ) {
 
