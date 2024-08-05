@@ -52,7 +52,7 @@ class Collector_Checkout_Pay_For_Order_Confirmation {
 		$public_token      = filter_input( INPUT_GET, 'public-token', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 		$order_key         = filter_input( INPUT_GET, 'key', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 
-		// Return if we dont have our parameters set.
+		// Return if we don't have our parameters set.
 		if ( empty( $collector_confirm ) || empty( $public_token ) || empty( $order_key ) ) {
 			return;
 		}
@@ -71,9 +71,8 @@ class Collector_Checkout_Pay_For_Order_Confirmation {
 			return;
 		}
 
-		wc_collector_confirm_order( $order_id );
+		wc_collector_confirm_order( $order );
 	}
-
 }
 
 Collector_Checkout_Pay_For_Order_Confirmation::get_instance();

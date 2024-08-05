@@ -39,7 +39,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 				$amount_of_api_callback_orders = 0;
 				foreach ( $orders as $order_id ) {
 
-					if ( 'collector_checkout_api' === get_post_meta( $order_id, '_created_via', true ) ) {
+					$order = wc_get_order($order_id);
+					if ( 'collector_checkout_api' === $order->get_meta( '_created_via', true ) ) {
 						$amount_of_api_callback_orders++;
 					}
 				}

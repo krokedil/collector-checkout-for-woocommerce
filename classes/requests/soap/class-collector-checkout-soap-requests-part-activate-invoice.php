@@ -71,7 +71,7 @@ class Collector_Checkout_SOAP_Requests_Part_Activate_Invoice {
 		$this->password     = $collector_settings['collector_password'];
 		$order              = wc_get_order( $order_id );
 		$currency           = $order->get_currency();
-		$customer_type      = get_post_meta( $order_id, '_collector_customer_type', true );
+		$customer_type      = $order->get_meta( '_collector_customer_type', true );
 
 		switch ( $currency ) {
 			case 'SEK':
@@ -137,19 +137,18 @@ class Collector_Checkout_SOAP_Requests_Part_Activate_Invoice {
 		if ( isset( $request->TotalAmount ) ) { // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
 
 			if ( isset( $request->InvoiceUrl ) ) { // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
-				update_post_meta( $order_id, '_collector_invoice_url', wc_clean( $request->InvoiceUrl ) );// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
+				$order->update_meta_data( '_collector_invoice_url', wc_clean( $request->InvoiceUrl ) );// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
 				$due_date = gmdate( get_option( 'date_format' ) . ' - ' . get_option( 'time_format' ), strtotime( $request->DueDate ) ); // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
 				// Translators: Invoice due date.
 				$due_date = sprintf( __( 'Invoice due date: %s.', 'collector-checkout-for-woocommerce' ), $due_date );
 			}
 
 			if ( isset( $request->NewInvoiceNo ) && ! empty( $request->NewInvoiceNo ) ) {
-
-				$parent_order_id = $order->get_parent_id();
-
 				// Save info to parent order (if one exists).
+				$parent_order_id = $order->get_parent_id();
 				if ( ! empty( $parent_order_id ) ) {
-					$collector_new_invoice_no = json_decode( get_post_meta( $parent_order_id, '_collector_activate_invoice_data', true ), true );
+					$parent_order             = wc_get_order( $parent_order_id );
+					$collector_new_invoice_no = json_decode( $parent_order->get_meta( '_collector_activate_invoice_data' ), true );
 					if ( is_array( $collector_new_invoice_no ) ) {
 						$collector_new_invoice_no[] = (array) $request;
 					} else {
@@ -157,16 +156,16 @@ class Collector_Checkout_SOAP_Requests_Part_Activate_Invoice {
 							(array) $request,
 						);
 					}
-					update_post_meta( $parent_order_id, '_collector_activate_invoice_data', wp_json_encode( $collector_new_invoice_no ) );
+					$order->update_meta_data( '_collector_activate_invoice_data', wp_json_encode( $collector_new_invoice_no ) );
 				}
 
-				update_post_meta( $order_id, '_collector_activate_invoice_data', wp_json_encode( (array) $request ) );
-
+				$order->update_meta_data( '_collector_activate_invoice_data', wp_json_encode( (array) $request ) );
 			}
 
 			// translators: 1. Due date.
 			$order->add_order_note( sprintf( __( 'Order part activated with Walley Checkout. Activated amount %s', 'collector-checkout-for-woocommerce' ), wc_price( $request->TotalAmount, array( 'currency' => $order->get_currency() ) ), $due_date ) );
-			update_post_meta( $order_id, '_collector_order_activated', time() );
+			$order->update_meta_data( $order_id, '_collector_order_activated', time() );
+			$order->save();
 
 			$log = CCO_WC()->logger::format_log( $order_id, 'SOAP', 'CCO Part Activate order ', $args, '', wp_json_encode( $request ), '' );
 			CCO_WC()->logger::log( $log );
@@ -192,14 +191,15 @@ class Collector_Checkout_SOAP_Requests_Part_Activate_Invoice {
 	 */
 	public function get_request_args( $order_id ) {
 
-		$collector_invoice_data = json_decode( get_post_meta( $order_id, '_collector_activate_invoice_data', true ), true );
+		$order                  = wc_get_order( $order_id );
+		$collector_invoice_data = json_decode( $order->get_meta( '_collector_activate_invoice_data', true ), true );
 
 		if ( is_array( $collector_invoice_data ) && isset( $collector_invoice_data[0]['NewInvoiceNo'] ) ) {
 			// The newest invoice is the latest one. Let's use that.
 			$reversed_invoice_data = array_reverse( $collector_invoice_data );
 			$invoice_no            = $reversed_invoice_data[0]['NewInvoiceNo'];
 		} else {
-			$invoice_no = get_post_meta( $order_id, '_collector_payment_id', true );
+			$invoice_no = $order->get_meta( '_collector_payment_id', true );
 		}
 		return array(
 			'StoreId'     => $this->store_id,

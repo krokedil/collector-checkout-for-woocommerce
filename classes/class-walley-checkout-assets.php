@@ -212,7 +212,7 @@ class Walley_Checkout_Assets {
 			if ( ! empty( $key ) ) {
 				$order_id = wc_get_order_id_by_order_key( wc_clean( $key ) );
 				$order    = wc_get_order( $order_id );
-				if ( 'collector_checkout' === $order->get_payment_method() ) {
+				if ( ! empty( $order ) && 'collector_checkout' === $order->get_payment_method() ) {
 					$custom_css = '
 		                .woocommerce-order-overview {
 				                        display: none;
@@ -248,14 +248,7 @@ class Walley_Checkout_Assets {
 	 * @param string $hook The current hook/settings page.
 	 */
 	public function enqueue_admin_metabox_scripts( $hook ) {
-
-		global $post;
-
-		if ( empty( $post ) ) {
-			return;
-		}
-
-		if ( get_post_type( $post ) !== 'shop_order' ) {
+		if ( ! walley_is_order_page() ) {
 			return;
 		}
 
@@ -270,7 +263,7 @@ class Walley_Checkout_Assets {
 			array(
 				'walley_reauthorize_order'       => WC_AJAX::get_endpoint( 'walley_reauthorize_order' ),
 				'walley_reauthorize_order_nonce' => wp_create_nonce( 'walley_reauthorize_order' ),
-				'order_id'                       => get_the_ID(),
+				'order_id'                       => walley_get_the_ID(),
 			)
 		);
 		wp_enqueue_script( 'walley-admin' );

@@ -269,12 +269,10 @@ $settings = array(
 		'default' => 'no',
 	),
 	'debug_mode'                      => array(
-		'title'       => __( 'Debug', 'collector-checkout-for-woocommerce' ),
-		'type'        => 'checkbox',
-		'label'       => __( 'Enable logging.', 'collector-checkout-for-woocommerce' ),
-		/* Translators: link to logs */
-		'description' => sprintf( __( 'Log Walley events, in <code>%s</code>', 'collector-checkout-for-woocommerce' ), wc_get_log_file_path( 'collector_checkout' ) ),
-		'default'     => 'no',
+		'title'   => __( 'Debug', 'collector-checkout-for-woocommerce' ),
+		'type'    => 'checkbox',
+		'label'   => __( 'Enable logging.', 'collector-checkout-for-woocommerce' ),
+		'default' => 'no',
 	),
 );
 

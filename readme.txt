@@ -4,7 +4,7 @@ Tags: ecommerce, e-commerce, woocommerce, collector, checkout, walley
 Requires at least: 5.0
 Tested up to: 6.4.2
 Requires PHP: 7.3
-Stable tag: 4.1.1
+Stable tag: 4.2.0
 WC requires at least: 6.0.0
 WC tested up to: 8.5.1
 License: GPLv3
@@ -39,6 +39,12 @@ For help setting up and configuring Walley Checkout for WooCommerce please refer
 
 
 == CHANGELOG ==
+= 2024.08.05    - version 4.2.0 =
+* Feature       - Added support for WooCommerce's "High-Performance Order Storage" ("HPOS").
+* Fix           - Fixed an issue where the Walley order was incorrectly retrieved, preventing orders from being cancelled.
+* Fix           - Fixed a critical error when attempting to parse the price in the payment widget.
+* Fix           - Removed reference to the deprecated wc_get_log_file_path function.
+
 = 2024.05.27    - version 4.1.1 =
 * Fix           - The actual reason for a checkout error will now be displayed as intended instead of the generic "Timeout".
 * Fix           - Fix a critical error when attempting to access a property on a missing order on the confirmation/"thank you" page.

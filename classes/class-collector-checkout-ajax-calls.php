@@ -277,6 +277,7 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 		$purchase_status    = filter_input( INPUT_POST, 'purchase_status', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 		$collector_settings = get_option( 'woocommerce_collector_checkout_settings' );
 		$test_mode          = $collector_settings['test_mode'];
+		$order              = wc_get_order( $order_id );
 
 		// If something went wrong in get_customer_data() - display a "thank you page light".
 		if ( 'not-completed' === $purchase_status ) {
@@ -287,8 +288,8 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 				$customer_type = 'b2c';
 			}
 		} else {
-			$public_token  = get_post_meta( $order_id, '_collector_public_token', true );
-			$customer_type = get_post_meta( $order_id, '_collector_customer_type', true );
+			$public_token  = $order->get_meta( '_collector_public_token' );
+			$customer_type = $order->get_meta( '_collector_customer_type' );
 		}
 
 		$return = array(
@@ -321,9 +322,9 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 			wp_die();
 		}
 
-		if ( floatval( $order->get_total() ) > floatval( get_post_meta( $order_id, '_collector_original_order_total', true ) ) ) {
-			// Translators: Original order amount.
-			$message = sprintf( __( 'Updated total amount sent to Walley can not be higher than the original order amount (%1$s).', 'collector-checkout-for-woocommerce' ), get_post_meta( $order_id, '_collector_original_order_total', true ) );
+		if ( floatval( $order->get_total() ) > floatval( $order->get_meta( '_collector_original_order_total', true ) ) ) {
+				// Translators: Original order amount.
+			$message = sprintf( __( 'Updated total amount sent to Walley can not be higher than the original order amount (%1$s).', 'collector-checkout-for-woocommerce' ), $order->get_meta( '_collector_original_order_total', true ) );
 			$order->add_order_note( $message );
 			wp_send_json_error( $message );
 			wp_die();
@@ -343,7 +344,8 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 			} elseif ( 201 === $response['status'] ) {
 				// This should not happen as long as we do not allow a order total amount that is higher than the original order amount.
 				$order->add_order_note( __( 'Walley order sync started. Waiting for reauthorize response.', 'collector-checkout-for-woocommerce' ) );
-				update_post_meta( $order_id, '_walley_reauthorize_data', wp_json_encode( $response['header'] ) );
+				$order->update_meta_data( '_walley_reauthorize_data', wp_json_encode( $response['header'] ) );
+				$order->save();
 			} else {
 				// Translators: Request response http status.
 				$order->add_order_note( sprintf( __( 'Walley order sync started. Unknown http status response. Status: %1$s.', 'collector-checkout-for-woocommerce' ), $response['status'] ) );

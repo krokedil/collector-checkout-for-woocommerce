@@ -27,11 +27,11 @@ class Walley_Checkout_Meta_Box {
 	 * @return void
 	 */
 	public function add_meta_box( $post_type ) {
-		if ( 'shop_order' === $post_type ) {
-			$order_id = get_the_ID();
+		if ( walley_is_order_page() ) {
+			$order_id = walley_get_the_ID();
 			$order    = wc_get_order( $order_id );
 			if ( 'collector_checkout' === $order->get_payment_method() && walley_use_new_api() ) {
-				add_meta_box( 'walley_checkout_meta_box', __( 'Walley', 'collector-checkout-for-woocommerce' ), array( $this, 'meta_box_content' ), 'shop_order', 'side', 'core' );
+				add_meta_box( 'walley_checkout_meta_box', __( 'Walley', 'collector-checkout-for-woocommerce' ), array( $this, 'meta_box_content' ), $post_type, 'side', 'core' );
 			}
 		}
 	}
@@ -40,24 +40,23 @@ class Walley_Checkout_Meta_Box {
 	/**
 	 * Adds content for the meta box.
 	 *
+	 * @param WC_Order|WP_Post $order The post or Woo order ID.
+	 *
 	 * @return void
 	 */
-	public function meta_box_content() {
-		$collector_settings = get_option( 'woocommerce_collector_checkout_settings' );
-		$manage_orders      = $collector_settings['manage_collector_orders'];
-		$order_id           = get_the_ID();
-		$order              = wc_get_order( $order_id );
+	public function meta_box_content( $order = null ) {
+		$order_id = walley_get_the_ID();
+		$order    = wc_get_order( $order_id );
 
-		$payment_method             = get_post_meta( $order_id, '_collector_payment_method', true );
-		$payment_id                 = get_post_meta( $order_id, '_collector_payment_id', true );
-		$walley_order_id            = get_post_meta( $order_id, '_collector_order_id', true );
+		$payment_method             = $order->get_meta( '_collector_payment_method', true );
+		$walley_order_id            = $order->get_meta( '_collector_order_id', true );
 		$title_payment_method       = __( 'Payment method', 'collector-checkout-for-woocommerce' );
 		$title_walley_order_id      = __( 'Walley order id', 'collector-checkout-for-woocommerce' );
 		$title_walley_order_status  = __( 'Walley order status', 'collector-checkout-for-woocommerce' );
 		$title_walley_order_total   = __( 'Walley order total', 'collector-checkout-for-woocommerce' );
 		$title_order_total_mismatch = __( 'Order total mismatch', 'collector-checkout-for-woocommerce' );
 
-		if ( false === ( $walley_order_status_from_transient = get_transient( "walley_order_status_{$order_id}" ) ) ) {
+		if ( empty( $walley_order_status_from_transient = get_transient( "walley_order_status_{$order_id}" ) ) ) {
 			$walley_order = CCO_WC()->api->get_walley_order( $walley_order_id );
 
 			if ( is_wp_error( $walley_order ) ) {
@@ -118,7 +117,4 @@ class Walley_Checkout_Meta_Box {
 		$keys_for_meta_box = apply_filters( 'walley_checkout_meta_box_keys', $keys_for_meta_box );
 		include COLLECTOR_BANK_PLUGIN_DIR . '/templates/walley-checkout-meta-box.php';
 	}
-
-
-
 } new Walley_Checkout_Meta_Box();
