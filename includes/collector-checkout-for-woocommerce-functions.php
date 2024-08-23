@@ -15,7 +15,6 @@ use Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableControlle
  * Echoes Collector Checkout iframe snippet.
  */
 function collector_wc_show_snippet() {
-
 	if ( 'NOK' === get_woocommerce_currency() ) {
 		$locale = 'nb-NO';
 	} elseif ( 'DKK' === get_woocommerce_currency() ) {
@@ -101,7 +100,18 @@ function collector_wc_show_snippet() {
 
 			if ( ! empty( $order ) ) {
 				CCO_WC()->logger::log( 'Trying to display checkout but status is PurchaseCompleted. Private id ' . $private_id . ', exist in order id ' . $order->get_id() . '. Redirecting customer to thankyou page.' );
-				wp_safe_redirect( $order->get_checkout_order_received_url() );
+
+				// Trigger the confirm_order function by redirecting with these specific parameters.
+				wp_safe_redirect(
+					add_query_arg(
+						array(
+							'walley_confirm' => '1',
+							'public-token'   => $public_token,
+						),
+						wc_get_checkout_url() // We can redirect to any safe URL.
+					)
+				);
+				// Important! Do not use wp_die(), use exit. A wp_die() will overwrite the HTTP code (302 for redirect) since it needs to display an error message in HTML to the user, setting the HTTP code to 500 (or 200), preventing a redirect. Refer to wp_die() docs.
 				exit;
 			} else {
 				CCO_WC()->logger::log( 'Trying to display checkout but status is PurchaseCompleted. Private id ' . $private_id . '. No correlating order id can be found.' );
