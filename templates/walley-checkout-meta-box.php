@@ -2,7 +2,7 @@
 /**
  * The HTML for the admin order metabox content.
  *
- * @package Briqpay_For_WooCommerce/Templates
+ * @package Collector_Checkout/Templates
  */
 
 foreach ( $keys_for_meta_box as $item ) {
@@ -11,7 +11,8 @@ foreach ( $keys_for_meta_box as $item ) {
 	<?php
 }
 
-if ( 'yes' !== $manage_orders ) {
+$manage_orders = get_option( 'woocommerce_collector_checkout_settings', array() )['manage_collector_orders'] ?? 'no';
+if ( ! ( isset( $manage_orders ) || wc_string_to_bool( $manage_orders ) ) ) {
 	return;
 }
 
