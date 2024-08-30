@@ -812,28 +812,20 @@ function walley_confirm_order( $order, $private_id = null ) {
 		$order->update_meta_data( '_collector_delivery_module_reference', $collector_order['data']['shipping']['pendingShipment']['id'] );
 	}
 
-	if ( $order->needs_processing() ) {
-		if ( 'Preliminary' === $payment_status || 'Completed' === $payment_status ) {
-			$order->payment_complete( $payment_id );
-		} elseif ( 'Signing' === $payment_status ) {
-			$order->add_order_note( __( 'Order is waiting for electronic signing by customer. Payment ID: ', 'collector-checkout-for-woocommerce' ) . $payment_id );
-			$order->set_transaction_id( $payment_id );
-			$order->update_status( 'on-hold' );
-		} else {
-			$order->add_order_note( __( 'Order is PENDING APPROVAL by Collector. Payment ID: ', 'collector-checkout-for-woocommerce' ) . $payment_id );
-			$order->set_transaction_id( $payment_id );
-			$order->update_status( 'on-hold' );
-		}
-		// Translators: Collector Payment method.
-		$order->add_order_note( sprintf( __( 'Purchase via %s', 'collector-checkout-for-woocommerce' ), wc_collector_get_payment_method_name( $payment_method ) ) );
-	} else {
-
-		// If the order does not need processing, set the status to on-hold, and redirect.
-		// This is to prevent an error from attempting to complete an order before it has been moved to the order management api in Walley.
-		$order->update_meta_data( '_walley_pending_callback', 'yes' );
+	if ( 'Preliminary' === $payment_status || 'Completed' === $payment_status ) {
+		$order->payment_complete( $payment_id );
+	} elseif ( 'Signing' === $payment_status ) {
+		$order->add_order_note( __( 'Order is waiting for electronic signing by customer. Payment ID: ', 'collector-checkout-for-woocommerce' ) . $payment_id );
 		$order->set_transaction_id( $payment_id );
-		$order->update_status( 'on-hold', __( 'The payment has been completed, but awaiting callback from Walley to confirm the order.', 'collector-checkout-for-woocommerce' ) );
+		$order->update_status( 'on-hold' );
+	} else {
+		$order->add_order_note( __( 'Order is PENDING APPROVAL by Collector. Payment ID: ', 'collector-checkout-for-woocommerce' ) . $payment_id );
+		$order->set_transaction_id( $payment_id );
+		$order->update_status( 'on-hold' );
 	}
+
+	// Translators: Collector Payment method.
+	$order->add_order_note( sprintf( __( 'Purchase via %s', 'collector-checkout-for-woocommerce' ), wc_collector_get_payment_method_name( $payment_method ) ) );
 
 	$order->save();
 	return true;
