@@ -14,7 +14,7 @@
     <config name="testVersion" value="7.3-" />
 
     <!-- Use Wordpress Coding standards -->
-    <rule ref="Wordpress" />
+    <rule ref="WordPress" />
 
     <!-- Enforce the correct text-domain -->
     <rule ref="WordPress.WP.I18n">
