@@ -87,8 +87,8 @@ class Collector_Api_Callbacks {
 				walley_confirm_order( $order, $private_id );
 			}
 		} else {
-			// No order, why?
-			CCO_WC()->logger::log( 'API-callback executed. Private id ' . $private_id . '. already exist in order ID ' . $order->get_id() . '. But we could not instantiate an order object' );
+			// No order found.
+			CCO_WC()->logger::log( 'API-callback executed. We could NOT find Private id ' . $private_id . '(with public token ' . $public_token . ' & customer type ' . $customer_type . '). Aborting process.' );
 		}
 	}
 
