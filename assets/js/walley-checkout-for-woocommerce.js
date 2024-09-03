@@ -86,7 +86,7 @@ jQuery( function( $ ) {
 						walleyCheckoutWc.failOrder( null, message_to_customer );
 						
 						// Log the error to the Walley log in WooCommerce.
-						let logMessage = message.replace(/<\/?li>/g, "");
+						let logMessage = message.replace( /<\/?li>/g, "" );
 						walleyCheckoutWc.logToFile( 'Before payment error | ' + logMessage );
 
 						return Promise.reject({title: title, message: message});
