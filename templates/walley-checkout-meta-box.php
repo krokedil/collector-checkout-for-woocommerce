@@ -11,8 +11,8 @@ foreach ( $keys_for_meta_box as $item ) {
 	<?php
 }
 
-$manage_orders = get_option( 'woocommerce_collector_checkout_settings', array() )['manage_collector_orders'] ?? 'no';
-if ( ! ( isset( $manage_orders ) || wc_string_to_bool( $manage_orders ) ) ) {
+// Declared in class-walley-checkout-meta-box.php.
+if ( ! isset( $manage_orders ) || false === $manage_orders ) {
 	return;
 }
 
