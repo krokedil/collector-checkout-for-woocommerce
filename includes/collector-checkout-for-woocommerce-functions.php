@@ -15,7 +15,7 @@ use Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableControlle
  * Echoes Collector Checkout iframe snippet.
  */
 function collector_wc_show_snippet() {
-
+	$locale = 'en-SE';
 	if ( 'NOK' === get_woocommerce_currency() ) {
 		$locale = 'nb-NO';
 	} elseif ( 'DKK' === get_woocommerce_currency() ) {
@@ -23,23 +23,16 @@ function collector_wc_show_snippet() {
 	} elseif ( 'EUR' === get_woocommerce_currency() ) {
 		$locale = 'fi-FI';
 	} elseif ( 'sv_SE' === get_locale() ) {
-			$locale = 'sv-SE';
-	} else {
-		$locale = 'en-SE';
+		$locale = 'sv-SE';
 	}
 
 	$collector_settings       = get_option( 'woocommerce_collector_checkout_settings' );
 	$test_mode                = $collector_settings['test_mode'];
 	$data_action_color_button = isset( $collector_settings['checkout_button_color'] ) && ! empty( $collector_settings['checkout_button_color'] ) ? ' data-action-color="' . $collector_settings['checkout_button_color'] . '"' : '';
 
-	if ( 'yes' === $test_mode ) {
-		$url = 'https://checkout-uat.collector.se/collector-checkout-loader.js';
-	} else {
-		$url = 'https://checkout.collector.se/collector-checkout-loader.js';
-	}
+	$url = 'https://' . ( 'yes' === $test_mode ? 'checkout-uat.collector.se' : 'checkout.collector.se' ) . '/collector-checkout-loader.js';
 
 	$customer_type = WC()->session->get( 'collector_customer_type' );
-
 	if ( empty( $customer_type ) ) {
 		$customer_type = wc_collector_get_default_customer_type();
 		WC()->session->set( 'collector_customer_type', $customer_type );
@@ -96,16 +89,28 @@ function collector_wc_show_snippet() {
 			return;
 		}
 
-		if ( isset( $collector_order['data']['status'] ) && 'PurchaseCompleted' === $collector_order['data']['status'] ) {
+		$status = wc_get_var( $collector_order['data']['status'] );
+		if ( 'PurchaseCompleted' === $status ) {
 			$order = wc_collector_get_order_by_private_id( $private_id );
 
 			if ( ! empty( $order ) ) {
-				CCO_WC()->logger::log( 'Trying to display checkout but status is PurchaseCompleted. Private id ' . $private_id . ', exist in order id ' . $order->get_id() . '. Redirecting customer to thankyou page.' );
-				wp_safe_redirect( $order->get_checkout_order_received_url() );
+				CCO_WC()->logger::log( "Trying to display checkout but status is PurchaseCompleted. Private id $private_id, exist in order id {$order->get_id()}. Redirecting customer to thankyou page." );
+
+				// Trigger the confirm_order function by redirecting with these specific parameters.
+				wp_safe_redirect(
+					add_query_arg(
+						array(
+							'walley_confirm' => '1',
+							'public-token'   => $public_token,
+						),
+						wc_get_checkout_url() // We can redirect to any safe URL.
+					)
+				);
+				// Important! Do not use wp_die(), use exit. A wp_die() will overwrite the HTTP code (302 for redirect) since it needs to display an error message in HTML to the user, setting the HTTP code to 500 (or 200), preventing a redirect. Refer to wp_die() docs.
 				exit;
-			} else {
-				CCO_WC()->logger::log( 'Trying to display checkout but status is PurchaseCompleted. Private id ' . $private_id . '. No correlating order id can be found.' );
 			}
+
+			CCO_WC()->logger::log( "Trying to display checkout but status is PurchaseCompleted. Private id $private_id. No correlating order id can be found." );
 		}
 
 		$output = array(
@@ -116,6 +121,7 @@ function collector_wc_show_snippet() {
 		echo( "<script>console.log('Collector: " . wp_json_encode( $output ) . "');</script>" );
 		$return = '<div id="collector-container"><script src="' . $url . '" data-lang="' . $locale . '" data-token="' . $public_token . '" data-variant="' . $customer_type . '"' . $data_action_color_button . ' ></script></div>'; // phpcs:ignore
 	}
+
 	echo wp_kses( $return, wc_collector_allowed_tags() );
 }
 

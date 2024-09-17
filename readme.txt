@@ -2,11 +2,11 @@
 Contributors: collectorbank, krokedil, NiklasHogefjord
 Tags: ecommerce, e-commerce, woocommerce, collector, checkout, walley
 Requires at least: 5.0
-Tested up to: 6.5.1
+Tested up to: 6.6.2
 Requires PHP: 7.3
-Stable tag: 4.2.1
+Stable tag: 4.2.2
 WC requires at least: 6.0.0
-WC tested up to: 9.2.3
+WC tested up to: 9.3.1
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -39,6 +39,11 @@ For help setting up and configuring Walley Checkout for WooCommerce please refer
 
 
 == CHANGELOG ==
+= 2024.09.17    - version 4.2.2 =
+* Fix           - Fixed an issue where additional post-purchase order processing would not be triggered when the customer is redirected to the confirmation page. 
+* Fix           - Fixed an undefined variable warning.
+* Tweak         - Added additional logging related to order creation.
+
 = 2024.08.30    - version 4.2.1 =
 * Fix           - Fixed an issue with calling the wrong function when handling callbacks.
 * Fix           - Fixed an issue with handling orders with only digital and downloadable products that was reintroduced in version 4.2.0.

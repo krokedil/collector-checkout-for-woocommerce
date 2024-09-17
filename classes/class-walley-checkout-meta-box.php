@@ -115,6 +115,9 @@ class Walley_Checkout_Meta_Box {
 			);
 		}
 		$keys_for_meta_box = apply_filters( 'walley_checkout_meta_box_keys', $keys_for_meta_box );
+
+		// DO NOT REMOVE! Used in the template file.
+		$manage_orders = wc_string_to_bool( get_option( 'woocommerce_collector_checkout_settings', array() )['manage_collector_orders'] ?? 'no' );
 		include COLLECTOR_BANK_PLUGIN_DIR . '/templates/walley-checkout-meta-box.php';
 	}
 } new Walley_Checkout_Meta_Box();
