@@ -253,7 +253,7 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 
 		// Check that order totals match between Woo and Walley.
 		if ( abs( $total_amount - $order->get_total() ) > 3 ) {
-			CCO_WC()->logger::log( 'Order total mismatch in process_payment. Woo order total: ' . $order->get_total() . '. Walley order total: ' . $total_amount . ' (cart:' . $cart_cost . ', shipping: ' . $shipping_cost . ', delivery module: ' . $delivery_module_shipping_cost . ').' );
+			CCO_WC()->logger::log( 'Order total mismatch in process_payment. Woo order total: ' . $order->get_total() . '. Walley order total: ' . $total_amount . ' (cart:' . $cart_cost . ', shipping: ' . $shipping_cost . ').' );
 			$message = __( 'It seems like the WooCommerce and Walley total amount differs. Please, try again.', 'collector-checkout-for-woocommerce' );
 			wc_add_notice( $message, 'error' );
 			return array(
