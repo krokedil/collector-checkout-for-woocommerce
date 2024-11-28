@@ -219,6 +219,15 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 		$order         = wc_get_order( $order_id );
 		$customer_type = WC()->session->get( 'collector_customer_type' );
 		$private_id    = WC()->session->get( 'collector_private_id' );
+
+		$walley_order = $this->get_walley_order( $order_id, $customer_type, $private_id );
+
+		$order_shipping_phone = '';
+		if ( 'PrivateCustomer' === $walley_order['data']['customerType'] ) {
+			$order_shipping_phone = $walley_order['data']['customer']['deliveryContactInformation']['mobilePhoneNumber'] ?? '';
+		}
+		$order->update_meta_data( '_shipping_phone', $order_shipping_phone );
+
 		$order->update_meta_data( '_collector_customer_type', $customer_type );
 		$order->update_meta_data( '_collector_public_token', WC()->session->get( 'collector_public_token' ) );
 		$order->update_meta_data( '_collector_private_id', $private_id );
@@ -234,8 +243,6 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 				'result' => 'error',
 			);
 		}
-
-		$walley_order = $this->get_walley_order( $order_id, $customer_type, $private_id );
 
 		// Check that get order request was ok.
 		if ( is_wp_error( $walley_order ) ) {
