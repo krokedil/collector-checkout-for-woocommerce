@@ -222,6 +222,15 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 
 		$walley_order = $this->get_walley_order( $order_id, $customer_type, $private_id );
 
+		// Check that get order request was ok.
+		if ( is_wp_error( $walley_order ) ) {
+			$message = __( 'There was a problem retrieving the Walley order.', 'collector-checkout-for-woocommerce' );
+			wc_add_notice( $message, 'error' );
+			return array(
+				'result' => 'error',
+			);
+		}
+
 		$order_shipping_phone = '';
 		if ( 'PrivateCustomer' === $walley_order['data']['customerType'] ) {
 			$order_shipping_phone = $walley_order['data']['customer']['deliveryContactInformation']['mobilePhoneNumber'] ?? '';
@@ -238,15 +247,6 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 		// Check that update reference request was ok.
 		if ( false === $walley_reference ) {
 			$message = __( 'There was a problem updating the reference number in Walley.', 'collector-checkout-for-woocommerce' );
-			wc_add_notice( $message, 'error' );
-			return array(
-				'result' => 'error',
-			);
-		}
-
-		// Check that get order request was ok.
-		if ( is_wp_error( $walley_order ) ) {
-			$message = __( 'There was a problem retrieving the Walley order.', 'collector-checkout-for-woocommerce' );
 			wc_add_notice( $message, 'error' );
 			return array(
 				'result' => 'error',
