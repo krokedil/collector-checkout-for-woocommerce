@@ -222,21 +222,6 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 
 		$walley_order = $this->get_walley_order( $order_id, $customer_type, $private_id );
 
-		// Check that get order request was ok.
-		if ( is_wp_error( $walley_order ) ) {
-			$message = __( 'There was a problem retrieving the Walley order.', 'collector-checkout-for-woocommerce' );
-			wc_add_notice( $message, 'error' );
-			return array(
-				'result' => 'error',
-			);
-		}
-
-		$order_shipping_phone = '';
-		if ( 'PrivateCustomer' === $walley_order['data']['customerType'] ) {
-			$order_shipping_phone = $walley_order['data']['customer']['deliveryContactInformation']['mobilePhoneNumber'] ?? '';
-		}
-		$order->update_meta_data( '_shipping_phone', $order_shipping_phone );
-
 		$order->update_meta_data( '_collector_customer_type', $customer_type );
 		$order->update_meta_data( '_collector_public_token', WC()->session->get( 'collector_public_token' ) );
 		$order->update_meta_data( '_collector_private_id', $private_id );
@@ -247,6 +232,15 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 		// Check that update reference request was ok.
 		if ( false === $walley_reference ) {
 			$message = __( 'There was a problem updating the reference number in Walley.', 'collector-checkout-for-woocommerce' );
+			wc_add_notice( $message, 'error' );
+			return array(
+				'result' => 'error',
+			);
+		}
+
+		// Check that get order request was ok.
+		if ( is_wp_error( $walley_order ) ) {
+			$message = __( 'There was a problem retrieving the Walley order.', 'collector-checkout-for-woocommerce' );
 			wc_add_notice( $message, 'error' );
 			return array(
 				'result' => 'error',
@@ -335,6 +329,12 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 		$order->update_meta_data( '_collector_payment_id', $payment_id );
 		$order->update_meta_data( '_collector_order_id', sanitize_key( $walley_order_id ) );
 		$order->update_meta_data( '_collector_original_order_total', $order->get_total() );
+
+		$order_shipping_phone = '';
+		if ( 'PrivateCustomer' === $walley_order['data']['customerType'] ) {
+			$order_shipping_phone = $walley_order['data']['customer']['deliveryContactInformation']['mobilePhoneNumber'] ?? '';
+		}
+		$order->update_meta_data( '_shipping_phone', $order_shipping_phone );
 
 		if ( ! empty( $organization_number ) ) {
 			$order->update_meta_data( '_collector_org_nr', sanitize_key( $organization_number ) );
