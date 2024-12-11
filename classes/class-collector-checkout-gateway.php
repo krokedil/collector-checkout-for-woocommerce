@@ -329,6 +329,12 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 		$order->update_meta_data( '_collector_order_id', sanitize_key( $walley_order_id ) );
 		$order->update_meta_data( '_collector_original_order_total', $order->get_total() );
 
+		$order_shipping_phone = '';
+		if ( 'PrivateCustomer' === $walley_order['data']['customerType'] ) {
+			$order_shipping_phone = $walley_order['data']['customer']['deliveryContactInformation']['mobilePhoneNumber'] ?? '';
+		}
+		$order->update_meta_data( '_shipping_phone', $order_shipping_phone );
+
 		if ( ! empty( $organization_number ) ) {
 			$order->update_meta_data( '_collector_org_nr', sanitize_key( $organization_number ) );
 		}
