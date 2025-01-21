@@ -4,7 +4,7 @@ Tags: ecommerce, e-commerce, woocommerce, collector, checkout, walley
 Requires at least: 5.0
 Tested up to: 6.6.2
 Requires PHP: 7.3
-Stable tag: 4.2.2
+Stable tag: 4.2.3
 WC requires at least: 6.0.0
 WC tested up to: 9.3.3
 License: GPLv3
@@ -39,6 +39,10 @@ For help setting up and configuring Walley Checkout for WooCommerce please refer
 
 
 == CHANGELOG ==
+= 2025.01.21    - version 4.2.3 =
+* Tweak         - Added shipping phone to the order.
+* Tweak         - Bumped supported WC version.
+
 = 2024.09.17    - version 4.2.2 =
 * Fix           - Fixed an issue where additional post-purchase order processing would not be triggered when the customer is redirected to the confirmation page. 
 * Fix           - Fixed an undefined variable warning.
