@@ -1,9 +1,9 @@
 name: Create Dev Zip
 
 on:
-  push:
-    branches:
-      - '**'
+  # push:
+  #   branches:
+  #     - '**'
   workflow_dispatch:
 
 jobs:
