@@ -17,6 +17,55 @@ if ( class_exists( 'WC_Shipping_Method' ) ) {
 	class Collector_Delivery_Module_Shipping_Method extends WC_Shipping_Method {
 
 		/**
+		 * The shipping method id.
+		 *
+		 * @var string
+		 */
+		public $id;
+
+		/**
+		 * The shipping method instance id.
+		 *
+		 * @var integer
+		 */
+		public $instance_id;
+
+		/**
+		 * The shipping method title.
+		 *
+		 * @var string
+		 */
+		public $title;
+
+		/**
+		 * The shipping method method title.
+		 *
+		 * @var string
+		 */
+		public $method_title;
+
+		/**
+		 * The shipping method method description.
+		 *
+		 * @var string
+		 */
+		public $method_description;
+
+		/**
+		 * The shipping method supports.
+		 *
+		 * @var array
+		 */
+		public $supports;
+
+		/**
+		 * The shipping method collector tax amount.
+		 *
+		 * @var boolean
+		 */
+		public $collector_tax_amount;
+
+		/**
 		 * Class constructor.
 		 *
 		 * @param integer $instance_id The instance id.

@@ -19,6 +19,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 class Collector_Checkout_Product_Fields {
 
 	/**
+	 * The add product fields setting.
+	 *
+	 * @var string
+	 */
+	private $add_product_fields;
+
+	/**
 	 * Class constructor.
 	 */
 	public function __construct() {
@@ -50,7 +57,6 @@ class Collector_Checkout_Product_Fields {
 			'description' => __( 'If this product requires Electronic ID signing in Walley Checkout.', 'kroconnect-extra-fields' ),
 		);
 		woocommerce_wp_checkbox( $args );
-
 	}
 
 	/**
@@ -66,7 +72,5 @@ class Collector_Checkout_Product_Fields {
 		$product->update_meta_data( '_collector_requires_electronic_id', sanitize_text_field( $collector_requires_electronic_id ) );
 		$product->save();
 	}
-
-
 }
 new Collector_Checkout_Product_Fields();
