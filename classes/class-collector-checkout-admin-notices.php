@@ -21,6 +21,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 class Collector_Checkout_Admin_Notices {
 
 	/**
+	 * The enabled setting.
+	 *
+	 * @var string
+	 */
+	private $enabled;
+
+	/**
 	 * Collector_Checkout_Admin_Notices constructor.
 	 */
 	public function __construct() {
@@ -74,8 +81,6 @@ class Collector_Checkout_Admin_Notices {
 			echo '</div>';
 		}
 	}
-
-
 }
 
 $collector_checkout_admin_notices = new Collector_Checkout_Admin_Notices();

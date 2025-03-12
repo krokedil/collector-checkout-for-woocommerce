@@ -13,6 +13,70 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Class Collector_Checkout_Gateway
  */
 class Collector_Checkout_Gateway extends WC_Payment_Gateway {
+
+	/**
+	 * The id of the gateway.
+	 *
+	 * @var string
+	 */
+	public $id;
+
+	/**
+	 * The method title.
+	 *
+	 * @var string
+	 */
+	public $method_title;
+
+	/**
+	 * The method description.
+	 *
+	 * @var string
+	 */
+	public $method_description;
+
+	/**
+	 * The title of the gateway.
+	 *
+	 * @var string
+	 */
+	public $title;
+
+	/**
+	 * The description of the gateway.
+	 *
+	 * @var string
+	 */
+	public $description;
+
+	/**
+	 * The enabled setting.
+	 *
+	 * @var string
+	 */
+	public $enabled;
+
+	/**
+	 * The Walley API client id.
+	 *
+	 * @var string
+	 */
+	public $walley_api_client_id;
+
+	/**
+	 * The Walley API secret.
+	 *
+	 * @var string
+	 */
+	public $walley_api_secret;
+
+	/**
+	 * The delivery module setting.
+	 *
+	 * @var string
+	 */
+	public $delivery_module;
+
 	/**
 	 * Class constructor.
 	 */

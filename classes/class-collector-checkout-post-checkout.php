@@ -15,6 +15,28 @@ if ( ! defined( 'ABSPATH' ) ) {
 class Collector_Checkout_Post_Checkout {
 
 	/**
+	 * The manage orders setting.
+	 *
+	 * @var string
+	 */
+	private $manage_orders;
+
+	/**
+	 * The display invoice number setting.
+	 *
+	 * @var string
+	 */
+	private $display_invoice_no;
+
+	/**
+	 * The activate individual order lines setting.
+	 *
+	 * @var string
+	 */
+	private $activate_individual_order_lines;
+
+
+	/**
 	 * Class constructor
 	 */
 	public function __construct() {
@@ -163,4 +185,3 @@ class Collector_Checkout_Post_Checkout {
 		return $order_number;
 	}
 }
-

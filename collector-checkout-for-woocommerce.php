@@ -59,6 +59,48 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 		protected static $instance;
 
 		/**
+		 * The Walley API client id.
+		 *
+		 * @var string
+		 */
+		protected $walley_api_client_id;
+
+		/**
+		 * The Walley API secret.
+		 *
+		 * @var string
+		 */
+		protected $walley_api_secret;
+
+		/**
+		 * The API class.
+		 *
+		 * @var Walley_Checkout_API
+		 */
+		protected $api;
+
+		/**
+		 * The Order Management class.
+		 *
+		 * @var Walley_Checkout_Order_Management
+		 */
+		protected $order_management;
+
+		/**
+		 * The Order Items class.
+		 *
+		 * @var Collector_Checkout_Requests_Helper_Order
+		 */
+		protected $order_items;
+
+		/**
+		 * The Order Fees class.
+		 *
+		 * @var Collector_Checkout_Requests_Helper_Order_Fees
+		 */
+		protected $order_fees;
+
+		/**
 		 * Returns the *Singleton* instance of this class.
 		 *
 		 * @return self::$instance The *Singleton* instance.
