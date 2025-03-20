@@ -77,7 +77,7 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 		 *
 		 * @var Walley_Checkout_API
 		 */
-		protected $api;
+		public $api;
 
 		/**
 		 * The Order Management class.
