@@ -157,6 +157,10 @@ class Collector_Api_Callbacks {
 			update_post_meta( $order->get_id(), '_transaction_id', $collector_order['data']['purchase']['purchaseIdentifier'] );
 			$order->update_status( 'on-hold' );
 			CCO_WC()->logger::log( 'Order status not set correctly for order ' . $order->get_order_number() . ' during checkout process. Setting order status to On hold.' );
+		} elseif ( 'Rejected' === $collector_order['data']['purchase']['result'] ) {
+			$order->add_order_note( __( 'Order is REJECTED by Walley. Payment ID: ', 'collector-checkout-for-woocommerce' ) . $collector_order['data']['purchase']['purchaseIdentifier'] );
+			$order->update_status( 'failed' );
+			CCO_WC()->logger::log( 'Order status not set correctly for order ' . $order->get_order_number() . ' during checkout process. Setting order status to Failed.' );
 		} else {
 			$order->add_order_note( __( 'Order is PENDING APPROVAL by Walley. Payment ID: ', 'collector-checkout-for-woocommerce' ) . $collector_order['data']['purchase']['purchaseIdentifier'] );
 			$order->update_status( 'on-hold' );
