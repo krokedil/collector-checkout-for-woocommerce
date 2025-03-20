@@ -347,10 +347,10 @@ function wc_collector_confirm_order( $order, $private_id = null ) {
 		return;
 	}
 
-	$payment_status  = $collector_order['data']['purchase']['result'];
 	$payment_method  = $collector_order['data']['purchase']['paymentName'];
 	$payment_id      = $collector_order['data']['purchase']['purchaseIdentifier'];
 	$walley_order_id = $collector_order['data']['order']['orderId'];
+	$payment_status  = $collector_order['data']['purchase']['result'];
 
 	// Check if we need to update reference in collectors system.
 	if ( empty( $collector_order['data']['reference'] ) ) {
@@ -385,20 +385,8 @@ function wc_collector_confirm_order( $order, $private_id = null ) {
 	$order->update_meta_data( '_collector_order_id', sanitize_key( $walley_order_id ) );
 	wc_collector_save_shipping_reference_to_order( $order->get_id(), $collector_order );
 
-	if ( 'Preliminary' === $payment_status || 'Completed' === $payment_status ) {
-		$order->payment_complete( $payment_id );
-	} elseif ( 'Signing' === $payment_status ) {
-		$order->add_order_note( __( 'Order is waiting for electronic signing by customer. Payment ID: ', 'collector-checkout-for-woocommerce' ) . $payment_id );
-		$order->update_meta_data( '_transaction_id', $payment_id );
-		$order->update_status( 'on-hold' );
-	} else {
-		$order->add_order_note( __( 'Order is PENDING APPROVAL by Collector. Payment ID: ', 'collector-checkout-for-woocommerce' ) . $payment_id );
-		$order->add_meta_data( '_transaction_id', $payment_id );
-		$order->update_status( 'on-hold' );
-	}
+	set_order_status( $order, $payment_status, $payment_id );
 
-	// Translators: Collector Payment method.
-	$order->add_order_note( sprintf( __( 'Purchase via %s', 'collector-checkout-for-woocommerce' ), wc_collector_get_payment_method_name( $payment_method ) ) );
 	$order->save();
 }
 
@@ -818,20 +806,7 @@ function walley_confirm_order( $order, $private_id = null ) {
 		$order->update_meta_data( '_collector_delivery_module_reference', $collector_order['data']['shipping']['pendingShipment']['id'] );
 	}
 
-	if ( 'Preliminary' === $payment_status || 'Completed' === $payment_status ) {
-		$order->payment_complete( $payment_id );
-	} elseif ( 'Signing' === $payment_status ) {
-		$order->add_order_note( __( 'Order is waiting for electronic signing by customer. Payment ID: ', 'collector-checkout-for-woocommerce' ) . $payment_id );
-		$order->set_transaction_id( $payment_id );
-		$order->update_status( 'on-hold' );
-	} else {
-		$order->add_order_note( __( 'Order is PENDING APPROVAL by Collector. Payment ID: ', 'collector-checkout-for-woocommerce' ) . $payment_id );
-		$order->set_transaction_id( $payment_id );
-		$order->update_status( 'on-hold' );
-	}
-
-	// Translators: Collector Payment method.
-	$order->add_order_note( sprintf( __( 'Purchase via %s', 'collector-checkout-for-woocommerce' ), wc_collector_get_payment_method_name( $payment_method ) ) );
+	set_order_status( $order, $payment_status, $payment_id );
 
 	$order->save();
 	return true;
@@ -1197,4 +1172,35 @@ function walley_is_order_page() {
 	}
 
 	return walley_is_order_type( walley_get_the_ID() );
+}
+
+/**
+ * Set the order status.
+ *
+ * @param WC_Order $order The WooCommerce order.
+ * @param string   $payment_status The payment status.
+ * @param string   $payment_id The payment ID.
+ *
+ * @return void
+ */
+function set_order_status( $order, $payment_status, $payment_id ) {
+	if ( 'Preliminary' === $payment_status || 'Completed' === $payment_status ) {
+		$order->payment_complete( $payment_id );
+		$order->add_order_note( 'Payment via Walley Checkout. Payment ID: ' . sanitize_key( $payment_id ) );
+		CCO_WC()->logger::log( 'Order status not set correctly for order ' . $order->get_order_number() . ' during checkout process. Setting order status to Processing/Completed.' );
+	} elseif ( 'Signing' === $payment_status ) {
+		$order->add_order_note( __( 'Order is waiting for electronic signing by customer. Payment ID: ', 'collector-checkout-for-woocommerce' ) . $payment_id );
+		$order->update_status( 'on-hold' );
+		CCO_WC()->logger::log( 'Order status not set correctly for order ' . $order->get_order_number() . ' during checkout process. Setting order status to On hold.' );
+	} elseif ( 'Rejected' === $payment_status ) {
+		$order->add_order_note( __( 'Order is REJECTED by Walley. Payment ID: ', 'collector-checkout-for-woocommerce' ) . $payment_id );
+		$order->update_status( 'failed' );
+		CCO_WC()->logger::log( 'Order status not set correctly for order ' . $order->get_order_number() . ' during checkout process. Setting order status to Failed.' );
+	} else {
+		$order->add_order_note( __( 'Order is PENDING APPROVAL by Walley. Payment ID: ', 'collector-checkout-for-woocommerce' ) . $payment_id );
+		$order->update_status( 'on-hold' );
+		CCO_WC()->logger::log( 'Order status not set correctly for order ' . $order->get_order_number() . ' during checkout process. Setting order status to On hold.' );
+	}
+
+	update_post_meta( $order->get_id(), '_transaction_id', $payment_id );
 }
