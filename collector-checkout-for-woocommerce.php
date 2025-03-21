@@ -84,21 +84,21 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 		 *
 		 * @var Walley_Checkout_Order_Management
 		 */
-		protected $order_management;
+		public $order_management;
 
 		/**
 		 * The Order Items class.
 		 *
 		 * @var Collector_Checkout_Requests_Helper_Order
 		 */
-		protected $order_items;
+		public $order_items;
 
 		/**
 		 * The Order Fees class.
 		 *
 		 * @var Collector_Checkout_Requests_Helper_Order_Fees
 		 */
-		protected $order_fees;
+		public $order_fees;
 
 		/**
 		 * Returns the *Singleton* instance of this class.
