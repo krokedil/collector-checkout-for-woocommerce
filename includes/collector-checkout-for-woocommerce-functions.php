@@ -385,7 +385,7 @@ function wc_collector_confirm_order( $order, $private_id = null ) {
 	$order->update_meta_data( '_collector_order_id', sanitize_key( $walley_order_id ) );
 	wc_collector_save_shipping_reference_to_order( $order->get_id(), $collector_order );
 
-	set_order_status( $order, $payment_status, $payment_id );
+	walley_set_order_status( $order, $payment_status, $payment_id );
 
 	$order->save();
 }
@@ -806,7 +806,7 @@ function walley_confirm_order( $order, $private_id = null ) {
 		$order->update_meta_data( '_collector_delivery_module_reference', $collector_order['data']['shipping']['pendingShipment']['id'] );
 	}
 
-	set_order_status( $order, $payment_status, $payment_id );
+	walley_set_order_status( $order, $payment_status, $payment_id );
 
 	$order->save();
 	return true;
@@ -1183,7 +1183,7 @@ function walley_is_order_page() {
  *
  * @return void
  */
-function set_order_status( $order, $payment_status, $payment_id ) {
+function walley_set_order_status( $order, $payment_status, $payment_id ) {
 	if ( 'Preliminary' === $payment_status || 'Completed' === $payment_status ) {
 		$order->payment_complete( $payment_id );
 		$order->add_order_note( 'Payment via Walley Checkout. Payment ID: ' . sanitize_key( $payment_id ) );
@@ -1202,5 +1202,5 @@ function set_order_status( $order, $payment_status, $payment_id ) {
 		CCO_WC()->logger::log( 'Order status not set correctly for order ' . $order->get_order_number() . ' during checkout process. Setting order status to On hold.' );
 	}
 
-	update_post_meta( $order->get_id(), '_transaction_id', $payment_id );
+	$order->update_meta_data( '_transaction_id', $payment_id );
 }
