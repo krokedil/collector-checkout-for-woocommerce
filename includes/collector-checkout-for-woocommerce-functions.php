@@ -1183,24 +1183,50 @@ function walley_is_order_page() {
  *
  * @return void
  */
-function walley_set_order_status( $order, $payment_status, $payment_id ) {
-	if ( 'Preliminary' === $payment_status || 'Completed' === $payment_status ) {
-		$order->payment_complete( $payment_id );
-		$order->add_order_note( 'Payment via Walley Checkout. Payment ID: ' . sanitize_key( $payment_id ) );
-		CCO_WC()->logger::log( 'Order status not set correctly for order ' . $order->get_order_number() . ' during checkout process. Setting order status to Processing/Completed.' );
-	} elseif ( 'Signing' === $payment_status ) {
-		$order->add_order_note( __( 'Order is waiting for electronic signing by customer. Payment ID: ', 'collector-checkout-for-woocommerce' ) . $payment_id );
-		$order->update_status( 'on-hold' );
-		CCO_WC()->logger::log( 'Order status not set correctly for order ' . $order->get_order_number() . ' during checkout process. Setting order status to On hold.' );
-	} elseif ( 'Rejected' === $payment_status ) {
-		$order->add_order_note( __( 'Order is REJECTED by Walley. Payment ID: ', 'collector-checkout-for-woocommerce' ) . $payment_id );
-		$order->update_status( 'failed' );
-		CCO_WC()->logger::log( 'Order status not set correctly for order ' . $order->get_order_number() . ' during checkout process. Setting order status to Failed.' );
-	} else {
-		$order->add_order_note( __( 'Order is PENDING APPROVAL by Walley. Payment ID: ', 'collector-checkout-for-woocommerce' ) . $payment_id );
-		$order->update_status( 'on-hold' );
-		CCO_WC()->logger::log( 'Order status not set correctly for order ' . $order->get_order_number() . ' during checkout process. Setting order status to On hold.' );
+function walley_set_order_status( $order, $payment_status, $payment_id, $save_order = true ) {
+	switch ( $payment_status ) {
+		case 'Preliminary':
+			$order->payment_complete( $payment_id );
+			$order->add_order_note( 'Payment via Walley Checkout. Payment ID: ' . sanitize_key( $payment_id ) );
+			CCO_WC()->logger::log( 'Order status not set correctly for order ' . $order->get_order_number() . ' during checkout process. Setting order status to Processing/Completed.' );
+			break;
+		case 'Activated':
+			$order->payment_complete( $payment_id );
+			$order->add_order_note( 'Payment via Walley Checkout. Payment ID: ' . sanitize_key( $payment_id ) );
+			CCO_WC()->logger::log( 'Order status not set correctly for order ' . $order->get_order_number() . ' during checkout process. Setting order status to Processing/Completed.' );
+			$order->set_transaction_id( $payment_id );
+			break;
+
+		case 'Signing':
+			$order->add_order_note( __( 'Order is waiting for electronic signing by customer. Payment ID: ', 'collector-checkout-for-woocommerce' ) . $payment_id );
+			$order->update_status( 'on-hold' );
+			CCO_WC()->logger::log( 'Order status not set correctly for order ' . $order->get_order_number() . ' during checkout process. Setting order status to On hold.' );
+			$order->set_transaction_id( $payment_id );
+			break;
+
+		case 'Rejected':
+			$order->add_order_note( __( 'Order is REJECTED by Walley. Payment ID: ', 'collector-checkout-for-woocommerce' ) . $payment_id );
+			$order->update_status( 'failed' );
+			CCO_WC()->logger::log( 'Order status not set correctly for order ' . $order->get_order_number() . ' during checkout process. Setting order status to Failed.' );
+			$order->set_transaction_id( $payment_id );
+			break;
+
+		case 'OnHold':
+			$order->add_order_note( __( 'Order is ON HOLD by Walley. Payment ID: ', 'collector-checkout-for-woocommerce' ) . $payment_id );
+			$order->update_status( 'on-hold' );
+			CCO_WC()->logger::log( 'Order status not set correctly for order ' . $order->get_order_number() . ' during checkout process. Setting order status to On hold.' );
+			$order->set_transaction_id( $payment_id );
+			break;
+
+		default:
+			$order->add_order_note( __( 'Order is PENDING APPROVAL by Walley. Payment ID: ', 'collector-checkout-for-woocommerce' ) . $payment_id );
+			$order->update_status( 'on-hold' );
+			CCO_WC()->logger::log( 'Order status not set correctly for order ' . $order->get_order_number() . ' during checkout process. Setting order status to On hold.' );
+			$order->set_transaction_id( $payment_id );
+			break;
 	}
 
-	$order->update_meta_data( '_transaction_id', $payment_id );
+	if ( $save_order ) {
+		$order->save();
+	}
 }
