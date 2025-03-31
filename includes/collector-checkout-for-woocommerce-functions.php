@@ -385,7 +385,7 @@ function wc_collector_confirm_order( $order, $private_id = null ) {
 	$order->update_meta_data( '_collector_order_id', sanitize_key( $walley_order_id ) );
 	wc_collector_save_shipping_reference_to_order( $order->get_id(), $collector_order );
 
-	walley_set_order_status( $order, $payment_status, $payment_id );
+	walley_set_order_status( $order, $payment_status, $payment_id, false );
 
 	$order->save();
 }
@@ -806,7 +806,7 @@ function walley_confirm_order( $order, $private_id = null ) {
 		$order->update_meta_data( '_collector_delivery_module_reference', $collector_order['data']['shipping']['pendingShipment']['id'] );
 	}
 
-	walley_set_order_status( $order, $payment_status, $payment_id );
+	walley_set_order_status( $order, $payment_status, $payment_id, false );
 
 	$order->save();
 	return true;
