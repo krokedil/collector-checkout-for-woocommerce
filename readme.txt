@@ -2,11 +2,11 @@
 Contributors: collectorbank, krokedil, NiklasHogefjord
 Tags: ecommerce, e-commerce, woocommerce, collector, checkout, walley
 Requires at least: 5.0
-Tested up to: 6.6.2
+Tested up to: 6.8
 Requires PHP: 7.3
-Stable tag: 4.2.3
+Stable tag: 4.2.4
 WC requires at least: 6.0.0
-WC tested up to: 9.3.3
+WC tested up to: 9.7.1
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -39,6 +39,12 @@ For help setting up and configuring Walley Checkout for WooCommerce please refer
 
 
 == CHANGELOG ==
+= 2025.04.01    - version 4.2.4 =
+* Fix           - Fixed an issue where the "Part Payment" widget would be properly loaded but not visible.
+* Fix           - Fixed a critical error due to missing WC order when processing AJAX request.
+* Fix           - Addressed various property visibility and deprecation warnings.
+* Tweak         - Added SVN to deployment script.
+
 = 2025.01.21    - version 4.2.3 =
 * Tweak         - Added shipping phone to the order.
 * Tweak         - Bumped supported WC version.

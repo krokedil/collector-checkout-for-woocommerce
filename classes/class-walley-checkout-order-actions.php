@@ -10,7 +10,28 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Class Walley_Checkout_Order_Actions
  */
-class  Walley_Checkout_Order_Actions {
+class Walley_Checkout_Order_Actions {
+
+	/**
+	 * The manage orders setting.
+	 *
+	 * @var string
+	 */
+	private $manage_orders;
+
+	/**
+	 * The display invoice number setting.
+	 *
+	 * @var string
+	 */
+	private $display_invoice_no;
+
+	/**
+	 * The activate individual order lines setting.
+	 *
+	 * @var string
+	 */
+	private $activate_individual_order_lines;
 
 	/**
 	 * Class constructor

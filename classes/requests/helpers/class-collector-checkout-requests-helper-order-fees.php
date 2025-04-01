@@ -29,6 +29,13 @@ class Collector_Checkout_Requests_Helper_Order_Fees {
 	public $price = 0;
 
 	/**
+	 * Delivery module
+	 *
+	 * @var string
+	 */
+	public $delivery_module;
+
+	/**
 	 * Class constructor.
 	 */
 	public function __construct() {

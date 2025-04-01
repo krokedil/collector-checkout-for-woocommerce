@@ -21,6 +21,13 @@ class Collector_Checkout_Templates {
 	protected static $instance;
 
 	/**
+	 * Checkout layout.
+	 *
+	 * @var string
+	 */
+	protected $checkout_layout;
+
+	/**
 	 * Returns the *Singleton* instance of this class.
 	 *
 	 * @return self::$instance The *Singleton* instance.

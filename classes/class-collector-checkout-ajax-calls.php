@@ -280,7 +280,7 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 		$order              = wc_get_order( $order_id );
 
 		// If something went wrong in get_customer_data() - display a "thank you page light".
-		if ( 'not-completed' === $purchase_status ) {
+		if ( empty( $order ) || 'not-completed' === $purchase_status ) {
 			$public_token = filter_input( INPUT_POST, 'public_token', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 			if ( WC()->session->get( 'collector_customer_type' ) ) {
 				$customer_type = WC()->session->get( 'collector_customer_type' );
