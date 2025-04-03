@@ -129,7 +129,7 @@ class Collector_Api_Callbacks {
 				$payment_id     = $collector_order['data']['purchase']['purchaseIdentifier'];
 
 				// Set order status in Woo.
-				walley_set_order_status( $order, $payment_status, $payment_id, false );
+				walley_set_order_status( $order, $payment_status, $payment_id, false, true );
 
 				$order->save();
 			}
