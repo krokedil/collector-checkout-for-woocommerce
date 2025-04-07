@@ -197,14 +197,6 @@ $settings = array(
 		'default'     => 'one_column_checkout',
 		'desc_tip'    => false,
 	),
-	'collector_invoice_fee'           => array(
-		'title'       => __( 'Invoice fee ID', 'collector-checkout-for-woocommerce' ),
-		'type'        => 'text',
-		/* Translators: link to docs */
-		'description' => sprintf( __( 'Create a hidden (simple) product that acts as the invoice fee. Enter the product <strong>ID</strong> number in this textfield. Leave blank to disable. <a href="%s" target="_blank">Read more</a>.', 'collector-checkout-for-woocommerce' ), 'https://docs.krokedil.com/walley-checkout-for-woocommerce/' ),
-		'default'     => '',
-		'desc_tip'    => false,
-	),
 	'collector_default_customer'      => array(
 		'title'       => __( 'Default customer', 'collector-checkout-for-woocommerce' ),
 		'type'        => 'select',
