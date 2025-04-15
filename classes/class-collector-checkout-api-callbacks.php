@@ -125,8 +125,13 @@ class Collector_Api_Callbacks {
 
 			// Check order status.
 			if ( empty( $order->get_date_paid() ) ) {
+				$payment_status = $collector_order['data']['purchase']['result'];
+				$payment_id     = $collector_order['data']['purchase']['purchaseIdentifier'];
+
 				// Set order status in Woo.
-				$this->set_order_status( $order, $collector_order );
+				walley_set_order_status( $order, $payment_status, $payment_id, false, true );
+
+				$order->save();
 			}
 
 			// Compare order totals between the orders.
@@ -136,31 +141,6 @@ class Collector_Api_Callbacks {
 			if ( empty( $collector_order['data']['reference'] ) ) {
 				$this->update_order_reference_in_collector( $order, $customer_type, $private_id );
 			}
-		}
-	}
-
-	/**
-	 * Set order status function
-	 *
-	 * @param WC_Order $order The WooCommerce order.
-	 * @param array    $collector_order The Collector order.
-	 *
-	 * @return void
-	 */
-	public function set_order_status( $order, $collector_order ) {
-		if ( 'Preliminary' === $collector_order['data']['purchase']['result'] || 'Completed' === $collector_order['data']['purchase']['result'] ) {
-			$order->payment_complete( $collector_order['data']['purchase']['purchaseIdentifier'] );
-			$order->add_order_note( 'Payment via Collector Checkout. Payment ID: ' . sanitize_key( $collector_order['data']['purchase']['purchaseIdentifier'] ) );
-			CCO_WC()->logger::log( 'Order status not set correctly for order ' . $order->get_order_number() . ' during checkout process. Setting order status to Processing/Completed.' );
-		} elseif ( 'Signing' === $collector_order['data']['purchase']['result'] ) {
-			$order->add_order_note( __( 'Order is waiting for electronic signing by customer. Payment ID: ', 'collector-checkout-for-woocommerce' ) . $collector_order['data']['purchase']['purchaseIdentifier'] );
-			update_post_meta( $order->get_id(), '_transaction_id', $collector_order['data']['purchase']['purchaseIdentifier'] );
-			$order->update_status( 'on-hold' );
-			CCO_WC()->logger::log( 'Order status not set correctly for order ' . $order->get_order_number() . ' during checkout process. Setting order status to On hold.' );
-		} else {
-			$order->add_order_note( __( 'Order is PENDING APPROVAL by Walley. Payment ID: ', 'collector-checkout-for-woocommerce' ) . $collector_order['data']['purchase']['purchaseIdentifier'] );
-			$order->update_status( 'on-hold' );
-			CCO_WC()->logger::log( 'Order status not set correctly for order ' . $order->get_order_number() . ' during checkout process. Setting order status to On hold.' );
 		}
 	}
 
