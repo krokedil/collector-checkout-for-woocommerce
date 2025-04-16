@@ -145,23 +145,9 @@ class Collector_Checkout_Requests_Helper_Order_Om {
 	 * @return array
 	 */
 	public static function get_order_line_fees( $order_fee, $order ) {
-		$order_id           = $order_fee->get_order_id();
-		$collector_settings = get_option( 'woocommerce_collector_checkout_settings' );
-		$invoice_fee_id     = isset( $collector_settings['collector_invoice_fee'] ) ? $collector_settings['collector_invoice_fee'] : '';
-
-		if ( $invoice_fee_id ) {
-			$_product         = wc_get_product( $invoice_fee_id );
-			$invoice_fee_name = $_product->get_name();
-		}
-
-		// Check if the refunded fee is the invoice fee.
-		if ( $invoice_fee_name === $order_fee->get_name() ) {
-			$sku = 'invoicefee|' . Collector_Checkout_Requests_Cart::get_sku( $_product, $_product->get_id() );
-		} else {
-			// Format the fee name so it match the same fee in Collector.
-			$fee_name = str_replace( ' ', '-', strtolower( $order_fee->get_name() ) );
-			$sku      = 'fee|' . $fee_name;
-		}
+		// Format the fee name so it match the same fee in Collector.
+		$fee_name = str_replace( ' ', '-', strtolower( $order_fee->get_name() ) );
+		$sku      = 'fee|' . $fee_name;
 
 		$unit_price = self::format_number( ( $order_fee->get_total() + $order_fee->get_total_tax() ) / $order_fee->get_quantity() );
 
@@ -198,12 +184,10 @@ class Collector_Checkout_Requests_Helper_Order_Om {
 			$shipping_reference = $collector_shipping_reference;
 		} elseif ( ! empty( $shipping_reference_from_delivery_module_data ) ) {
 			$shipping_reference = $shipping_reference_from_delivery_module_data;
-		} else {
-			if ( null !== $order_item->get_instance_id() ) {
+		} elseif ( null !== $order_item->get_instance_id() ) {
 				$shipping_reference = 'shipping|' . $order_item->get_method_id() . ':' . $order_item->get_instance_id();
-			} else {
-				$shipping_reference = 'shipping|' . $order_item->get_method_id();
-			}
+		} else {
+			$shipping_reference = 'shipping|' . $order_item->get_method_id();
 		}
 
 		// Shipping should be added even if it is 0 since free shipping is added to the original purchase.
@@ -263,7 +247,6 @@ class Collector_Checkout_Requests_Helper_Order_Om {
 	 */
 	public static function format_number( $value ) {
 		return wc_format_decimal( $value, 2 );
-
 	}
 
 	/**

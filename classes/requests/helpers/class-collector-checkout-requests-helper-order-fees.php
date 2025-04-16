@@ -15,13 +15,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 class Collector_Checkout_Requests_Helper_Order_Fees {
 
 	/**
-	 * Invoice fee ID
-	 *
-	 * @var string
-	 */
-	public $invoice_fee_id = '';
-
-	/**
 	 * Price with tax included, based on store settings or an empty string if price calculation failed.
 	 *
 	 * @var float|string
@@ -39,9 +32,7 @@ class Collector_Checkout_Requests_Helper_Order_Fees {
 	 * Class constructor.
 	 */
 	public function __construct() {
-		$collector_settings   = get_option( 'woocommerce_collector_checkout_settings' );
-		$invoice_fee_id       = $collector_settings['collector_invoice_fee'];
-		$this->invoice_fee_id = $invoice_fee_id;
+		$collector_settings = get_option( 'woocommerce_collector_checkout_settings' );
 
 		switch ( get_woocommerce_currency() ) {
 			case 'SEK':
@@ -75,13 +66,6 @@ class Collector_Checkout_Requests_Helper_Order_Fees {
 		$shipping         = $this->get_shipping( $order );
 		$fees['shipping'] = $shipping;
 
-		if ( $this->invoice_fee_id ) {
-			$_product = wc_get_product( $this->invoice_fee_id );
-			if ( is_object( $_product ) ) {
-				$directinvoicenotification         = $this->get_invoice_fee( $_product );
-				$fees['directinvoicenotification'] = $directinvoicenotification;
-			}
-		}
 		return $fees;
 	}
 
@@ -116,36 +100,6 @@ class Collector_Checkout_Requests_Helper_Order_Fees {
 				'vat'         => 0, // Float.
 			);
 		}
-	}
-
-	/**
-	 * Gets the invoice fee for the product.
-	 *
-	 * @param WC_Product $_product The WooCommerce product.
-	 *
-	 * @return array
-	 */
-	public function get_invoice_fee( $_product ) {
-
-		$price = wc_get_price_including_tax( $_product );
-
-		$_tax      = new WC_Tax();
-		$tmp_rates = $_tax->get_base_tax_rates( $_product->get_tax_class() );
-		$_vat      = array_shift( $tmp_rates );// Get the rate.
-		// Check what kind of tax rate we have.
-		if ( $_product->is_taxable() && isset( $_vat['rate'] ) ) {
-			$vat_rate = round( $_vat['rate'] );
-		} else {
-			// if empty, set 0% as rate.
-			$vat_rate = 0;
-		}
-
-		return array(
-			'id'          => 'invoicefee|' . Collector_Checkout_Requests_Cart::get_sku( $_product, $_product->get_id() ),
-			'description' => substr( $_product->get_title(), 0, 50 ),
-			'unitPrice'   => round( $price, 2 ),
-			'vat'         => $vat_rate,
-		);
 	}
 
 	/**

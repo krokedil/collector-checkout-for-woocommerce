@@ -170,62 +170,6 @@ function collector_wc_show_customer_type_switcher() {
 }
 
 /**
- * Unset Collector public token and private id
- *
- * @param WC_Order|int $order The WooCommerce order or order id.
- * @param string       $product_id WooCommerce product id.
- */
-function wc_collector_add_invoice_fee_to_order( $order, $product_id ) {
-	// Get the order object if the order is passed as an id.
-	if ( ! is_object( $order ) ) {
-		$order = wc_get_order( $order );
-	}
-
-	$result  = false;
-	$product = wc_get_product( $product_id );
-
-	if ( is_object( $product ) && is_object( $order ) ) {
-		$price = wc_get_price_excluding_tax( $product );
-
-		if ( $product->is_taxable() ) {
-			$product_tax = true;
-		} else {
-			$product_tax = false;
-		}
-
-		$_tax      = new WC_Tax();
-		$tmp_rates = $_tax->get_base_tax_rates( $product->get_tax_class() );
-		$_vat      = array_shift( $tmp_rates );// Get the rate
-		// Check what kind of tax rate we have.
-		if ( $product->is_taxable() && isset( $_vat['rate'] ) ) {
-			$vat_rate = round( $_vat['rate'] );
-		} else {
-			// if empty, set 0% as rate.
-			$vat_rate = 0;
-		}
-
-		$args = array(
-			'name'      => $product->get_title(),
-			'tax_class' => $product_tax ? $product->get_tax_class() : 0,
-			'total'     => $price,
-			'total_tax' => $vat_rate,
-			'taxes'     => array(
-				'total' => array(),
-			),
-		);
-		$fee  = new WC_Order_Item_Fee();
-		$fee->set_props( $args );
-		$fee_result = $order->add_item( $fee );
-
-		if ( false === $fee_result ) {
-			$order->add_order_note( __( 'Unable to add Walley Checkout Invoice Fee to the order.', 'collector-checkout-for-woocommerce' ) );
-		}
-		$result = $order->calculate_totals( true );
-	}
-	return $result;
-}
-
-/**
  * Removes the database table row data.
  *
  * @param string $private_id Collector private id.
@@ -368,15 +312,6 @@ function wc_collector_confirm_order( $order, $private_id = null ) {
 			$update_reference = new Collector_Checkout_Requests_Update_Reference( $order->get_order_number(), $private_id, $customer_type );
 			$update_reference->request();
 			CCO_WC()->logger::log( 'Update Collector order reference for order - ' . $order->get_order_number() );
-		}
-	}
-
-	// Maybe add invoice fee to order.
-	if ( 'DirectInvoice' === $payment_method ) {
-		$collector_settings = get_option( 'woocommerce_collector_checkout_settings' );
-		$product_id         = $collector_settings['collector_invoice_fee'];
-		if ( $product_id ) {
-			wc_collector_add_invoice_fee_to_order( $order->get_id(), $product_id );
 		}
 	}
 
@@ -779,15 +714,6 @@ function walley_confirm_order( $order, $private_id = null ) {
 			$update_reference = new Collector_Checkout_Requests_Update_Reference( $order->get_order_number(), $private_id, $customer_type );
 			$update_reference->request();
 			CCO_WC()->logger::log( 'Update Collector order reference for order - ' . $order->get_order_number() );
-		}
-	}
-
-	// Maybe add invoice fee to order.
-	if ( 'DirectInvoice' === $payment_method ) {
-		$collector_settings = get_option( 'woocommerce_collector_checkout_settings' );
-		$product_id         = $collector_settings['collector_invoice_fee'];
-		if ( $product_id ) {
-			wc_collector_add_invoice_fee_to_order( $order, $product_id );
 		}
 	}
 

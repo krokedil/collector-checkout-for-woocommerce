@@ -141,7 +141,6 @@ class Collector_Checkout_Create_Refund_Data {
 	public static function get_refunded_order( $order_id ) {
 		$order = wc_get_order( $order_id );
 		return $order->get_refunds()[0];
-
 	}
 	/**
 	 * Calculates tax.
@@ -246,25 +245,9 @@ class Collector_Checkout_Create_Refund_Data {
 	 * @return array
 	 */
 	private static function get_full_refund_fee_data( $fee ) {
-		// The entire fee price is refunded.
-		$sku                = 'Fee';
-		$invoice_fee_name   = '';
-		$collector_settings = get_option( 'woocommerce_collector_checkout_settings' );
-		$invoice_fee_id     = isset( $collector_settings['collector_invoice_fee'] ) ? $collector_settings['collector_invoice_fee'] : '';
-
-		if ( $invoice_fee_id ) {
-			$_product         = wc_get_product( $invoice_fee_id );
-			$invoice_fee_name = $_product->get_name();
-		}
-
-		// Check if the refunded fee is the invoice fee.
-		if ( $invoice_fee_name === $fee->get_name() ) {
-			$sku = 'invoicefee|' . Collector_Checkout_Requests_Cart::get_sku( $_product, $_product->get_id() );
-		} else {
-			// Format the fee name so it match the same fee in Collector.
-			$fee_name = str_replace( ' ', '-', strtolower( $fee->get_name() ) );
-			$sku      = 'fee|' . $fee_name;
-		}
+		// Format the fee name so it match the same fee in Collector.
+		$fee_name = str_replace( ' ', '-', strtolower( $fee->get_name() ) );
+		$sku      = 'fee|' . $fee_name;
 
 		$title              = $fee->get_name();
 		$tax_rates          = WC_Tax::get_rates( $fee->get_tax_class() );
