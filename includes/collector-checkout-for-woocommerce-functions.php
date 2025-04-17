@@ -735,6 +735,10 @@ function walley_confirm_order( $order, $private_id = null ) {
 	walley_set_order_status( $order, $payment_status, $payment_id, false );
 
 	$order->save();
+
+	// Let other plugins know that the payment is completed.
+	do_action( 'walley_payment_complete', $order, $collector_order );
+
 	return true;
 }
 
