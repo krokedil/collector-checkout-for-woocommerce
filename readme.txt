@@ -4,7 +4,7 @@ Tags: ecommerce, e-commerce, woocommerce, collector, checkout, walley
 Requires at least: 5.0
 Tested up to: 6.8
 Requires PHP: 7.3
-Stable tag: 4.2.6
+Stable tag: 4.2.7
 WC requires at least: 6.0.0
 WC tested up to: 9.7.1
 License: GPLv3
@@ -39,6 +39,9 @@ For help setting up and configuring Walley Checkout for WooCommerce please refer
 
 
 == CHANGELOG ==
+= 2025.04.22    - version 4.2.7 =
+* Fix           - Resolved a fatal error that occasionally occurred in the Walley metabox on order pages, by removing the unused invoice fee feature.
+
 = 2025.04.15    - version 4.2.6 =
 * Tweak         - Improved order callback handling, including support for the 'Rejected' status.
 
