@@ -90,10 +90,20 @@ if ( class_exists( 'WC_Shipping_Method' ) ) {
 		 */
 		public function init_form_fields() {
 			$this->instance_form_fields = array(
-				'title' => array(
+				'title'      => array(
 					'title'       => __( 'Walley Shipping Module', 'collector-checkout-for-woocommerce' ),
 					'type'        => 'title',
 					'description' => __( 'There are currently no settings for Walley Shipping Module since this is controlled by the TMS-provider. If other plugins adds settings, these are shown below.', 'collector-checkout-for-woocommerce' ),
+				),
+				'tax_status' => array(
+					'title'   => __( 'Tax status', 'woocommerce' ),
+					'type'    => 'select',
+					'class'   => 'wc-enhanced-select',
+					'default' => 'taxable',
+					'options' => array(
+						'taxable' => __( 'Taxable', 'woocommerce' ),
+						// 'none'    => _x( 'None', 'Tax status', 'woocommerce' ), @todo Implement logic for this.
+					),
 				),
 			);
 		}
