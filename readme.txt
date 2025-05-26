@@ -4,9 +4,9 @@ Tags: ecommerce, e-commerce, woocommerce, collector, checkout, walley
 Requires at least: 5.0
 Tested up to: 6.8.1
 Requires PHP: 7.3
-Stable tag: 4.2.8
+Stable tag: 4.2.9
 WC requires at least: 6.0.0
-WC tested up to: 9.8.4
+WC tested up to: 9.8.5
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -39,6 +39,9 @@ For help setting up and configuring Walley Checkout for WooCommerce please refer
 
 
 == CHANGELOG ==
+= 2025.05.26    - version 4.2.9 =
+* Fix           - Added shipping setting 'tax_status', to be compatible with WooCommerce 9.7+.
+
 = 2025.05.07    - version 4.2.8 =
 * Tweak         - Added action hook 'walley_after_confirm' to allow custom actions after order confirmation is completed.
 
