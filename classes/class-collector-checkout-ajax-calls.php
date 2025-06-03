@@ -112,6 +112,13 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 		$private_id    = WC()->session->get( 'collector_private_id' );
 		$customer_type = WC()->session->get( 'collector_customer_type' );
 
+		$private_id_session = filter_input( INPUT_POST, 'collector_form_private_id', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
+
+		if ( $private_id !== $private_id_session ) {
+			CCO_WC()->logger::log( 'Private id in session does not match the one used in checkout.' );
+			wp_send_json_error( sprintf( __( 'Failed to get the Walley order data. Private id does not match the session.', 'collector-checkout-for-woocommerce' ) ) );
+		}
+
 		// Use new or old API.
 		if ( self::use_new_api() ) {
 			$collector_order = CCO_WC()->api->get_walley_checkout(
