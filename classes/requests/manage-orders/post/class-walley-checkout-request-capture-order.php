@@ -17,7 +17,7 @@ class Walley_Checkout_Request_Capture_Order extends Walley_Checkout_Request_Post
 	 *
 	 * @var int
 	 */
-	private $order_id;
+	protected $order_id;
 
 	/**
 	 * Class constructor.

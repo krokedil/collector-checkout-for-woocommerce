@@ -13,6 +13,14 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Class for managing actions during the checkout process.
  */
 class Walley_Checkout {
+
+	/**
+	 * The Walley order.
+	 *
+	 * @var array
+	 */
+	public $collector_order = array();
+
 	/**
 	 * Class constructor.
 	 */

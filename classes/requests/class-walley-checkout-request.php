@@ -47,6 +47,62 @@ abstract class Walley_Checkout_Request {
 	 */
 	protected $settings;
 
+	/**
+	 * The Walley order id.
+	 *
+	 * @var string
+	 */
+	protected $order_id;
+
+	/**
+	 * The Walley private id.
+	 *
+	 * @var string
+	 */
+	protected $private_id;
+
+	/**
+	 * The customer type (b2c or b2b).
+	 *
+	 * @var string
+	 */
+	protected $customer_type;
+
+	/**
+	 * Delivery module
+	 *
+	 * @var string
+	 */
+	protected $delivery_module;
+
+	/**
+	 * Country code
+	 *
+	 * @var string
+	 */
+	protected $country_code;
+
+	/**
+	 * Terms page URL.
+	 *
+	 * @var string
+	 */
+	protected $terms_page;
+
+	/**
+	 * The store id.
+	 *
+	 * @var string
+	 */
+	protected $store_id;
+
+	/**
+	 * The currency.
+	 *
+	 * @var string
+	 */
+	protected $currency;
+
 
 	/**
 	 * Class constructor.

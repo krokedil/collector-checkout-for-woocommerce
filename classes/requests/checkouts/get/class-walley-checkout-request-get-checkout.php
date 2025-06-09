@@ -11,7 +11,6 @@ defined( 'ABSPATH' ) || exit;
  * Walley_Checkout_Request_Get_Checkout class.
  */
 class Walley_Checkout_Request_Get_Checkout extends Walley_Checkout_Request_Get {
-
 	/**
 	 * Class constructor.
 	 *
