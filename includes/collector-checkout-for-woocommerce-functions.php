@@ -664,82 +664,120 @@ function walley_confirm_order( $order, $private_id = null ) {
 		return false;
 	}
 
-	if ( empty( $private_id ) ) {
-		$private_id = $order->get_meta( '_collector_private_id', true );
-	}
+	$$private_id   = $private_id ?: $order->get_meta( '_collector_private_id', true );
+	$customer_type = $order->get_meta( '_collector_customer_type', true ) ?: 'b2c';
+	$walley_order  = walley_get_order_from_walley( $private_id, $customer_type, $order->get_currency() );
 
-	$customer_type = $order->get_meta( '_collector_customer_type', true );
-	if ( empty( $customer_type ) ) {
-		$customer_type = 'b2c';
-	}
-
-	// Use new or old API.
-	if ( walley_use_new_api() ) {
-		$collector_order = CCO_WC()->api->get_walley_checkout(
-			array(
-				'private_id'    => $private_id,
-				'customer_type' => $customer_type,
-			)
-		);
-	} else {
-		$response        = new Collector_Checkout_Requests_Get_Checkout_Information( $private_id, $customer_type, $order->get_currency() );
-		$collector_order = $response->request();
-	}
-
-	if ( is_wp_error( $collector_order ) ) {
-		$order->add_order_note( __( 'Could not retreive Walley order during walley_confirm_order function.', 'collector-checkout-for-woocommerce' ) );
+	// Ensure we where able to retrieve the Walley order.
+	if ( is_wp_error( $walley_order ) ) {
+		$order->add_order_note( __( 'Could not retrieve Walley order during walley_confirm_order function.', 'collector-checkout-for-woocommerce' ) );
 		$order->save();
 
 		return false;
 	}
 
-	$payment_status  = $collector_order['data']['purchase']['result'];
-	$payment_method  = $collector_order['data']['purchase']['paymentName'];
-	$payment_id      = $collector_order['data']['purchase']['purchaseIdentifier'];
-	$walley_order_id = $collector_order['data']['order']['orderId'];
+	$payment_status  = $walley_order['data']['purchase']['result'];
+	$payment_id      = $walley_order['data']['purchase']['purchaseIdentifier'];
 
 	// Check if we need to update reference in collectors system.
-	if ( empty( $collector_order['data']['reference'] ) ) {
-
-		// Use new or old API.
-		if ( walley_use_new_api() ) {
-			$update_reference = CCO_WC()->api->set_order_reference_in_walley(
-				array(
-					'order_id'      => $order->get_id(),
-					'private_id'    => $private_id,
-					'customer_type' => $customer_type,
-				)
-			);
-		} else {
-			$update_reference = new Collector_Checkout_Requests_Update_Reference( $order->get_order_number(), $private_id, $customer_type );
-			$update_reference->request();
-			CCO_WC()->logger::log( 'Update Collector order reference for order - ' . $order->get_order_number() );
-		}
+	if ( empty( $walley_order['data']['reference'] ) ) {
+		walley_update_order_reference( $order, $private_id, $customer_type );
 	}
 
-	$order->update_meta_data( '_collector_payment_method', $payment_method );
-	$order->update_meta_data( '_collector_payment_id', $payment_id );
-	$order->update_meta_data( '_collector_order_id', sanitize_key( $walley_order_id ) );
-
-	wc_collector_save_shipping_reference_to_order( $order, $collector_order );
-
-	// Save custom fields data.
-	walley_save_custom_fields( $order, $collector_order );
-
-	// Save shipping data.
-	if ( isset( $collector_order['data']['shipping'] ) ) {
-		$order->update_meta_data( '_collector_delivery_module_data', wp_json_encode( $collector_order['data']['shipping'], JSON_UNESCAPED_UNICODE ) );
-		$order->update_meta_data( '_collector_delivery_module_reference', $collector_order['data']['shipping']['pendingShipment']['id'] );
-	}
-
+	// Update order meta data.
+	$order = walley_update_order_meta( $order, $walley_order, false );
 	walley_set_order_status( $order, $payment_status, $payment_id, false );
 
 	$order->save();
 
 	// Let other plugins know that the confirmation is done.
-	do_action( 'walley_after_confirm', $order, $collector_order );
+	do_action( 'walley_after_confirm', $order, $walley_order );
 
 	return true;
+}
+
+/**
+ * Save the metadata needed for Walley orders to the WooCommerce order.
+ *
+ * @param WC_Order $order The WooCommerce order.
+ * @param array $walley_order The order from Walley if already available, otherwise it will be fetched.
+ * @param bool $save Optional. Whether to save the metadata to the order directly or not. Default is true. Set to false if you want to update the order later.
+ *
+ * @return WC_Order
+ */
+function walley_update_order_meta( $order, $walley_order, $save = true) {
+	try{
+		$data      = $walley_order['data'] ?? throw new WP_Exception( 'No data found in Walley order for order - ' . $order->get_order_number() );
+		$meta_data = array(
+			'_collector_payment_method' => $data['purchase']['paymentName'] ?? '',
+			'_collector_payment_id'     => $data['purchase']['purchaseIdentifier'] ?? '',
+			'_collector_order_id'       => sanitize_key( $data['order']['orderId'] ) ?? '',
+		);
+
+		// Get the shipping data if it is set in the walley order.
+		if ( isset( $walley_order['data']['shipping'] ) ) {
+			$meta_data['_collector_delivery_module_data']      = wp_json_encode( $walley_order['data']['shipping'], JSON_UNESCAPED_UNICODE );
+			$meta_data['_collector_delivery_module_reference'] = $walley_order['data']['shipping']['pendingShipment']['id'] ?? '';
+		}
+
+		// Update the order meta data with the Walley order data.
+		foreach( $meta_data as $key => $value ) {
+			if( ! empty( $value ) ) {
+				$order->update_meta_data( $key, $value );
+			}
+		}
+
+		// Save shipping and customer field data using the helper functions for them.
+		wc_collector_save_shipping_reference_to_order( $order, $walley_order );
+		walley_save_custom_fields( $order, $walley_order );
+
+		if ( $save ) {
+			$order->save_meta_data();
+		}
+
+		return $order;
+	} catch ( WP_Exception $e ) {
+		CCO_WC()->logger::log( 'Error updating Walley order meta for order - ' . $order->get_order_number() . '. Error: ' . $e->getMessage() );
+		return $order; // Return the order, so we don't cause issues with the order processing.
+	}
+}
+
+/**
+ * Get the walley order either from the new or old API.
+ *
+ * @param string $private_id The private ID of the Walley order.
+ * @param string $customer_type The type of customer (b2c or b2b).
+ * @param string $currency The currency of the order.
+ *
+ * @return array|WP_Error The Walley order data or a WP_Error object if the request failed.
+ */
+function walley_get_order_from_walley( $private_id, $customer_type, $currency ) {
+	$walley_order = walley_use_new_api() ?
+		CCO_WC()->api->get_walley_checkout(
+			array(
+				'private_id'    => $private_id,
+				'customer_type' => $customer_type
+			)
+		) : new Collector_Checkout_Requests_Get_Checkout_Information( $private_id, $customer_type, $currency );
+
+	return $walley_order;
+}
+
+function walley_update_order_reference( $order, $private_id, $customer_type ) {
+	$update_reference = walley_use_new_api() ? CCO_WC()->api->set_order_reference_in_walley(
+		array(
+			'order_id'      => $order->get_id(),
+			'private_id'    => $private_id,
+			'customer_type' => $customer_type,
+		)
+	) : new Collector_Checkout_Requests_Update_Reference( $order->get_order_number(), $private_id, $customer_type );
+
+	if ( is_wp_error( $update_reference ) ) {
+		CCO_WC()->logger::log( 'Error updating Collector order reference for order - ' . $order->get_order_number() . '. Error: ' . $update_reference->get_error_message() );
+		return false;
+	} else {
+		CCO_WC()->logger::log( 'Update Collector order reference for order - ' . $order->get_order_number() );
+	}
 }
 
 /**
