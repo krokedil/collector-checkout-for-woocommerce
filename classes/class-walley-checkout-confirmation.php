@@ -75,7 +75,6 @@ class Walley_Checkout_Confirmation {
 	 * @return array The modified array of valid order statuses for cancellation.
 	 */
 	public function maybe_unset_pending_payment_as_cancelable( $statuses, $order ) {
-		error_log(var_export($statuses, true));
 		// If the order was not placed with Walley, or if the value is already false, return the original value.
 		if( 'collector_checkout' !== $order->get_payment_method() ) {
 			return $statuses;
