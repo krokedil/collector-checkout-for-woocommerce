@@ -40,6 +40,56 @@ class Walley_Checkout_Confirmation {
 	 */
 	public function __construct() {
 		add_action( 'init', array( $this, 'handle_walley_order_redirect' ), 999 );
+		add_filter( 'woocommerce_order_needs_payment', array( $this, 'maybe_set_needs_payment_false' ), 10, 2 );
+		add_filter( 'woocommerce_valid_order_statuses_for_cancel', array( $this, 'maybe_unset_pending_payment_as_cancelable' ), 10, 2 );
+	}
+
+	/**
+	 * Maybe set the needs payment to false for Walley orders.
+	 *
+	 * @param bool $needs_payment Whether the order needs payment.
+	 * @param WC_Order $order The order object.
+	 *
+	 * @return bool
+	 */
+	public function maybe_set_needs_payment_false( $needs_payment, $order ) {
+		// If the order was not placed with Walley, or if the value is already false, return the original value.
+		if( ! $needs_payment || 'collector_checkout' !== $order->get_payment_method() ) {
+			return $needs_payment;
+		}
+
+		// If the order has the metadata '_walley_pending_callback' set to 'yes', we can assume that the order is pending confirmation from Walley.
+		if ( 'yes' === $order->get_meta( '_walley_pending_callback', true ) ) {
+			return false; // Set needs payment to false.
+		}
+
+		return $needs_payment; // Return the original value if the order is not pending confirmation.
+	}
+
+	/**
+	 * Maybe unset the 'pending payment' status as cancelable for Walley orders.
+	 *
+	 * @param array $statuses The valid order statuses for cancellation.
+	 * @param WC_Order $order The order object.
+	 *
+	 * @return array The modified array of valid order statuses for cancellation.
+	 */
+	public function maybe_unset_pending_payment_as_cancelable( $statuses, $order ) {
+		error_log(var_export($statuses, true));
+		// If the order was not placed with Walley, or if the value is already false, return the original value.
+		if( 'collector_checkout' !== $order->get_payment_method() ) {
+			return $statuses;
+		}
+
+		// If the order has the metadata '_walley_pending_callback' set to 'yes', we can assume that the order is pending confirmation from Walley.
+		if ( 'yes' === $order->get_meta( '_walley_pending_callback', true ) ) {
+			// Remove the value 'pending' from the array of valid order statuses for cancellation.
+			if ( ( $key = array_search( 'pending', $statuses, true ) ) !== false ) {
+				unset( $statuses[ $key ] );
+			}
+		}
+
+		return $statuses; // Return the original value if the order is not pending confirmation.
 	}
 
 	/**
