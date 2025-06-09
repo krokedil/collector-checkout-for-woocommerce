@@ -250,6 +250,16 @@ $settings = array(
 		'label'   => __( 'If checked, an extra rounding order line will be sent to Walley if the sum of all order lines does not match WooCommerce cart/order total.', 'collector-checkout-for-woocommerce' ),
 		'default' => 'no',
 	),
+	'order_payment_complete_delay'         => array(
+		'title'   => __( 'Payment complete delay', 'collector-checkout-for-woocommerce' ),
+		'type'    => 'number',
+		'description'   => __( 'Set how long the delay should be in minutes from when the order is placed to when it is confirmed and set to Processing in WooCommerce. This delay can be good to use if you have integrations that could change the order, and you want to include the changes in emails or syncs to external systems.', 'collector-checkout-for-woocommerce' ),
+		'default' => '1',
+		'custom_attributes' => array(
+			'min' => 1,
+			'step' => 1,
+		),
+	),
 	'test_mode_settings_title'        => array(
 		'title' => __( 'Test Mode Settings', 'collector-checkout-for-woocommerce' ),
 		'type'  => 'title',
