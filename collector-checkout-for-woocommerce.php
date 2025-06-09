@@ -101,6 +101,13 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 		public $order_fees;
 
 		/**
+		 * The Order Confirmation class.
+		 *
+		 * @var Walley_Checkout_Confirmation
+		 */
+		public $order_confirmation;
+
+		/**
 		 * Returns the *Singleton* instance of this class.
 		 *
 		 * @return self::$instance The *Singleton* instance.
@@ -144,14 +151,6 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 			// Initiate the gateway.
 			add_action( 'plugins_loaded', array( $this, 'init' ) );
 
-			// Maybe create Collector db table.
-			// @todo - will be removed in next version.
-			// add_action( 'init', array( $this, 'collector_maybe_create_db_table' ) );
-
-			// Maybe schedule action.
-			// @todo - will be removed in next version.
-			// add_action( 'init', array( $this, 'collector_maybe_schedule_action' ) );
-			// Clean Collector db.
 			add_action( 'collector_clean_db', array( $this, 'collector_clean_db_callback' ) );
 
 			add_action( 'before_woocommerce_init', array( $this, 'declare_wc_compatibility' ) );
@@ -235,6 +234,7 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 				$this->api                 = new Walley_Checkout_API();
 				$this->order_management    = new Walley_Checkout_Order_Management();
 				$this->part_payment_widget = new Walley_Part_Payment_Widget();
+				$this->order_confirmation  = Walley_Checkout_Confirmation::get_instance();
 
 			} else {
 
