@@ -191,7 +191,7 @@ class Collector_Checkout_Requests_Helper_Order_Om {
 		}
 
 		// Shipping should be added even if it is 0 since free shipping is added to the original purchase.
-		$unit_price = self::format_number( ( $order_item->get_total() + $order_item->get_total_tax() ) / $order_item->get_quantity() );
+		$unit_price = self::format_number( ( walley_ensure_numeric( $order_item->get_total() ) + $order_item->get_total_tax() ) / $order_item->get_quantity() );
 
 		return array(
 			'id'          => $shipping_reference,
