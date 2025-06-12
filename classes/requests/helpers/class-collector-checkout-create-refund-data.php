@@ -83,12 +83,12 @@ class Collector_Checkout_Create_Refund_Data {
 							break;
 						}
 					}
-					if ( abs( $shipping->get_total() ) / abs( $shipping->get_quantity() ) === $original_order_shipping->get_total() / $original_order_shipping->get_quantity() ) {
+					if ( abs( walley_ensure_numeric( $shipping->get_total() ) ) / abs( $shipping->get_quantity() ) === walley_ensure_numeric( $original_order_shipping->get_total() ) / $original_order_shipping->get_quantity() ) {
 						// The entire shipping price is refunded.
 						array_push( $full_item_refund, self::get_full_refund_shipping_data( $shipping, $original_order ) );
 					} else {
 						// The shipping is partial refunded.
-						$modified_item_prices += abs( $shipping->get_total() + $shipping->get_total_tax() );
+						$modified_item_prices += abs( walley_ensure_numeric( $shipping->get_total() ) + $shipping->get_total_tax() );
 					}
 				}
 				if ( $modified_item_prices > 0 ) {
@@ -225,8 +225,8 @@ class Collector_Checkout_Create_Refund_Data {
 		}
 
 		$title    = $shipping->get_name();
-		$tax_rate = ( $free_shipping ) ? 0 : intval( round( $shipping->get_total_tax() / $shipping->get_total() * 100 ) );
-		$total    = ( $free_shipping ) ? 0 : $shipping->get_total();
+		$tax_rate = ( $free_shipping ) ? 0 : intval( round( $shipping->get_total_tax() / walley_ensure_numeric( $shipping->get_total() ) * 100 ) );
+		$total    = ( $free_shipping ) ? 0 : walley_ensure_numeric( $shipping->get_total() );
 		$quantity = ( 0 === $shipping->get_quantity() ) ? 1 : $shipping->get_quantity();
 
 		return array(
