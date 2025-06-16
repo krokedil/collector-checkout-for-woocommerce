@@ -425,9 +425,9 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 		 */
 		public function add_hidden_private_id_field( $fields ) {
 
-			$fields['billing']['collector_form_private_id'] = array(
+			$fields['billing']['collector_public_token'] = array(
 				'type'    => 'hidden',
-				'default' => WC()->session->get( 'collector_private_id' ) ?? '',
+				'default' => WC()->session->get( 'collector_public_token' ) ?? '',
 			);
 
 			return $fields;
