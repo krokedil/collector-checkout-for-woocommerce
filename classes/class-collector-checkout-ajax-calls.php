@@ -115,8 +115,8 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 		$public_token         = filter_input( INPUT_POST, 'collector_public_token', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 
 		if ( $public_token_session !== $public_token ) {
-			CCO_WC()->logger::log( 'Private id in session does not match the one used in checkout.' );
-			wp_send_json_error( sprintf( __( 'Failed to get the Walley order data. Private id does not match the session.', 'collector-checkout-for-woocommerce' ) ) );
+			CCO_WC()->logger::log( 'Public token in session does not match the one used in checkout.' );
+			wp_send_json_error( sprintf( __( 'Failed to get the Walley order data. Public token does not match the session.', 'collector-checkout-for-woocommerce' ) ) );
 		}
 
 		// Use new or old API.
