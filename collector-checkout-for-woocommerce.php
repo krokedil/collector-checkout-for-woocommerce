@@ -156,7 +156,7 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 
 			add_action( 'before_woocommerce_init', array( $this, 'declare_wc_compatibility' ) );
 
-			add_filter( 'woocommerce_checkout_fields', array( $this, 'add_hidden_private_id_field' ), 30 );
+			add_filter( 'woocommerce_checkout_fields', array( $this, 'add_hidden_public_token_field' ), 30 );
 		}
 
 		/**
@@ -415,15 +415,15 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 			}
 		}
 		/**
-		 * Adds a hidden collector_private_id checkout form field.
+		 * Adds a hidden collector_public_token checkout form field.
 		 * Used to confirm that the token used for the Walley widget in frontend is
-		 * the same one currently saved in WC session collector_private_id.
+		 * the same one currently saved in WC session collector_public_token.
 		 * We do this to prevent issues if stores have session problems.
 		 *
 		 * @param array $fields WooCommerce checkout form fields.
 		 * @return array
 		 */
-		public function add_hidden_private_id_field( $fields ) {
+		public function add_hidden_public_token_field( $fields ) {
 
 			$fields['billing']['collector_public_token'] = array(
 				'type'    => 'hidden',

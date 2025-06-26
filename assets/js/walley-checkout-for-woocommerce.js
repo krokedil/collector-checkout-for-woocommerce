@@ -145,7 +145,7 @@ jQuery( function( $ ) {
 		getWalleyOrder: function () {
 			return $.ajax({
 				type: 'POST',
-				data: { nonce: walleyParams.get_order_nonce, collector_public_token: walleyParams.public_token ?? '' },
+				data: { nonce: walleyParams.get_order_nonce, collector_public_token: $('#collector_public_token').val() ?? '' },
 				dataType: 'json',
 				url: walleyParams.get_order_url,
 			});
