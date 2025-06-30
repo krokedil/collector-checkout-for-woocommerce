@@ -13,6 +13,14 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Class for managing actions during the checkout process.
  */
 class Walley_Checkout {
+
+	/**
+	 * The Walley order.
+	 *
+	 * @var object|array|WP_Error
+	 */
+	public $collector_order;
+
 	/**
 	 * Class constructor.
 	 */
@@ -351,7 +359,6 @@ class Walley_Checkout {
 			wc_collector_unset_sessions();
 			WC()->session->reload_checkout = true;
 		}
-
 	}
 
 	/**
@@ -401,5 +408,4 @@ class Walley_Checkout {
 			WC()->customer->save();
 		}
 	}
-
 } new Walley_Checkout();
