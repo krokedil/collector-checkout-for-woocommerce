@@ -8,14 +8,14 @@
  * Plugin Name:     Walley Checkout for WooCommerce
  * Plugin URI:      https://krokedil.se/produkt/walley-checkout/
  * Description:     Extends WooCommerce. Provides a <a href="https://www.walley.se/foretag/checkout/" target="_blank">Walley Checkout</a> checkout for WooCommerce.
- * Version:         4.2.9
+ * Version:         4.2.10
  * Author:          Krokedil
  * Author URI:      https://krokedil.se/
  * Text Domain:     collector-checkout-for-woocommerce
  * Domain Path:     /languages
  *
  * WC requires at least: 6.0.0
- * WC tested up to: 9.8.5
+ * WC tested up to: 9.9.5
  *
  * Copyright:       © 2017-2025 Krokedil.
  * License:         GNU General Public License v3.0
@@ -28,7 +28,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 define( 'COLLECTOR_BANK_PLUGIN_DIR', untrailingslashit( plugin_dir_path( __FILE__ ) ) );
 define( 'COLLECTOR_BANK_PLUGIN_URL', untrailingslashit( plugin_dir_url( __FILE__ ) ) );
-define( 'COLLECTOR_BANK_VERSION', '4.2.9' );
+define( 'COLLECTOR_BANK_VERSION', '4.2.10' );
 define( 'COLLECTOR_DB_VERSION', '1' );
 
 if ( ! class_exists( 'Collector_Checkout' ) ) {
@@ -155,6 +155,8 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 			add_action( 'collector_clean_db', array( $this, 'collector_clean_db_callback' ) );
 
 			add_action( 'before_woocommerce_init', array( $this, 'declare_wc_compatibility' ) );
+
+			add_filter( 'woocommerce_checkout_fields', array( $this, 'add_hidden_public_token_field' ), 30 );
 		}
 
 		/**
@@ -411,6 +413,24 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 			if ( class_exists( \Automattic\WooCommerce\Utilities\FeaturesUtil::class ) ) {
 				\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', __FILE__, true );
 			}
+		}
+		/**
+		 * Adds a hidden collector_public_token checkout form field.
+		 * Used to confirm that the token used for the Walley widget in frontend is
+		 * the same one currently saved in WC session collector_public_token.
+		 * We do this to prevent issues if stores have session problems.
+		 *
+		 * @param array $fields WooCommerce checkout form fields.
+		 * @return array
+		 */
+		public function add_hidden_public_token_field( $fields ) {
+
+			$fields['billing']['collector_public_token'] = array(
+				'type'    => 'hidden',
+				'default' => WC()->session->get( 'collector_public_token' ) ?? '',
+			);
+
+			return $fields;
 		}
 	}
 
