@@ -151,6 +151,7 @@ abstract class Walley_Checkout_Request {
 			return '';
 		}
 
+		$access_token = "{$response['token_type']} {$response['access_token']}";
 		set_transient( 'walley_checkout_access_token', $access_token, absint( $response['expires_in'] ) );
 		return $access_token;
 	}
