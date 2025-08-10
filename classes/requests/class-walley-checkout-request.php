@@ -291,27 +291,28 @@ abstract class Walley_Checkout_Request {
 		switch ( $this->currency ) {
 			case 'SEK':
 				$country_code          = 'SE';
-				$this->store_id        = $this->settings[ 'collector_merchant_id_se_' . $this->customer_type ];
+				$this->store_id        = $this->settings[ "collector_merchant_id_se_{$this->customer_type}" ];
 				$this->delivery_module = $this->settings['collector_delivery_module_se'] ?? 'no';
 				break;
 			case 'NOK':
 				$country_code          = 'NO';
-				$this->store_id        = $this->settings[ 'collector_merchant_id_no_' . $this->customer_type ];
+				$this->store_id        = $this->settings[ "collector_merchant_id_no_{$this->customer_type}" ];
 				$this->delivery_module = $this->settings['collector_delivery_module_no'] ?? 'no';
 				break;
 			case 'DKK':
 				$country_code          = 'DK';
-				$this->store_id        = $this->settings[ 'collector_merchant_id_dk_' . $this->customer_type ];
+				$this->store_id        = $this->settings[ "collector_merchant_id_dk_{$this->customer_type}" ];
 				$this->delivery_module = $this->settings['collector_delivery_module_dk'] ?? 'no';
 				break;
 			case 'EUR':
 				$order_id     = $arguments['order_id'] ?? $this->arguments['order_id'] ?? false;
 				$country_code = $this->get_customer_country( wc_get_order( $order_id ) );
-				if ( 'FI' === $country_code ) {
-					$this->store_id        = $this->settings[ 'collector_merchant_id_fi_' . $this->customer_type ];
+				if ( 'FI' === $country_code || 'b2c' === $this->customer_type ) {
+					$this->store_id        = $this->settings[ "collector_merchant_id_fi_{$this->customer_type}" ];
 					$this->delivery_module = $this->settings['collector_delivery_module_fi'] ?? 'no';
 				} else {
-					$this->store_id        = $this->settings[ 'collector_merchant_id_eu_' . $this->customer_type ];
+					// Only available for B2B.
+					$this->store_id        = $this->settings['collector_merchant_id_eu_b2b'];
 					$this->delivery_module = $this->settings['collector_delivery_module_eu'] ?? 'no';
 
 				}
