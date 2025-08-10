@@ -60,6 +60,29 @@ $settings = array(
 		'default'     => '',
 		'desc_tip'    => false,
 	),
+
+	'eu_settings_title'               => array(
+		'title' => __( 'EU', 'collector-checkout-for-woocommerce' ),
+		'type'  => 'title',
+	),
+	'collector_merchant_id_eu_b2b'    => array(
+		'title'       => __( 'Merchant ID EU B2B', 'collector-checkout-for-woocommerce' ),
+		'type'        => 'text',
+		'description' => __( 'Enter your Walley Checkout Merchant ID for B2B purchases in EU', 'collector-checkout-for-woocommerce' ),
+		'default'     => '',
+		'desc_tip'    => true,
+	),
+	'collector_delivery_module_eu'    => array(
+		'title'   => __( 'Walley nShift Delivery', 'collector-checkout-for-woocommerce' ),
+		'type'    => 'checkbox',
+		'label'   => __( 'Activate Walley nShift Delivery EU', 'collector-checkout-for-woocommerce' ),
+		'default' => 'no',
+	),
+	'collector_custom_profile_eu'     => array(
+		'title'   => __( 'Custom Profile EU', 'collector-checkout-for-woocommerce' ),
+		'type'    => 'text',
+		'default' => '',
+	),
 	'se_settings_title'               => array(
 		'title' => __( 'Sweden', 'collector-checkout-for-woocommerce' ),
 		'type'  => 'title',
@@ -85,10 +108,9 @@ $settings = array(
 		'default' => 'no',
 	),
 	'collector_custom_profile_se'     => array(
-		'title'       => __( 'Custom Profile Sweden', 'collector-checkout-for-woocommerce' ),
-		'type'        => 'text',
-		'description' => __( '', 'collector-checkout-for-woocommerce' ),
-		'default'     => '',
+		'title'   => __( 'Custom Profile Sweden', 'collector-checkout-for-woocommerce' ),
+		'type'    => 'text',
+		'default' => '',
 	),
 	'no_settings_title'               => array(
 		'title' => __( 'Norway', 'collector-checkout-for-woocommerce' ),
@@ -115,10 +137,9 @@ $settings = array(
 		'default' => 'no',
 	),
 	'collector_custom_profile_no'     => array(
-		'title'       => __( 'Custom Profile Norway', 'collector-checkout-for-woocommerce' ),
-		'type'        => 'text',
-		'description' => __( '', 'collector-checkout-for-woocommerce' ),
-		'default'     => '',
+		'title'   => __( 'Custom Profile Norway', 'collector-checkout-for-woocommerce' ),
+		'type'    => 'text',
+		'default' => '',
 	),
 	'fi_settings_title'               => array(
 		'title' => __( 'Finland', 'collector-checkout-for-woocommerce' ),
@@ -145,10 +166,9 @@ $settings = array(
 		'default' => 'no',
 	),
 	'collector_custom_profile_fi'     => array(
-		'title'       => __( 'Custom Profile Finland', 'collector-checkout-for-woocommerce' ),
-		'type'        => 'text',
-		'description' => __( '', 'collector-checkout-for-woocommerce' ),
-		'default'     => '',
+		'title'   => __( 'Custom Profile Finland', 'collector-checkout-for-woocommerce' ),
+		'type'    => 'text',
+		'default' => '',
 	),
 	'dk_settings_title'               => array(
 		'title' => __( 'Denmark', 'collector-checkout-for-woocommerce' ),
@@ -175,10 +195,9 @@ $settings = array(
 		'default' => 'no',
 	),
 	'collector_custom_profile_dk'     => array(
-		'title'       => __( 'Custom Profile Denmark', 'collector-checkout-for-woocommerce' ),
-		'type'        => 'text',
-		'description' => __( '', 'collector-checkout-for-woocommerce' ),
-		'default'     => '',
+		'title'   => __( 'Custom Profile Denmark', 'collector-checkout-for-woocommerce' ),
+		'type'    => 'text',
+		'default' => '',
 	),
 	'checkout_settings_title'         => array(
 		'title' => __( 'Checkout settings', 'collector-checkout-for-woocommerce' ),
