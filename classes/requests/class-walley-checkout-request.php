@@ -244,7 +244,6 @@ abstract class Walley_Checkout_Request {
 		$title  = $this->log_title;
 		$code   = wp_remote_retrieve_response_code( $response );
 
-		$body     = json_decode( $response['body'], true );
 		$order_id = $this->private_id ?? $this->order_id ?? null;
 		$log      = Collector_Checkout_Logger::format_log( $order_id, $method, $title, $request_args, $request_url, $response, $code );
 		Collector_Checkout_Logger::log( $log );
