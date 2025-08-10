@@ -294,27 +294,27 @@ abstract class Walley_Checkout_Request {
 			case 'SEK':
 				$country_code          = 'SE';
 				$this->store_id        = $this->settings[ 'collector_merchant_id_se_' . $this->customer_type ];
-				$this->delivery_module = isset( $this->settings['collector_delivery_module_se'] ) ? $this->settings['collector_delivery_module_se'] : 'no';
+				$this->delivery_module = $this->settings['collector_delivery_module_se'] ?? 'no';
 				break;
 			case 'NOK':
 				$country_code          = 'NO';
 				$this->store_id        = $this->settings[ 'collector_merchant_id_no_' . $this->customer_type ];
-				$this->delivery_module = isset( $this->settings['collector_delivery_module_no'] ) ? $this->settings['collector_delivery_module_no'] : 'no';
+				$this->delivery_module = $this->settings['collector_delivery_module_no'] ?? 'no';
 				break;
 			case 'DKK':
 				$country_code          = 'DK';
 				$this->store_id        = $this->settings[ 'collector_merchant_id_dk_' . $this->customer_type ];
-				$this->delivery_module = isset( $this->settings['collector_delivery_module_dk'] ) ? $this->settings['collector_delivery_module_dk'] : 'no';
+				$this->delivery_module = $this->settings['collector_delivery_module_dk'] ?? 'no';
 				break;
 			case 'EUR':
 				$country_code          = 'FI';
 				$this->store_id        = $this->settings[ 'collector_merchant_id_fi_' . $this->customer_type ];
-				$this->delivery_module = isset( $this->settings['collector_delivery_module_fi'] ) ? $this->settings['collector_delivery_module_fi'] : 'no';
+				$this->delivery_module = $this->settings['collector_delivery_module_fi'] ?? 'no';
 				break;
 			default:
 				$country_code          = 'SE';
 				$this->store_id        = $this->settings[ 'collector_merchant_id_se_' . $this->customer_type ];
-				$this->delivery_module = isset( $this->settings['collector_delivery_module_se'] ) ? $this->settings['collector_delivery_module_se'] : 'no';
+				$this->delivery_module = $this->settings['collector_delivery_module_se'] ?? 'no';
 				break;
 		}
 		$this->country_code = $country_code;
