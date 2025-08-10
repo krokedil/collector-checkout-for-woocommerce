@@ -212,9 +212,8 @@ abstract class Walley_Checkout_Request {
 			$data          = 'URL: ' . $request_url . ' - ' . wp_json_encode( $request_args );
 			$error_message = '';
 			// Get the error messages.
-			if ( null !== json_decode( $response['body'], true ) ) {
-				$errors = json_decode( $response['body'], true );
-
+			$errors = json_decode( $response ['body'], true );
+			if ( $errors ) {
 				foreach ( $errors as $error ) {
 					$error_message .= ' ' . wp_json_encode( $error );
 				}
