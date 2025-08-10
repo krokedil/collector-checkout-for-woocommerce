@@ -47,6 +47,48 @@ abstract class Walley_Checkout_Request {
 	 */
 	protected $settings;
 
+	/**
+	 * Customer type. Either 'b2c' or 'b2b'.
+	 *
+	 * @var string
+	 */
+	protected $customer_type = 'b2c';
+
+	/**
+	 * Currency.
+	 *
+	 * @var string
+	 */
+	protected $currency = 'SEK';
+
+	/**
+	 * Store ID.
+	 *
+	 * @var string
+	 */
+	protected $store_id;
+
+	/**
+	 * Delivery module.
+	 *
+	 * @var string
+	 */
+	protected $delivery_module;
+
+	/**
+	 * Country code.
+	 *
+	 * @var string
+	 */
+	protected $country_code;
+
+	/**
+	 * Terms page.
+	 *
+	 * @var string
+	 */
+	protected $terms_page;
+
 
 	/**
 	 * Class constructor.
