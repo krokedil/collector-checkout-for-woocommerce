@@ -305,9 +305,16 @@ abstract class Walley_Checkout_Request {
 				$this->delivery_module = $this->settings['collector_delivery_module_dk'] ?? 'no';
 				break;
 			case 'EUR':
-				$country_code          = 'FI';
-				$this->store_id        = $this->settings[ 'collector_merchant_id_fi_' . $this->customer_type ];
-				$this->delivery_module = $this->settings['collector_delivery_module_fi'] ?? 'no';
+				$order_id     = $arguments['order_id'] ?? $this->arguments['order_id'] ?? false;
+				$country_code = $this->get_customer_country( wc_get_order( $order_id ) );
+				if ( 'FI' === $country_code ) {
+					$this->store_id        = $this->settings[ 'collector_merchant_id_fi_' . $this->customer_type ];
+					$this->delivery_module = $this->settings['collector_delivery_module_fi'] ?? 'no';
+				} else {
+					$this->store_id        = $this->settings[ 'collector_merchant_id_eu_' . $this->customer_type ];
+					$this->delivery_module = $this->settings['collector_delivery_module_eu'] ?? 'no';
+
+				}
 				break;
 			default:
 				$country_code          = 'SE';
@@ -327,5 +334,37 @@ abstract class Walley_Checkout_Request {
 	protected function cart() {
 		$collector_checkout_requests_cart = new Collector_Checkout_Requests_Cart();
 		return $collector_checkout_requests_cart->cart();
+	}
+
+
+	/**
+	 * Gets the customer country based on the order or the current customer.
+	 *
+	 * @param WC_Order|false $order The WC order object.
+	 *
+	 * @return string
+	 */
+	protected function get_customer_country( $order = false ) {
+		if ( $order ) {
+			$country = $order->get_billing_country();
+
+			// If the billing_country field is unset, $country will be empty.
+			if ( ! empty( $country ) ) {
+				return apply_filters( 'cco_customer_country', $country );
+			}
+		}
+
+		/* The billing country selected on the checkout page is to prefer over the store's base location. It makes more sense that we check for available payment methods based on the customer's country. */
+		if ( method_exists( 'WC_Customer', 'get_billing_country' ) && ! empty( WC()->customer ) ) {
+			$country = WC()->customer->get_billing_country();
+			if ( ! empty( $country ) ) {
+				return apply_filters( 'cco_customer_country', $country );
+			}
+		}
+
+		/* Fallback: Ignores whatever country the customer selects on the checkout page, and always uses the store's base location. */
+		$base_location = wc_get_base_location();
+		$country       = $base_location['country'];
+		return apply_filters( 'cco_customer_country', $country );
 	}
 }
