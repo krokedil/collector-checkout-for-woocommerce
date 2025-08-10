@@ -151,7 +151,6 @@ abstract class Walley_Checkout_Request {
 			return '';
 		}
 
-		$access_token = $response['token_type'] . ' ' . $response['access_token'];
 		set_transient( 'walley_checkout_access_token', $access_token, absint( $response['expires_in'] ) );
 		return $access_token;
 	}
@@ -220,7 +219,7 @@ abstract class Walley_Checkout_Request {
 				}
 			}
 
-			$error_message = empty( $error_message ) ? "API Error ${response_code}" : "API Error ${error_message}";
+			$error_message = empty( $error_message ) ? "API Error {$response_code}" : "API Error {$error_message}";
 			$return        = new WP_Error( $response_code, $error_message, $data );
 		} else {
 			$return = json_decode( wp_remote_retrieve_body( $response ), true );
