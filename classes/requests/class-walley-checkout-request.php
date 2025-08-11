@@ -307,12 +307,12 @@ abstract class Walley_Checkout_Request {
 			case 'EUR':
 				$order_id     = $arguments['order_id'] ?? $this->arguments['order_id'] ?? false;
 				$country_code = $this->get_customer_country( wc_get_order( $order_id ) );
-				if ( 'FI' === $country_code || 'b2c' === $this->customer_type ) {
+				if ( 'FI' === $country_code || 'b2b' === $this->customer_type ) {
 					$this->store_id        = $this->settings[ "collector_merchant_id_fi_{$this->customer_type}" ];
 					$this->delivery_module = $this->settings['collector_delivery_module_fi'] ?? 'no';
 				} else {
-					// Only available for B2B.
-					$this->store_id        = $this->settings['collector_merchant_id_eu_b2b'];
+					// Only available for B2C.
+					$this->store_id        = $this->settings['collector_merchant_id_eu_b2c'];
 					$this->delivery_module = $this->settings['collector_delivery_module_eu'] ?? 'no';
 
 				}

@@ -65,10 +65,10 @@ $settings = array(
 		'title' => __( 'EU', 'collector-checkout-for-woocommerce' ),
 		'type'  => 'title',
 	),
-	'collector_merchant_id_eu_b2b'    => array(
-		'title'       => __( 'Merchant ID EU B2B', 'collector-checkout-for-woocommerce' ),
+	'collector_merchant_id_eu_b2c'    => array(
+		'title'       => __( 'Merchant ID EU B2C', 'collector-checkout-for-woocommerce' ),
 		'type'        => 'text',
-		'description' => __( 'Enter your Walley Checkout Merchant ID for B2B purchases in EU', 'collector-checkout-for-woocommerce' ),
+		'description' => __( 'Enter your Walley Checkout Merchant ID for B2C purchases in EU', 'collector-checkout-for-woocommerce' ),
 		'default'     => '',
 		'desc_tip'    => true,
 	),
