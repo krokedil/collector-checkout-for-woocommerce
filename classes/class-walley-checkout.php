@@ -234,25 +234,25 @@ class Walley_Checkout {
 			}
 
 			// Old API.
-			$update_metadata         = new Collector_Checkout_Requests_Update_Metadata( $private_id, $customer_type, $metadata );
-			$collecor_order_metadata = $update_metadata->request();
+			$update_metadata          = new Collector_Checkout_Requests_Update_Metadata( $private_id, $customer_type, $metadata );
+			$collector_order_metadata = $update_metadata->request();
 
 			// Check that everything went alright.
-			if ( is_wp_error( $collecor_order_metadata ) ) {
+			if ( is_wp_error( $collector_order_metadata ) ) {
 				// Check if purchase was completed, if it was don't redirect customer.
-				if ( 900 === $collecor_order_metadata->get_error_code() ) {
-					if ( ! empty( $collecor_order_metadata->get_error_message( 'Purchase_Completed' ) ) || ! empty( $collecor_order_metadata->get_error_message( 'Purchase_Commitment_Found' ) ) ) {
+				if ( 900 === $collector_order_metadata->get_error_code() ) {
+					if ( ! empty( $collector_order_metadata->get_error_message( 'Purchase_Completed' ) ) || ! empty( $collector_order_metadata->get_error_message( 'Purchase_Commitment_Found' ) ) ) {
 						WC()->session->reload_checkout = true;
 					}
 				}
 				// Check if we had validation error.
-				if ( 400 === $collecor_order_metadata->get_error_code() ) {
-					if ( ! empty( $collecor_order_metadata->get_error_message( 'Validation_Error' ) ) ) {
+				if ( 400 === $collector_order_metadata->get_error_code() ) {
+					if ( ! empty( $collector_order_metadata->get_error_message( 'Validation_Error' ) ) ) {
 						WC()->session->reload_checkout = true;
 					}
 				}
 				// Check if the resource is temporarily locked, if it was don't redirect customer.
-				if ( 423 === $collecor_order_metadata->get_error_code() ) {
+				if ( 423 === $collector_order_metadata->get_error_code() ) {
 					WC()->session->reload_checkout = true;
 				}
 			}
