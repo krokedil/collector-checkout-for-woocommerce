@@ -68,6 +68,11 @@ class Walley_Checkout {
 			return;
 		}
 
+		$country = WC()->customer->get_billing_country();
+		if ( self::maybe_clear_session_on_country_change( $country ) ) {
+			return;
+		}
+
 		// Use new or old API.
 		if ( walley_use_new_api() ) {
 			$this->collector_order = CCO_WC()->api->get_walley_checkout(
@@ -86,6 +91,10 @@ class Walley_Checkout {
 		}
 
 		$this->update_customer_in_woo( $this->collector_order );
+
+		// The Customer object should now contain the country retrieved from Walley. Overwrite the existing $country.
+		$country = WC()->customer->get_billing_country();
+		WC()->session->set( 'collector_billing_country', $country );
 
 		if ( isset( $this->collector_order['data']['shipping'] ) ) {
 
@@ -362,6 +371,47 @@ class Walley_Checkout {
 	}
 
 	/**
+	 * Checks whether the session should be cleared on country change.
+	 *
+	 * Use the return value to determine whether the current request should proceed or not.
+	 *
+	 * @param string $country_from_checkout The country from the checkout.
+	 * @return bool Whether the session has been cleared.
+	 */
+	public static function maybe_clear_session_on_country_change( $country_from_checkout ) {
+		$country_from_session = WC()->session->get( 'collector_billing_country' );
+		if ( empty( $country_from_session ) || $country_from_session === $country_from_checkout ) {
+			return false;
+		}
+
+		$settings      = get_option( 'woocommerce_collector_checkout_settings' );
+		$customer_type = WC()->session->get( 'collector_customer_type' );
+		$currency      = get_woocommerce_currency();
+
+		$clear_session = false;
+		switch ( $currency ) {
+			case 'SEK':
+			case 'NOK':
+			case 'DKK':
+				$country       = strtolower( $country_from_checkout );
+				$clear_session = isset( $settings[ "collector_merchant_id_{$country}_{$customer_type}" ] );
+				break;
+			case 'EUR':
+				$clear_session = 'FI' === $country_from_checkout && isset( $settings[ "collector_merchant_id_fi_{$customer_type}" ] );
+				break;
+			default:
+				break;
+		}
+
+		if ( $clear_session ) {
+			WC()->session->reload_checkout = true;
+			wc_collector_unset_sessions();
+		}
+
+		return $clear_session;
+	}
+
+	/**
 	 * Update WC customer with received address data.
 	 *
 	 * @param array $collector_order Walley order.
@@ -408,4 +458,6 @@ class Walley_Checkout {
 			WC()->customer->save();
 		}
 	}
-} new Walley_Checkout();
+}
+
+new Walley_Checkout();
