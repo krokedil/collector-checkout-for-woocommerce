@@ -129,8 +129,9 @@ class Collector_Checkout_Requests {
 				foreach ( $response_body['error']['errors'] as $key => $collector_error ) {
 					$error->add( $collector_error['reason'], $collector_error['message'] );
 				}
+
+				return $error;
 			}
-			return $error;
 		}
 		return json_decode( wp_remote_retrieve_body( $response ), true );
 	}
