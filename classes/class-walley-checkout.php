@@ -397,7 +397,7 @@ class Walley_Checkout {
 				$clear_session = isset( $settings[ "collector_merchant_id_{$country}_{$customer_type}" ] );
 				break;
 			case 'EUR':
-				$clear_session = 'FI' === $country_from_checkout && isset( $settings[ "collector_merchant_id_fi_{$customer_type}" ] );
+				$clear_session = 'FI' === $country_from_session && isset( $settings[ "collector_merchant_id_fi_{$customer_type}" ] );
 				break;
 			default:
 				break;
