@@ -17,9 +17,9 @@ class Collector_Checkout_Requests {
 	/**
 	 * Static log variable.
 	 *
-	 * @var string
+	 * @var WC_Logger
 	 */
-	protected static $log = '';
+	protected static $log = null;
 
 	/**
 	 * The Collector base url.
