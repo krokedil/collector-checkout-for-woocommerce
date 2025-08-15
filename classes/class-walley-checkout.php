@@ -38,7 +38,6 @@ class Walley_Checkout {
 	 * @return void
 	 */
 	public function update_shipping_method() {
-
 		if ( ! is_checkout() ) {
 			return;
 		}
@@ -91,7 +90,6 @@ class Walley_Checkout {
 		$country_from_checkout = WC()->customer->get_billing_country();
 
 		// Do not use the country from the session, as it contain the old data. Pass the country from the checkout.
-		if ( self::maybe_clear_session_on_country_change( $country_from_checkout ) ) {
 			return;
 		}
 
@@ -374,10 +372,12 @@ class Walley_Checkout {
 	 *
 	 * Use the return value to determine whether the current request should proceed or not.
 	 *
+	 * @note This will not call reload_checkout.
+	 *
 	 * @param string $country_from_checkout The country from the checkout.
 	 * @return bool Whether the session has been cleared.
 	 */
-	public static function maybe_clear_session_on_country_change( $country_from_checkout ) {
+	public function maybe_clear_session_on_country_change( $country_from_checkout ) {
 		$country_from_session = WC()->session->get( 'collector_billing_country' );
 		if ( $country_from_session === $country_from_checkout ) {
 			return false;
@@ -406,7 +406,7 @@ class Walley_Checkout {
 		WC()->session->set( 'collector_billing_country', $country_from_checkout );
 
 		if ( $clear_session ) {
-			WC()->session->reload_checkout = true;
+			// NOTE: We cannot reload_checkout here, as it will cause an infinite loop as that will trigger the after_calculate hook to be triggered after reload.
 			wc_collector_unset_sessions();
 		}
 
