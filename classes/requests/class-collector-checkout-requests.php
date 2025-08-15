@@ -98,7 +98,7 @@ class Collector_Checkout_Requests {
 	 */
 	public static function log( $message ) {
 		$dibs_settings = get_option( 'woocommerce_collector_checkout_settings' );
-		if ( 'yes' === $dibs_settings['debug_mode'] ) {
+		if ( wc_string_to_bool( $dibs_settings['debug_mode'] ?? 'no' ) ) {
 			if ( empty( self::$log ) ) {
 				self::$log = new WC_Logger();
 			}
