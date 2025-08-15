@@ -90,6 +90,7 @@ class Walley_Checkout {
 		$country_from_checkout = WC()->customer->get_billing_country();
 
 		// Do not use the country from the session, as it contain the old data. Pass the country from the checkout.
+		if ( $this->maybe_clear_session_on_country_change( $country_from_checkout ) ) {
 			return;
 		}
 
