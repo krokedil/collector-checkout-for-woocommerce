@@ -122,16 +122,6 @@ class Collector_Checkout_Requests {
 
 		// Check the status code, if its not between 200 and 299 then its an error.
 		if ( wp_remote_retrieve_response_code( $response ) < 200 || wp_remote_retrieve_response_code( $response ) > 299 ) {
-			$data          = 'URL: ' . $request_url . ' - ' . wp_json_encode( $request_args );
-			$error_message = '';
-			// Get the error messages.
-			// @todo - remove this if?
-			if ( null !== $response['response'] ) {
-				$aco_error_code    = isset( $response['response']['code'] ) ? $response['response']['code'] . ' ' : '';
-				$aco_error_message = isset( $response['response']['message'] ) ? $response['response']['message'] . ' ' : '';
-				$error_message     = $aco_error_code . $aco_error_message;
-			}
-
 			if ( null !== json_decode( $response['body'], true ) ) {
 				$response_body = json_decode( $response['body'], true );
 				$error         = new WP_Error();
