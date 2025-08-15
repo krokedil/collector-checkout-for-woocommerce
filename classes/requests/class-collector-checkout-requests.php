@@ -121,11 +121,12 @@ class Collector_Checkout_Requests {
 		}
 
 		// Check the status code, if its not between 200 and 299 then its an error.
-		if ( wp_remote_retrieve_response_code( $response ) < 200 || wp_remote_retrieve_response_code( $response ) > 299 ) {
+		$code = wp_remote_retrieve_response_code( $response );
+		if ( $code < 200 || $code > 299 ) {
 			if ( null !== json_decode( $response['body'], true ) ) {
 				$response_body = json_decode( $response['body'], true );
 				$error         = new WP_Error();
-				$error->add( wp_remote_retrieve_response_code( $response ), $response_body['error']['message'] );
+				$error->add( $code, $response_body['error']['message'] );
 				foreach ( $response_body['error']['errors'] as $key => $collector_error ) {
 					$error->add( $collector_error['reason'], $collector_error['message'] );
 				}
