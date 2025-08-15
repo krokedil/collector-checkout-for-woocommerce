@@ -85,10 +85,12 @@ class Walley_Checkout {
 			return;
 		}
 
+		// When the country is updated in the Walley payment form, it is not available in WC()->customer->get_billing_country() until the customer is updated.
 		$this->update_customer_in_woo( $this->collector_order );
+		// Now that the customer is updated, we can retrieve the country from the checkout.
 		$country_from_checkout = WC()->customer->get_billing_country();
 
-		// The Customer object should now contain the country retrieved from Walley. Overwrite the existing $country.
+		// Do not use the country from the session, as it contain the old data. Pass the country from the checkout.
 		if ( self::maybe_clear_session_on_country_change( $country_from_checkout ) ) {
 			return;
 		}
