@@ -68,11 +68,6 @@ class Walley_Checkout {
 			return;
 		}
 
-		$country = WC()->customer->get_billing_country();
-		if ( self::maybe_clear_session_on_country_change( $country ) ) {
-			return;
-		}
-
 		// Use new or old API.
 		if ( walley_use_new_api() ) {
 			$this->collector_order = CCO_WC()->api->get_walley_checkout(
@@ -91,10 +86,12 @@ class Walley_Checkout {
 		}
 
 		$this->update_customer_in_woo( $this->collector_order );
+		$country_from_checkout = WC()->customer->get_billing_country();
 
 		// The Customer object should now contain the country retrieved from Walley. Overwrite the existing $country.
-		$country = WC()->customer->get_billing_country();
-		WC()->session->set( 'collector_billing_country', $country );
+		if ( self::maybe_clear_session_on_country_change( $country_from_checkout ) ) {
+			return;
+		}
 
 		if ( isset( $this->collector_order['data']['shipping'] ) ) {
 
@@ -380,7 +377,7 @@ class Walley_Checkout {
 	 */
 	public static function maybe_clear_session_on_country_change( $country_from_checkout ) {
 		$country_from_session = WC()->session->get( 'collector_billing_country' );
-		if ( empty( $country_from_session ) || $country_from_session === $country_from_checkout ) {
+		if ( $country_from_session === $country_from_checkout ) {
 			return false;
 		}
 
@@ -397,11 +394,14 @@ class Walley_Checkout {
 				$clear_session = isset( $settings[ "collector_merchant_id_{$country}_{$customer_type}" ] );
 				break;
 			case 'EUR':
-				$clear_session = 'FI' === $country_from_session && isset( $settings[ "collector_merchant_id_fi_{$customer_type}" ] );
+				$clear_session = 'FI' === $country_from_checkout && isset( $settings[ "collector_merchant_id_fi_{$customer_type}" ] );
 				break;
 			default:
 				break;
 		}
+
+		// To avoid having a lingering session, we must set it before we eventually have to clear all session data.
+		WC()->session->set( 'collector_billing_country', $country_from_checkout );
 
 		if ( $clear_session ) {
 			WC()->session->reload_checkout = true;
