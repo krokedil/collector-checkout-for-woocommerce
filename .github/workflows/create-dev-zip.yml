@@ -39,7 +39,7 @@ jobs:
       run: |
         mkdir -p ~/.composer/cache
         composer install --prefer-dist --no-progress
-        npm ci && npm run build
+        npm ci
 
     - name: Get branch name and commit hash
       id: vars
