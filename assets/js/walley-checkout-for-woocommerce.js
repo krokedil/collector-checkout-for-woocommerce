@@ -507,6 +507,9 @@ jQuery( function( $ ) {
 					var testmode = data.data.test_mode;
 					console.log('checkout initiated ' + JSON.stringify(data.data));
 
+					// Update the hidden public token field.
+					$('#collector_public_token').val(publicToken);
+
 					if(testmode === 'yes') {
 						$('#collector-container').append('<script src="https://checkout-uat.collector.se/collector-checkout-loader.js" data-lang="' + walleyParams.locale + '" data-token="' + publicToken + '" data-variant="' + customer + '"' + walleyParams.data_action_color_button + ' >');
 					} else {
