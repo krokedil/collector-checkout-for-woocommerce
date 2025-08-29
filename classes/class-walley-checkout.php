@@ -84,15 +84,12 @@ class Walley_Checkout {
 			return;
 		}
 
-		// When the country is updated in the Walley payment form, it is not available in WC()->customer->get_billing_country() until the customer is updated.
-		$this->update_customer_in_woo( $this->collector_order );
-		// Now that the customer is updated, we can retrieve the country from the checkout.
+		// Save the previous billing_country in the session before it is overwritten.
 		$country_from_checkout = WC()->customer->get_billing_country();
+		WC()->session->set( 'collector_billing_country', $country_from_checkout );
 
-		// Do not use the country from the session, as it contain the old data. Pass the country from the checkout.
-		if ( $this->maybe_clear_session_on_country_change( $country_from_checkout ) ) {
-			return;
-		}
+		// When the country is updated in the Walley payment form, it is not available in WC()->customer->get_billing_country() until the customer in woo is updated.
+		$this->update_customer_in_woo( $this->collector_order );
 
 		if ( isset( $this->collector_order['data']['shipping'] ) ) {
 
@@ -143,6 +140,12 @@ class Walley_Checkout {
 
 		// We can only do this during AJAX, so if it is not an ajax call, we should just bail.
 		if ( ! wp_doing_ajax() ) {
+			return;
+		}
+
+		// Do not use the country from the session, as it contain the old data. Pass the country from the checkout.
+		$country_from_checkout = WC()->customer->get_billing_country();
+		if ( $this->maybe_clear_session_on_country_change( $country_from_checkout ) ) {
 			return;
 		}
 
@@ -403,12 +406,9 @@ class Walley_Checkout {
 				break;
 		}
 
-		// To avoid having a lingering session, we must set it before we eventually have to clear all session data.
-		WC()->session->set( 'collector_billing_country', $country_from_checkout );
-
 		if ( $clear_session ) {
-			// NOTE: We cannot reload_checkout here, as it will cause an infinite loop as that will trigger the after_calculate hook to be triggered after reload.
 			wc_collector_unset_sessions();
+			WC()->session->reload_checkout = true;
 		}
 
 		return $clear_session;
