@@ -139,6 +139,8 @@ function wc_collector_unset_sessions() {
 		if ( WC()->session->get( 'collector_currency' ) ) {
 			WC()->session->__unset( 'collector_currency' );
 		}
+
+		WC()->session->__unset( 'collector_billing_country' );
 	}
 }
 
