@@ -305,18 +305,25 @@ abstract class Walley_Checkout_Request {
 				$this->delivery_module = $this->settings['collector_delivery_module_dk'] ?? 'no';
 				break;
 			case 'EUR':
-				$order_id              = $arguments['order_id'] ?? $this->arguments['order_id'] ?? false;
-				$customer_country_code = $this->get_customer_country( wc_get_order( $order_id ) );
-				if ( 'FI' === $customer_country_code || 'b2b' === $this->customer_type ) {
-					$country_code          = 'FI';
+				$order_id     = $arguments['order_id'] ?? $this->arguments['order_id'] ?? false;
+				$country_code = $this->get_customer_country( wc_get_order( $order_id ) );
+				if ( 'b2b' === $this->customer_type ) {
 					$this->store_id        = $this->settings[ "collector_merchant_id_fi_{$this->customer_type}" ];
 					$this->delivery_module = $this->settings['collector_delivery_module_fi'] ?? 'no';
 				} else {
-					// Only available for B2C.
-					$country_code          = 'EU';
-					$this->store_id        = $this->settings['collector_merchant_id_eu_b2c'];
-					$this->delivery_module = $this->settings['collector_delivery_module_eu'] ?? 'no';
+					if ( 'FI' === $country_code ) {
+						$store_id        = $this->settings[ "collector_merchant_id_fi_{$this->customer_type}" ];
+						$delivery_module = $this->settings['collector_delivery_module_fi'] ?? 'no';
+					}
 
+					if ( empty( $this->store_id ) ) {
+						// Only available for B2C.
+						$store_id        = $this->settings['collector_merchant_id_eu_b2c'];
+						$delivery_module = $this->settings['collector_delivery_module_eu'] ?? 'no';
+					}
+
+					$this->store_id        = $store_id;
+					$this->delivery_module = $delivery_module;
 				}
 				break;
 			default:
