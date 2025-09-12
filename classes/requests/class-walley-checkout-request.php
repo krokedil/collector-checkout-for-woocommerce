@@ -318,6 +318,7 @@ abstract class Walley_Checkout_Request {
 
 					if ( empty( $this->store_id ) ) {
 						// Only available for B2C.
+						$country_code    = 'EU';
 						$store_id        = $this->settings['collector_merchant_id_eu_b2c'];
 						$delivery_module = $this->settings['collector_delivery_module_eu'] ?? 'no';
 					}
