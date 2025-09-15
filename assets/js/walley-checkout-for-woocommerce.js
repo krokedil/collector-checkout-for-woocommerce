@@ -411,8 +411,8 @@ jQuery( function( $ ) {
 			$('#billing_company').val(addressData.billing_company);
 			$('#billing_address_1').val(addressData.billing_address_1);
 			$('#billing_address_2').val(
-				addressData.shipping_address_co
-					? addressData.shipping_address_co + (addressData.billing_address_2 ? ' ' + addressData.billing_address_2 : '')
+				addressData.billing_address_co
+					? addressData.billing_address_co + (addressData.billing_address_2 ? ' ' + addressData.billing_address_2 : '')
 					: addressData.billing_address_2
 			);
 			$('#billing_city').val(addressData.billing_city);
