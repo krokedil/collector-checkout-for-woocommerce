@@ -925,19 +925,21 @@ function wc_collector_get_available_customer_types() {
 		return false;
 	}
 
-	// For EUR, if FI is set, prefer it. If not, fallback to EU.
 	$b2c_set = false;
+	$b2b_set = false;
 	if ( 'EUR' === $currency ) {
 		if ( 'fi' === $country ) {
 			$b2c_set = ! empty( $collector_settings['collector_merchant_id_fi_b2c'] ?? false );
+			$b2b_set = ! empty( $collector_settings['collector_merchant_id_fi_b2b'] ?? false );
 		}
 
-		$b2c_set = empty( $b2c_set ) ? ! empty( $collector_settings['collector_merchant_id_eu_b2c'] ) : $b2c_set;
+		// For EUR currency, if FI is not set, check if EU B2C is set.
+		$b2c_set = empty( $b2c_set ) ? ! empty( $collector_settings['collector_merchant_id_eu_b2c'] ?? false ) : false;
+	} else {
+		// Get the merchant id for the selected country, for both B2C and B2B.
+		$b2c_set = ! empty( $collector_settings[ "collector_merchant_id_{$country}_b2c" ] ?? false );
+		$b2b_set = ! empty( $collector_settings[ "collector_merchant_id_{$country}_b2b" ] ?? false );
 	}
-
-	// Get the merchant id for the selected country, for both B2C and B2B.
-	$b2c_set = empty( $b2c_set ) ? ! empty( $collector_settings[ "collector_merchant_id_{$country}_b2c" ] ) : $b2c_set;
-	$b2b_set = ! empty( $collector_settings[ "collector_merchant_id_{$country}_b2b" ] ?? false );
 
 	// Build the return value dynamically based on the availability of b2c and b2b.
 	$result = 'collector-';
