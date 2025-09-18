@@ -329,7 +329,7 @@ abstract class Walley_Checkout_Request {
 				break;
 			default:
 				$country_code          = 'SE';
-				$this->store_id        = $this->settings[ 'collector_merchant_id_se_' . $this->customer_type ];
+				$this->store_id        = $this->settings[ "collector_merchant_id_se_{$this->customer_type}" ];
 				$this->delivery_module = $this->settings['collector_delivery_module_se'] ?? 'no';
 				break;
 		}
