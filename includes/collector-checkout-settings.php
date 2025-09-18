@@ -60,29 +60,6 @@ $settings = array(
 		'default'     => '',
 		'desc_tip'    => false,
 	),
-
-	'eu_settings_title'               => array(
-		'title' => __( 'EU', 'collector-checkout-for-woocommerce' ),
-		'type'  => 'title',
-	),
-	'collector_merchant_id_eu_b2c'    => array(
-		'title'       => __( 'Merchant ID EU B2C', 'collector-checkout-for-woocommerce' ),
-		'type'        => 'text',
-		'description' => __( 'Enter your Walley Checkout Merchant ID for B2C purchases in EU', 'collector-checkout-for-woocommerce' ),
-		'default'     => '',
-		'desc_tip'    => true,
-	),
-	'collector_delivery_module_eu'    => array(
-		'title'   => __( 'Walley nShift Delivery', 'collector-checkout-for-woocommerce' ),
-		'type'    => 'checkbox',
-		'label'   => __( 'Activate Walley nShift Delivery EU', 'collector-checkout-for-woocommerce' ),
-		'default' => 'no',
-	),
-	'collector_custom_profile_eu'     => array(
-		'title'   => __( 'Custom Profile EU', 'collector-checkout-for-woocommerce' ),
-		'type'    => 'text',
-		'default' => '',
-	),
 	'se_settings_title'               => array(
 		'title' => __( 'Sweden', 'collector-checkout-for-woocommerce' ),
 		'type'  => 'title',
@@ -196,6 +173,28 @@ $settings = array(
 	),
 	'collector_custom_profile_dk'     => array(
 		'title'   => __( 'Custom Profile Denmark', 'collector-checkout-for-woocommerce' ),
+		'type'    => 'text',
+		'default' => '',
+	),
+	'eu_settings_title'               => array(
+		'title' => __( 'EU', 'collector-checkout-for-woocommerce' ),
+		'type'  => 'title',
+	),
+	'collector_merchant_id_eu_b2c'    => array(
+		'title'       => __( 'Merchant ID EU B2C', 'collector-checkout-for-woocommerce' ),
+		'type'        => 'text',
+		'description' => __( 'Enter your Walley Checkout Merchant ID for B2C purchases in EU', 'collector-checkout-for-woocommerce' ),
+		'default'     => '',
+		'desc_tip'    => true,
+	),
+	'collector_delivery_module_eu'    => array(
+		'title'   => __( 'Walley nShift Delivery', 'collector-checkout-for-woocommerce' ),
+		'type'    => 'checkbox',
+		'label'   => __( 'Activate Walley nShift Delivery EU', 'collector-checkout-for-woocommerce' ),
+		'default' => 'no',
+	),
+	'collector_custom_profile_eu'     => array(
+		'title'   => __( 'Custom Profile EU', 'collector-checkout-for-woocommerce' ),
 		'type'    => 'text',
 		'default' => '',
 	),
