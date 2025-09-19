@@ -933,7 +933,7 @@ function wc_collector_get_available_customer_types() {
 			$b2b_set = ! empty( $collector_settings['collector_merchant_id_fi_b2b'] ?? false );
 		}
 
-		// For EUR currency, if FI is not set, check if EU B2C is set.
+		// For EUR currency, if FI is not set, check if EU B2C is set. This also applies to other countries that use EUR currency.
 		$b2c_set = empty( $b2c_set ) ? ! empty( $collector_settings['collector_merchant_id_eu_b2c'] ?? false ) : false;
 	} else {
 		// Get the merchant id for the selected country, for both B2C and B2B.
