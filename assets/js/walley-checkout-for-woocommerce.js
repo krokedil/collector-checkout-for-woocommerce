@@ -410,7 +410,11 @@ jQuery( function( $ ) {
 			$('#billing_last_name').val(addressData.billing_last_name);
 			$('#billing_company').val(addressData.billing_company);
 			$('#billing_address_1').val(addressData.billing_address_1);
-			$('#billing_address_2').val(addressData.billing_address_2);
+			$('#billing_address_2').val(
+				addressData.billing_address_co
+					? addressData.billing_address_co + (addressData.billing_address_2 ? ' ' + addressData.billing_address_2 : '')
+					: addressData.billing_address_2
+			);
 			$('#billing_city').val(addressData.billing_city);
 			$('#billing_postcode').val(addressData.billing_postcode);
 			$('#billing_phone').val(addressData.billing_phone);
@@ -423,7 +427,11 @@ jQuery( function( $ ) {
 			$('#shipping_last_name').val(addressData.shipping_last_name);
 			$('#shipping_company').val(addressData.shipping_company);
 			$('#shipping_address_1').val(addressData.shipping_address_1);
-			$('#shipping_address_2').val(addressData.shipping_address_2);
+			$('#shipping_address_2').val(
+				addressData.shipping_address_co
+					? addressData.shipping_address_co + (addressData.shipping_address_2 ? ' ' + addressData.shipping_address_2 : '')
+					: addressData.shipping_address_2
+			);
 			$('#shipping_city').val(addressData.shipping_city);
 			$('#shipping_postcode').val(addressData.shipping_postcode);
 			$('#shipping_phone').val(addressData.shipping_phone);
@@ -506,6 +514,9 @@ jQuery( function( $ ) {
 					var publicToken = data.data.publicToken;
 					var testmode = data.data.test_mode;
 					console.log('checkout initiated ' + JSON.stringify(data.data));
+
+					// Update the hidden public token field.
+					$('#collector_public_token').val(publicToken);
 
 					if(testmode === 'yes') {
 						$('#collector-container').append('<script src="https://checkout-uat.collector.se/collector-checkout-loader.js" data-lang="' + walleyParams.locale + '" data-token="' + publicToken + '" data-variant="' + customer + '"' + walleyParams.data_action_color_button + ' >');
