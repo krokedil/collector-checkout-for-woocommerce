@@ -22,6 +22,13 @@ class Walley_Checkout {
 	public $collector_order;
 
 	/**
+	 * Whether to reload the checkout.
+	 *
+	 * @var bool
+	 */
+	public $reload_checkout = false;
+
+	/**
 	 * Class constructor.
 	 */
 	public function __construct() {
@@ -67,6 +74,14 @@ class Walley_Checkout {
 			return;
 		}
 
+		// If the country has changed in Walleys checkout, we need to clear the session and reload the checkout.
+		// The reload logic will be handled in the update_walley_order function (triggered on woocommerce_after_calculate_totals).
+		$country_from_checkout = WC()->customer->get_billing_country();
+		if ( $this->maybe_clear_session_on_country_change( $country_from_checkout ) ) {
+			$this->reload_checkout = true;
+			return;
+		}
+
 		// Use new or old API.
 		if ( walley_use_new_api() ) {
 			$this->collector_order = CCO_WC()->api->get_walley_checkout(
@@ -83,10 +98,6 @@ class Walley_Checkout {
 		if ( is_wp_error( $this->collector_order ) ) {
 			return;
 		}
-
-		// Save the previous billing_country in the session before it is overwritten.
-		$country_from_checkout = WC()->customer->get_billing_country();
-		WC()->session->set( 'collector_billing_country', $country_from_checkout );
 
 		// When the country is updated in the Walley payment form, it is not available in WC()->customer->get_billing_country() until the customer in woo is updated.
 		$this->update_customer_in_woo( $this->collector_order );
@@ -143,11 +154,20 @@ class Walley_Checkout {
 			return;
 		}
 
-		// Do not use the country from the session, as it contain the old data. Pass the country from the checkout.
+		// If we need to reload the checkout, do it now.
+		if ( $this->reload_checkout ) {
+			// Unset sessions and reload checkout has already been set in maybe_clear_session_on_country_change.
+			return;
+		}
+
+		// If the country has changed in the checkout, we need to clear the session and reload the checkout.
 		$country_from_checkout = WC()->customer->get_billing_country();
 		if ( $this->maybe_clear_session_on_country_change( $country_from_checkout ) ) {
 			return;
 		}
+
+		// Save the country in session so we can check for changes.
+		WC()->session->set( 'collector_billing_country', $country_from_checkout );
 
 		// The cart has been updated. Check if it is empty.
 		// A cart is considered "empty" if the total amount is 0 even if it has items (e.g., 100% discount).
@@ -400,7 +420,11 @@ class Walley_Checkout {
 				$clear_session = isset( $settings[ "collector_merchant_id_{$country}_{$customer_type}" ] );
 				break;
 			case 'EUR':
-				$clear_session = 'FI' === $country_from_checkout && isset( $settings[ "collector_merchant_id_fi_{$customer_type}" ] );
+				if ( 'FI' === $country_from_checkout ) {
+					$clear_session = isset( $settings[ "collector_merchant_id_fi_{$customer_type}" ] );
+				} else {
+					$clear_session = isset( $settings['collector_merchant_id_eu_b2c'] );
+				}
 				break;
 			default:
 				break;

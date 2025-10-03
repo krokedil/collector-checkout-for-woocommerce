@@ -57,6 +57,7 @@ function collector_wc_show_snippet() {
 			WC()->session->set( 'collector_public_token', $collector_order['data']['publicToken'] );
 			WC()->session->set( 'collector_private_id', $collector_order['data']['privateId'] );
 			WC()->session->set( 'collector_currency', get_woocommerce_currency() );
+			WC()->session->set( 'collector_billing_country', WC()->customer->get_billing_country() );
 
 			$public_token = $collector_order['data']['publicToken'];
 			$output       = array(
@@ -933,8 +934,10 @@ function wc_collector_get_available_customer_types() {
 			$b2b_set = ! empty( $collector_settings['collector_merchant_id_fi_b2b'] ?? false );
 		}
 
-		// For EUR currency, if FI is not set, check if EU B2C is set. This also applies to other countries that use EUR currency.
-		$b2c_set = empty( $b2c_set ) ? ! empty( $collector_settings['collector_merchant_id_eu_b2c'] ?? false ) : false;
+		// For EUR currency, if FI B2C is not set, check if EU B2C is set. This also applies to other countries that use EUR currency.
+		if ( ! $b2c_set ) {
+			$b2c_set = ! empty( $collector_settings['collector_merchant_id_eu_b2c'] ?? false );
+		}
 	} else {
 		// Get the merchant id for the selected country, for both B2C and B2B.
 		$b2c_set = ! empty( $collector_settings[ "collector_merchant_id_{$country}_b2c" ] ?? false );

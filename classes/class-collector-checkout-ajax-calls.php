@@ -188,6 +188,7 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 				WC()->session->set( 'collector_private_id', $collector_order['data']['privateId'] );
 				WC()->session->set( 'collector_customer_type', $customer_type );
 				WC()->session->set( 'collector_currency', get_woocommerce_currency() );
+				WC()->session->set( 'collector_billing_country', WC()->customer->get_billing_country() );
 
 				wp_send_json_success( $return );
 			}
