@@ -311,13 +311,16 @@ abstract class Walley_Checkout_Request {
 					$this->store_id        = $this->settings[ "collector_merchant_id_fi_{$this->customer_type}" ];
 					$this->delivery_module = $this->settings['collector_delivery_module_fi'] ?? 'no';
 				} else {
+					$store_id = '';
+					// If the customer is from Finland, use the Finnish store ID.
 					if ( 'FI' === $country_code ) {
 						$store_id        = $this->settings[ "collector_merchant_id_fi_{$this->customer_type}" ];
 						$delivery_module = $this->settings['collector_delivery_module_fi'] ?? 'no';
 					}
 
 					if ( empty( $store_id ) ) {
-						// Only available for B2C.
+						// If the customer is from another country, use the EU store ID.
+						// Only B2C is supported in the EU store.
 						$country_code    = 'EU';
 						$store_id        = $this->settings['collector_merchant_id_eu_b2c'] ?? '';
 						$delivery_module = $this->settings['collector_delivery_module_eu'] ?? 'no';
