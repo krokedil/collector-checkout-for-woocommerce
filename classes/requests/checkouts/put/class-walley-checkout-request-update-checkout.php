@@ -13,6 +13,20 @@ defined( 'ABSPATH' ) || exit;
 class Walley_Checkout_Request_Update_Checkout extends Walley_Checkout_Request_Put {
 
 	/**
+	 * The WC order ID.
+	 *
+	 * @var string
+	 */
+	protected $order_id;
+
+	/**
+	 * The private ID of the checkout.
+	 *
+	 * @var string
+	 */
+	protected $private_id;
+
+	/**
 	 * Class constructor.
 	 *
 	 * @param array $arguments The request arguments.
