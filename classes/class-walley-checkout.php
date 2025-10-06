@@ -22,6 +22,13 @@ class Walley_Checkout {
 	public $collector_order;
 
 	/**
+	 * Whether to reload the checkout.
+	 *
+	 * @var bool
+	 */
+	public $reload_checkout = false;
+
+	/**
 	 * Class constructor.
 	 */
 	public function __construct() {
@@ -38,7 +45,6 @@ class Walley_Checkout {
 	 * @return void
 	 */
 	public function update_shipping_method() {
-
 		if ( ! is_checkout() ) {
 			return;
 		}
@@ -68,6 +74,14 @@ class Walley_Checkout {
 			return;
 		}
 
+		// If the country has changed in Walleys checkout, we need to clear the session and reload the checkout.
+		// The reload logic will be handled in the update_walley_order function (triggered on woocommerce_after_calculate_totals).
+		$country_from_checkout = WC()->customer->get_billing_country();
+		if ( $this->maybe_clear_session_on_country_change( $country_from_checkout ) ) {
+			$this->reload_checkout = true;
+			return;
+		}
+
 		// Use new or old API.
 		if ( walley_use_new_api() ) {
 			$this->collector_order = CCO_WC()->api->get_walley_checkout(
@@ -85,6 +99,7 @@ class Walley_Checkout {
 			return;
 		}
 
+		// When the country is updated in the Walley payment form, it is not available in WC()->customer->get_billing_country() until the customer in woo is updated.
 		$this->update_customer_in_woo( $this->collector_order );
 
 		if ( isset( $this->collector_order['data']['shipping'] ) ) {
@@ -138,6 +153,21 @@ class Walley_Checkout {
 		if ( ! wp_doing_ajax() ) {
 			return;
 		}
+
+		// If we need to reload the checkout, do it now.
+		if ( $this->reload_checkout ) {
+			// Unset sessions and reload checkout has already been set in maybe_clear_session_on_country_change.
+			return;
+		}
+
+		// If the country has changed in the checkout, we need to clear the session and reload the checkout.
+		$country_from_checkout = WC()->customer->get_billing_country();
+		if ( $this->maybe_clear_session_on_country_change( $country_from_checkout ) ) {
+			return;
+		}
+
+		// Save the country in session so we can check for changes.
+		WC()->session->set( 'collector_billing_country', $country_from_checkout );
 
 		// The cart has been updated. Check if it is empty.
 		// A cart is considered "empty" if the total amount is 0 even if it has items (e.g., 100% discount).
@@ -225,25 +255,25 @@ class Walley_Checkout {
 			}
 
 			// Old API.
-			$update_metadata         = new Collector_Checkout_Requests_Update_Metadata( $private_id, $customer_type, $metadata );
-			$collecor_order_metadata = $update_metadata->request();
+			$update_metadata          = new Collector_Checkout_Requests_Update_Metadata( $private_id, $customer_type, $metadata );
+			$collector_order_metadata = $update_metadata->request();
 
 			// Check that everything went alright.
-			if ( is_wp_error( $collecor_order_metadata ) ) {
+			if ( is_wp_error( $collector_order_metadata ) ) {
 				// Check if purchase was completed, if it was don't redirect customer.
-				if ( 900 === $collecor_order_metadata->get_error_code() ) {
-					if ( ! empty( $collecor_order_metadata->get_error_message( 'Purchase_Completed' ) ) || ! empty( $collecor_order_metadata->get_error_message( 'Purchase_Commitment_Found' ) ) ) {
+				if ( 900 === $collector_order_metadata->get_error_code() ) {
+					if ( ! empty( $collector_order_metadata->get_error_message( 'Purchase_Completed' ) ) || ! empty( $collector_order_metadata->get_error_message( 'Purchase_Commitment_Found' ) ) ) {
 						WC()->session->reload_checkout = true;
 					}
 				}
 				// Check if we had validation error.
-				if ( 400 === $collecor_order_metadata->get_error_code() ) {
-					if ( ! empty( $collecor_order_metadata->get_error_message( 'Validation_Error' ) ) ) {
+				if ( 400 === $collector_order_metadata->get_error_code() ) {
+					if ( ! empty( $collector_order_metadata->get_error_message( 'Validation_Error' ) ) ) {
 						WC()->session->reload_checkout = true;
 					}
 				}
 				// Check if the resource is temporarily locked, if it was don't redirect customer.
-				if ( 423 === $collecor_order_metadata->get_error_code() ) {
+				if ( 423 === $collector_order_metadata->get_error_code() ) {
 					WC()->session->reload_checkout = true;
 				}
 			}
@@ -362,6 +392,53 @@ class Walley_Checkout {
 	}
 
 	/**
+	 * Checks whether the session should be cleared on country change.
+	 *
+	 * Use the return value to determine whether the current request should proceed or not.
+	 *
+	 * @note This will not call reload_checkout.
+	 *
+	 * @param string $country_from_checkout The country from the checkout.
+	 * @return bool Whether the session has been cleared.
+	 */
+	public function maybe_clear_session_on_country_change( $country_from_checkout ) {
+		$country_from_session = WC()->session->get( 'collector_billing_country' );
+		if ( $country_from_session === $country_from_checkout ) {
+			return false;
+		}
+
+		$settings      = get_option( 'woocommerce_collector_checkout_settings' );
+		$customer_type = WC()->session->get( 'collector_customer_type' );
+		$currency      = get_woocommerce_currency();
+
+		$clear_session = false;
+		switch ( $currency ) {
+			case 'SEK':
+			case 'NOK':
+			case 'DKK':
+				$country       = strtolower( $country_from_checkout );
+				$clear_session = isset( $settings[ "collector_merchant_id_{$country}_{$customer_type}" ] );
+				break;
+			case 'EUR':
+				if ( 'FI' === $country_from_checkout ) {
+					$clear_session = isset( $settings[ "collector_merchant_id_fi_{$customer_type}" ] );
+				} else {
+					$clear_session = isset( $settings['collector_merchant_id_eu_b2c'] );
+				}
+				break;
+			default:
+				break;
+		}
+
+		if ( $clear_session ) {
+			wc_collector_unset_sessions();
+			WC()->session->reload_checkout = true;
+		}
+
+		return $clear_session;
+	}
+
+	/**
 	 * Update WC customer with received address data.
 	 *
 	 * @param array $collector_order Walley order.
@@ -408,4 +485,6 @@ class Walley_Checkout {
 			WC()->customer->save();
 		}
 	}
-} new Walley_Checkout();
+}
+
+new Walley_Checkout();

@@ -2,11 +2,11 @@
 Contributors: collectorbank, krokedil, NiklasHogefjord
 Tags: ecommerce, e-commerce, woocommerce, collector, checkout, walley
 Requires at least: 5.0
-Tested up to: 6.8.2
+Tested up to: 6.8.3
 Requires PHP: 7.3
-Stable tag: 4.3.0
+Stable tag: 4.4.0
 WC requires at least: 6.0.0
-WC tested up to: 10.2.1
+WC tested up to: 10.2.2
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -39,6 +39,9 @@ For help setting up and configuring Walley Checkout for WooCommerce please refer
 
 
 == CHANGELOG ==
+= 2025.10.06    - version 4.4.0 =
+* Feature       - Added support for EU countries. 
+
 = 2025.09.23    - version 4.3.0 =
 * Feature       - Added support for the 'care of' field.
 * Fix           - Resolved the public token not updating as needed on B2B/B2C switching in checkout.
