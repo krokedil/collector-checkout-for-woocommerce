@@ -47,6 +47,13 @@ abstract class Walley_Checkout_Request {
 	 */
 	protected $settings;
 
+	/**
+	 * The store ID for the current request.
+	 *
+	 * @var string
+	 */
+	protected $store_id;
+
 
 	/**
 	 * Class constructor.

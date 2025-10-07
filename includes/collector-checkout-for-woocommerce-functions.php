@@ -687,10 +687,15 @@ function walley_confirm_order( $order, $private_id = null ) {
 	}
 
 	if ( is_wp_error( $collector_order ) ) {
-		$order->add_order_note( __( 'Could not retreive Walley order during walley_confirm_order function.', 'collector-checkout-for-woocommerce' ) );
+		$order->add_order_note( __( 'Could not retrieve Walley order during walley_confirm_order function.', 'collector-checkout-for-woocommerce' ) );
 		$order->save();
 
 		return false;
+	}
+
+	$customer_token = $collector_order['data']['order']['customerToken'] ?? null;
+	if ( ! empty( $customer_token ) ) {
+		Walley_Subscription::save_customer_token( $order, $customer_token );
 	}
 
 	$payment_status  = $collector_order['data']['purchase']['result'];

@@ -115,6 +115,16 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 			'products',
 			'refunds',
 			'upsell',
+			'subscriptions',
+			'subscription_cancellation',
+			'subscription_suspension',
+			'subscription_reactivation',
+			'subscription_amount_changes',
+			'subscription_date_changes',
+			'subscription_payment_method_change',
+			'subscription_payment_method_change_customer', // FIXME: Maybe remove if redirect is not optional?
+			'subscription_payment_method_change_admin',
+			'multiple_subscriptions',
 		);
 
 		add_action(
@@ -221,10 +231,15 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 		</div>
 		<?php
 	}
+
 	/**
-	 * Check if this gateway is enabled and available in the user's country
+	 * Check if the gateway should be available.
+	 *
+	 * This function is extracted to create the 'walley_is_available' filter.
+	 *
+	 * @return bool
 	 */
-	public function is_available() {
+	private function check_availability() {
 		if ( 'yes' !== $this->enabled ) {
 			return false;
 		}
@@ -252,6 +267,16 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 		}
 
 		return true;
+	}
+
+	/**
+	 * Check if payment method should be available.
+	 *
+	 * @hook walley_is_available
+	 * @return boolean
+	 */
+	public function is_available() {
+		return apply_filters( 'walley_is_available', $this->check_availability(), $this );
 	}
 
 	/**
