@@ -167,16 +167,12 @@ class Walley_Subscription {
 	}
 
 	/**
-	 * Process an authorization callback from Walley.
+	 * Retrieve the renewal order associated with an authorization ID.
 	 *
 	 * @param string $auth_id The authorization ID.
-	 * @param string $walley_order_id The Walley order ID.
-	 * @return void
+	 * @return WC_Order|null The renewal order if found, null otherwise.
 	 */
-	public static function process_authorization( $auth_id, $walley_order_id ) {
-		CCO_WC()->logger::log( "[AUTHORIZATION] Processing authorization ID: {$auth_id} with Walley order ID: {$walley_order_id}" );
-
-		// Find the renewal order associated with this authorization ID.
+	public static function get_renewal_order_by_auth_id( $auth_id ) {
 		$orders = wc_get_orders(
 			array(
 				'meta_key'     => self::AUTHORIZATION_ID,
@@ -190,21 +186,66 @@ class Walley_Subscription {
 
 		$renewal_order = reset( $orders );
 		if ( empty( $order ) || $auth_id !== $order->get_meta( self::AUTHORIZATION_ID ) ) {
+			return null;
+		}
+
+		return $renewal_order;
+	}
+
+	/**
+	 * Process an authorization callback from Walley.
+	 *
+	 * @param array $args The callback arguments.
+	 * @return void
+	 */
+	public static function process_authorization( $args ) {
+		$auth_id    = $args['authorization_id'];
+		$event_type = $args['event_type'];
+
+		CCO_WC()->logger::log( "[AUTHORIZATION][{$event_type}] Processing authorization ID: {$auth_id}." );
+
+		// Find the renewal order associated with this authorization ID.
+		$renewal_order = self::get_renewal_order_by_auth_id( $auth_id );
+		if ( null === $renewal_order ) {
 			CCO_WC()->logger::log( "[AUTHORIZATION] No matching order found for authorization ID: {$auth_id}" );
 			return;
 		}
 
 		CCO_WC()->logger::log( "[AUTHORIZATION] Found matching order ID: {$renewal_order->get_id()} for authorization ID: {$auth_id}" );
-
-		// translators: Walley order ID.
-		$note = sprintf( __( 'The subscription is now authorized by Walley, and renewal is complete. Walley order ID: %s.', 'collector-checkout-for-woocommerce' ), $walley_order_id );
-
 		// Update the renewal order and any subscriptions associated with the renewal order.
 		$filter        = array(
 			'subscription_status' => 'on-hold',
 			'order_type'          => 'renewal',
 		);
 		$subscriptions = wcs_get_subscriptions_for_order( $renewal_order, $filter );
+		if ( empty( $subscriptions ) ) {
+			CCO_WC()->logger::log( "[AUTHORIZATION] No subscriptions found for renewal order ID: {$renewal_order->get_id()}" );
+			return;
+		}
+
+		$walley_order_id = $args['order_id'] ?? null;
+		if ( ! empty( $walley_order_id ) ) {
+			self::process_authorization_success( $renewal_order, $subscriptions, $walley_order_id );
+		} else {
+			self::process_authorization_error( $renewal_order, $subscriptions, $args['reason'] );
+		}
+
+		CCO_WC()->logger::log( "[AUTHORIZATION] Processed authorization ID: {$auth_id} for order ID: {$renewal_order->get_id()}" );
+	}
+
+	/**
+	 * Process a successful authorization.
+	 *
+	 * @param \WC_Order $renewal_order The renewal order.
+	 * @param array     $subscriptions The subscriptions associated with the renewal order.
+	 * @param string    $walley_order_id The Walley order ID.
+	 * @return void
+	 */
+	public static function process_authorization_success( $renewal_order, $subscriptions, $walley_order_id ) {
+		// translators: Walley order ID.
+		$note = sprintf( __( 'The subscription is now authorized by Walley, and renewal is complete. Walley order ID: %s.', 'collector-checkout-for-woocommerce' ), $walley_order_id );
+
+		// Update the renewal order and any subscriptions associated with the renewal order.
 		foreach ( $subscriptions as $subscription ) {
 			$subscription->update_meta_data( '_collector_order_id', $walley_order_id );
 			$subscription->add_order_note( $note );
@@ -216,8 +257,70 @@ class Walley_Subscription {
 		$renewal_order->add_order_note( sprintf( __( 'The order is now authorized by Walley. Walley order ID %s.', 'collector-checkout-for-woocommerce' ), $walley_order_id ) );
 		$renewal_order->update_meta_data( '_collector_order_id', $walley_order_id );
 		$renewal_order->payment_complete( $walley_order_id );
+	}
 
-		CCO_WC()->logger::log( "[AUTHORIZATION] Processed authorization ID: {$auth_id} for order ID: {$renewal_order->get_id()}" );
+	/**
+	 * Process a failed authorization.
+	 *
+	 * @param \WC_Order $renewal_order The renewal order.
+	 * @param array     $subscriptions The subscriptions associated with the renewal order.
+	 * @param string    $reason The reason for the failure.
+	 * @return void
+	 */
+	public static function process_authorization_error( $renewal_order, $subscriptions, $reason ) {
+		$log    = "[AUTHORIZATION][{$reason}]: ";
+		$status = 'on-hold';
+		switch ( $reason ) {
+			case 'SERVICE_UNAVAILABLE':
+				$log .= 'The authorization failed because the payment service is currently unavailable. Walley will attempt to process the payment again at a later time.';
+				$note = __( 'The authorization failed because the payment service is currently unavailable. Walley will attempt to process the payment again at a later time.', 'collector-checkout-for-woocommerce' );
+				break;
+			case 'PAYMENT_METHOD_NO_FUNDS':
+				$log .= 'The authorization failed because the payment method has insufficient funds Walley will attempt to process the payment again at a later time.';
+				$note = __( 'The authorization failed because the payment method has insufficient funds. Walley will attempt to process the payment again at a later time.', 'collector-checkout-for-woocommerce' );
+				break;
+			case 'PAYMENT_METHOD_DECLINED':
+				$log .= 'The payment method used for the authorization was declined by the payment provider or bank, and Walley will retry the authorization.';
+				$note = __( 'The payment method used for the authorization was declined by the payment provider or bank, and Walley will retry the authorization.', 'collector-checkout-for-woocommerce' );
+				break;
+			case 'PAYMENT_METHOD_EXPIRED':
+				$log   .= 'The authorization failed because the payment method has expired.';
+				$note   = __( 'The authorization failed because the payment method has expired.', 'collector-checkout-for-woocommerce' );
+				$status = 'failed';
+				break;
+			case 'CANCELLED_BY_CUSTOMER':
+				$log   .= 'The customer token has been cancelled using the Cancel endpoint.';
+				$note   = __( 'The customer token has been cancelled using the Cancel endpoint.', 'collector-checkout-for-woocommerce' );
+				$status = 'cancelled';
+				break;
+			case 'PAYMENT_METHOD_REFUSED':
+				$log   .= 'The payment method used for the authorization was refused by the payment provider or bank.';
+				$note   = __( 'The payment method used for the authorization was refused by the payment provider or bank.', 'collector-checkout-for-woocommerce' );
+				$status = 'failed';
+				break;
+			default:
+				$log .= 'The authorization failed due to an unknown error.';
+				$note = sprintf( __( 'The authorization failed due to an unknown error.', 'collector-checkout-for-woocommerce' ) );
+				// Since we don't know the reason, we'll leave the order status to on-hold. This ensures that wcs_get_subscriptions_for_renewal_order() will find the subscription next time as we filter on "on-hold" status.
+				break;
+		}
+
+		// Update the renewal order and any subscriptions associated with the renewal order.
+		foreach ( $subscriptions as $subscription ) {
+			if ( $subscription->get_status() === $status ) {
+				$subscription->add_order_note( $note );
+			} else {
+				$subscription->update_status( $status, $note );
+			}
+		}
+
+		if ( $renewal_order->get_status() === $status ) {
+			$renewal_order->add_order_note( $note );
+		} else {
+			$renewal_order->update_status( $status, $note );
+		}
+
+		CCO_WC()->logger::log( $log );
 	}
 
 	/**

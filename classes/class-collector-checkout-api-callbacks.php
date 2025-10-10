@@ -16,6 +16,26 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class Collector_Api_Callbacks {
 
+	private const SCHEDULE_INTERVAL_SEC = 60; // In seconds.
+
+	public const HOOK_PREFIX = 'walley_scheduled_callback_';
+
+	/**
+	 * REST API namespace.
+	 */
+	public const REST_API_NAMESPACE = 'krokedil/walley/v1';
+
+	/**
+	 * REST API endpoint.
+	 */
+	public const REST_API_ENDPOINT = '/callback';
+
+	/**
+	 * Full REST API route.
+	 * wp-json/krokedil/walley/v1/callback
+	 */
+	public const REST_API_ROUTE = 'wp-json/' . self::REST_API_NAMESPACE . self::REST_API_ENDPOINT;
+
 	/**
 	 * The Collector order
 	 *
@@ -46,6 +66,129 @@ class Collector_Api_Callbacks {
 	 */
 	public function __construct() {
 		add_action( 'collector_check_for_order', array( $this, 'collector_check_for_order_callback' ), 10, 3 );
+		add_action( 'rest_api_init', array( $this, 'register_routes' ) );
+		add_action( self::HOOK_PREFIX . 'process_authorization', array( $this, 'process_authorization' ) );
+	}
+
+	/**
+	 * Register the REST API route(s).
+	 *
+	 * @return void
+	 */
+	public function register_routes() {
+		register_rest_route(
+			self::REST_API_NAMESPACE,
+			self::REST_API_ENDPOINT,
+			array(
+				'methods'             => 'POST',
+				'callback'            => array( $this, 'callback_handler' ),
+				'permission_callback' => '__return_true',
+			)
+		);
+	}
+
+	/**
+	 * Handles a callback from Walley.
+	 *
+	 * @param WP_REST_Request $request The REST request.
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function callback_handler( $request ) {
+		$params = $request->get_json_params();
+		if ( empty( $params ) ) {
+			return new WP_Error( 'missing_params', 'Missing parameters.', array( 'status' => 400 ) );
+		}
+
+		$params     = filter_var_array( $params, FILTER_SANITIZE_FULL_SPECIAL_CHARS );
+		$event_type = $params['Type'];
+		$payload    = $params['Payload'];
+
+		switch ( $event_type ) {
+			case 'walley:order:created':
+			case 'walley:authorization:failed':
+			case 'walley:authorization:retrying':
+				// Since we only want to handle subscriptions here, we can return early if no customer token is present.
+				$customer_token = $payload['CustomerToken'];
+				if ( empty( $customer_token ) ) {
+					return new WP_REST_Response( null, 200 );
+				}
+
+				$authorization_id = $payload['AuthorizationId'];
+				$walley_order_id  = $payload['OrderId'];
+				$reason           = $payload['Reason'] ?? null; // Only available when failed or retrying.
+
+				// Schedule the processing of the authorization.
+				$args = array(
+					'hook'             => self::HOOK_PREFIX . 'process_authorization',
+					'signature'        => "{$event_type}:{$authorization_id}:{$walley_order_id}",
+					'authorization_id' => $authorization_id,
+					'walley_order_id'  => $walley_order_id,
+					'event_type'       => $event_type,
+					'reason'           => $reason,
+				);
+				$this->schedule_callback( $args );
+				break;
+			default:
+				CCO_WC()->logger::log( "[CALLBACK HANDLER] Unhandled event type: {$event_type}" );
+				break;
+		}
+
+		return new WP_REST_Response( null, 200 );
+	}
+
+	/**
+	 * Schedule a callback for processing.
+	 *
+	 * @param array $args The arguments to schedule. A 'signature' key is required to avoid duplicates.
+	 *
+	 * @return bool True if the callback was scheduled, false otherwise.
+	 */
+	public function schedule_callback( $args ) {
+		$as_args           = array(
+			'hook'   => $args['hook'],
+			'status' => \ActionScheduler_Store::STATUS_PENDING,
+		);
+		$scheduled_actions = as_get_scheduled_actions( $as_args, OBJECT );
+
+		/**
+		 * Loop all actions to check if this one has been scheduled already.
+		 *
+		 * @var \ActionScheduler_Action $action The action from the Action scheduler.
+		 */
+		foreach ( $scheduled_actions as $action ) {
+			$action_args = $action->get_args();
+			if ( $args['signature'] === $action_args['signature'] ) {
+				CCO_WC()->logger::log( "[SCHEDULE CALLBACK]: The order is already scheduled for processing. Signature: {$args['signature']}." );
+				return true;
+			}
+		}
+
+		// If we get here, we should be good to create a new scheduled action, since none are currently scheduled for this order.
+		$schedule_id = as_schedule_single_action(
+			time() + self::SCHEDULE_INTERVAL_SEC,
+			$args['hook'],
+			$args,
+		);
+
+		$did_schedule = 0 !== $schedule_id;
+		if ( ! $did_schedule ) {
+			CCO_WC()->logger::log( "[SCHEDULE CALLBACK]: Could not schedule the callback for processing. Signature: {$args['signature']}." );
+		} else {
+			CCO_WC()->logger::log( "[SCHEDULE CALLBACK]: Scheduled the callback for processing. Signature: {$args['signature']}." );
+		}
+
+		return $did_schedule;
+	}
+
+	/**
+	 * Process the authorization for a subscription.
+	 *
+	 * @param array $args The arguments for processing the authorization.
+	 *
+	 * @return void
+	 */
+	public function process_authorization( $args ) {
+		Walley_Subscription::process_authorization( $args );
 	}
 
 	/**
