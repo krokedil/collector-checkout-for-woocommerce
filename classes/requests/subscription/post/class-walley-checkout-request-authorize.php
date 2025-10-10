@@ -73,4 +73,33 @@ class Walley_Checkout_Request_Create_Authorization extends Walley_Checkout_Reque
 
 		return apply_filters( 'coc_create_authorization_args', $body, $this->subscription_id );
 	}
+
+
+	/**
+	 * Processes the response checking for errors.
+	 *
+	 * Since we need the status code as well as the body, we override the parent method.
+	 *
+	 * @param object|WP_Error $response The response from the request.
+	 * @param array           $request_args The request args.
+	 * @param string          $request_url The request url.
+	 * @return array|WP_Error
+	 */
+	protected function process_response( $response, $request_args, $request_url ) {
+		if ( is_wp_error( $response ) ) {
+			return $response;
+		}
+
+		$parent_response = parent::process_response( $response, $request_args, $request_url );
+
+		// Return WP_Error if Walley returns something else than 2xx response.
+		if ( is_wp_error( $parent_response ) ) {
+			return $parent_response;
+		}
+
+		return array(
+			'status' => wp_remote_retrieve_response_code( $response ),
+			'body'   => json_decode( wp_remote_retrieve_body( $response ), true ),
+		);
+	}
 }

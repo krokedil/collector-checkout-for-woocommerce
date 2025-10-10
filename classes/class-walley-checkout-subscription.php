@@ -116,25 +116,108 @@ class Walley_Subscription {
 			return;
 		}
 
-		$authorization_id = $response['data']['authorizationId'];
-		$message          = sprintf(
+		$code = $response['status'];
+		$data = $response['body']['data'];
+
+		// The authorization request (renewal) may result in a 200 OK or 202 Accepted.
+		// For 200 OK, we'll proceed with the renewal since the authorization is completed.
+		// For 202 Accepted, the authorization is pending and we wait for a callback to complete the order.
+		// See https://dev.walleypay.com/docs/checkout/tokenization/authorization.
+		$order_id = null;
+		$auth_id  = $data['authorizationId']; // Used for identifying the subscription renewal through the authorization in callbacks.
+		if ( 200 === $code ) {
+			$order_id = $data['orderId'];
+			$note     = sprintf(
+			// translators: 1: subscription token, 2: Walley order id.
+				__( 'Subscription renewal was made successfully via Walley. Subscription token: %1$s. Walley order ID: %2$s', 'collector-checkout-for-woocommerce' ),
+				$token,
+				$order_id
+			);
+			$renewal_order->add_order_note( $note );
+			$renewal_order->update_meta_data( '_collector_order_id', $order_id );
+			$renewal_order->payment_complete( $order_id );
+		} else {
+			$note = sprintf(
 			// translators: 1: subscription token, 2: authorization id.
-			__( 'Subscription renewal was made successfully via Walley. Subscription token: %1$s. Authorization ID: %2$s', 'collector-checkout-for-woocommerce' ),
-			$token,
-			$authorization_id
-		);
-		$renewal_order->add_order_note( $message );
+				__( 'Subscription renewal is pending authorization via Walley. Subscription token: %1$s. Authorization ID: %2$s', 'collector-checkout-for-woocommerce' ),
+				$token,
+				$auth_id
+			);
+
+			$renewal_order->update_status( 'on-hold', $note );
+		}
+
+		$renewal_order->update_meta_data( self::AUTHORIZATION_ID, $auth_id );
+		$renewal_order->save_meta_data();
 
 		foreach ( $subscriptions as $subscription ) {
-			$subscription->update_meta_data( self::AUTHORIZATION_ID, $authorization_id );
 			$subscription->update_meta_data( self::UNSCHEDULED_TOKEN, $token );
-			$subscription->add_order_note( $message );
+			$subscription->update_meta_data( self::AUTHORIZATION_ID, $auth_id );
+
+			if ( 200 === $code ) {
+				$subscription->update_meta_data( '_collector_order_id', $order_id );
+				$subscription->add_order_note( $note );
+				$subscription->payment_complete( $order_id );
+			} else {
+				$subscription->update_status( 'on-hold', $note );
+			}
 
 			$subscription->save_meta_data();
 		}
+	}
 
-		$renewal_order->update_meta_data( '_collector_order_id', $authorization_id );
-		$renewal_order->payment_complete( $authorization_id );
+	/**
+	 * Process an authorization callback from Walley.
+	 *
+	 * @param string $auth_id The authorization ID.
+	 * @param string $walley_order_id The Walley order ID.
+	 * @return void
+	 */
+	public static function process_authorization( $auth_id, $walley_order_id ) {
+		CCO_WC()->logger::log( "[AUTHORIZATION] Processing authorization ID: {$auth_id} with Walley order ID: {$walley_order_id}" );
+
+		// Find the renewal order associated with this authorization ID.
+		$orders = wc_get_orders(
+			array(
+				'meta_key'     => self::AUTHORIZATION_ID,
+				'meta_value'   => $auth_id,
+				'limit'        => 1,
+				'orderby'      => 'date',
+				'order'        => 'DESC',
+				'meta_compare' => '=',
+			)
+		);
+
+		$renewal_order = reset( $orders );
+		if ( empty( $order ) || $auth_id !== $order->get_meta( self::AUTHORIZATION_ID ) ) {
+			CCO_WC()->logger::log( "[AUTHORIZATION] No matching order found for authorization ID: {$auth_id}" );
+			return;
+		}
+
+		CCO_WC()->logger::log( "[AUTHORIZATION] Found matching order ID: {$renewal_order->get_id()} for authorization ID: {$auth_id}" );
+
+		// translators: Walley order ID.
+		$note = sprintf( __( 'The subscription is now authorized by Walley, and renewal is complete. Walley order ID: %s.', 'collector-checkout-for-woocommerce' ), $walley_order_id );
+
+		// Update the renewal order and any subscriptions associated with the renewal order.
+		$filter        = array(
+			'subscription_status' => 'on-hold',
+			'order_type'          => 'renewal',
+		);
+		$subscriptions = wcs_get_subscriptions_for_order( $renewal_order, $filter );
+		foreach ( $subscriptions as $subscription ) {
+			$subscription->update_meta_data( '_collector_order_id', $walley_order_id );
+			$subscription->add_order_note( $note );
+			$subscription->payment_complete( $walley_order_id );
+			$subscription->save_meta_data();
+		}
+
+		// translators: Walley order ID.
+		$renewal_order->add_order_note( sprintf( __( 'The order is now authorized by Walley. Walley order ID %s.', 'collector-checkout-for-woocommerce' ), $walley_order_id ) );
+		$renewal_order->update_meta_data( '_collector_order_id', $walley_order_id );
+		$renewal_order->payment_complete( $walley_order_id );
+
+		CCO_WC()->logger::log( "[AUTHORIZATION] Processed authorization ID: {$auth_id} for order ID: {$renewal_order->get_id()}" );
 	}
 
 	/**
