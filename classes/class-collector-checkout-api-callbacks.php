@@ -104,7 +104,7 @@ class Collector_Api_Callbacks {
 		$payload    = $params['Payload'];
 
 		switch ( $event_type ) {
-			case 'walley:order:created':
+			case 'walley:order:created': // FIXME: This event is used for all orders, not just subscriptions. This might conflict with the existing callback handling.
 			case 'walley:authorization:failed':
 			case 'walley:authorization:retrying':
 				// Since we only want to handle subscriptions here, we can return early if no customer token is present.
