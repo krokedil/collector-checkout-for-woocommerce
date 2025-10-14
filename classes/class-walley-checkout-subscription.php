@@ -159,7 +159,8 @@ class Walley_Subscription {
 				$subscription->add_order_note( $note );
 				$subscription->payment_complete( $order_id );
 			} else {
-				$subscription->update_status( 'on-hold', $note );
+				$subscription->add_order_note( $note );
+				$subscription->update_status( 'on-hold' );
 			}
 
 			$subscription->save_meta_data();
