@@ -48,12 +48,46 @@ abstract class Walley_Checkout_Request {
 	protected $settings;
 
 	/**
-	 * The store ID for the current request.
+	 * Customer type. Either 'b2c' or 'b2b'.
+	 *
+	 * @var string
+	 */
+	protected $customer_type = 'b2c';
+
+	/**
+	 * Currency.
+	 *
+	 * @var string
+	 */
+	protected $currency = 'SEK';
+
+	/**
+	 * Store ID.
 	 *
 	 * @var string
 	 */
 	protected $store_id;
 
+	/**
+	 * Delivery module.
+	 *
+	 * @var string
+	 */
+	protected $delivery_module;
+
+	/**
+	 * Country code.
+	 *
+	 * @var string
+	 */
+	protected $country_code;
+
+	/**
+	 * Terms page.
+	 *
+	 * @var string
+	 */
+	protected $terms_page;
 
 	/**
 	 * Class constructor.
@@ -116,7 +150,7 @@ abstract class Walley_Checkout_Request {
 			return '';
 		}
 
-		$access_token = $response['token_type'] . ' ' . $response['access_token'];
+		$access_token = "{$response['token_type']} {$response['access_token']}";
 		set_transient( 'walley_checkout_access_token', $access_token, absint( $response['expires_in'] ) );
 		return $access_token;
 	}
@@ -177,15 +211,14 @@ abstract class Walley_Checkout_Request {
 			$data          = 'URL: ' . $request_url . ' - ' . wp_json_encode( $request_args );
 			$error_message = '';
 			// Get the error messages.
-			if ( null !== json_decode( $response['body'], true ) ) {
-				$errors = json_decode( $response['body'], true );
-
+			$errors = json_decode( $response ['body'], true );
+			if ( $errors ) {
 				foreach ( $errors as $error ) {
 					$error_message .= ' ' . wp_json_encode( $error );
 				}
 			}
 
-			$error_message = empty( $error_message ) ? "API Error ${response_code}" : "API Error ${error_message}";
+			$error_message = empty( $error_message ) ? "API Error {$response_code}" : "API Error {$error_message}";
 			$return        = new WP_Error( $response_code, $error_message, $data );
 		} else {
 			$return = json_decode( wp_remote_retrieve_body( $response ), true );
@@ -209,7 +242,6 @@ abstract class Walley_Checkout_Request {
 		$title  = $this->log_title;
 		$code   = wp_remote_retrieve_response_code( $response );
 
-		$body     = json_decode( $response['body'], true );
 		$order_id = $this->private_id ?? $this->order_id ?? null;
 		$log      = Collector_Checkout_Logger::format_log( $order_id, $method, $title, $request_args, $request_url, $response, $code );
 		Collector_Checkout_Logger::log( $log );
@@ -258,28 +290,49 @@ abstract class Walley_Checkout_Request {
 		switch ( $this->currency ) {
 			case 'SEK':
 				$country_code          = 'SE';
-				$this->store_id        = $this->settings[ 'collector_merchant_id_se_' . $this->customer_type ];
-				$this->delivery_module = isset( $this->settings['collector_delivery_module_se'] ) ? $this->settings['collector_delivery_module_se'] : 'no';
+				$this->store_id        = $this->settings[ "collector_merchant_id_se_{$this->customer_type}" ];
+				$this->delivery_module = $this->settings['collector_delivery_module_se'] ?? 'no';
 				break;
 			case 'NOK':
 				$country_code          = 'NO';
-				$this->store_id        = $this->settings[ 'collector_merchant_id_no_' . $this->customer_type ];
-				$this->delivery_module = isset( $this->settings['collector_delivery_module_no'] ) ? $this->settings['collector_delivery_module_no'] : 'no';
+				$this->store_id        = $this->settings[ "collector_merchant_id_no_{$this->customer_type}" ];
+				$this->delivery_module = $this->settings['collector_delivery_module_no'] ?? 'no';
 				break;
 			case 'DKK':
 				$country_code          = 'DK';
-				$this->store_id        = $this->settings[ 'collector_merchant_id_dk_' . $this->customer_type ];
-				$this->delivery_module = isset( $this->settings['collector_delivery_module_dk'] ) ? $this->settings['collector_delivery_module_dk'] : 'no';
+				$this->store_id        = $this->settings[ "collector_merchant_id_dk_{$this->customer_type}" ];
+				$this->delivery_module = $this->settings['collector_delivery_module_dk'] ?? 'no';
 				break;
 			case 'EUR':
-				$country_code          = 'FI';
-				$this->store_id        = $this->settings[ 'collector_merchant_id_fi_' . $this->customer_type ];
-				$this->delivery_module = isset( $this->settings['collector_delivery_module_fi'] ) ? $this->settings['collector_delivery_module_fi'] : 'no';
+				$order_id     = $arguments['order_id'] ?? $this->arguments['order_id'] ?? false;
+				$country_code = $this->get_customer_country( wc_get_order( $order_id ) );
+				if ( 'b2b' === $this->customer_type ) {
+					$this->store_id        = $this->settings[ "collector_merchant_id_fi_{$this->customer_type}" ];
+					$this->delivery_module = $this->settings['collector_delivery_module_fi'] ?? 'no';
+				} else {
+					$store_id = '';
+					// If the customer is from Finland, use the Finnish store ID.
+					if ( 'FI' === $country_code ) {
+						$store_id        = $this->settings[ "collector_merchant_id_fi_{$this->customer_type}" ];
+						$delivery_module = $this->settings['collector_delivery_module_fi'] ?? 'no';
+					}
+
+					if ( empty( $store_id ) ) {
+						// If the customer is from another country, use the EU store ID.
+						// Only B2C is supported in the EU store.
+						$country_code    = 'EU';
+						$store_id        = $this->settings['collector_merchant_id_eu_b2c'] ?? '';
+						$delivery_module = $this->settings['collector_delivery_module_eu'] ?? 'no';
+					}
+
+					$this->store_id        = $store_id;
+					$this->delivery_module = $delivery_module;
+				}
 				break;
 			default:
 				$country_code          = 'SE';
-				$this->store_id        = $this->settings[ 'collector_merchant_id_se_' . $this->customer_type ];
-				$this->delivery_module = isset( $this->settings['collector_delivery_module_se'] ) ? $this->settings['collector_delivery_module_se'] : 'no';
+				$this->store_id        = $this->settings[ "collector_merchant_id_se_{$this->customer_type}" ];
+				$this->delivery_module = $this->settings['collector_delivery_module_se'] ?? 'no';
 				break;
 		}
 		$this->country_code = $country_code;
@@ -294,5 +347,37 @@ abstract class Walley_Checkout_Request {
 	protected function cart() {
 		$collector_checkout_requests_cart = new Collector_Checkout_Requests_Cart();
 		return $collector_checkout_requests_cart->cart();
+	}
+
+
+	/**
+	 * Gets the customer country based on the order or the current customer.
+	 *
+	 * @param WC_Order|false $order The WC order object.
+	 *
+	 * @return string
+	 */
+	protected function get_customer_country( $order = false ) {
+		if ( $order ) {
+			$country = $order->get_billing_country();
+
+			// If the billing_country field is unset, $country will be empty.
+			if ( ! empty( $country ) ) {
+				return apply_filters( 'cco_customer_country', $country );
+			}
+		}
+
+		/* The billing country selected on the checkout page is to prefer over the store's base location. It makes more sense that we check for available payment methods based on the customer's country. */
+		if ( method_exists( 'WC_Customer', 'get_billing_country' ) && ! empty( WC()->customer ) ) {
+			$country = WC()->customer->get_billing_country();
+			if ( ! empty( $country ) ) {
+				return apply_filters( 'cco_customer_country', $country );
+			}
+		}
+
+		/* Fallback: Ignores whatever country the customer selects on the checkout page, and always uses the store's base location. */
+		$base_location = wc_get_base_location();
+		$country       = $base_location['country'];
+		return apply_filters( 'cco_customer_country', $country );
 	}
 }

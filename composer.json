@@ -4,7 +4,8 @@
     "type": "wordpress-plugin",
     "require-dev": {
         "wp-coding-standards/wpcs": "^3.0",
-        "php-stubs/woocommerce-stubs": "^8.2"
+        "php-stubs/woocommerce-stubs": "^8.2",
+        "squizlabs/php_codesniffer": "^3.13"
     },
     "license": "GPL-v3",
     "require": {
