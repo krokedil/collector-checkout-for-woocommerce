@@ -157,11 +157,15 @@ class Collector_Checkout_Requests_Initialize_Checkout extends Collector_Checkout
 
 		// Only send profileName if this is a purchase from the checkout.
 		if ( null === $order_id ) {
+			$custom_profile = trim( $collector_settings[ 'collector_custom_profile_' . strtolower( $this->country_code ) ] ?? '' );
 			if ( 'yes' === $this->delivery_module ) {
-				$formatted_request_body['profileName'] = trim( $collector_settings[ 'collector_custom_profile_' . strtolower( $this->country_code ) ] );
+				$formatted_request_body['profileName'] = $custom_profile;
 				if ( empty( $formatted_request_body['profileName'] ) ) {
 					$formatted_request_body['profileName'] = 'Shipping';
 				}
+				// For subscriptions, a custom profile is used, and must be set regardless of whether delivery module is enabled.
+			} elseif ( ! empty( $custom_profile ) ) {
+				$formatted_request_body['profileName'] = $custom_profile;
 			}
 
 			$formatted_request_body['redirectPageUri'] = add_query_arg(
