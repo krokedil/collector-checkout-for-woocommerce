@@ -122,7 +122,6 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 			'subscription_amount_changes',
 			'subscription_date_changes',
 			'subscription_payment_method_change',
-			'subscription_payment_method_change_customer', // FIXME: Maybe remove if redirect is not optional?
 			'subscription_payment_method_change_admin',
 			'multiple_subscriptions',
 		);

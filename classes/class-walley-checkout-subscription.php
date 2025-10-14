@@ -27,7 +27,7 @@ class Walley_Subscription {
 	public function __construct() {
 		add_action( 'woocommerce_scheduled_subscription_payment_' . self::GATEWAY_ID, array( $this, 'process_scheduled_payment' ), 10, 2 );
 
-		// FIXME: Is this needed? Set the return_url for change payment method.
+		// TODO: Add support for changing payment method: Set the return_url for change payment method.
 		add_filter( 'walley_urls', array( $this, 'set_subscription_order_redirect_urls' ), 10, 2 );
 
 		// Whether the gateway should be available when handling subscriptions.
@@ -39,7 +39,7 @@ class Walley_Subscription {
 		// Show the recurring token on the subscription page in the billing fields.
 		add_action( 'woocommerce_admin_order_data_after_billing_address', array( $this, 'show_payment_token' ) );
 
-		// FIXME: Is this needed? Ensure wp_safe_redirect do not redirect back to default dashboard or home page on change_payment_method.
+		// TODO: Add support for change payment method: Ensure wp_safe_redirect do not redirect back to default dashboard or home page on change_payment_method.
 		add_filter( 'allowed_redirect_hosts', array( $this, 'extend_allowed_domains_list' ) );
 
 		// Save payment token to the subscription when the merchant updates the order from the subscription page.
