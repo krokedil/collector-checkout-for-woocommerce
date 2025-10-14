@@ -89,7 +89,6 @@ abstract class Walley_Checkout_Request {
 	 */
 	protected $terms_page;
 
-
 	/**
 	 * Class constructor.
 	 *

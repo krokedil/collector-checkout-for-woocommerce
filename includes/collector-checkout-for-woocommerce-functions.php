@@ -690,16 +690,25 @@ function walley_confirm_order( $order, $private_id = null ) {
 	}
 
 	if ( is_wp_error( $collector_order ) ) {
-		$order->add_order_note( __( 'Could not retreive Walley order during walley_confirm_order function.', 'collector-checkout-for-woocommerce' ) );
+		$order->add_order_note( __( 'Could not retrieve Walley order during walley_confirm_order function.', 'collector-checkout-for-woocommerce' ) );
 		$order->save();
 
 		return false;
 	}
 
-	$payment_status  = $collector_order['data']['purchase']['result'];
-	$payment_method  = $collector_order['data']['purchase']['paymentName'];
-	$payment_id      = $collector_order['data']['purchase']['purchaseIdentifier'];
-	$walley_order_id = $collector_order['data']['order']['orderId'];
+	$customer_token = $collector_order['data']['order']['customerToken'] ?? null;
+	if ( Walley_Subscription::order_has_subscription( $order ) ) {
+		if ( empty( $customer_token ) ) {
+			$order->add_order_note( __( 'Walley order does not contain a customer token for subscription order.', 'collector-checkout-for-woocommerce' ) );
+		} else {
+			// translators: Customer token.
+			$order->add_order_note( sprintf( __( 'Walley subscription token: %s.', 'collector-checkout-for-woocommerce' ), $customer_token ) );
+			Walley_Subscription::save_customer_token( $order, $customer_token );
+		}
+	}
+
+	$payment_status = $collector_order['data']['purchase']['result'];
+	$payment_method = $collector_order['data']['purchase']['paymentName'];
 
 	// Check if we need to update reference in collectors system.
 	if ( empty( $collector_order['data']['reference'] ) ) {
@@ -720,9 +729,18 @@ function walley_confirm_order( $order, $private_id = null ) {
 		}
 	}
 
+	// For free-trial, and zero-amount orders, the payment ID, and Walley order ID are not set.
+	$walley_order_id = $collector_order['data']['order']['orderId'] ?? '';
+	$payment_id      = $collector_order['data']['purchase']['purchaseIdentifier'] ?? '';
+
 	$order->update_meta_data( '_collector_payment_method', $payment_method );
-	$order->update_meta_data( '_collector_payment_id', $payment_id );
-	$order->update_meta_data( '_collector_order_id', sanitize_key( $walley_order_id ) );
+	if ( ! empty( $payment_id ) ) {
+		$order->update_meta_data( '_collector_payment_id', $payment_id );
+	}
+
+	if ( ! empty( $walley_order_id ) ) {
+		$order->update_meta_data( '_collector_order_id', sanitize_key( $walley_order_id ) );
+	}
 
 	wc_collector_save_shipping_reference_to_order( $order, $collector_order );
 
@@ -1167,7 +1185,14 @@ function walley_set_order_status( $order, $payment_status, $payment_id, $save_or
 			}
 			$order->set_transaction_id( $payment_id );
 			break;
-
+		case 'Completed':
+			// This is trigger for free-trial orders, and other zero-amount orders.
+			$order->payment_complete();
+			$order->add_order_note( __( 'The order has been completed successfully. This is a zero-amount order or a free-trial order that does not require payment.', 'collector-checkout-for-woocommerce' ) );
+			if ( $is_callback ) {
+				CCO_WC()->logger::log( 'Order status not set correctly for order ' . $order->get_order_number() . ' during checkout process. Setting order status to Processing/Completed.' );
+			}
+			break;
 		default:
 			$order->add_order_note( __( 'Order is PENDING APPROVAL by Walley. Payment ID: ', 'collector-checkout-for-woocommerce' ) . $payment_id );
 			$order->update_status( 'on-hold' );

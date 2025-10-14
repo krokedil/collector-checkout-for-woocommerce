@@ -74,6 +74,11 @@ class Walley_Checkout_Order_Management {
 			return;
 		}
 
+		if ( ! empty( $order->get_meta( Walley_Subscription::ZERO_AMOUNT_ORDER ) ) ) {
+			$order->add_order_note( __( 'Walley order activation skipped. This is a zero amount order.', 'collector-checkout-for-woocommerce' ) );
+			return;
+		}
+
 		if ( $order->get_meta( '_collector_order_activated', true ) ) {
 			$order->add_order_note( __( 'Could not activate Walley reservation, Walley reservation is already activated.', 'collector-checkout-for-woocommerce' ) );
 			return;
