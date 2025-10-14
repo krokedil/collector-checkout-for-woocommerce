@@ -311,7 +311,7 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 		$order->update_meta_data( '_collector_customer_type', $customer_type );
 		$order->update_meta_data( '_collector_public_token', WC()->session->get( 'collector_public_token' ) );
 		$order->update_meta_data( '_collector_private_id', $private_id );
-		$order->save();
+		$order->save_meta_data();
 
 		$walley_reference = $this->update_walley_reference( $order_id, $customer_type, $private_id );
 
@@ -348,6 +348,12 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 			return array(
 				'result' => 'error',
 			);
+		}
+
+		// Flag as zero amount to prevent OM from processing the order.
+		if ( Walley_Subscription::order_has_subscription( $order ) && 0.0 === $total_amount ) {
+			$order->update_meta_data( Walley_Subscription::ZERO_AMOUNT_ORDER, true );
+			$order->save_meta_data();
 		}
 
 		// Save data to order.

@@ -200,8 +200,8 @@ class Walley_Checkout {
 
 		self::maybe_update_cart( $private_id, $customer_type );
 
-		// If cart doesn't need payment anymore - reload the checkout page.
-		if ( ! WC()->cart->needs_payment() ) {
+		// If cart doesn't need payment anymore - reload the checkout page except if the cart contain a subscription (e.g., free trial).
+		if ( ! Walley_Subscription::cart_has_subscription() && ! WC()->cart->needs_payment() ) {
 			WC()->session->reload_checkout = true;
 		}
 	}

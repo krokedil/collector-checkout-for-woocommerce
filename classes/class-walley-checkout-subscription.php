@@ -19,6 +19,7 @@ class Walley_Subscription {
 	public const SKIP_OM                = '_' . self::GATEWAY_ID . '_skip_om';
 	public const CANCELED_TOKEN_HISTORY = '_' . self::GATEWAY_ID . '_canceled_token_history';
 	public const AUTHORIZATION_ID       = '_' . self::GATEWAY_ID . '_authorization_id';
+	public const ZERO_AMOUNT_ORDER      = '_' . self::GATEWAY_ID . '_zero_amount_order';
 
 	/**
 	 * Register hooks.
