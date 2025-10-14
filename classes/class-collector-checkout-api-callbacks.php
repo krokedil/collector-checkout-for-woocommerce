@@ -16,7 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class Collector_Api_Callbacks {
 
-	private const SCHEDULE_INTERVAL_SEC = 60; // In seconds.
+	private const SCHEDULE_INTERVAL_SEC = 30; // In seconds.
 
 	public const HOOK_PREFIX = 'walley_scheduled_callback_';
 
