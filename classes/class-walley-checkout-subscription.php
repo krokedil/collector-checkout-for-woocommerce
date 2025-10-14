@@ -223,7 +223,7 @@ class Walley_Subscription {
 			return;
 		}
 
-		$walley_order_id = $args['order_id'] ?? null;
+		$walley_order_id = $args['walley_order_id'] ?? null;
 		if ( ! empty( $walley_order_id ) ) {
 			self::process_authorization_success( $renewal_order, $subscriptions, $walley_order_id );
 		} else {
