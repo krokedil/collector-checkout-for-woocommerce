@@ -67,7 +67,7 @@ class Collector_Api_Callbacks {
 	public function __construct() {
 		add_action( 'collector_check_for_order', array( $this, 'collector_check_for_order_callback' ), 10, 3 );
 		add_action( 'rest_api_init', array( $this, 'register_routes' ) );
-		add_action( self::HOOK_PREFIX . 'process_authorization', array( $this, 'process_authorization' ) );
+		add_action( self::HOOK_PREFIX . 'process_authorization', array( 'Walley_Subscription', 'process_authorization' ) );
 	}
 
 	/**
@@ -104,27 +104,37 @@ class Collector_Api_Callbacks {
 		$payload    = $params['Payload'];
 
 		switch ( $event_type ) {
-			case 'walley:order:created': // FIXME: This event is used for all orders, not just subscriptions. This might conflict with the existing callback handling.
+			case 'walley:order:created':
 			case 'walley:authorization:failed':
 			case 'walley:authorization:retrying':
+				// A subscription is recognized by its customer token.
 				// Since we only want to handle subscriptions here, we can return early if no customer token is present.
 				$customer_token = $payload['CustomerToken'];
 				if ( empty( $customer_token ) ) {
 					return new WP_REST_Response( null, 200 );
 				}
 
+				// If the authorization ID is missing, this is not a renewal.
 				$authorization_id = $payload['AuthorizationId'];
-				$walley_order_id  = $payload['OrderId'];
-				$reason           = $payload['Reason'] ?? null; // Only available when failed or retrying.
+				if ( empty( $authorization_id ) ) {
+					return new WP_REST_Response( null, 200 );
+				}
+
+				$walley_order_id = $payload['OrderId'];
+				$reason          = $payload['Reason'] ?? null; // Only available when failed or retrying.
 
 				// Schedule the processing of the authorization.
 				$args = array(
-					'hook'             => self::HOOK_PREFIX . 'process_authorization',
-					'signature'        => "{$event_type}:{$authorization_id}:{$walley_order_id}",
-					'authorization_id' => $authorization_id,
-					'walley_order_id'  => $walley_order_id,
-					'event_type'       => $event_type,
-					'reason'           => $reason,
+					'hook'      => self::HOOK_PREFIX . 'process_authorization',
+					'signature' => "{$event_type}:{$authorization_id}:{$walley_order_id}",
+					'args'      => array(
+						( array(
+							'authorization_id' => $authorization_id,
+							'walley_order_id'  => $walley_order_id,
+							'event_type'       => $event_type,
+							'reason'           => $reason,
+						) ),
+					),
 				);
 				$this->schedule_callback( $args );
 				break;
@@ -167,7 +177,7 @@ class Collector_Api_Callbacks {
 		$schedule_id = as_schedule_single_action(
 			time() + self::SCHEDULE_INTERVAL_SEC,
 			$args['hook'],
-			$args,
+			$args['args'],
 		);
 
 		$did_schedule = 0 !== $schedule_id;
@@ -180,16 +190,6 @@ class Collector_Api_Callbacks {
 		return $did_schedule;
 	}
 
-	/**
-	 * Process the authorization for a subscription.
-	 *
-	 * @param array $args The arguments for processing the authorization.
-	 *
-	 * @return void
-	 */
-	public function process_authorization( $args ) {
-		Walley_Subscription::process_authorization( $args );
-	}
 
 	/**
 	 * Check for order.
