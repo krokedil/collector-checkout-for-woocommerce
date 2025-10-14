@@ -350,7 +350,7 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 		}
 
 		// Flag as zero amount to prevent OM from processing the order.
-		if ( Walley_Subscription::order_has_subscription( $order ) && 0.0 === $total_amount ) {
+		if ( Walley_Subscription::order_has_subscription( $order ) && 0.0 === floatval( $order->get_total() ) ) {
 			$order->update_meta_data( Walley_Subscription::ZERO_AMOUNT_ORDER, true );
 			$order->save_meta_data();
 		}
