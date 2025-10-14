@@ -694,8 +694,14 @@ function walley_confirm_order( $order, $private_id = null ) {
 	}
 
 	$customer_token = $collector_order['data']['order']['customerToken'] ?? null;
-	if ( ! empty( $customer_token ) ) {
-		Walley_Subscription::save_customer_token( $order, $customer_token );
+	if ( Walley_Subscription::order_has_subscription( $order ) ) {
+		if ( empty( $customer_token ) ) {
+			$order->add_order_note( __( 'Walley order does not contain a customer token for subscription order.', 'collector-checkout-for-woocommerce' ) );
+		} else {
+			// translators: Customer token.
+			$order->add_order_note( sprintf( __( 'Walley subscription token: %s.', 'collector-checkout-for-woocommerce' ), $customer_token ) );
+			Walley_Subscription::save_customer_token( $order, $customer_token );
+		}
 	}
 
 	$payment_status  = $collector_order['data']['purchase']['result'];
