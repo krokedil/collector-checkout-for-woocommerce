@@ -99,7 +99,7 @@ class Walley_Checkout_Request_Create_Authorization extends Walley_Checkout_Reque
 
 		return array(
 			'status' => wp_remote_retrieve_response_code( $response ),
-			'data'   => json_decode( wp_remote_retrieve_body( $response ), true ),
+			'body'   => json_decode( wp_remote_retrieve_body( $response ), true ),
 		);
 	}
 }
