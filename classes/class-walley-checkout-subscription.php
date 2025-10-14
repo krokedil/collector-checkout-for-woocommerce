@@ -185,7 +185,7 @@ class Walley_Subscription {
 		);
 
 		$renewal_order = reset( $orders );
-		if ( empty( $order ) || $auth_id !== $order->get_meta( self::AUTHORIZATION_ID ) ) {
+		if ( empty( $renewal_order ) || $auth_id !== $renewal_order->get_meta( self::AUTHORIZATION_ID ) ) {
 			return null;
 		}
 
