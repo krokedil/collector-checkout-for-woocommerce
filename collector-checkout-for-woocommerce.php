@@ -194,6 +194,7 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-walley-checkout.php';
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-walley-checkout-confirmation.php';
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-walley-checkout-session.php';
+			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-walley-checkout-subscription.php';
 
 			// Order management. SOAP will be deprecated.
 			if ( ! empty( $this->walley_api_client_id ) && ! empty( $this->walley_api_secret ) ) {
@@ -282,6 +283,11 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/helpers/class-collector-checkout-requests-helper-order-fees.php';
 
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/helpers/class-walley-checkout-requests-fees-helper.php';
+
+			// FIXME: Should these be in the if-statement above?
+			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/class-walley-checkout-request-delete.php';
+			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/subscription/delete/class-walley-checkout-request-cancel-customer-token.php';
+			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/subscription/post/class-walley-checkout-request-authorize.php';
 
 			// Set variables for shorthand access to classes.
 			$this->order_items = new Collector_Checkout_Requests_Helper_Order();
