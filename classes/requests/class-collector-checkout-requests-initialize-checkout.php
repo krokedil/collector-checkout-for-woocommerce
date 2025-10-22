@@ -47,6 +47,13 @@ class Collector_Checkout_Requests_Initialize_Checkout extends Collector_Checkout
 	public $customer_type = '';
 
 	/**
+	 * Delivery module.
+	 *
+	 * @var string
+	 */
+	protected $delivery_module;
+
+	/**
 	 * Class constructor.
 	 *
 	 * @param string $customer_type The customer type.
@@ -157,7 +164,11 @@ class Collector_Checkout_Requests_Initialize_Checkout extends Collector_Checkout
 
 		// Only send profileName if this is a purchase from the checkout.
 		if ( null === $order_id ) {
-			if ( 'yes' === $this->delivery_module ) {
+			$profile = $this->settings[ 'walley_custom_profile_' . strtolower( $this->country_code ) ] ?? null;
+			if ( ! empty( $profile ) && 'no' !== $profile ) {
+				$formatted_request_body['profileName'] = $profile;
+
+			} elseif ( 'yes' === $this->delivery_module ) {
 				$formatted_request_body['profileName'] = trim( $collector_settings[ 'collector_custom_profile_' . strtolower( $this->country_code ) ] );
 				if ( empty( $formatted_request_body['profileName'] ) ) {
 					$formatted_request_body['profileName'] = 'Shipping';

@@ -134,6 +134,8 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 			)
 		);
 
+		$this->migrate_settings();
+
 		// Function to handle the thankyou page.
 		add_filter( 'woocommerce_thankyou_order_received_text', array( $this, 'collector_thankyou_order_received_text' ), 10, 2 );
 		add_action( 'woocommerce_thankyou', array( $this, 'maybe_delete_collector_sessions' ), 100, 1 );
@@ -152,6 +154,35 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 
 		// Delete transient when Walley settings is saved.
 		add_action( 'woocommerce_update_options_checkout_collector_checkout', array( $this, 'delete_transients' ) );
+	}
+
+	private function migrate_settings() {
+		$countries = array( 'se', 'no', 'dk', 'fi' );
+		// Order matters.
+		$profiles = array( 'DigitalDelivery', 'DigitalDelivery-Recurring', 'Shipping-Redlight', 'Shipping-nShift', 'Shipping-Redlight-Recurring', 'Shipping-nShift-Recurring' );
+
+		foreach ( $countries as $country ) {
+			if ( isset( $this->settings[ "walley_custom_profile_$country" ] ) ) {
+				continue;
+			}
+
+			$saved_profile = $this->settings[ "collector_custom_profile_$country" ] ?? '';
+			if ( empty( $saved_profile ) ) {
+				$this->update_option( "walley_custom_profile_$country", 'no' );
+				continue;
+			}
+
+			foreach ( $profiles as $profile ) {
+				// Migrate the old setting to the corresponding new profile based on a substring match.
+				if ( strpos( strtolower( $profile ), strtolower( $saved_profile ) ) ) {
+					$this->update_option( "walley_custom_profile_$country", $profile );
+					break; // with next country.
+				} else {
+					// This is an unknown profile.
+					$this->update_option( "walley_custom_profile_$country", 'no' );
+				}
+			}
+		}
 	}
 
 	/**
