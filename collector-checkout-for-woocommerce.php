@@ -209,6 +209,11 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/class-walley-checkout-request-get.php';
 				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/class-walley-checkout-request-put.php';
 				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/class-walley-checkout-request-post.php';
+				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/class-walley-checkout-request-delete.php';
+
+				// Subscriptions.
+				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/subscription/delete/class-walley-checkout-request-cancel-customer-token.php';
+				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/subscription/post/class-walley-checkout-request-authorize.php';
 
 				// New Checkout request class files.
 				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/checkouts/get/class-walley-checkout-request-get-checkout.php';
@@ -283,11 +288,6 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/helpers/class-collector-checkout-requests-helper-order-fees.php';
 
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/helpers/class-walley-checkout-requests-fees-helper.php';
-
-			// FIXME: Should these be in the if-statement above?
-			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/class-walley-checkout-request-delete.php';
-			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/subscription/delete/class-walley-checkout-request-cancel-customer-token.php';
-			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/subscription/post/class-walley-checkout-request-authorize.php';
 
 			// Set variables for shorthand access to classes.
 			$this->order_items = new Collector_Checkout_Requests_Helper_Order();
