@@ -160,20 +160,11 @@ class Collector_Checkout_Requests_Initialize_Checkout extends Collector_Checkout
 			'fees'             => ( null === $order_id ) ? $this->fees() : CCO_WC()->order_fees->get_order_fees( $order_id ),
 		);
 
-		$collector_settings = get_option( 'woocommerce_collector_checkout_settings' );
-
 		// Only send profileName if this is a purchase from the checkout.
 		if ( null === $order_id ) {
 			$profile = $this->settings[ 'walley_custom_profile_' . strtolower( $this->country_code ) ] ?? null;
-			if ( ! empty( $profile ) ) {
-				if ( 'no' !== $profile ) {
-					$formatted_request_body['profileName'] = $profile;
-				}
-			} elseif ( 'yes' === $this->delivery_module ) {
-				$formatted_request_body['profileName'] = trim( $collector_settings[ 'collector_custom_profile_' . strtolower( $this->country_code ) ] );
-				if ( empty( $formatted_request_body['profileName'] ) ) {
-					$formatted_request_body['profileName'] = 'Shipping';
-				}
+			if ( ! empty( $profile ) && 'no' !== $profile ) {
+				$formatted_request_body['profileName'] = $profile;
 			}
 
 			$formatted_request_body['redirectPageUri'] = add_query_arg(
