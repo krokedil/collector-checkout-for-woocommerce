@@ -54,6 +54,13 @@ class Collector_Checkout_Requests_Initialize_Checkout extends Collector_Checkout
 	protected $delivery_module;
 
 	/**
+	 * The currency.
+	 *
+	 * @var string
+	 */
+	protected $currency;
+
+	/**
 	 * Class constructor.
 	 *
 	 * @param string $customer_type The customer type.
@@ -65,27 +72,27 @@ class Collector_Checkout_Requests_Initialize_Checkout extends Collector_Checkout
 			case 'SEK':
 				$country_code          = 'SE';
 				$this->store_id        = $collector_settings[ 'collector_merchant_id_se_' . $customer_type ];
-				$this->delivery_module = isset( $collector_settings['collector_delivery_module_se'] ) ? $collector_settings['collector_delivery_module_se'] : 'no';
+				$this->delivery_module = walley_is_delivery_enabled( 'se', $collector_settings );
 				break;
 			case 'NOK':
 				$country_code          = 'NO';
 				$this->store_id        = $collector_settings[ 'collector_merchant_id_no_' . $customer_type ];
-				$this->delivery_module = isset( $collector_settings['collector_delivery_module_no'] ) ? $collector_settings['collector_delivery_module_no'] : 'no';
+				$this->delivery_module = walley_is_delivery_enabled( 'no', $collector_settings );
 				break;
 			case 'DKK':
 				$country_code          = 'DK';
 				$this->store_id        = $collector_settings[ 'collector_merchant_id_dk_' . $customer_type ];
-				$this->delivery_module = isset( $collector_settings['collector_delivery_module_dk'] ) ? $collector_settings['collector_delivery_module_dk'] : 'no';
+				$this->delivery_module = walley_is_delivery_enabled( 'dk', $collector_settings );
 				break;
 			case 'EUR':
 				$country_code          = 'FI';
 				$this->store_id        = $collector_settings[ 'collector_merchant_id_fi_' . $customer_type ];
-				$this->delivery_module = isset( $collector_settings['collector_delivery_module_fi'] ) ? $collector_settings['collector_delivery_module_fi'] : 'no';
+				$this->delivery_module = walley_is_delivery_enabled( 'fi', $collector_settings );
 				break;
 			default:
 				$country_code          = 'SE';
 				$this->store_id        = $collector_settings[ 'collector_merchant_id_se_' . $customer_type ];
-				$this->delivery_module = isset( $collector_settings['collector_delivery_module_se'] ) ? $collector_settings['collector_delivery_module_se'] : 'no';
+				$this->delivery_module = walley_is_delivery_enabled( 'se', $collector_settings );
 				break;
 		}
 		$this->customer_type = $customer_type;

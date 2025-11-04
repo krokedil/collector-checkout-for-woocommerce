@@ -88,12 +88,6 @@ $settings = array(
 		'default'     => '',
 		'desc_tip'    => true,
 	),
-	'collector_delivery_module_se'    => array(
-		'title'   => __( 'Walley nShift Delivery', 'collector-checkout-for-woocommerce' ),
-		'type'    => 'checkbox',
-		'label'   => __( 'Activate Walley nShift Delivery Sweden', 'collector-checkout-for-woocommerce' ),
-		'default' => 'no',
-	),
 	'walley_custom_profile_se'        => array(
 		'title'   => __( 'Custom Profile Sweden', 'collector-checkout-for-woocommerce' ),
 		'type'    => 'select',
@@ -117,12 +111,6 @@ $settings = array(
 		'description' => __( 'Enter your Walley Checkout Merchant ID for B2B purchases in Norway', 'collector-checkout-for-woocommerce' ),
 		'default'     => '',
 		'desc_tip'    => true,
-	),
-	'collector_delivery_module_no'    => array(
-		'title'   => __( 'Walley nShift Delivery', 'collector-checkout-for-woocommerce' ),
-		'type'    => 'checkbox',
-		'label'   => __( 'Activate Walley nShift Delivery Norway', 'collector-checkout-for-woocommerce' ),
-		'default' => 'no',
 	),
 	'walley_custom_profile_no'        => array(
 		'title'   => __( 'Custom Profile Norway', 'collector-checkout-for-woocommerce' ),
@@ -148,12 +136,6 @@ $settings = array(
 		'default'     => '',
 		'desc_tip'    => true,
 	),
-	'collector_delivery_module_fi'    => array(
-		'title'   => __( 'Walley nShift Delivery', 'collector-checkout-for-woocommerce' ),
-		'type'    => 'checkbox',
-		'label'   => __( 'Activate Walley nShift Delivery Finland', 'collector-checkout-for-woocommerce' ),
-		'default' => 'no',
-	),
 	'walley_custom_profile_fi'        => array(
 		'title'   => __( 'Custom Profile Finland', 'collector-checkout-for-woocommerce' ),
 		'type'    => 'select',
@@ -178,12 +160,6 @@ $settings = array(
 		'default'     => '',
 		'desc_tip'    => true,
 	),
-	'collector_delivery_module_dk'    => array(
-		'title'   => __( 'Walley nShift Delivery', 'collector-checkout-for-woocommerce' ),
-		'type'    => 'checkbox',
-		'label'   => __( 'Activate Walley nShift Delivery Denmark', 'collector-checkout-for-woocommerce' ),
-		'default' => 'no',
-	),
 	'walley_custom_profile_dk'        => array(
 		'title'   => __( 'Custom Profile Denmark', 'collector-checkout-for-woocommerce' ),
 		'type'    => 'select',
@@ -200,12 +176,6 @@ $settings = array(
 		'description' => __( 'Enter your Walley Checkout Merchant ID for B2C purchases in EU', 'collector-checkout-for-woocommerce' ),
 		'default'     => '',
 		'desc_tip'    => true,
-	),
-	'collector_delivery_module_eu'    => array(
-		'title'   => __( 'Walley nShift Delivery', 'collector-checkout-for-woocommerce' ),
-		'type'    => 'checkbox',
-		'label'   => __( 'Activate Walley nShift Delivery EU', 'collector-checkout-for-woocommerce' ),
-		'default' => 'no',
 	),
 	'checkout_settings_title'         => array(
 		'title' => __( 'Checkout settings', 'collector-checkout-for-woocommerce' ),

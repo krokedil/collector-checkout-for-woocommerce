@@ -92,19 +92,19 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 
 		switch ( get_woocommerce_currency() ) {
 			case 'SEK':
-				$this->delivery_module = isset( $this->settings['collector_delivery_module_se'] ) ? $this->settings['collector_delivery_module_se'] : 'no';
+				$this->delivery_module = walley_is_delivery_enabled( 'se', $this->settings );
 				break;
 			case 'NOK':
-				$this->delivery_module = isset( $this->settings['collector_delivery_module_no'] ) ? $this->settings['collector_delivery_module_no'] : 'no';
+				$this->delivery_module = walley_is_delivery_enabled( 'no', $this->settings );
 				break;
 			case 'DKK':
-				$this->delivery_module = isset( $this->settings['collector_delivery_module_dk'] ) ? $this->settings['collector_delivery_module_dk'] : 'no';
+				$this->delivery_module = walley_is_delivery_enabled( 'dk', $this->settings );
 				break;
 			case 'EUR':
-				$this->delivery_module = isset( $this->settings['collector_delivery_module_fi'] ) ? $this->settings['collector_delivery_module_fi'] : 'no';
+				$this->delivery_module = walley_is_delivery_enabled( 'fi', $this->settings );
 				break;
 			default:
-				$this->delivery_module = isset( $this->settings['collector_delivery_module_se'] ) ? $this->settings['collector_delivery_module_se'] : 'no';
+				$this->delivery_module = walley_is_delivery_enabled( 'se', $this->settings );
 				break;
 		}
 		// Load the form fields.
@@ -156,8 +156,13 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 		add_action( 'woocommerce_update_options_checkout_collector_checkout', array( $this, 'delete_transients' ) );
 	}
 
+	/**
+	 * Migrate to new settings.
+	 *
+	 * @return void
+	 */
 	private function migrate_settings() {
-		$countries = array( 'se', 'no', 'dk', 'fi' );
+		$countries = array( 'se', 'no', 'dk', 'fi', 'eu' );
 		// Order matters.
 		$profiles = array( 'DigitalDelivery', 'DigitalDelivery-Recurring', 'Shipping-Redlight', 'Shipping-nShift', 'Shipping-Redlight-Recurring', 'Shipping-nShift-Recurring' );
 
@@ -195,6 +200,24 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 					}
 				}
 			}
+		}
+
+		// For delivery module, we need to check if the setting is enabled. If it is, we'll default to "Redlight" unless a profile is already set.
+		foreach ( $countries as $country ) {
+			$profile = $this->get_option( "walley_custom_profile_$country" );
+
+			// Do not overwrite the profile if it is set.
+			if ( false !== strpos( strtolower( $profile ), 'shipping' ) ) {
+				continue;
+			}
+
+			$delivery_module = wc_string_to_bool( $this->settings[ "collector_delivery_module_$country" ] ?? false );
+			if ( false === $delivery_module ) {
+				continue;
+			}
+
+			$this->update_option( "walley_custom_profile_$country", 'Shipping-Redlight' );
+			$this->update_option( "collector_delivery_module_$country", null ); // Set to null to flag as migrated.
 		}
 	}
 
@@ -578,7 +601,7 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 			if ( 'collector_checkout' === $first_gateway ) {
 				$class[] = 'collector-checkout-selected';
 				// Add class if Collector delivery module is used.
-				if ( 'yes' === $this->delivery_module ) {
+				if ( $this->delivery_module ) {
 					$class[] = 'collector-delivery-module';
 				}
 			}
@@ -720,23 +743,23 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 
 		switch ( get_woocommerce_currency() ) {
 			case 'SEK':
-				$delivery_module = isset( $collector_settings['collector_delivery_module_se'] ) ? $collector_settings['collector_delivery_module_se'] : 'no';
+				$delivery_module = walley_is_delivery_enabled( 'se', $collector_settings );
 				break;
 			case 'NOK':
-				$delivery_module = isset( $collector_settings['collector_delivery_module_no'] ) ? $collector_settings['collector_delivery_module_no'] : 'no';
+				$delivery_module = walley_is_delivery_enabled( 'no', $collector_settings );
 				break;
 			case 'DKK':
-				$delivery_module = isset( $collector_settings['collector_delivery_module_dk'] ) ? $collector_settings['collector_delivery_module_dk'] : 'no';
+				$delivery_module = walley_is_delivery_enabled( 'dk', $collector_settings );
 				break;
 			case 'EUR':
-				$delivery_module = isset( $collector_settings['collector_delivery_module_fi'] ) ? $collector_settings['collector_delivery_module_fi'] : 'no';
+				$delivery_module = walley_is_delivery_enabled( 'fi', $collector_settings );
 				break;
 			default:
-				$delivery_module = isset( $collector_settings['collector_delivery_module_se'] ) ? $collector_settings['collector_delivery_module_se'] : 'no';
+				$delivery_module = walley_is_delivery_enabled( 'se', $collector_settings );
 				break;
 		}
 
-		if ( 'yes' === $delivery_module ) {
+		if ( $delivery_module ) {
 			/* If the delivery module is configured by Walley (displayed in iframe), its shipping data will be available in the session. We need to check if there is a corresponding WC shipping option. */
 			$delivery_module_data = WC()->session->get( 'collector_delivery_module_data', array() )[0] ?? '';
 			$chosen_shipping      = WC()->session->get( 'chosen_shipping_methods', array() )[0] ?? '';

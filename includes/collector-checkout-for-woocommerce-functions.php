@@ -187,26 +187,26 @@ function remove_collector_db_row_data( $private_id ) {
  *
  * @param string $currency selected currency.
  *
- * @return boolean
+ * @return bool
  */
 function is_collector_delivery_module( $currency = false ) {
 	$collector_settings = get_option( 'woocommerce_collector_checkout_settings' );
 	$currency           = ! false === $currency ? $currency : get_woocommerce_currency();
 	switch ( $currency ) {
 		case 'SEK':
-			$delivery_module = isset( $collector_settings['collector_delivery_module_se'] ) ? $collector_settings['collector_delivery_module_se'] : 'no';
+			$delivery_module = walley_is_delivery_enabled( 'se', $collector_settings );
 			break;
 		case 'NOK':
-			$delivery_module = isset( $collector_settings['collector_delivery_module_no'] ) ? $collector_settings['collector_delivery_module_no'] : 'no';
+			$delivery_module = walley_is_delivery_enabled( 'no', $collector_settings );
 			break;
 		case 'DKK':
-			$delivery_module = isset( $collector_settings['collector_delivery_module_dk'] ) ? $collector_settings['collector_delivery_module_dk'] : 'no';
+			$delivery_module = walley_is_delivery_enabled( 'dk', $collector_settings );
 			break;
 		case 'EUR':
-			$delivery_module = isset( $collector_settings['collector_delivery_module_fi'] ) ? $collector_settings['collector_delivery_module_fi'] : 'no';
+			$delivery_module = walley_is_delivery_enabled( 'fi', $collector_settings );
 			break;
 		default:
-			$delivery_module = 'no';
+			$delivery_module = walley_is_delivery_enabled( 'se', $collector_settings );
 			break;
 	}
 	return $delivery_module;
@@ -1206,4 +1206,26 @@ function walley_set_order_status( $order, $payment_status, $payment_id, $save_or
 	if ( $save_order ) {
 		$order->save();
 	}
+}
+
+/**
+ * Check if delivery is enabled for a specific country.
+ *
+ * @param string     $country The country code.
+ * @param array|null $settings The Walley plugin settings. If null, the settings will be fetched from the database.
+ *
+ * @return bool True if delivery is enabled, otherwise false.
+ */
+function walley_is_delivery_enabled( $country, $settings = null ) {
+	if ( empty( $settings ) ) {
+		$settings = get_option( 'woocommerce_collector_checkout_settings' );
+	}
+
+	$profile = $settings[ "walley_custom_profile_{$country}" ] ?? null;
+	if ( empty( $profile ) ) {
+		// Check the old settings in case the new setting is not yet set.
+		return wc_string_to_bool( $settings[ "collector_delivery_module_$country" ] ?? 'no' );
+	}
+
+	return strpos( strtolower( $profile ), 'shipping' ) !== false;
 }

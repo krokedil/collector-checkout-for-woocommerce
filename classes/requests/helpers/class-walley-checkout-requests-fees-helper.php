@@ -24,25 +24,25 @@ class Walley_Checkout_Requests_Fees_Helper {
 	/**
 	 * Gets the delivery module settings for the currency.
 	 *
-	 * @return string
+	 * @return bool
 	 */
 	public static function get_delivery_module() {
 		$collector_settings = get_option( 'woocommerce_collector_checkout_settings' );
 		switch ( get_woocommerce_currency() ) {
 			case 'SEK':
-				$delivery_module = isset( $collector_settings['collector_delivery_module_se'] ) ? $collector_settings['collector_delivery_module_se'] : 'no';
+				$delivery_module = walley_is_delivery_enabled( 'se', $collector_settings );
 				break;
 			case 'NOK':
-				$delivery_module = isset( $collector_settings['collector_delivery_module_no'] ) ? $collector_settings['collector_delivery_module_no'] : 'no';
+				$delivery_module = walley_is_delivery_enabled( 'no', $collector_settings );
 				break;
 			case 'DKK':
-				$delivery_module = isset( $collector_settings['collector_delivery_module_dk'] ) ? $collector_settings['collector_delivery_module_dk'] : 'no';
+				$delivery_module = walley_is_delivery_enabled( 'dk', $collector_settings );
 				break;
 			case 'EUR':
-				$delivery_module = isset( $collector_settings['collector_delivery_module_fi'] ) ? $collector_settings['collector_delivery_module_fi'] : 'no';
+				$delivery_module = walley_is_delivery_enabled( 'fi', $collector_settings );
 				break;
 			default:
-				$delivery_module = isset( $collector_settings['collector_delivery_module_se'] ) ? $collector_settings['collector_delivery_module_se'] : 'no';
+				$delivery_module = walley_is_delivery_enabled( 'se', $collector_settings );
 				break;
 		}
 
@@ -61,7 +61,7 @@ class Walley_Checkout_Requests_Fees_Helper {
 		 * If a delivery module is not used, the shipping is handled in WooCommerce, and must be sent in the fee.shipping object. Retrieves first available.
 		 * Note: if no shipping is available, fees.shipping is simply unset, NOT null.
 		 */
-		$update_shipping = apply_filters( 'coc_update_shipping', ( 'no' === self::get_delivery_module() ) ); // Filter on if we should update shipping with fees or not.
+		$update_shipping = apply_filters( 'coc_update_shipping', self::get_delivery_module() ); // Filter on if we should update shipping with fees or not.
 		$shipping        = self::get_shipping();
 		if ( ( WC()->cart->show_shipping() && $update_shipping ) && ! empty( $shipping ) ) {
 			$fees['shipping'] = $shipping;
