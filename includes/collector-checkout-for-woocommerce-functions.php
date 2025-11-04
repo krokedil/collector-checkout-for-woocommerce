@@ -1221,6 +1221,7 @@ function walley_is_delivery_enabled( $country, $settings = null ) {
 		$settings = get_option( 'woocommerce_collector_checkout_settings' );
 	}
 
+	$country = strtolower( $country );
 	$profile = $settings[ "walley_custom_profile_{$country}" ] ?? null;
 	if ( empty( $profile ) ) {
 		// Check the old settings in case the new setting is not yet set.
@@ -1228,4 +1229,27 @@ function walley_is_delivery_enabled( $country, $settings = null ) {
 	}
 
 	return strpos( strtolower( $profile ), 'shipping' ) !== false;
+}
+
+/**
+ * Whether the EU or FI profile should be used for EUR currency.
+ *
+ * If the customer type is available, and it is B2B, 'fi' will always be returned.
+ *
+ * @param bool $default_to_store Whether to default to the store location if the customer's billing country is not set.
+ * @return string 'fi' or 'eu'.
+ */
+function walley_get_eur_country( $default_to_store = true ) {
+	if ( isset( WC()->session ) && method_exists( WC()->session, 'get' ) ) {
+		$customer_type = WC()->session->get( 'collector_customer_type' );
+		if ( 'b2b' === $customer_type ) {
+			return 'fi';
+		}
+	}
+
+	$customer_location = isset( WC()->customer ) ? WC()->customer->get_billing_country() : false;
+	if ( $default_to_store ) {
+		$location = empty( $customer_location ) ? wc_get_base_location()['country'] : $customer_location;
+	}
+	return 'fi' !== strtolower( $location ) ? 'eu' : 'fi';
 }

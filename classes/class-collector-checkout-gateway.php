@@ -90,6 +90,9 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 		$this->walley_api_client_id = $this->get_option( 'walley_api_client_id' );
 		$this->walley_api_secret    = $this->get_option( 'walley_api_secret' );
 
+		$customer_location = isset( WC()->customer ) ? WC()->customer->get_billing_country() : false;
+		$location          = empty( $customer_location ) ? wc_get_base_location()['country'] : $customer_location;
+		$location          = strtolower( $location );
 		switch ( get_woocommerce_currency() ) {
 			case 'SEK':
 				$this->delivery_module = walley_is_delivery_enabled( 'se', $this->settings );
@@ -101,7 +104,7 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 				$this->delivery_module = walley_is_delivery_enabled( 'dk', $this->settings );
 				break;
 			case 'EUR':
-				$this->delivery_module = walley_is_delivery_enabled( 'fi', $this->settings );
+				$this->delivery_module = walley_is_delivery_enabled( walley_get_eur_country(), $this->settings );
 				break;
 			default:
 				$this->delivery_module = walley_is_delivery_enabled( 'se', $this->settings );

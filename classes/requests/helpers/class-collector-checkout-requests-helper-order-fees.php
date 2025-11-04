@@ -45,7 +45,7 @@ class Collector_Checkout_Requests_Helper_Order_Fees {
 				$this->delivery_module = walley_is_delivery_enabled( 'dk', $collector_settings );
 				break;
 			case 'EUR':
-				$this->delivery_module = walley_is_delivery_enabled( 'fi', $collector_settings );
+				$this->delivery_module = walley_is_delivery_enabled( walley_get_eur_country(), $collector_settings );
 				break;
 			default:
 				$this->delivery_module = walley_is_delivery_enabled( 'se', $collector_settings );

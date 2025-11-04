@@ -88,6 +88,13 @@ class Collector_Checkout_Requests_Initialize_Checkout extends Collector_Checkout
 				$country_code          = 'FI';
 				$this->store_id        = $collector_settings[ 'collector_merchant_id_fi_' . $customer_type ];
 				$this->delivery_module = walley_is_delivery_enabled( 'fi', $collector_settings );
+				if ( 'b2b' !== $customer_type ) {
+					$country_code          = walley_get_eur_country(); // Unlike Finland, for other European countries that use Euro, Walley expect "EU" rather than the specific country's country code.
+					$this->store_id        = $collector_settings[ "collector_merchant_id_{$country_code}_b2c" ];
+					$this->delivery_module = walley_is_delivery_enabled( $country_code, $collector_settings );
+
+					$country_code = strtoupper( $country_code );
+				}
 				break;
 			default:
 				$country_code          = 'SE';
