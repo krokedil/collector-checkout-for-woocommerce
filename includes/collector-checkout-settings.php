@@ -177,6 +177,12 @@ $settings = array(
 		'default'     => '',
 		'desc_tip'    => true,
 	),
+	'walley_custom_profile_eu'        => array(
+		'title'   => __( 'Custom Profile EU', 'collector-checkout-for-woocommerce' ),
+		'type'    => 'select',
+		'options' => $profiles,
+		'default' => 'no',
+	),
 	'checkout_settings_title'         => array(
 		'title' => __( 'Checkout settings', 'collector-checkout-for-woocommerce' ),
 		'type'  => 'title',
