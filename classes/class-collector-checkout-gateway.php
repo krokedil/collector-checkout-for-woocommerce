@@ -170,15 +170,15 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 		$profiles = array( 'DigitalDelivery', 'DigitalDelivery-Recurring', 'Shipping-Redlight', 'Shipping-nShift', 'Shipping-Redlight-Recurring', 'Shipping-nShift-Recurring' );
 
 		foreach ( $countries as $country ) {
-			// if ( isset( $this->settings[ "walley_custom_profile_$country" ] ) ) {
-			// continue;
-			// }
+			if ( isset( $this->settings[ "walley_custom_profile_$country" ] ) ) {
+				continue;
+			}
 
 			$saved_profile = $this->settings[ "collector_custom_profile_$country" ] ?? null;
-			// if ( empty( $saved_profile ) ) {
-			// $this->update_option( "walley_custom_profile_$country", 'no' );
-			// continue;
-			// }
+			if ( empty( $saved_profile ) ) {
+				$this->update_option( "walley_custom_profile_$country", 'no' );
+				continue;
+			}
 
 			$option_key = "walley_custom_profile_$country";
 
