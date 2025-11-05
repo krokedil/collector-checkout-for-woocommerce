@@ -213,10 +213,10 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 
 		// For delivery module, we need to check if the setting is enabled. If it is, we'll default to "Redlight" unless a profile is already set.
 		foreach ( $countries as $country ) {
-			$profile = $this->get_option( "walley_custom_profile_$country" );
+			$updated_profile = $this->get_option( "walley_custom_profile_$country" );
 
 			// Do not overwrite the profile if it is set.
-			if ( false !== strpos( strtolower( $profile ), 'shipping' ) ) {
+			if ( false === strpos( strtolower( $updated_profile ), 'no' ) ) {
 				continue;
 			}
 
