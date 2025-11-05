@@ -170,36 +170,38 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 		$profiles = array( 'DigitalDelivery', 'DigitalDelivery-Recurring', 'Shipping-Redlight', 'Shipping-nShift', 'Shipping-Redlight-Recurring', 'Shipping-nShift-Recurring' );
 
 		foreach ( $countries as $country ) {
-			if ( isset( $this->settings[ "walley_custom_profile_$country" ] ) ) {
-				continue;
-			}
+			// if ( isset( $this->settings[ "walley_custom_profile_$country" ] ) ) {
+			// continue;
+			// }
 
 			$saved_profile = $this->settings[ "collector_custom_profile_$country" ] ?? null;
-			if ( empty( $saved_profile ) ) {
-				$this->update_option( "walley_custom_profile_$country", 'no' );
-				continue;
-			}
+			// if ( empty( $saved_profile ) ) {
+			// $this->update_option( "walley_custom_profile_$country", 'no' );
+			// continue;
+			// }
+
+			$option_key = "walley_custom_profile_$country";
 
 			// Normalize by making to lowercase and removing non-alphabetical characters.
 			$saved_profile = preg_replace( '/[^a-z]/', '', strtolower( $saved_profile ) );
 
 			// We'll use the non-recurring profiles since when this is released, no merchant should have recurring profiles active.
 			if ( strpos( $saved_profile, 'redlight' ) !== false ) {
-				$this->update_option( 'Shipping-Redlight' );
+				$this->update_option( $option_key, 'Shipping-Redlight' );
 				break;
 			} elseif ( strpos( $saved_profile, 'nshift' ) !== false ) {
-				$this->update_option( 'Shipping-nShift' );
+				$this->update_option( $option_key, 'Shipping-nShift' );
 				break;
 			} else {
 				foreach ( $profiles as $profile ) {
 					$profile = preg_replace( '/[^a-z]/', '', strtolower( $profile ) );
 					if ( false !== strpos( $profile, $saved_profile ) ) {
 						// Migrate the old setting to the corresponding new profile based on a substring match.
-						$this->update_option( "walley_custom_profile_$country", $profile );
+						$this->update_option( $option_key, $profile );
 						break; // with next country.
 					} else {
 						// This is an unknown profile.
-						$this->update_option( "walley_custom_profile_$country", 'no' );
+						$this->update_option( $option_key, 'no' );
 					}
 				}
 			}
