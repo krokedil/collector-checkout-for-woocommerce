@@ -137,8 +137,6 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 			)
 		);
 
-		$this->migrate_profile_settings();
-
 		// Function to handle the thankyou page.
 		add_filter( 'woocommerce_thankyou_order_received_text', array( $this, 'collector_thankyou_order_received_text' ), 10, 2 );
 		add_action( 'woocommerce_thankyou', array( $this, 'maybe_delete_collector_sessions' ), 100, 1 );
@@ -157,6 +155,9 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 
 		// Delete transient when Walley settings is saved.
 		add_action( 'woocommerce_update_options_checkout_collector_checkout', array( $this, 'delete_transients' ) );
+
+		// Initiates migration of profile settings when the user updates the gateway settings.
+		add_filter( 'pre_update_option_woocommerce_collector_checkout_settings', array( $this, 'migrate_profile_settings' ) );
 	}
 
 	/**
@@ -166,10 +167,10 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 	 * If the "Shipping" profile is set, it will be migrated to "Shipping-Redlight". This is also the case if no profile is set, but the delivery module is enabled.
 	 * For all other cases we check for substring matches to map old profiles to new ones.
 	 *
-	 * @return void
+	 * @param array $settings The settings to be saved.
+	 * @return array The new settings.
 	 */
-	private function migrate_profile_settings() {
-
+	public function migrate_profile_settings( $settings ) {
 		/**
 		 * Profile migration rules:
 		 * - No profile, delivery disabled → No
@@ -187,13 +188,13 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 		$profiles = array( 'DigitalDelivery', 'DigitalDelivery-Recurring', 'Shipping-Redlight', 'Shipping-nShift', 'Shipping-Redlight-Recurring', 'Shipping-nShift-Recurring' );
 
 		foreach ( $countries as $country ) {
-			if ( isset( $this->settings[ "walley_custom_profile_$country" ] ) ) {
+			if ( isset( $settings[ "walley_custom_profile_$country" ] ) ) {
 				continue;
 			}
 
-			$saved_profile = $this->settings[ "collector_custom_profile_$country" ] ?? null;
+			$saved_profile = $settings[ "collector_custom_profile_$country" ] ?? null;
 			if ( empty( $saved_profile ) ) {
-				$this->update_option( "walley_custom_profile_$country", 'no' );
+				$settings[ "walley_custom_profile_$country" ] = 'no';
 				continue;
 			}
 
@@ -204,21 +205,21 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 
 			// We'll use the non-recurring profiles since when this is released, no merchant should have recurring profiles active.
 			if ( false !== strpos( $saved_profile, 'redlight' ) || 0 === strpos( $saved_profile, 'shipping' ) ) {
-				$this->update_option( $option_key, 'Shipping-Redlight' );
+				$settings[ $option_key ] = 'Shipping-Redlight';
 				continue;
 			} elseif ( false !== strpos( $saved_profile, 'nshift' ) ) {
-				$this->update_option( $option_key, 'Shipping-nShift' );
+				$settings[ $option_key ] = 'Shipping-nShift';
 				continue;
 			} else {
 				foreach ( $profiles as $profile ) {
 					$profile = preg_replace( '/[^a-z]/', '', strtolower( $profile ) );
 					if ( false !== strpos( $profile, $saved_profile ) ) {
 						// Migrate the old setting to the corresponding new profile based on a substring match.
-						$this->update_option( $option_key, $profile );
+						$settings[ $option_key ] = $profile;
 						continue; // with next country.
 					} else {
 						// This is an unknown profile.
-						$this->update_option( $option_key, 'no' );
+						$settings[ $option_key ] = 'no';
 					}
 				}
 			}
@@ -226,21 +227,23 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 
 		// For delivery module, we need to check if the setting is enabled. If it is, we'll default to "Redlight" unless a profile is already set.
 		foreach ( $countries as $country ) {
-			$updated_profile = $this->get_option( "walley_custom_profile_$country" );
+			$updated_profile = $settings[ "walley_custom_profile_$country" ];
 
 			// Do not overwrite the profile if it is set.
 			if ( false === strpos( strtolower( $updated_profile ), 'no' ) ) {
 				continue;
 			}
 
-			$delivery_module = wc_string_to_bool( $this->settings[ "collector_delivery_module_$country" ] ?? false );
+			$delivery_module = wc_string_to_bool( $settings[ "collector_delivery_module_$country" ] ?? false );
 			if ( false === $delivery_module ) {
 				continue;
 			}
 
-			$this->update_option( "walley_custom_profile_$country", 'Shipping-Redlight' );
-			$this->update_option( "collector_delivery_module_$country", null ); // Set to null to flag as migrated.
+			$settings[ "walley_custom_profile_$country" ]     = 'Shipping-Redlight';
+			$settings[ "collector_delivery_module_$country" ] = null; // Set to null to flag as migrated.
 		}
+
+		return $settings;
 	}
 
 	/**
