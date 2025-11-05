@@ -162,6 +162,10 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 	/**
 	 * Migrate to new settings.
 	 *
+	 * If no profile is set, the default is "No".
+	 * If the "Shipping" profile is set, it will be migrated to "Shipping-Redlight". This is also the case if no profile is set, but the delivery module is enabled.
+	 * For all other cases we check for substring matches to map old profiles to new ones.
+	 *
 	 * @return void
 	 */
 	private function migrate_profile_settings() {
