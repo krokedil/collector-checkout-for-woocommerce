@@ -137,7 +137,7 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 			)
 		);
 
-		$this->migrate_settings();
+		$this->migrate_profile_settings();
 
 		// Function to handle the thankyou page.
 		add_filter( 'woocommerce_thankyou_order_received_text', array( $this, 'collector_thankyou_order_received_text' ), 10, 2 );
@@ -164,7 +164,7 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 	 *
 	 * @return void
 	 */
-	private function migrate_settings() {
+	private function migrate_profile_settings() {
 		$countries = array( 'se', 'no', 'dk', 'fi', 'eu' );
 		// Order matters.
 		$profiles = array( 'DigitalDelivery', 'DigitalDelivery-Recurring', 'Shipping-Redlight', 'Shipping-nShift', 'Shipping-Redlight-Recurring', 'Shipping-nShift-Recurring' );
@@ -182,14 +182,14 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 
 			$option_key = "walley_custom_profile_$country";
 
-			// Normalize by making to lowercase and removing non-alphabetical characters.
+			// Normalize by making to lowercase and removing non-alphabetical characters (including whitespace).
 			$saved_profile = preg_replace( '/[^a-z]/', '', strtolower( $saved_profile ) );
 
 			// We'll use the non-recurring profiles since when this is released, no merchant should have recurring profiles active.
-			if ( strpos( $saved_profile, 'redlight' ) !== false ) {
+			if ( false !== strpos( $saved_profile, 'redlight' ) || 0 === strpos( $saved_profile, 'shipping' ) ) {
 				$this->update_option( $option_key, 'Shipping-Redlight' );
 				continue;
-			} elseif ( strpos( $saved_profile, 'nshift' ) !== false ) {
+			} elseif ( false !== strpos( $saved_profile, 'nshift' ) ) {
 				$this->update_option( $option_key, 'Shipping-nShift' );
 				continue;
 			} else {
