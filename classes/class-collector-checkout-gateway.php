@@ -169,6 +169,19 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 	 * @return void
 	 */
 	private function migrate_profile_settings() {
+
+		/**
+		 * Profile migration rules:
+		 * - No profile, delivery disabled → No
+		 * - No profile, delivery enabled → Shipping-Redlight
+		 * - Redlight profile, delivery disabled → Shipping-Redlight
+		 * - Redlight profile, delivery enabled → Shipping-Redlight
+		 * - nShift profile, delivery disabled → Shipping-nShift
+		 * - nShift profile, delivery enabled → Shipping-nShift
+		 * - Unknown profile, delivery disabled → No
+		 * - Unknown profile, delivery enabled → Shipping-Redlight
+		 */
+
 		$countries = array( 'se', 'no', 'dk', 'fi', 'eu' );
 		// Order matters.
 		$profiles = array( 'DigitalDelivery', 'DigitalDelivery-Recurring', 'Shipping-Redlight', 'Shipping-nShift', 'Shipping-Redlight-Recurring', 'Shipping-nShift-Recurring' );
