@@ -1228,7 +1228,7 @@ function walley_is_delivery_enabled( $country, $settings = null ) {
 		return wc_string_to_bool( $settings[ "collector_delivery_module_$country" ] ?? 'no' );
 	}
 
-	return strpos( strtolower( $profile ), 'shipping' ) !== false;
+	return false !== strpos( strtolower( $profile ), 'shipping' );
 }
 
 /**
