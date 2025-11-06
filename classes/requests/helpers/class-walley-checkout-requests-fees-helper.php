@@ -61,7 +61,7 @@ class Walley_Checkout_Requests_Fees_Helper {
 		 * If a delivery module is not used, the shipping is handled in WooCommerce, and must be sent in the fee.shipping object. Retrieves first available.
 		 * Note: if no shipping is available, fees.shipping is simply unset, NOT null.
 		 */
-		$update_shipping = apply_filters( 'coc_update_shipping', self::get_delivery_module() ); // Filter on if we should update shipping with fees or not.
+		$update_shipping = apply_filters( 'coc_update_shipping', ! self::get_delivery_module() ); // Filter on if we should update shipping with fees or not.
 		$shipping        = self::get_shipping();
 		if ( ( WC()->cart->show_shipping() && $update_shipping ) && ! empty( $shipping ) ) {
 			$fees['shipping'] = $shipping;
