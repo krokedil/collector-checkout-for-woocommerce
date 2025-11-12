@@ -628,18 +628,6 @@ class Walley_Subscription {
 	}
 
 	/**
-	 * Add Walley redirect payment page as allowed external url for wp_safe_redirect.
-	 * We do this because WooCommerce Subscriptions use wp_safe_redirect when processing a payment method change request (from v5.1.0).
-	 *
-	 * @param array $hosts Domains that are allowed when wp_safe_redirect is used.
-	 * @return array
-	 */
-	public function extend_allowed_domains_list( $hosts ) {
-		// FIXME: Remove or keep if needed.
-		return $hosts;
-	}
-
-	/**
 	 * Save the payment token to the subscription when the merchant updates the order from the subscription page.
 	 *
 	 * @param int   $order_id The Woo order ID.
