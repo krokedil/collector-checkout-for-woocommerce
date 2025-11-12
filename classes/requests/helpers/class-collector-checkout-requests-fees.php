@@ -24,7 +24,7 @@ class Collector_Checkout_Requests_Fees {
 	/**
 	 * Delivery module.
 	 *
-	 * @var string
+	 * @var bool
 	 */
 	protected $delivery_module;
 

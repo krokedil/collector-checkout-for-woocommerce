@@ -49,7 +49,7 @@ class Collector_Checkout_Requests_Initialize_Checkout extends Collector_Checkout
 	/**
 	 * Delivery module.
 	 *
-	 * @var string
+	 * @var bool
 	 */
 	protected $delivery_module;
 

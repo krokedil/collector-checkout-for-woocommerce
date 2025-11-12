@@ -24,7 +24,7 @@ class Collector_Checkout_Requests_Helper_Order_Fees {
 	/**
 	 * Delivery module
 	 *
-	 * @var string
+	 * @var bool
 	 */
 	public $delivery_module;
 
