@@ -209,7 +209,7 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 			$saved_profile = preg_replace( '/[^a-z]/', '', strtolower( $saved_profile ) );
 
 			// We'll use the non-recurring profiles since when this is released, no merchant should have recurring profiles active.
-			if ( false !== strpos( $saved_profile, 'redlight' ) || 0 === strpos( $saved_profile, 'shipping' ) ) {
+			if ( false !== strpos( $saved_profile, 'redlight' ) || 'shipping' === $saved_profile ) {
 				$settings[ $option_key ] = 'Shipping-Redlight';
 				continue;
 			} elseif ( false !== strpos( $saved_profile, 'nshift' ) ) {
