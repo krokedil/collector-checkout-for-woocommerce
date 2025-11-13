@@ -124,10 +124,10 @@ class Collector_Api_Callbacks {
 				$reason          = $payload['Reason'] ?? null; // Only available when failed or retrying.
 
 				// Schedule the processing of the authorization.
-				$args = array(
-					'hook'      => self::HOOK_PREFIX . 'process_authorization',
-					'signature' => "{$event_type}:{$authorization_id}:{$walley_order_id}",
-					'args'      => array(
+				$signature = "{$event_type}:{$authorization_id}:{$walley_order_id}";
+				$args      = array(
+					'hook' => self::HOOK_PREFIX . 'process_authorization',
+					'args' => array(
 						( array(
 							'authorization_id' => $authorization_id,
 							'walley_order_id'  => $walley_order_id,
@@ -136,7 +136,7 @@ class Collector_Api_Callbacks {
 						) ),
 					),
 				);
-				$this->schedule_callback( $args );
+				$this->schedule_callback( $args, $signature );
 				break;
 			default:
 				CCO_WC()->logger::log( "[CALLBACK HANDLER] Unhandled event type: {$event_type}" );
@@ -149,11 +149,12 @@ class Collector_Api_Callbacks {
 	/**
 	 * Schedule a callback for processing.
 	 *
-	 * @param array $args The arguments to schedule. A 'signature' key is required to avoid duplicates.
+	 * @param array  $args The arguments to schedule. A 'signature' key is required to avoid duplicates.
+	 * @param string $signature The unique signature for the callback.
 	 *
 	 * @return bool True if the callback was scheduled, false otherwise.
 	 */
-	public function schedule_callback( $args ) {
+	public function schedule_callback( $args, $signature ) {
 		$as_args           = array(
 			'hook'   => $args['hook'],
 			'args'   => $args['args'],
@@ -162,7 +163,7 @@ class Collector_Api_Callbacks {
 		$scheduled_actions = as_get_scheduled_actions( $as_args, OBJECT );
 
 		if ( ! empty( $scheduled_actions ) ) {
-			CCO_WC()->logger::log( "[SCHEDULE CALLBACK]: The order is already scheduled for processing. Signature: {$args['signature']}." );
+			CCO_WC()->logger::log( "[SCHEDULE CALLBACK]: The order is already scheduled for processing. Signature: {$signature}." );
 			return true;
 		}
 
@@ -177,9 +178,9 @@ class Collector_Api_Callbacks {
 
 		$did_schedule = 0 !== $schedule_id;
 		if ( ! $did_schedule ) {
-			CCO_WC()->logger::log( "[SCHEDULE CALLBACK]: Could not schedule the callback for processing. Signature: {$args['signature']}." );
+			CCO_WC()->logger::log( "[SCHEDULE CALLBACK]: Could not schedule the callback for processing. Signature: {$signature}." );
 		} else {
-			CCO_WC()->logger::log( "[SCHEDULE CALLBACK]: Scheduled the callback for processing. Signature: {$args['signature']}." );
+			CCO_WC()->logger::log( "[SCHEDULE CALLBACK]: Scheduled the callback for processing. Signature: {$signature}." );
 		}
 
 		return $did_schedule;
