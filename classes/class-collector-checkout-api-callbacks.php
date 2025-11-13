@@ -156,21 +156,14 @@ class Collector_Api_Callbacks {
 	public function schedule_callback( $args ) {
 		$as_args           = array(
 			'hook'   => $args['hook'],
+			'args'   => $args['args'],
 			'status' => \ActionScheduler_Store::STATUS_PENDING,
 		);
 		$scheduled_actions = as_get_scheduled_actions( $as_args, OBJECT );
 
-		/**
-		 * Loop all actions to check if this one has been scheduled already.
-		 *
-		 * @var \ActionScheduler_Action $action The action from the Action scheduler.
-		 */
-		foreach ( $scheduled_actions as $action ) {
-			$action_args = $action->get_args();
-			if ( $args['signature'] === $action_args['signature'] ) {
-				CCO_WC()->logger::log( "[SCHEDULE CALLBACK]: The order is already scheduled for processing. Signature: {$args['signature']}." );
-				return true;
-			}
+		if ( ! empty( $scheduled_actions ) ) {
+			CCO_WC()->logger::log( "[SCHEDULE CALLBACK]: The order is already scheduled for processing. Signature: {$args['signature']}." );
+			return true;
 		}
 
 		// If we get here, we should be good to create a new scheduled action, since none are currently scheduled for this order.
@@ -178,6 +171,8 @@ class Collector_Api_Callbacks {
 			time() + self::SCHEDULE_INTERVAL_SEC,
 			$args['hook'],
 			$args['args'],
+			'',
+			true, // unique.
 		);
 
 		$did_schedule = 0 !== $schedule_id;
