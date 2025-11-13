@@ -1240,14 +1240,25 @@ function walley_is_delivery_enabled( $country, $settings = null ) {
  * @return string 'fi' or 'eu'.
  */
 function walley_get_eur_country( $default_to_store = true ) {
+	$order = false;
 	if ( isset( WC()->session ) && method_exists( WC()->session, 'get' ) ) {
 		$customer_type = WC()->session->get( 'collector_customer_type' );
-		if ( 'b2b' === $customer_type ) {
-			return 'fi';
-		}
+	} else {
+		$order_id      = absint( get_query_var( 'order-pay', 0 ) );
+		$order         = wc_get_order( $order_id );
+		$customer_type = $order ? $order->get_meta( '_collector_customer_type' ) : 'b2c';
 	}
 
-	$customer_location = isset( WC()->customer ) ? WC()->customer->get_billing_country() : false;
+	if ( 'b2b' === $customer_type ) {
+		return 'fi';
+	}
+
+	if ( ! empty( $order ) ) {
+		$customer_location = $order->get_billing_country();
+	} else {
+		$customer_location = isset( WC()->customer ) ? WC()->customer->get_billing_country() : false;
+	}
+
 	if ( $default_to_store ) {
 		$location = empty( $customer_location ) ? wc_get_base_location()['country'] : $customer_location;
 	}
