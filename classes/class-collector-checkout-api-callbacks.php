@@ -103,6 +103,7 @@ class Collector_Api_Callbacks {
 		$event_type = $params['Type'];
 		$payload    = $params['Payload'];
 
+		$did_schedule = false;
 		switch ( $event_type ) {
 			case 'walley:order:created':
 			case 'walley:authorization:failed':
@@ -124,8 +125,8 @@ class Collector_Api_Callbacks {
 				$reason          = $payload['Reason'] ?? null; // Only available when failed or retrying.
 
 				// Schedule the processing of the authorization.
-				$signature = "{$event_type}:{$authorization_id}:{$walley_order_id}";
-				$args      = array(
+				$signature    = "{$event_type}:{$authorization_id}:{$walley_order_id}";
+				$args         = array(
 					'hook' => self::HOOK_PREFIX . 'process_authorization',
 					'args' => array(
 						array(
@@ -136,14 +137,14 @@ class Collector_Api_Callbacks {
 						),
 					),
 				);
-				$this->schedule_callback( $args, $signature );
+				$did_schedule = $this->schedule_callback( $args, $signature );
 				break;
 			default:
 				CCO_WC()->logger::log( "[CALLBACK HANDLER] Unhandled event type: {$event_type}" );
 				break;
 		}
 
-		return new WP_REST_Response( null, 200 );
+		return new WP_REST_Response( null, $did_schedule ? 200 : 422 );
 	}
 
 	/**
