@@ -128,12 +128,12 @@ class Collector_Api_Callbacks {
 				$args      = array(
 					'hook' => self::HOOK_PREFIX . 'process_authorization',
 					'args' => array(
-						( array(
+						array(
 							'authorization_id' => $authorization_id,
 							'walley_order_id'  => $walley_order_id,
 							'event_type'       => $event_type,
 							'reason'           => $reason,
-						) ),
+						),
 					),
 				);
 				$this->schedule_callback( $args, $signature );
