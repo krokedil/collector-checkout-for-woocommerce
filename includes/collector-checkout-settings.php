@@ -11,6 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 $profiles = array(
 	'no'                          => __( 'No', 'collector-checkout-for-woocommerce' ),
+	'Recurring'                   => 'Recurring',
 	'DigitalDelivery'             => 'DigitalDelivery',
 	'DigitalDelivery-Recurring'   => 'DigitalDelivery-Recurring',
 	'Shipping-Redlight'           => 'Shipping-Redlight',

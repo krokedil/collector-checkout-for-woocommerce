@@ -1264,3 +1264,49 @@ function walley_get_eur_country( $default_to_store = true ) {
 	}
 	return 'fi' !== strtolower( $location ) ? 'eu' : 'fi';
 }
+
+
+/**
+ * Get the appropriate checkout profile based on cart contents and settings.
+ *
+ * @param string $cc The country code.
+ * @param array  $settings The Walley plugin settings. If empty, the settings will be fetched from the database.
+ *
+ * @return string The checkout profile to use.
+ */
+function walley_get_checkout_profile( $cc, $settings = array() ) {
+	$settings       = empty( $settings ) ? get_option( 'woocommerce_collector_checkout_settings' ) : $settings;
+	$custom_profile = $settings[ "walley_custom_profile_{$cc}" ] ?? 'no';
+	if ( ! isset( WC()->cart ) ) {
+		return $custom_profile;
+	}
+
+	$needs_shipping     = WC()->cart->needs_shipping();
+	$has_subscription   = Walley_Subscription::cart_has_subscription();
+	$normalized_profile = preg_replace( '/[^a-z]/', '', strtolower( $custom_profile ) );
+
+	if ( $has_subscription ) {
+		if ( $needs_shipping ) {
+			if ( strpos( $normalized_profile, 'redlight' ) !== false ) {
+				return 'Shipping-Redlight-Recurring';
+			} elseif ( strpos( $normalized_profile, 'nshift' ) !== false ) {
+				return 'Shipping-nShift-Recurring';
+			}
+
+			return 'Recurring';
+		}
+
+		return 'DigitalDelivery-Recurring';
+	}
+
+	if ( ! $needs_shipping ) {
+		return 'DigitalDelivery';
+	}
+
+	// The cart has items that needs shipping. If the chosen profile includes shipping, return it. Otherwise, default to 'no'.
+	if ( strpos( $normalized_profile, 'shipping' ) !== false ) {
+		return $custom_profile;
+	}
+
+	return 'no';
+}

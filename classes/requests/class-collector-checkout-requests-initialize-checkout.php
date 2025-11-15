@@ -176,9 +176,9 @@ class Collector_Checkout_Requests_Initialize_Checkout extends Collector_Checkout
 
 		// Only send profileName if this is a purchase from the checkout.
 		if ( null === $order_id ) {
-			$cc      = strtolower( $this->country_code );
-			$profile = $this->settings[ "walley_custom_profile_{$cc}" ] ?? null;
-			if ( ! empty( $profile ) ) {
+			$cc = strtolower( $this->country_code );
+			if ( isset( $this->settings[ "walley_custom_profile_{$cc}" ] ) ) {
+				$profile = walley_get_checkout_profile( $cc, $this->settings );
 				if ( 'no' !== $profile ) {
 					$formatted_request_body['profileName'] = $profile;
 				}
