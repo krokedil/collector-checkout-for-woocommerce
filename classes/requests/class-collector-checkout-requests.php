@@ -29,10 +29,18 @@ class Collector_Checkout_Requests {
 	public $base_url = '';
 
 	/**
+	 * Gateway settings.
+	 *
+	 * @var array
+	 */
+	protected $settings;
+
+	/**
 	 * Class constructor
 	 */
 	public function __construct() {
-		$collector_settings = get_option( 'woocommerce_collector_checkout_settings' );
+		$collector_settings = get_option( 'woocommerce_collector_checkout_settings', array() );
+		$this->settings     = $collector_settings;
 		$test_mode          = $collector_settings['test_mode'];
 		if ( 'yes' === $test_mode ) {
 			$this->base_url = COLLECTOR_BANK_REST_TEST;

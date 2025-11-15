@@ -259,6 +259,36 @@ class Walley_Checkout_API {
 	}
 
 	/**
+	 * Cancel customer token.
+	 *
+	 * @param string $token The customer token to cancel.
+	 * @return array|WP_Error
+	 */
+	public function cancel_customer_token( $token ) {
+		$args     = array( 'token' => $token );
+		$request  = new Walley_Checkout_Request_Cancel_Customer_Token( $args );
+		$response = $request->request();
+		return $response;
+	}
+
+	/**
+	 * Authorizes a subscription for a renewal.
+	 *
+	 * @param WC_Order $order The renewal order.
+	 * @param string   $token The customer token to charge.
+	 * @return array|WP_Error
+	 */
+	public function renew_subscription( $renewal_order, $token ) {
+		$args     = array(
+			'order' => $renewal_order,
+			'token' => $token,
+		);
+		$request  = new Walley_Checkout_Request_Create_Authorization( $args );
+		$response = $request->request();
+		return $response;
+	}
+
+	/**
 	 * Checks for WP Errors and returns either the response as array.
 	 *
 	 * @param array $response The response from the request.

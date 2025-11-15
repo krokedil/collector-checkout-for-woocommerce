@@ -10,12 +10,17 @@
     "license": "GPL-v3",
     "require": {
         "php": "~7.4 || ~8.0",
-        "krokedil/shop-widgets": "^0.1.0"
+        "krokedil/shop-widgets": "^0.1.0",
+        "krokedil/woocommerce": "^1.0"
     },
     "repositories": {
         "krokedil/shop-widgets": {
             "type": "vcs",
             "url": "git@github.com:krokedil/shop-widgets.git"
+        },
+        "krokedil/woocommerce": {
+            "type": "vcs",
+            "url": "git@github.com:krokedil/woocommerce.git"
         }
     },
     "config": {

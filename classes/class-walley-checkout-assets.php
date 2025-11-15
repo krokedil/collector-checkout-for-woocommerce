@@ -118,19 +118,19 @@ class Walley_Checkout_Assets {
 		$data_action_color_button = isset( $collector_settings['checkout_button_color'] ) && ! empty( $collector_settings['checkout_button_color'] ) ? "data-action-color='" . $collector_settings['checkout_button_color'] . "'" : '';
 		switch ( get_woocommerce_currency() ) {
 			case 'SEK':
-				$delivery_module = isset( $collector_settings['collector_delivery_module_se'] ) ? $collector_settings['collector_delivery_module_se'] : 'no';
+				$delivery_module = walley_is_delivery_enabled( 'se', $collector_settings );
 				break;
 			case 'NOK':
-				$delivery_module = isset( $collector_settings['collector_delivery_module_no'] ) ? $collector_settings['collector_delivery_module_no'] : 'no';
+				$delivery_module = walley_is_delivery_enabled( 'no', $collector_settings );
 				break;
 			case 'DKK':
-				$delivery_module = isset( $collector_settings['collector_delivery_module_dk'] ) ? $collector_settings['collector_delivery_module_dk'] : 'no';
+				$delivery_module = walley_is_delivery_enabled( 'dk', $collector_settings );
 				break;
 			case 'EUR':
-				$delivery_module = isset( $collector_settings['collector_delivery_module_fi'] ) ? $collector_settings['collector_delivery_module_fi'] : 'no';
+				$delivery_module = walley_is_delivery_enabled( 'fi', $collector_settings );
 				break;
 			default:
-				$delivery_module = isset( $collector_settings['collector_delivery_module_se'] ) ? $collector_settings['collector_delivery_module_se'] : 'no';
+				$delivery_module = walley_is_delivery_enabled( 'se', $collector_settings );
 				break;
 		}
 
@@ -172,7 +172,7 @@ class Walley_Checkout_Assets {
 				'data_action_color_button'    => $data_action_color_button,
 				'default_customer_type'       => wc_collector_get_default_customer_type(),
 				'selected_customer_type'      => wc_collector_get_selected_customer_type(),
-				'delivery_module'             => $delivery_module,
+				'delivery_module'             => $delivery_module ? 'yes' : 'no',
 				'collector_nonce'             => wp_create_nonce( 'collector_nonce' ),
 				'change_payment_method_url'   => WC_AJAX::get_endpoint( 'walley_change_payment_method' ),
 				'change_payment_method_nonce' => wp_create_nonce( 'walley_change_payment_method' ),
