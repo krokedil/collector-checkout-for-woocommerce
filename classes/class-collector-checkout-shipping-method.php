@@ -140,7 +140,7 @@ if ( class_exists( 'WC_Shipping_Method' ) ) {
 			}
 
 			// If Delivery module is not used for the currency/country, return.
-			if ( 'yes' !== is_collector_delivery_module( get_woocommerce_currency() ) ) {
+			if ( ! is_collector_delivery_module( get_woocommerce_currency() ) ) {
 				return;
 			}
 

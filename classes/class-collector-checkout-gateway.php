@@ -90,21 +90,24 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 		$this->walley_api_client_id = $this->get_option( 'walley_api_client_id' );
 		$this->walley_api_secret    = $this->get_option( 'walley_api_secret' );
 
+		$customer_location = isset( WC()->customer ) ? WC()->customer->get_billing_country() : false;
+		$location          = empty( $customer_location ) ? wc_get_base_location()['country'] : $customer_location;
+		$location          = strtolower( $location );
 		switch ( get_woocommerce_currency() ) {
 			case 'SEK':
-				$this->delivery_module = isset( $this->settings['collector_delivery_module_se'] ) ? $this->settings['collector_delivery_module_se'] : 'no';
+				$this->delivery_module = walley_is_delivery_enabled( 'se', $this->settings );
 				break;
 			case 'NOK':
-				$this->delivery_module = isset( $this->settings['collector_delivery_module_no'] ) ? $this->settings['collector_delivery_module_no'] : 'no';
+				$this->delivery_module = walley_is_delivery_enabled( 'no', $this->settings );
 				break;
 			case 'DKK':
-				$this->delivery_module = isset( $this->settings['collector_delivery_module_dk'] ) ? $this->settings['collector_delivery_module_dk'] : 'no';
+				$this->delivery_module = walley_is_delivery_enabled( 'dk', $this->settings );
 				break;
 			case 'EUR':
-				$this->delivery_module = isset( $this->settings['collector_delivery_module_fi'] ) ? $this->settings['collector_delivery_module_fi'] : 'no';
+				$this->delivery_module = walley_is_delivery_enabled( walley_get_eur_country(), $this->settings );
 				break;
 			default:
-				$this->delivery_module = isset( $this->settings['collector_delivery_module_se'] ) ? $this->settings['collector_delivery_module_se'] : 'no';
+				$this->delivery_module = walley_is_delivery_enabled( 'se', $this->settings );
 				break;
 		}
 		// Load the form fields.
@@ -115,6 +118,15 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 			'products',
 			'refunds',
 			'upsell',
+			'subscriptions',
+			'subscription_cancellation',
+			'subscription_suspension',
+			'subscription_reactivation',
+			'subscription_amount_changes',
+			'subscription_date_changes',
+			'subscription_payment_method_change',
+			'subscription_payment_method_change_admin',
+			'multiple_subscriptions',
 		);
 
 		add_action(
@@ -143,6 +155,72 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 
 		// Delete transient when Walley settings is saved.
 		add_action( 'woocommerce_update_options_checkout_collector_checkout', array( $this, 'delete_transients' ) );
+
+		// Initiates migration of profile settings when the user updates the gateway settings.
+		add_filter( 'pre_update_option_woocommerce_collector_checkout_settings', array( $this, 'migrate_profile_settings' ) );
+	}
+
+	/**
+	 * Migrate to new settings.
+	 *
+	 * If no profile is set, the default is "No".
+	 * If the "Shipping" profile is set, it will be migrated to "Shipping-Redlight". This is also the case if no profile is set, but the delivery module is enabled.
+	 * For all other cases we check for substring matches to map old profiles to new ones.
+	 *
+	 * @param array $settings The settings to be saved.
+	 * @return array The new settings.
+	 */
+	public function migrate_profile_settings( $settings ) {
+		// Check if the setting has already been migrated.
+		if ( ! empty( $settings['walley_profiles_migration_timestamp'] ?? null ) ) {
+			return $settings;
+		}
+
+		/**
+		 * Profile migration rules:
+		 * - No profile, delivery disabled → No
+		 * - No profile, delivery enabled → Shipping-Redlight
+		 * - Redlight profile, delivery disabled → Shipping-Redlight
+		 * - Redlight profile, delivery enabled → Shipping-Redlight
+		 * - nShift profile, delivery disabled → Shipping-nShift
+		 * - nShift profile, delivery enabled → Shipping-nShift
+		 * - Unknown profile, delivery disabled → No
+		 * - Unknown profile, delivery enabled → Shipping-Redlight
+		 */
+
+		$countries = array( 'se', 'no', 'dk', 'fi', 'eu' );
+
+		foreach ( $countries as $country ) {
+			$option_key = "walley_custom_profile_$country";
+
+			$delivery_module = wc_string_to_bool( $settings[ "collector_delivery_module_$country" ] ?? false );
+			$saved_profile   = $settings[ "collector_custom_profile_$country" ] ?? null;
+			if ( empty( $saved_profile ) ) {
+
+				// If the delivery module is enabled, default to "Shipping-Redlight".
+				$settings[ $option_key ]                          = false === $delivery_module ? 'no' : 'Shipping-Redlight';
+				$settings[ "collector_delivery_module_$country" ] = null; // Set to null to flag as migrated.
+				continue;
+			}
+
+			// Normalize by making to lowercase and removing non-alphabetical characters (including whitespace).
+			$saved_profile = preg_replace( '/[^a-z]/', '', strtolower( $saved_profile ) );
+
+			// We'll use the non-recurring profiles since when this is released, no merchant should have recurring profiles active.
+			if ( false !== strpos( $saved_profile, 'redlight' ) || 'shipping' === $saved_profile ) {
+				$settings[ $option_key ] = 'Shipping-Redlight';
+				continue;
+			} elseif ( false !== strpos( $saved_profile, 'nshift' ) ) {
+				$settings[ $option_key ] = 'Shipping-nShift';
+				continue;
+			} else {
+				// If none of the profiles match, this is an unknown profile. But if delivery module is enabled, set to "Shipping-Redlight".
+				$settings[ $option_key ] = $delivery_module ? 'Shipping-Redlight' : 'no';
+			}
+		}
+
+		$settings['walley_profiles_migration_timestamp'] = time();
+		return $settings;
 	}
 
 	/**
@@ -221,10 +299,15 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 		</div>
 		<?php
 	}
+
 	/**
-	 * Check if this gateway is enabled and available in the user's country
+	 * Check if the gateway should be available.
+	 *
+	 * This function is extracted to create the 'walley_is_available' filter.
+	 *
+	 * @return bool
 	 */
-	public function is_available() {
+	private function check_availability() {
 		if ( 'yes' !== $this->enabled ) {
 			return false;
 		}
@@ -252,6 +335,16 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 		}
 
 		return true;
+	}
+
+	/**
+	 * Check if payment method should be available.
+	 *
+	 * @hook walley_is_available
+	 * @return boolean
+	 */
+	public function is_available() {
+		return apply_filters( 'walley_is_available', $this->check_availability(), $this );
 	}
 
 	/**
@@ -286,7 +379,7 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 		$order->update_meta_data( '_collector_customer_type', $customer_type );
 		$order->update_meta_data( '_collector_public_token', WC()->session->get( 'collector_public_token' ) );
 		$order->update_meta_data( '_collector_private_id', $private_id );
-		$order->save();
+		$order->save_meta_data();
 
 		$walley_reference = $this->update_walley_reference( $order_id, $customer_type, $private_id );
 
@@ -323,6 +416,12 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 			return array(
 				'result' => 'error',
 			);
+		}
+
+		// Flag as zero amount to prevent OM from processing the order.
+		if ( Walley_Subscription::order_has_subscription( $order ) && 0.0 === floatval( $order->get_total() ) ) {
+			$order->update_meta_data( Walley_Subscription::ZERO_AMOUNT_ORDER, true );
+			$order->save_meta_data();
 		}
 
 		// Save data to order.
@@ -504,7 +603,7 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 			if ( 'collector_checkout' === $first_gateway ) {
 				$class[] = 'collector-checkout-selected';
 				// Add class if Collector delivery module is used.
-				if ( 'yes' === $this->delivery_module ) {
+				if ( $this->delivery_module ) {
 					$class[] = 'collector-delivery-module';
 				}
 			}
@@ -646,23 +745,23 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 
 		switch ( get_woocommerce_currency() ) {
 			case 'SEK':
-				$delivery_module = isset( $collector_settings['collector_delivery_module_se'] ) ? $collector_settings['collector_delivery_module_se'] : 'no';
+				$delivery_module = walley_is_delivery_enabled( 'se', $collector_settings );
 				break;
 			case 'NOK':
-				$delivery_module = isset( $collector_settings['collector_delivery_module_no'] ) ? $collector_settings['collector_delivery_module_no'] : 'no';
+				$delivery_module = walley_is_delivery_enabled( 'no', $collector_settings );
 				break;
 			case 'DKK':
-				$delivery_module = isset( $collector_settings['collector_delivery_module_dk'] ) ? $collector_settings['collector_delivery_module_dk'] : 'no';
+				$delivery_module = walley_is_delivery_enabled( 'dk', $collector_settings );
 				break;
 			case 'EUR':
-				$delivery_module = isset( $collector_settings['collector_delivery_module_fi'] ) ? $collector_settings['collector_delivery_module_fi'] : 'no';
+				$delivery_module = walley_is_delivery_enabled( 'fi', $collector_settings );
 				break;
 			default:
-				$delivery_module = isset( $collector_settings['collector_delivery_module_se'] ) ? $collector_settings['collector_delivery_module_se'] : 'no';
+				$delivery_module = walley_is_delivery_enabled( 'se', $collector_settings );
 				break;
 		}
 
-		if ( 'yes' === $delivery_module ) {
+		if ( $delivery_module ) {
 			/* If the delivery module is configured by Walley (displayed in iframe), its shipping data will be available in the session. We need to check if there is a corresponding WC shipping option. */
 			$delivery_module_data = WC()->session->get( 'collector_delivery_module_data', array() )[0] ?? '';
 			$chosen_shipping      = WC()->session->get( 'chosen_shipping_methods', array() )[0] ?? '';

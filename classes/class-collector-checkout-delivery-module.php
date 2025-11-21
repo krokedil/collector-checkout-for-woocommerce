@@ -66,7 +66,6 @@ class Collector_Delivery_Module {
 				wp_kses_post( $shipment_id_text )
 			);
 		}
-
 	}
 
 	/**
@@ -88,7 +87,7 @@ class Collector_Delivery_Module {
 		}
 
 		// If Delivery module is not used for the currency/country, return.
-		if ( 'yes' !== is_collector_delivery_module() ) {
+		if ( ! is_collector_delivery_module() ) {
 			return $template;
 		}
 
@@ -100,7 +99,6 @@ class Collector_Delivery_Module {
 
 		return $template;
 	}
-
 }
 
 Collector_Delivery_Module::get_instance();

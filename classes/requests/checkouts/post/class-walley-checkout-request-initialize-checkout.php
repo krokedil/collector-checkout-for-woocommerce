@@ -67,10 +67,17 @@ class Walley_Checkout_Request_Initialize_Checkout extends Walley_Checkout_Reques
 
 		// Only send profileName if this is a purchase from the checkout.
 		if ( empty( $this->order_id ) ) {
-			if ( 'yes' === $this->delivery_module ) {
-				$body['profileName'] = trim( $this->settings[ 'collector_custom_profile_' . strtolower( $this->country_code ) ] );
-				if ( empty( $body['profileName'] ) ) {
-					$body['profileName'] = 'Shipping';
+			$cc = strtolower( $this->country_code );
+			if ( isset( $this->settings[ "walley_custom_profile_{$cc}" ] ) ) {
+				$profile = walley_get_checkout_profile( $cc, $this->settings );
+				if ( 'no' !== $profile ) {
+					$body['profileName'] = $profile;
+				}
+			} else {
+				// Check the old settings.
+				$profile = $this->settings[ "collector_custom_profile_{$cc}" ] ?? null;
+				if ( walley_is_delivery_enabled( $cc, $this->settings ) ) {
+					$body['profileName'] = ! empty( $profile ) ? $profile : 'Shipping';
 				}
 			}
 

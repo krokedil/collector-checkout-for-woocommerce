@@ -89,7 +89,6 @@ abstract class Walley_Checkout_Request {
 	 */
 	protected $terms_page;
 
-
 	/**
 	 * Class constructor.
 	 *
@@ -292,38 +291,38 @@ abstract class Walley_Checkout_Request {
 			case 'SEK':
 				$country_code          = 'SE';
 				$this->store_id        = $this->settings[ "collector_merchant_id_se_{$this->customer_type}" ];
-				$this->delivery_module = $this->settings['collector_delivery_module_se'] ?? 'no';
+				$this->delivery_module = walley_is_delivery_enabled( 'se', $this->settings );
 				break;
 			case 'NOK':
 				$country_code          = 'NO';
 				$this->store_id        = $this->settings[ "collector_merchant_id_no_{$this->customer_type}" ];
-				$this->delivery_module = $this->settings['collector_delivery_module_no'] ?? 'no';
+				$this->delivery_module = walley_is_delivery_enabled( 'no', $this->settings );
 				break;
 			case 'DKK':
 				$country_code          = 'DK';
 				$this->store_id        = $this->settings[ "collector_merchant_id_dk_{$this->customer_type}" ];
-				$this->delivery_module = $this->settings['collector_delivery_module_dk'] ?? 'no';
+				$this->delivery_module = walley_is_delivery_enabled( 'dk', $this->settings );
 				break;
 			case 'EUR':
 				$order_id     = $arguments['order_id'] ?? $this->arguments['order_id'] ?? false;
 				$country_code = $this->get_customer_country( wc_get_order( $order_id ) );
 				if ( 'b2b' === $this->customer_type ) {
 					$this->store_id        = $this->settings[ "collector_merchant_id_fi_{$this->customer_type}" ];
-					$this->delivery_module = $this->settings['collector_delivery_module_fi'] ?? 'no';
+					$this->delivery_module = walley_is_delivery_enabled( 'fi', $this->settings );
 				} else {
 					$store_id = '';
 					// If the customer is from Finland, use the Finnish store ID.
 					if ( 'FI' === $country_code ) {
 						$store_id        = $this->settings[ "collector_merchant_id_fi_{$this->customer_type}" ];
-						$delivery_module = $this->settings['collector_delivery_module_fi'] ?? 'no';
+						$delivery_module = walley_is_delivery_enabled( 'fi', $this->settings );
 					}
 
 					if ( empty( $store_id ) ) {
 						// If the customer is from another country, use the EU store ID.
 						// Only B2C is supported in the EU store.
-						$country_code    = 'EU';
-						$store_id        = $this->settings['collector_merchant_id_eu_b2c'] ?? '';
-						$delivery_module = $this->settings['collector_delivery_module_eu'] ?? 'no';
+						$country_code          = 'EU';
+						$store_id              = $this->settings['collector_merchant_id_eu_b2c'] ?? '';
+						$this->delivery_module = walley_is_delivery_enabled( 'eu', $this->settings );
 					}
 
 					$this->store_id        = $store_id;
@@ -333,7 +332,7 @@ abstract class Walley_Checkout_Request {
 			default:
 				$country_code          = 'SE';
 				$this->store_id        = $this->settings[ "collector_merchant_id_se_{$this->customer_type}" ];
-				$this->delivery_module = $this->settings['collector_delivery_module_se'] ?? 'no';
+				$this->delivery_module = walley_is_delivery_enabled( 'se', $this->settings );
 				break;
 		}
 		$this->country_code = $country_code;

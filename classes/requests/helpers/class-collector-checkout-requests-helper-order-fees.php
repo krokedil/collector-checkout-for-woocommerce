@@ -24,7 +24,7 @@ class Collector_Checkout_Requests_Helper_Order_Fees {
 	/**
 	 * Delivery module
 	 *
-	 * @var string
+	 * @var bool
 	 */
 	public $delivery_module;
 
@@ -36,19 +36,19 @@ class Collector_Checkout_Requests_Helper_Order_Fees {
 
 		switch ( get_woocommerce_currency() ) {
 			case 'SEK':
-				$this->delivery_module = isset( $collector_settings['collector_delivery_module_se'] ) ? $collector_settings['collector_delivery_module_se'] : 'no';
+				$this->delivery_module = walley_is_delivery_enabled( 'se', $collector_settings );
 				break;
 			case 'NOK':
-				$this->delivery_module = isset( $collector_settings['collector_delivery_module_no'] ) ? $collector_settings['collector_delivery_module_no'] : 'no';
+				$this->delivery_module = walley_is_delivery_enabled( 'no', $collector_settings );
 				break;
 			case 'DKK':
-				$this->delivery_module = isset( $collector_settings['collector_delivery_module_dk'] ) ? $collector_settings['collector_delivery_module_dk'] : 'no';
+				$this->delivery_module = walley_is_delivery_enabled( 'dk', $collector_settings );
 				break;
 			case 'EUR':
-				$this->delivery_module = isset( $collector_settings['collector_delivery_module_fi'] ) ? $collector_settings['collector_delivery_module_fi'] : 'no';
+				$this->delivery_module = walley_is_delivery_enabled( walley_get_eur_country(), $collector_settings );
 				break;
 			default:
-				$this->delivery_module = isset( $collector_settings['collector_delivery_module_se'] ) ? $collector_settings['collector_delivery_module_se'] : 'no';
+				$this->delivery_module = walley_is_delivery_enabled( 'se', $collector_settings );
 				break;
 		}
 	}
