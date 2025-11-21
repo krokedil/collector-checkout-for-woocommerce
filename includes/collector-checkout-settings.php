@@ -10,14 +10,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 $profiles = array(
-	'no'                          => __( 'No', 'collector-checkout-for-woocommerce' ),
-	'Recurring'                   => 'Recurring',
-	'DigitalDelivery'             => 'DigitalDelivery',
-	'DigitalDelivery-Recurring'   => 'DigitalDelivery-Recurring',
-	'Shipping-Redlight'           => 'Shipping-Redlight',
-	'Shipping-nShift'             => 'Shipping-nShift',
-	'Shipping-Redlight-Recurring' => 'Shipping-Redlight-Recurring',
-	'Shipping-nShift-Recurring'   => 'Shipping-nShift-Recurring',
+	'no'                => __( 'No', 'collector-checkout-for-woocommerce' ),
+	'Shipping-Redlight' => 'Shipping-Redlight',
+	'Shipping-nShift'   => 'Shipping-nShift',
 );
 
 /**

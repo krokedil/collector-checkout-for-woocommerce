@@ -478,17 +478,6 @@ class Walley_Subscription {
 			return true;
 		}
 
-		// Check if the merchant has enabled recurring payments in the settings.
-		$settings       = get_option( 'woocommerce_collector_checkout_settings', array() );
-		$cc             = strtolower( WC()->customer->get_billing_country() );
-		$custom_profile = $settings[ "walley_custom_profile_{$cc}" ] ?? null;
-		if ( ! empty( $custom_profile ) ) {
-			$normalized_profile = preg_replace( '/[^a-z]/', '', strtolower( $custom_profile ) );
-			if ( strpos( $normalized_profile, 'recurring' ) === false ) {
-				return false;
-			}
-		}
-
 		return true;
 	}
 

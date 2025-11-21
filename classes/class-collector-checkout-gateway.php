@@ -189,8 +189,6 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 		 */
 
 		$countries = array( 'se', 'no', 'dk', 'fi', 'eu' );
-		// Order matters.
-		$profiles = array( 'DigitalDelivery', 'DigitalDelivery-Recurring', 'Shipping-Redlight', 'Shipping-nShift', 'Shipping-Redlight-Recurring', 'Shipping-nShift-Recurring' );
 
 		foreach ( $countries as $country ) {
 			$option_key = "walley_custom_profile_$country";
@@ -216,15 +214,6 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 				$settings[ $option_key ] = 'Shipping-nShift';
 				continue;
 			} else {
-				foreach ( $profiles as $profile ) {
-					$profile = preg_replace( '/[^a-z]/', '', strtolower( $profile ) );
-					if ( false !== strpos( $profile, $saved_profile ) ) {
-						// Migrate the old setting to the corresponding new profile based on a substring match.
-						$settings[ $option_key ] = $profile;
-						continue; // with next country.
-					}
-				}
-
 				// If none of the profiles match, this is an unknown profile. But if delivery module is enabled, set to "Shipping-Redlight".
 				$settings[ $option_key ] = $delivery_module ? 'Shipping-Redlight' : 'no';
 			}
