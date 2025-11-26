@@ -1241,6 +1241,8 @@ function walley_is_delivery_enabled( $country, $settings = null ) {
  */
 function walley_get_eur_country( $default_to_store = true ) {
 	$order = false;
+	$customer_type = 'b2c';
+	$location = '';
 	if ( isset( WC()->session ) && method_exists( WC()->session, 'get' ) ) {
 		$customer_type = WC()->session->get( 'collector_customer_type' );
 	} else {
