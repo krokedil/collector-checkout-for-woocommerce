@@ -196,7 +196,8 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 	 * @return void
 	 */
 	public function init_form_fields() {
-		$this->form_fields = include COLLECTOR_BANK_PLUGIN_DIR . '/includes/collector-checkout-settings.php';
+		$settings = include COLLECTOR_BANK_PLUGIN_DIR . '/includes/collector-checkout-settings.php';
+		$this->form_fields = Walley_Checkout_Settings::add_country_form_fields( $settings );
 	}
 
 	/**
