@@ -108,6 +108,7 @@ class Collector_Api_Callbacks {
 			case 'walley:order:created':
 			case 'walley:authorization:failed':
 			case 'walley:authorization:retrying':
+			case 'walley:authorization:created':
 				// A subscription is recognized by its customer token.
 				// Since we only want to handle subscriptions here, we can return early if no customer token is present.
 				$customer_token = $payload['CustomerToken'];
