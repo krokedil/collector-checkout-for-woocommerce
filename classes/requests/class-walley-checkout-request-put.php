@@ -13,6 +13,19 @@ if ( ! defined( 'ABSPATH' ) ) {
  *  The main class for PUT requests.
  */
 abstract class Walley_Checkout_Request_Put extends Walley_Checkout_Request {
+	/**
+	 * The WC order ID.
+	 *
+	 * @var string
+	 */
+	protected $order_id;
+
+	/**
+	 * The private ID of the checkout.
+	 *
+	 * @var string
+	 */
+	protected $private_id;
 
 	/**
 	 * Walley_Checkout_Request_Put constructor.
@@ -21,7 +34,9 @@ abstract class Walley_Checkout_Request_Put extends Walley_Checkout_Request {
 	 */
 	public function __construct( $arguments = array() ) {
 		parent::__construct( $arguments );
-		$this->method = 'PUT';
+		$this->method     = 'PUT';
+		$this->order_id   = $arguments['order_id'] ?? '';
+		$this->private_id = $arguments['private_id'] ?? '';
 	}
 
 	/**
