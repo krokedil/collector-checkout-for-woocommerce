@@ -95,7 +95,7 @@ class Walley_Checkout_Order_Management {
 				$text          = __( 'Part activate Walley Checkout order error: ', 'collector-checkout-for-woocommerce' ) . '%s %s';
 				$formated_text = sprintf( $text, $code, $message );
 				$order->add_order_note( $formated_text );
-				$order->update_status( 'on-hold' );
+				$this->maybe_set_order_on_hold( $order, $message, $code );
 				return;
 			}
 
@@ -123,7 +123,7 @@ class Walley_Checkout_Order_Management {
 				$text          = __( 'Activate Walley Checkout order error: ', 'collector-checkout-for-woocommerce' ) . '%s %s';
 				$formated_text = sprintf( $text, $code, $message );
 				$order->add_order_note( $formated_text );
-				$order->update_status( 'on-hold' );
+				$this->maybe_set_order_on_hold( $order, $message, $code );
 				return;
 			}
 
@@ -411,5 +411,22 @@ class Walley_Checkout_Order_Management {
 			}
 		}
 		return $order_number;
+	}
+
+	/**
+	 * Maybe set order on hold based on error code and message.
+	 *
+	 * @param WC_Order $order The WooCommerce order.
+	 * @param string   $message The error message.
+	 * @param string   $code The error code.
+	 */
+	public function maybe_set_order_on_hold( $order, $message, $code ) {
+
+		// If the order is simply already captured there's no need to set on-hold.
+		if ( 422 === $code && strpos( $message, 'CAPTURE_ORDER_ALREADY_CAPTURED' ) !== false ) {
+			return;
+		}
+
+		$order->update_status( 'on-hold' );
 	}
 }
