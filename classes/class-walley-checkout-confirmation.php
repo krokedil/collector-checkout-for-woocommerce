@@ -76,7 +76,6 @@ class Walley_Checkout_Confirmation {
 		$result = walley_confirm_order( $order_id );
 		if ( $result ) {
 			$walley_payment_id = $order->get_meta( '_collector_payment_id' );
-
 			CCO_WC()->logger::log( "Order ID $order_id confirmed on the confirmation page. Walley payment ID: " . ( empty( $walley_payment_id ) ? 'not saved to order' : $walley_payment_id ) );
 		}
 
