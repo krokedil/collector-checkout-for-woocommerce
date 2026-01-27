@@ -420,7 +420,7 @@ class Walley_Checkout_Order_Management {
 	 * @param string   $message The error message.
 	 * @param string   $code The error code.
 	 */
-	public function maybe_set_order_on_hold( $order, $message, $code ) {
+	private function maybe_set_order_on_hold( $order, $message, $code ) {
 
 		// If the order is simply already captured there's no need to set on-hold.
 		if ( 422 === (int) $code && strpos( $message, 'CAPTURE_ORDER_ALREADY_CAPTURED' ) !== false ) {
