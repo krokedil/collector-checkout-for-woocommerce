@@ -1225,7 +1225,7 @@ function walley_is_delivery_enabled( $country, $settings = null ) {
 	$profile = $settings[ "walley_custom_profile_{$country}" ] ?? null;
 	if ( empty( $profile ) ) {
 		// Check the old settings in case the new setting is not yet set.
-		return wc_string_to_bool( $settings[ "collector_delivery_module_$country" ] ?? 'no' );
+		return ! empty( $settings[ "collector_delivery_module_$country" ] ?? '' );
 	}
 
 	return false !== strpos( strtolower( $profile ), 'shipping' );
