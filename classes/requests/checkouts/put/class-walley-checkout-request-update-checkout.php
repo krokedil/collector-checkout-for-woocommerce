@@ -13,20 +13,6 @@ defined( 'ABSPATH' ) || exit;
 class Walley_Checkout_Request_Update_Checkout extends Walley_Checkout_Request_Put {
 
 	/**
-	 * The WC order ID.
-	 *
-	 * @var string
-	 */
-	protected $order_id;
-
-	/**
-	 * The private ID of the checkout.
-	 *
-	 * @var string
-	 */
-	protected $private_id;
-
-	/**
 	 * Class constructor.
 	 *
 	 * @param array $arguments The request arguments.
@@ -34,9 +20,6 @@ class Walley_Checkout_Request_Update_Checkout extends Walley_Checkout_Request_Pu
 	public function __construct( $arguments ) {
 		parent::__construct( $arguments );
 		$this->log_title  = 'Update checkout';
-		$this->order_id   = $arguments['order_id'] ?? '';
-		$this->private_id = $arguments['private_id'] ?? '';
-		$this->set_environment_variables( $arguments );
 	}
 
 	/**

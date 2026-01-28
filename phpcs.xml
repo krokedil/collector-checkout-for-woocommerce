@@ -44,7 +44,7 @@
     </rule>
 
     <!-- Allow the usage of shorthand arrays -->
-    <rule ref="Universal.Arrays.DisallowShortArraySyntax.Found">
+    <rule ref="Generic.Arrays.DisallowShortArraySyntax">
         <exclude-pattern>src/</exclude-pattern>
     </rule>
 </ruleset>
