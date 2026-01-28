@@ -402,8 +402,12 @@ class Walley_Checkout {
 	 * @return bool Whether the session has been cleared.
 	 */
 	public function maybe_clear_session_on_country_change( $country_from_checkout ) {
+		$profile              = Walley_Checkout_Settings::get_checkout_profile( WC()->customer->get_billing_country() );
+		$session_profile      = WC()->session->get( 'collector_profile' );
 		$country_from_session = WC()->session->get( 'collector_billing_country' );
-		if ( $country_from_session === $country_from_checkout ) {
+
+		// If both the country and profile are the same, no need to clear session.
+		if ( $country_from_session === $country_from_checkout && $profile === $session_profile ) {
 			return false;
 		}
 
@@ -428,6 +432,11 @@ class Walley_Checkout {
 				break;
 			default:
 				break;
+		}
+
+		// If the profile has changed, we always need to clear the session.
+		if ( $profile !== $session_profile ) {
+			$clear_session = true;
 		}
 
 		if ( $clear_session ) {

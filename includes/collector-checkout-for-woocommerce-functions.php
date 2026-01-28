@@ -37,12 +37,14 @@ function collector_wc_show_snippet() {
 		$customer_type = wc_collector_get_default_customer_type();
 		WC()->session->set( 'collector_customer_type', $customer_type );
 	}
-
+	$profile            = Walley_Checkout_Settings::get_checkout_profile( WC()->customer->get_billing_country() );
 	$public_token       = WC()->session->get( 'collector_public_token' );
 	$collector_currency = WC()->session->get( 'collector_currency' );
 	$private_id         = WC()->session->get( 'collector_private_id' );
+	$session_profile    = WC()->session->get( 'collector_profile' );
 
-	if ( empty( $public_token ) || empty( $private_id ) || get_woocommerce_currency() !== $collector_currency ) {
+	// If we don't have a public token or private id, or if the currency or profile has changed since the last request, we need to initialize a new checkout.
+	if ( empty( $public_token ) || empty( $private_id ) || get_woocommerce_currency() !== $collector_currency || $profile !== $session_profile ) {
 		// Get a new public token from Collector.
 		if ( walley_use_new_api() ) {
 			$collector_order = CCO_WC()->api->initialize_walley_checkout( array( 'customer_type' => $customer_type ) );
@@ -58,6 +60,7 @@ function collector_wc_show_snippet() {
 			WC()->session->set( 'collector_private_id', $collector_order['data']['privateId'] );
 			WC()->session->set( 'collector_currency', get_woocommerce_currency() );
 			WC()->session->set( 'collector_billing_country', WC()->customer->get_billing_country() );
+			WC()->session->set( 'collector_profile', $profile );
 
 			$public_token = $collector_order['data']['publicToken'];
 			$output       = array(
@@ -139,6 +142,9 @@ function wc_collector_unset_sessions() {
 		}
 		if ( WC()->session->get( 'collector_currency' ) ) {
 			WC()->session->__unset( 'collector_currency' );
+		}
+		if ( WC()->session->get( 'collector_profile' ) ) {
+			WC()->session->__unset( 'collector_profile' );
 		}
 
 		WC()->session->__unset( 'collector_billing_country' );
