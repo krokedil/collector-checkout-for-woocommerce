@@ -90,13 +90,17 @@ class Walley_Checkout_Order_Management {
 
 			if ( is_wp_error( $response ) ) {
 				// If error save error message.
-				$code          = $response->get_error_code();
-				$message       = $response->get_error_message();
-				$text          = __( 'Part activate Walley Checkout order error: ', 'collector-checkout-for-woocommerce' ) . '%s %s';
-				$formated_text = sprintf( $text, $code, $message );
-				$order->add_order_note( $formated_text );
-				$order->update_status( 'on-hold' );
-				return;
+				$code    = $response->get_error_code();
+				$message = $response->get_error_message();
+
+				$set_order_on_hold = $this->maybe_set_order_on_hold( $message, $code );
+				if ( $set_order_on_hold ) {
+					$text          = __( 'Part activate Walley Checkout order error: ', 'collector-checkout-for-woocommerce' ) . '%s %s';
+					$formated_text = sprintf( $text, $code, $message );
+					$order->add_order_note( $formated_text );
+					$order->update_status( 'on-hold' );
+					return;
+				}
 			}
 
 			// Translators: Activated amount.
@@ -118,13 +122,17 @@ class Walley_Checkout_Order_Management {
 
 			if ( is_wp_error( $response ) ) {
 				// If error save error message.
-				$code          = $response->get_error_code();
-				$message       = $response->get_error_message();
-				$text          = __( 'Activate Walley Checkout order error: ', 'collector-checkout-for-woocommerce' ) . '%s %s';
-				$formated_text = sprintf( $text, $code, $message );
-				$order->add_order_note( $formated_text );
-				$order->update_status( 'on-hold' );
-				return;
+				$code    = $response->get_error_code();
+				$message = $response->get_error_message();
+
+				$set_order_on_hold = $this->maybe_set_order_on_hold( $message, $code );
+				if ( $set_order_on_hold ) {
+					$text          = __( 'Activate Walley Checkout order error: ', 'collector-checkout-for-woocommerce' ) . '%s %s';
+					$formated_text = sprintf( $text, $code, $message );
+					$order->add_order_note( $formated_text );
+					$order->update_status( 'on-hold' );
+					return;
+				}
 			}
 
 			$note = __( 'Walley Checkout order activated.', 'collector-checkout-for-woocommerce' );
@@ -411,5 +419,21 @@ class Walley_Checkout_Order_Management {
 			}
 		}
 		return $order_number;
+	}
+
+	/**
+	 * Maybe set order on hold based on error code and message.
+	 *
+	 * @param string $message The error message.
+	 * @param string $code The error code.
+	 */
+	private function maybe_set_order_on_hold( $message, $code ) {
+
+		// If the order is simply already captured there's no need to set on-hold.
+		if ( 422 === (int) $code && strpos( $message, 'CAPTURE_ORDER_ALREADY_CAPTURED' ) !== false ) {
+			return false;
+		}
+
+		return true;
 	}
 }
