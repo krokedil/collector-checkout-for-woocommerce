@@ -27,10 +27,6 @@ class Collector_Checkout_Requests_Cart {
 		$items = array();
 		// Loop through cart items and make an item line for each.
 		foreach ( $wc_cart as $item ) {
-			// Don't send items with a price of 0.
-			if ( empty( floatval( $item['line_total'] ) ) ) {
-				continue;
-			}
 			if ( $item['variation_id'] ) {
 				$product    = wc_get_product( $item['variation_id'] );
 				$product_id = $item['variation_id'];

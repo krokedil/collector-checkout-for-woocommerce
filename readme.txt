@@ -2,11 +2,11 @@
 Contributors: collectorbank, krokedil, NiklasHogefjord
 Tags: ecommerce, e-commerce, woocommerce, collector, checkout, walley
 Requires at least: 5.0
-Tested up to: 6.8.3
+Tested up to: 6.9.1
 Requires PHP: 7.3
-Stable tag: 4.4.0
+Stable tag: 4.4.1
 WC requires at least: 6.0.0
-WC tested up to: 10.2.2
+WC tested up to: 10.5.1
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -39,6 +39,14 @@ For help setting up and configuring Walley Checkout for WooCommerce please refer
 
 
 == CHANGELOG ==
+= 2026.02.11    - version 4.4.1 =
+* Fix           - Fixed deprecation warnings related to dynamic properties.
+* Fix           - Fixed reference to internal metadata for shipping phone.
+* Fix           - Fixed order failed to be capture via SOAP request due to incorrect payment ID retrieval logic.
+* Tweak         - Allowed the inclusion of zero cost products in the cart data request.
+* Tweak         - In certain situation for B2B purchases where billing address is not available, the delivery address will be used.
+* Tweak         - Adjusted logging to inform about payment ID missing.
+
 = 2025.10.06    - version 4.4.0 =
 * Feature       - Added support for EU countries. 
 
