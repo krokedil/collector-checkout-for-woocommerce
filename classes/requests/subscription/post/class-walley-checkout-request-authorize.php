@@ -65,6 +65,7 @@ class Walley_Checkout_Request_Create_Authorization extends Walley_Checkout_Reque
 		$body = array(
 			'customerToken' => $this->token,
 			'order'         => array(
+				'reference'   => $this->renewal_order->get_order_number(),
 				'items'       => Collector_Checkout_Requests_Helper_Order_Om::get_order_lines( $this->renewal_order->get_id() ),
 				'currency'    => $this->renewal_order->get_currency(),
 				'captureMode' => 'Manual', // Set to 'Manual' (instead of 'Auto') since a renewal order will be created for this subscription; the subscription will be managed through that order instead.

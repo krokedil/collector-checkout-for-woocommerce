@@ -101,6 +101,13 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 		public $order_fees;
 
 		/**
+		 * The Subscriptions class instance.
+		 *
+		 * @var Walley_Subscription
+		 */
+		public $subscriptions;
+
+		/**
 		 * Returns the *Singleton* instance of this class.
 		 *
 		 * @return self::$instance The *Singleton* instance.
@@ -195,6 +202,7 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-walley-checkout-confirmation.php';
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-walley-checkout-session.php';
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-walley-checkout-subscription.php';
+			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-walley-checkout-settings.php';
 
 			// Order management. SOAP will be deprecated.
 			if ( ! empty( $this->walley_api_client_id ) && ! empty( $this->walley_api_secret ) ) {
@@ -290,8 +298,9 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/helpers/class-walley-checkout-requests-fees-helper.php';
 
 			// Set variables for shorthand access to classes.
-			$this->order_items = new Collector_Checkout_Requests_Helper_Order();
-			$this->order_fees  = new Collector_Checkout_Requests_Helper_Order_Fees();
+			$this->order_items   = new Collector_Checkout_Requests_Helper_Order();
+			$this->order_fees    = new Collector_Checkout_Requests_Helper_Order_Fees();
+			$this->subscriptions = new Walley_Subscription();
 
 			// Definitions.
 			define( 'COLLECTOR_BANK_REST_LIVE', 'https://checkout-api.collector.se' );

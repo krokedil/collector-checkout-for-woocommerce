@@ -70,6 +70,14 @@ class Collector_Checkout_Logger {
 		// Unset the snippet to prevent issues in the request body.
 		// Add logic to remove any HTML snippets from the request body.
 
+		// If the response contains a body, try to decode it from JSON.
+		if ( is_array( $response ) && isset( $response['body'] ) ) {
+			$decoded_response = json_decode( $response['body'], true );
+			if ( null !== $decoded_response ) {
+				$response['body'] = $decoded_response;
+			}
+		}
+
 		return array(
 			'id'             => $checkout_id,
 			'type'           => $method,

@@ -11,7 +11,6 @@ defined( 'ABSPATH' ) || exit;
  * Walley_Checkout_Request_Set_Order_Reference class.
  */
 class Walley_Checkout_Request_Set_Order_Reference extends Walley_Checkout_Request_Put {
-
 	/**
 	 * Class constructor.
 	 *
@@ -20,9 +19,6 @@ class Walley_Checkout_Request_Set_Order_Reference extends Walley_Checkout_Reques
 	public function __construct( $arguments ) {
 		parent::__construct( $arguments );
 		$this->log_title  = 'Set order reference';
-		$this->order_id   = $arguments['order_id'] ?? '';
-		$this->private_id = $arguments['private_id'] ?? '';
-		$this->set_environment_variables( $arguments );
 	}
 
 	/**

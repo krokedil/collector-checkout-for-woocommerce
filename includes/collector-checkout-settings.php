@@ -9,12 +9,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
-$profiles = array(
-	'no'                => __( 'No', 'collector-checkout-for-woocommerce' ),
-	'Shipping-Redlight' => 'Shipping-Redlight',
-	'Shipping-nShift'   => 'Shipping-nShift',
-);
-
 /**
  * Settings for Collector Checkout
  */
@@ -65,119 +59,6 @@ $settings = array(
 		'description' => __( 'Enter your Walley Checkout Password. Used for Walley\'s old SOAP based Payments API (for order management).', 'collector-checkout-for-woocommerce' ),
 		'default'     => '',
 		'desc_tip'    => false,
-	),
-	'se_settings_title'               => array(
-		'title' => __( 'Sweden', 'collector-checkout-for-woocommerce' ),
-		'type'  => 'title',
-	),
-	'collector_merchant_id_se_b2c'    => array(
-		'title'       => __( 'Merchant ID Sweden B2C', 'collector-checkout-for-woocommerce' ),
-		'type'        => 'text',
-		'description' => __( 'Enter your Walley Checkout Merchant ID for B2C purchases in Sweden', 'collector-checkout-for-woocommerce' ),
-		'default'     => '',
-		'desc_tip'    => true,
-	),
-	'collector_merchant_id_se_b2b'    => array(
-		'title'       => __( 'Merchant ID Sweden B2B', 'collector-checkout-for-woocommerce' ),
-		'type'        => 'text',
-		'description' => __( 'Enter your Walley Checkout Merchant ID for B2B purchases in Sweden', 'collector-checkout-for-woocommerce' ),
-		'default'     => '',
-		'desc_tip'    => true,
-	),
-	'walley_custom_profile_se'        => array(
-		'title'   => __( 'Custom Profile Sweden', 'collector-checkout-for-woocommerce' ),
-		'type'    => 'select',
-		'options' => $profiles,
-		'default' => 'no',
-	),
-	'no_settings_title'               => array(
-		'title' => __( 'Norway', 'collector-checkout-for-woocommerce' ),
-		'type'  => 'title',
-	),
-	'collector_merchant_id_no_b2c'    => array(
-		'title'       => __( 'Merchant ID Norway B2C', 'collector-checkout-for-woocommerce' ),
-		'type'        => 'text',
-		'description' => __( 'Enter your Walley Checkout Merchant ID for B2C purchases in Norway', 'collector-checkout-for-woocommerce' ),
-		'default'     => '',
-		'desc_tip'    => true,
-	),
-	'collector_merchant_id_no_b2b'    => array(
-		'title'       => __( 'Merchant ID Norway B2B', 'collector-checkout-for-woocommerce' ),
-		'type'        => 'text',
-		'description' => __( 'Enter your Walley Checkout Merchant ID for B2B purchases in Norway', 'collector-checkout-for-woocommerce' ),
-		'default'     => '',
-		'desc_tip'    => true,
-	),
-	'walley_custom_profile_no'        => array(
-		'title'   => __( 'Custom Profile Norway', 'collector-checkout-for-woocommerce' ),
-		'type'    => 'select',
-		'options' => $profiles,
-		'default' => 'no',
-	),
-	'fi_settings_title'               => array(
-		'title' => __( 'Finland', 'collector-checkout-for-woocommerce' ),
-		'type'  => 'title',
-	),
-	'collector_merchant_id_fi_b2c'    => array(
-		'title'       => __( 'Merchant ID Finland B2C', 'collector-checkout-for-woocommerce' ),
-		'type'        => 'text',
-		'description' => __( 'Enter your Walley Checkout Merchant ID for B2C purchases in Finland', 'collector-checkout-for-woocommerce' ),
-		'default'     => '',
-		'desc_tip'    => true,
-	),
-	'collector_merchant_id_fi_b2b'    => array(
-		'title'       => __( 'Merchant ID Finland B2B', 'collector-checkout-for-woocommerce' ),
-		'type'        => 'text',
-		'description' => __( 'Enter your Walley Checkout Merchant ID for B2B purchases in Finland', 'collector-checkout-for-woocommerce' ),
-		'default'     => '',
-		'desc_tip'    => true,
-	),
-	'walley_custom_profile_fi'        => array(
-		'title'   => __( 'Custom Profile Finland', 'collector-checkout-for-woocommerce' ),
-		'type'    => 'select',
-		'options' => $profiles,
-		'default' => 'no',
-	),
-	'dk_settings_title'               => array(
-		'title' => __( 'Denmark', 'collector-checkout-for-woocommerce' ),
-		'type'  => 'title',
-	),
-	'collector_merchant_id_dk_b2c'    => array(
-		'title'       => __( 'Merchant ID Denmark B2C', 'collector-checkout-for-woocommerce' ),
-		'type'        => 'text',
-		'description' => __( 'Enter your Walley Checkout Merchant ID for B2C purchases in Denmark', 'collector-checkout-for-woocommerce' ),
-		'default'     => '',
-		'desc_tip'    => true,
-	),
-	'collector_merchant_id_dk_b2b'    => array(
-		'title'       => __( 'Merchant ID Denmark B2B', 'collector-checkout-for-woocommerce' ),
-		'type'        => 'text',
-		'description' => __( 'Enter your Walley Checkout Merchant ID for B2B purchases in Denmark', 'collector-checkout-for-woocommerce' ),
-		'default'     => '',
-		'desc_tip'    => true,
-	),
-	'walley_custom_profile_dk'        => array(
-		'title'   => __( 'Custom Profile Denmark', 'collector-checkout-for-woocommerce' ),
-		'type'    => 'select',
-		'options' => $profiles,
-		'default' => 'no',
-	),
-	'eu_settings_title'               => array(
-		'title' => __( 'EU', 'collector-checkout-for-woocommerce' ),
-		'type'  => 'title',
-	),
-	'collector_merchant_id_eu_b2c'    => array(
-		'title'       => __( 'Merchant ID EU B2C', 'collector-checkout-for-woocommerce' ),
-		'type'        => 'text',
-		'description' => __( 'Enter your Walley Checkout Merchant ID for B2C purchases in EU', 'collector-checkout-for-woocommerce' ),
-		'default'     => '',
-		'desc_tip'    => true,
-	),
-	'walley_custom_profile_eu'        => array(
-		'title'   => __( 'Custom Profile EU', 'collector-checkout-for-woocommerce' ),
-		'type'    => 'select',
-		'options' => $profiles,
-		'default' => 'no',
 	),
 	'checkout_settings_title'         => array(
 		'title' => __( 'Checkout settings', 'collector-checkout-for-woocommerce' ),

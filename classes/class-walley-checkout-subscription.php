@@ -104,7 +104,7 @@ class Walley_Subscription {
 
 			foreach ( $subscriptions as $subscription ) {
 				$subscription->add_order_note( $message );
-				$subscription->payment_failed();
+				$subscription->payment_failed_for_related_order( 'on-hold', $renewal_order );
 			}
 
 			$renewal_order->add_order_note( $message );
@@ -697,5 +697,3 @@ class Walley_Subscription {
 		}
 	}
 }
-
-new Walley_Subscription();

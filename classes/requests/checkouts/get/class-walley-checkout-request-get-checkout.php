@@ -36,7 +36,6 @@ class Walley_Checkout_Request_Get_Checkout extends Walley_Checkout_Request_Get {
 		$this->log_title  = 'Get checkout';
 		$this->order_id   = $arguments['order_id'] ?? '';
 		$this->private_id = $arguments['private_id'] ?? '';
-		$this->set_environment_variables( $arguments );
 	}
 
 	/**
