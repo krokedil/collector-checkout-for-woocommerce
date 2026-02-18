@@ -108,6 +108,7 @@ class Walley_Checkout_Order_Management {
 			walley_save_order_data_to_transient(
 				array(
 					'order_id'     => $order_id,
+					'status'       => 'PartActivated',
 					'total_amount' => $order->get_total(),
 					'currency'     => $order->get_currency(),
 				)
@@ -136,6 +137,7 @@ class Walley_Checkout_Order_Management {
 			walley_save_order_data_to_transient(
 				array(
 					'order_id'     => $order_id,
+					'status'       => 'Activated',
 					'total_amount' => $order->get_total(),
 					'currency'     => $order->get_currency(),
 				)
@@ -203,6 +205,7 @@ class Walley_Checkout_Order_Management {
 		walley_save_order_data_to_transient(
 			array(
 				'order_id'     => $order_id,
+				'status'       => 'Cancelled',
 				'total_amount' => $order->get_total(),
 				'currency'     => $order->get_currency(),
 			)
@@ -272,6 +275,7 @@ class Walley_Checkout_Order_Management {
 		walley_save_order_data_to_transient(
 			array(
 				'order_id' => $order_id,
+				'status'   => 'Refunded',
 				'currency' => $order->get_currency(),
 			)
 		);
