@@ -274,9 +274,10 @@ class Walley_Checkout_Order_Management {
 		// Save received data to WP transient.
 		walley_save_order_data_to_transient(
 			array(
-				'order_id' => $order_id,
-				'status'   => 'Refunded',
-				'currency' => $order->get_currency(),
+				'order_id'     => $order_id,
+				'status'       => 'Refunded',
+				'total_amount' => $order->get_total(),
+				'currency'     => $order->get_currency(),
 			)
 		);
 
