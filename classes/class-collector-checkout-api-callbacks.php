@@ -100,8 +100,8 @@ class Collector_Api_Callbacks {
 		}
 
 		$params     = filter_var_array( $params, FILTER_SANITIZE_FULL_SPECIAL_CHARS );
-		$event_type = $params['Type'];
-		$payload    = $params['Payload'];
+		$event_type = $params['Type'] ?? null;
+		$payload    = $params['Payload'] ?? null;
 
 		$did_schedule = false;
 		switch ( $event_type ) {
