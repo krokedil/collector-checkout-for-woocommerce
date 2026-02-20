@@ -380,7 +380,7 @@ class Walley_Checkout_Settings {
 			$country_name
 		);
 
-		$setting_key                      = "collector_profile_{$country_code}";
+		$setting_key                      = "collector_custom_profile_{$country_code}";
 		$country_settings[ $setting_key ] = array(
 			'title'       => $label,
 			'type'        => 'text',
