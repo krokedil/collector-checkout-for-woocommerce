@@ -513,7 +513,9 @@ class Walley_Subscription {
 		}
 
 		$subscription = self::get_subscription( $subscription_id );
-		if ( self::GATEWAY_ID !== $subscription->get_payment_method() ) {
+
+		// If we cannot find the subscription or the payment method is not Walley, we don't need to do anything.
+		if ( ! $subscription || self::GATEWAY_ID !== $subscription->get_payment_method() ) {
 			return;
 		}
 
