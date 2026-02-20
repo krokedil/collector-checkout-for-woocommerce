@@ -164,7 +164,7 @@ class Walley_Checkout_Settings {
 		// If we have a profile set for the country, use that.
 		if ( ! empty( $profile ) ) {
 			$checkout_profile = $profile;
-		} elseif ( WC()->cart->needs_shipping() && ! empty( $delivery_module ) ) {
+		} elseif ( WC()->cart && WC()->cart->needs_shipping() && ! empty( $delivery_module ) ) {
 			// If no profile is set, but a delivery module is set and the cart needs shipping, use that.
 			$checkout_profile = $delivery_module;
 		}
