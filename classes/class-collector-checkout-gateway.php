@@ -431,6 +431,7 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 		if ( 'PrivateCustomer' === $walley_order['data']['customerType'] ) {
 			$order_shipping_phone = $walley_order['data']['customer']['deliveryContactInformation']['mobilePhoneNumber'] ?? '';
 		}
+
 		$order->set_shipping_phone( $order_shipping_phone );
 
 		if ( ! empty( $organization_number ) ) {

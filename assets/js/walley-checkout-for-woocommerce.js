@@ -406,6 +406,24 @@ jQuery( function( $ ) {
 			// console.log( addressData );
 
 			// Billing fields.
+			// In certain situations, Walley Checkout may return only shipping address. In that case, we will copy the shipping address to billing address, as WooCommerce requires both addresses to be filled in.
+			if (!addressData.billing_address_1) {
+				addressData = {
+					...addressData,
+					billing_first_name: addressData.shipping_first_name,
+					billing_last_name: addressData.shipping_last_name,
+					billing_company: addressData.shipping_company,
+					billing_address_1: addressData.shipping_address_1,
+					billing_address_2: addressData.shipping_address_2,
+					billing_address_co: addressData.shipping_address_co,
+					billing_city: addressData.shipping_city,
+					billing_postcode: addressData.shipping_postcode,
+					billing_phone: addressData.billing_phone,
+					billing_email: addressData.billing_email,
+					billing_country: addressData.shipping_country
+				};
+			}
+
 			$('#billing_first_name').val(addressData.billing_first_name);
 			$('#billing_last_name').val(addressData.billing_last_name);
 			$('#billing_company').val(addressData.billing_company);

@@ -173,7 +173,7 @@ class Collector_Checkout_SOAP_Requests_Activate_Invoice {
 		return array(
 			'StoreId'     => $this->store_id,
 			'CountryCode' => $this->country_code,
-			'InvoiceNo'   => $order->get_meta( '_collector_payment_id' )[0],
+			'InvoiceNo'   => $order->get_meta( '_collector_payment_id' ),
 		);
 	}
 }
