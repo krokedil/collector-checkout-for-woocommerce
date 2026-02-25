@@ -37,7 +37,8 @@ function collector_wc_show_snippet() {
 		$customer_type = wc_collector_get_default_customer_type();
 		WC()->session->set( 'collector_customer_type', $customer_type );
 	}
-	$profile            = Walley_Checkout_Settings::get_checkout_profile( WC()->customer->get_billing_country() );
+	$walley_country     = Walley_Checkout_Settings::get_country_code( get_woocommerce_currency(), $customer_type );
+	$profile            = Walley_Checkout_Settings::get_checkout_profile( $walley_country );
 	$public_token       = WC()->session->get( 'collector_public_token' );
 	$collector_currency = WC()->session->get( 'collector_currency' );
 	$private_id         = WC()->session->get( 'collector_private_id' );

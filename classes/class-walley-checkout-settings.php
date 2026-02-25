@@ -133,6 +133,8 @@ class Walley_Checkout_Settings {
 			// If not, set it to 'shipping' to maintain the old behavior of using nShift as the default delivery module for countries that had delivery modules enabled.
 			$profile = self::get_profile( $country_code );
 			$value   = ! empty( $profile ) ? $profile : 'shipping';
+		} elseif ( 'no' === $value ) {
+			$value = '';
 		}
 
 		return $value;
@@ -416,19 +418,6 @@ class Walley_Checkout_Settings {
 			$country_name
 		);
 
-		$delivery_module = self::get_delivery_module( $country_code );
-		$default         = '';
-
-		/**
-		 * If the setting for the delivery_module was previously set to 'yes',
-		 * that means they were using the old setting which enabled the delivery module for that country without a profile.
-		 * In that case, we want to default the new setting to 'shipping' to maintain the old behavior,
-		 * unless they had a profile set in which case we want to default to that since that was also part of the old behavior.
-		 */
-		if ( 'yes' === $delivery_module ) {
-			$default = 'shipping';
-		}
-
 		$modules = array(
 			''                  => __( 'None', 'collector-checkout-for-woocommerce' ),
 			'shipping' => 'nShift Delivery',
@@ -440,7 +429,7 @@ class Walley_Checkout_Settings {
 			'title'    => $label,
 			'type'     => 'select',
 			'options'  => $modules,
-			'default'  => $default,
+			'default'  => '',
 			'desc_tip' => true,
 		);
 	}

@@ -402,18 +402,19 @@ class Walley_Checkout {
 	 * @return bool Whether the session has been cleared.
 	 */
 	public function maybe_clear_session_on_country_change( $country_from_checkout ) {
-		$profile              = Walley_Checkout_Settings::get_checkout_profile( WC()->customer->get_billing_country() );
+		$currency             = get_woocommerce_currency();
+		$customer_type        = WC()->session->get( 'collector_customer_type' );
 		$session_profile      = WC()->session->get( 'collector_profile' );
 		$country_from_session = WC()->session->get( 'collector_billing_country' );
+		$walley_country       = Walley_Checkout_Settings::get_country_code( $currency, $customer_type );
+		$profile              = Walley_Checkout_Settings::get_checkout_profile( $walley_country );
 
 		// If both the country and profile are the same, no need to clear session.
 		if ( $country_from_session === $country_from_checkout && $profile === $session_profile ) {
 			return false;
 		}
 
-		$settings      = get_option( 'woocommerce_collector_checkout_settings' );
-		$customer_type = WC()->session->get( 'collector_customer_type' );
-		$currency      = get_woocommerce_currency();
+		$settings = get_option( 'woocommerce_collector_checkout_settings' );
 
 		$clear_session = false;
 		switch ( $currency ) {
