@@ -167,7 +167,7 @@ class Walley_Checkout_Settings {
 		// Normalize the input.
 		$country_code = strtolower( $country_code );
 
-		$is_subscription = Walley_Subscription::cart_has_subscription();
+		$is_subscription  = Walley_Subscription::cart_has_subscription();
 		$checkout_profile = '';
 
 		$profile         = self::get_profile( $country_code );
