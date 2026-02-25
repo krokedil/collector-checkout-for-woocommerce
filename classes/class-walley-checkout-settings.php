@@ -125,7 +125,17 @@ class Walley_Checkout_Settings {
 
 		$settings            = self::get_settings();
 		$delivery_module_key = "collector_delivery_module_$country_code";
-		return ! empty( $settings[ $delivery_module_key ] ) ? sanitize_text_field( $settings[ $delivery_module_key ] ) : '';
+		$value               = ! empty( $settings[ $delivery_module_key ] ) ? sanitize_text_field( $settings[ $delivery_module_key ] ) : '';
+
+		// If the value was set to 'yes', that means they previously used the old setting.
+		if ( 'yes' === $value ) {
+			// See if they had a profile set for the country, if so use that as the delivery module since that was the old behavior.
+			// If not, set it to 'shipping' to maintain the old behavior of using nShift as the default delivery module for countries that had delivery modules enabled.
+			$profile = self::get_profile( $country_code );
+			$value   = ! empty( $profile ) ? $profile : 'shipping';
+		}
+
+		return $value;
 	}
 
 	/**
@@ -140,7 +150,7 @@ class Walley_Checkout_Settings {
 		$country_code = strtolower( $country_code );
 
 		$settings    = self::get_settings();
-		$profile_key = "collector_profile_{$country_code}";
+		$profile_key = "collector_custom_profile_{$country_code}";
 		return ! empty( $settings[ $profile_key ] ) ? sanitize_text_field( $settings[ $profile_key ] ) : '';
 	}
 
@@ -406,6 +416,19 @@ class Walley_Checkout_Settings {
 			$country_name
 		);
 
+		$delivery_module = self::get_delivery_module( $country_code );
+		$default         = '';
+
+		/**
+		 * If the setting for the delivery_module was previously set to 'yes',
+		 * that means they were using the old setting which enabled the delivery module for that country without a profile.
+		 * In that case, we want to default the new setting to 'shipping' to maintain the old behavior,
+		 * unless they had a profile set in which case we want to default to that since that was also part of the old behavior.
+		 */
+		if ( 'yes' === $delivery_module ) {
+			$default = 'shipping';
+		}
+
 		$modules = array(
 			''                  => __( 'None', 'collector-checkout-for-woocommerce' ),
 			'shipping' => 'nShift Delivery',
@@ -414,11 +437,11 @@ class Walley_Checkout_Settings {
 
 		$setting_key = "collector_delivery_module_{$country_code}";
 		$country_settings[ $setting_key ] = array(
-			'title'       => $label,
-			'type'        => 'select',
-			'options'     => $modules,
-			'default'     => '',
-			'desc_tip'    => true,
+			'title'    => $label,
+			'type'     => 'select',
+			'options'  => $modules,
+			'default'  => $default,
+			'desc_tip' => true,
 		);
 	}
 }
