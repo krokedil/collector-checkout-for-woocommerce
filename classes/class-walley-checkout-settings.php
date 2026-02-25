@@ -444,4 +444,36 @@ class Walley_Checkout_Settings {
 			'desc_tip' => true,
 		);
 	}
+
+	/**
+	 * Maybe migrate the old delivery module setting to the new one.
+	 * This is for backwards compatibility for users who had the delivery module enabled using the old setting when it was a checkbox.
+	 *
+	 * @return void
+	 */
+	public static function maybe_migrate_old_delivery_module_setting() {
+		$old_settings  = self::get_settings();
+		$new_settings  = $old_settings;
+		$update_needed = false;
+
+		foreach ( self::get_walley_countries() as $country_code => $params ) {
+			$delivery_module_key = "collector_delivery_module_{$country_code}";
+			$old_value = $old_settings[ $delivery_module_key ] ?? null;
+
+			// If the setting is not set, or it was updated to something other than 'yes' or 'no', we can skip it since the migration only applies to settings that were previously set using the checkbox.
+			if ( null === $old_value || ! in_array( $old_value, array( 'yes', 'no' ), true ) ) {
+				continue;
+			}
+
+			$update_needed = true;
+
+			// If the setting was previously 'yes', set it to shipping, otherwise set it to empty string.
+			$new_settings[ $delivery_module_key ] = 'yes' === $old_value ? 'shipping' : '';
+		}
+
+		if ( $update_needed ) {
+			update_option( 'woocommerce_collector_checkout_settings', $new_settings );
+			self::$settings = $new_settings;
+		}
+	}
 }

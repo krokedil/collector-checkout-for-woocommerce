@@ -164,6 +164,8 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 			add_action( 'before_woocommerce_init', array( $this, 'declare_wc_compatibility' ) );
 
 			add_filter( 'woocommerce_checkout_fields', array( $this, 'add_hidden_public_token_field' ), 30 );
+
+			add_action( 'init', Walley_Checkout_Settings::class . '::maybe_migrate_old_delivery_module_setting' );
 		}
 
 		/**
