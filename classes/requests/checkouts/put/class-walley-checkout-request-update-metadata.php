@@ -11,6 +11,12 @@ defined( 'ABSPATH' ) || exit;
  * Walley_Checkout_Request_Update_Metadata class.
  */
 class Walley_Checkout_Request_Update_Metadata extends Walley_Checkout_Request_Put {
+	/**
+	 * The metadata to update.
+	 *
+	 * @var array
+	 */
+	protected $metadata;
 
 	/**
 	 * Class constructor.
@@ -19,11 +25,8 @@ class Walley_Checkout_Request_Update_Metadata extends Walley_Checkout_Request_Pu
 	 */
 	public function __construct( $arguments ) {
 		parent::__construct( $arguments );
-		$this->log_title  = 'Update metadata';
-		$this->order_id   = $arguments['order_id'] ?? '';
-		$this->metadata   = $arguments['metadata'] ?? '';
-		$this->private_id = $arguments['private_id'] ?? '';
-		$this->set_environment_variables( $arguments );
+		$this->log_title = 'Update metadata';
+		$this->metadata  = $arguments['metadata'] ?? '';
 	}
 
 	/**

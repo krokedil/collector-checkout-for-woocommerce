@@ -22,38 +22,6 @@ class Collector_Checkout_Requests_Helper_Order_Fees {
 	public $price = 0;
 
 	/**
-	 * Delivery module
-	 *
-	 * @var string
-	 */
-	public $delivery_module;
-
-	/**
-	 * Class constructor.
-	 */
-	public function __construct() {
-		$collector_settings = get_option( 'woocommerce_collector_checkout_settings' );
-
-		switch ( get_woocommerce_currency() ) {
-			case 'SEK':
-				$this->delivery_module = isset( $collector_settings['collector_delivery_module_se'] ) ? $collector_settings['collector_delivery_module_se'] : 'no';
-				break;
-			case 'NOK':
-				$this->delivery_module = isset( $collector_settings['collector_delivery_module_no'] ) ? $collector_settings['collector_delivery_module_no'] : 'no';
-				break;
-			case 'DKK':
-				$this->delivery_module = isset( $collector_settings['collector_delivery_module_dk'] ) ? $collector_settings['collector_delivery_module_dk'] : 'no';
-				break;
-			case 'EUR':
-				$this->delivery_module = isset( $collector_settings['collector_delivery_module_fi'] ) ? $collector_settings['collector_delivery_module_fi'] : 'no';
-				break;
-			default:
-				$this->delivery_module = isset( $collector_settings['collector_delivery_module_se'] ) ? $collector_settings['collector_delivery_module_se'] : 'no';
-				break;
-		}
-	}
-
-	/**
 	 * Gets order fees for the order.
 	 *
 	 * @param int $order_id The WooCommerce order id.

@@ -28,7 +28,6 @@ class Walley_Checkout_Request_Initialize_Checkout extends Walley_Checkout_Reques
 		parent::__construct( $arguments );
 		$this->log_title = 'Initialize checkout';
 		$this->order_id  = $arguments['order_id'] ?? '';
-		$this->set_environment_variables( $arguments );
 	}
 
 	/**
@@ -67,11 +66,9 @@ class Walley_Checkout_Request_Initialize_Checkout extends Walley_Checkout_Reques
 
 		// Only send profileName if this is a purchase from the checkout.
 		if ( empty( $this->order_id ) ) {
-			if ( 'yes' === $this->delivery_module ) {
-				$body['profileName'] = trim( $this->settings[ 'collector_custom_profile_' . strtolower( $this->country_code ) ] );
-				if ( empty( $body['profileName'] ) ) {
-					$body['profileName'] = 'Shipping';
-				}
+			$profile = Walley_Checkout_Settings::get_checkout_profile( $this->country_code );
+			if ( ! empty( $profile ) ) {
+				$body['profileName'] = $profile;
 			}
 
 			$body['redirectPageUri'] = add_query_arg(

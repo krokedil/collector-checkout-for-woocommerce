@@ -47,6 +47,20 @@ class Collector_Checkout_Requests_Initialize_Checkout extends Collector_Checkout
 	public $customer_type = '';
 
 	/**
+	 * Delivery module.
+	 *
+	 * @var bool
+	 */
+	protected $delivery_module;
+
+	/**
+	 * The currency.
+	 *
+	 * @var string
+	 */
+	protected $currency;
+
+	/**
 	 * Class constructor.
 	 *
 	 * @param string $customer_type The customer type.
@@ -58,27 +72,34 @@ class Collector_Checkout_Requests_Initialize_Checkout extends Collector_Checkout
 			case 'SEK':
 				$country_code          = 'SE';
 				$this->store_id        = $collector_settings[ 'collector_merchant_id_se_' . $customer_type ];
-				$this->delivery_module = isset( $collector_settings['collector_delivery_module_se'] ) ? $collector_settings['collector_delivery_module_se'] : 'no';
+				$this->delivery_module = walley_is_delivery_enabled( 'se', $collector_settings );
 				break;
 			case 'NOK':
 				$country_code          = 'NO';
 				$this->store_id        = $collector_settings[ 'collector_merchant_id_no_' . $customer_type ];
-				$this->delivery_module = isset( $collector_settings['collector_delivery_module_no'] ) ? $collector_settings['collector_delivery_module_no'] : 'no';
+				$this->delivery_module = walley_is_delivery_enabled( 'no', $collector_settings );
 				break;
 			case 'DKK':
 				$country_code          = 'DK';
 				$this->store_id        = $collector_settings[ 'collector_merchant_id_dk_' . $customer_type ];
-				$this->delivery_module = isset( $collector_settings['collector_delivery_module_dk'] ) ? $collector_settings['collector_delivery_module_dk'] : 'no';
+				$this->delivery_module = walley_is_delivery_enabled( 'dk', $collector_settings );
 				break;
 			case 'EUR':
 				$country_code          = 'FI';
 				$this->store_id        = $collector_settings[ 'collector_merchant_id_fi_' . $customer_type ];
-				$this->delivery_module = isset( $collector_settings['collector_delivery_module_fi'] ) ? $collector_settings['collector_delivery_module_fi'] : 'no';
+				$this->delivery_module = walley_is_delivery_enabled( 'fi', $collector_settings );
+				if ( 'b2b' !== $customer_type ) {
+					$country_code          = walley_get_eur_country(); // Unlike Finland, for other European countries that use Euro, Walley expect "EU" rather than the specific country's country code.
+					$this->store_id        = $collector_settings[ "collector_merchant_id_{$country_code}_b2c" ];
+					$this->delivery_module = walley_is_delivery_enabled( $country_code, $collector_settings );
+
+					$country_code = strtoupper( $country_code );
+				}
 				break;
 			default:
 				$country_code          = 'SE';
 				$this->store_id        = $collector_settings[ 'collector_merchant_id_se_' . $customer_type ];
-				$this->delivery_module = isset( $collector_settings['collector_delivery_module_se'] ) ? $collector_settings['collector_delivery_module_se'] : 'no';
+				$this->delivery_module = walley_is_delivery_enabled( 'se', $collector_settings );
 				break;
 		}
 		$this->customer_type = $customer_type;
@@ -153,15 +174,12 @@ class Collector_Checkout_Requests_Initialize_Checkout extends Collector_Checkout
 			'fees'             => ( null === $order_id ) ? $this->fees() : CCO_WC()->order_fees->get_order_fees( $order_id ),
 		);
 
-		$collector_settings = get_option( 'woocommerce_collector_checkout_settings' );
-
 		// Only send profileName if this is a purchase from the checkout.
 		if ( null === $order_id ) {
-			if ( 'yes' === $this->delivery_module ) {
-				$formatted_request_body['profileName'] = trim( $collector_settings[ 'collector_custom_profile_' . strtolower( $this->country_code ) ] );
-				if ( empty( $formatted_request_body['profileName'] ) ) {
-					$formatted_request_body['profileName'] = 'Shipping';
-				}
+			$profile = Walley_Checkout_Settings::get_checkout_profile( $this->country_code );
+
+			if ( ! empty( $profile ) ) {
+				$formatted_request_body['profileName'] = $profile;
 			}
 
 			$formatted_request_body['redirectPageUri'] = add_query_arg(

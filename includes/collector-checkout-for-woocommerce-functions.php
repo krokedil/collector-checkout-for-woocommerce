@@ -37,12 +37,15 @@ function collector_wc_show_snippet() {
 		$customer_type = wc_collector_get_default_customer_type();
 		WC()->session->set( 'collector_customer_type', $customer_type );
 	}
-
+	$walley_country     = Walley_Checkout_Settings::get_country_code( get_woocommerce_currency(), $customer_type );
+	$profile            = Walley_Checkout_Settings::get_checkout_profile( $walley_country );
 	$public_token       = WC()->session->get( 'collector_public_token' );
 	$collector_currency = WC()->session->get( 'collector_currency' );
 	$private_id         = WC()->session->get( 'collector_private_id' );
+	$session_profile    = WC()->session->get( 'collector_profile' );
 
-	if ( empty( $public_token ) || empty( $private_id ) || get_woocommerce_currency() !== $collector_currency ) {
+	// If we don't have a public token or private id, or if the currency or profile has changed since the last request, we need to initialize a new checkout.
+	if ( empty( $public_token ) || empty( $private_id ) || get_woocommerce_currency() !== $collector_currency || $profile !== $session_profile ) {
 		// Get a new public token from Collector.
 		if ( walley_use_new_api() ) {
 			$collector_order = CCO_WC()->api->initialize_walley_checkout( array( 'customer_type' => $customer_type ) );
@@ -58,6 +61,7 @@ function collector_wc_show_snippet() {
 			WC()->session->set( 'collector_private_id', $collector_order['data']['privateId'] );
 			WC()->session->set( 'collector_currency', get_woocommerce_currency() );
 			WC()->session->set( 'collector_billing_country', WC()->customer->get_billing_country() );
+			WC()->session->set( 'collector_profile', $profile );
 
 			$public_token = $collector_order['data']['publicToken'];
 			$output       = array(
@@ -140,6 +144,9 @@ function wc_collector_unset_sessions() {
 		if ( WC()->session->get( 'collector_currency' ) ) {
 			WC()->session->__unset( 'collector_currency' );
 		}
+		if ( WC()->session->get( 'collector_profile' ) ) {
+			WC()->session->__unset( 'collector_profile' );
+		}
 
 		WC()->session->__unset( 'collector_billing_country' );
 	}
@@ -187,26 +194,26 @@ function remove_collector_db_row_data( $private_id ) {
  *
  * @param string $currency selected currency.
  *
- * @return boolean
+ * @return bool
  */
 function is_collector_delivery_module( $currency = false ) {
 	$collector_settings = get_option( 'woocommerce_collector_checkout_settings' );
 	$currency           = ! false === $currency ? $currency : get_woocommerce_currency();
 	switch ( $currency ) {
 		case 'SEK':
-			$delivery_module = isset( $collector_settings['collector_delivery_module_se'] ) ? $collector_settings['collector_delivery_module_se'] : 'no';
+			$delivery_module = walley_is_delivery_enabled( 'se', $collector_settings );
 			break;
 		case 'NOK':
-			$delivery_module = isset( $collector_settings['collector_delivery_module_no'] ) ? $collector_settings['collector_delivery_module_no'] : 'no';
+			$delivery_module = walley_is_delivery_enabled( 'no', $collector_settings );
 			break;
 		case 'DKK':
-			$delivery_module = isset( $collector_settings['collector_delivery_module_dk'] ) ? $collector_settings['collector_delivery_module_dk'] : 'no';
+			$delivery_module = walley_is_delivery_enabled( 'dk', $collector_settings );
 			break;
 		case 'EUR':
-			$delivery_module = isset( $collector_settings['collector_delivery_module_fi'] ) ? $collector_settings['collector_delivery_module_fi'] : 'no';
+			$delivery_module = walley_is_delivery_enabled( 'fi', $collector_settings );
 			break;
 		default:
-			$delivery_module = 'no';
+			$delivery_module = walley_is_delivery_enabled( 'se', $collector_settings );
 			break;
 	}
 	return $delivery_module;
@@ -690,16 +697,25 @@ function walley_confirm_order( $order, $private_id = null ) {
 	}
 
 	if ( is_wp_error( $collector_order ) ) {
-		$order->add_order_note( __( 'Could not retreive Walley order during walley_confirm_order function.', 'collector-checkout-for-woocommerce' ) );
+		$order->add_order_note( __( 'Could not retrieve Walley order during walley_confirm_order function.', 'collector-checkout-for-woocommerce' ) );
 		$order->save();
 
 		return false;
 	}
 
-	$payment_status  = $collector_order['data']['purchase']['result'];
-	$payment_method  = $collector_order['data']['purchase']['paymentName'];
-	$payment_id      = $collector_order['data']['purchase']['purchaseIdentifier'];
-	$walley_order_id = $collector_order['data']['order']['orderId'];
+	$customer_token = $collector_order['data']['order']['customerToken'] ?? null;
+	if ( Walley_Subscription::order_has_subscription( $order ) ) {
+		if ( empty( $customer_token ) ) {
+			$order->add_order_note( __( 'Walley order does not contain a customer token for subscription order.', 'collector-checkout-for-woocommerce' ) );
+		} else {
+			// translators: Customer token.
+			$order->add_order_note( sprintf( __( 'Walley subscription token: %s.', 'collector-checkout-for-woocommerce' ), $customer_token ) );
+			Walley_Subscription::save_customer_token( $order, $customer_token );
+		}
+	}
+
+	$payment_status = $collector_order['data']['purchase']['result'];
+	$payment_method = $collector_order['data']['purchase']['paymentName'];
 
 	// Check if we need to update reference in collectors system.
 	if ( empty( $collector_order['data']['reference'] ) ) {
@@ -720,9 +736,18 @@ function walley_confirm_order( $order, $private_id = null ) {
 		}
 	}
 
+	// For free-trial, and zero-amount orders, the payment ID, and Walley order ID are not set.
+	$walley_order_id = $collector_order['data']['order']['orderId'] ?? '';
+	$payment_id      = $collector_order['data']['purchase']['purchaseIdentifier'] ?? '';
+
 	$order->update_meta_data( '_collector_payment_method', $payment_method );
-	$order->update_meta_data( '_collector_payment_id', $payment_id );
-	$order->update_meta_data( '_collector_order_id', sanitize_key( $walley_order_id ) );
+	if ( ! empty( $payment_id ) ) {
+		$order->update_meta_data( '_collector_payment_id', $payment_id );
+	}
+
+	if ( ! empty( $walley_order_id ) ) {
+		$order->update_meta_data( '_collector_order_id', sanitize_key( $walley_order_id ) );
+	}
 
 	wc_collector_save_shipping_reference_to_order( $order, $collector_order );
 
@@ -1167,7 +1192,14 @@ function walley_set_order_status( $order, $payment_status, $payment_id, $save_or
 			}
 			$order->set_transaction_id( $payment_id );
 			break;
-
+		case 'Completed':
+			// This is trigger for free-trial orders, and other zero-amount orders.
+			$order->payment_complete();
+			$order->add_order_note( __( 'The order has been completed successfully. This is a zero-amount order or a free-trial order that does not require payment.', 'collector-checkout-for-woocommerce' ) );
+			if ( $is_callback ) {
+				CCO_WC()->logger::log( 'Order status not set correctly for order ' . $order->get_order_number() . ' during checkout process. Setting order status to Processing/Completed.' );
+			}
+			break;
 		default:
 			$order->add_order_note( __( 'Order is PENDING APPROVAL by Walley. Payment ID: ', 'collector-checkout-for-woocommerce' ) . $payment_id );
 			$order->update_status( 'on-hold' );
@@ -1181,4 +1213,63 @@ function walley_set_order_status( $order, $payment_status, $payment_id, $save_or
 	if ( $save_order ) {
 		$order->save();
 	}
+}
+
+/**
+ * Check if delivery is enabled for a specific country.
+ *
+ * @param string     $country The country code.
+ * @param array|null $settings The Walley plugin settings. If null, the settings will be fetched from the database.
+ *
+ * @return bool True if delivery is enabled, otherwise false.
+ */
+function walley_is_delivery_enabled( $country, $settings = null ) {
+	if ( empty( $settings ) ) {
+		$settings = get_option( 'woocommerce_collector_checkout_settings' );
+	}
+
+	$country = strtolower( $country );
+	$profile = $settings[ "collector_custom_profile_{$country}" ] ?? null;
+	if ( empty( $profile ) ) {
+		// Check the old settings in case the new setting is not yet set.
+		return ! empty( $settings[ "collector_delivery_module_$country" ] ?? '' );
+	}
+
+	return false !== strpos( strtolower( $profile ), 'shipping' );
+}
+
+/**
+ * Whether the EU or FI profile should be used for EUR currency.
+ *
+ * If the customer type is available, and it is B2B, 'fi' will always be returned.
+ *
+ * @param bool $default_to_store Whether to default to the store location if the customer's billing country is not set.
+ * @return string 'fi' or 'eu'.
+ */
+function walley_get_eur_country( $default_to_store = true ) {
+	$order = false;
+	$customer_type = 'b2c';
+	$location = '';
+	if ( isset( WC()->session ) && method_exists( WC()->session, 'get' ) ) {
+		$customer_type = WC()->session->get( 'collector_customer_type' );
+	} else {
+		$order_id      = absint( get_query_var( 'order-pay', 0 ) );
+		$order         = wc_get_order( $order_id );
+		$customer_type = $order ? $order->get_meta( '_collector_customer_type' ) : 'b2c';
+	}
+
+	if ( 'b2b' === $customer_type ) {
+		return 'fi';
+	}
+
+	if ( ! empty( $order ) ) {
+		$customer_location = $order->get_billing_country();
+	} else {
+		$customer_location = isset( WC()->customer ) ? WC()->customer->get_billing_country() : false;
+	}
+
+	if ( $default_to_store ) {
+		$location = empty( $customer_location ) ? wc_get_base_location()['country'] : $customer_location;
+	}
+	return 'fi' !== strtolower( $location ) ? 'eu' : 'fi';
 }
