@@ -89,15 +89,24 @@ abstract class Walley_Checkout_Request {
 	 */
 	protected $terms_page;
 
-
 	/**
 	 * Class constructor.
 	 *
 	 * @param array $arguments The request args.
 	 */
 	public function __construct( $arguments = array() ) {
-		$this->arguments = $arguments;
+		$this->arguments     = $arguments;
+		$this->customer_type = $arguments['customer_type'] ?? 'b2c';
 		$this->load_settings();
+
+		// Get the country code to use for the settings.
+		$country_code = Walley_Checkout_Settings::get_country_code( get_woocommerce_currency(), $this->customer_type );
+
+		$this->store_id        = Walley_Checkout_Settings::get_merchant_id( $country_code, $this->customer_type );
+		$this->delivery_module = ! empty( Walley_Checkout_Settings::get_delivery_module( $country_code ) );
+		$this->currency        = get_woocommerce_currency();
+		$this->country_code    = strtoupper( $country_code );
+		$this->terms_page      = esc_url( get_permalink( wc_get_page_id( 'terms' ) ) );
 	}
 
 	/**
@@ -276,68 +285,6 @@ abstract class Walley_Checkout_Request {
 			return '705798e0-8cef-427c-ae00-6023deba29af/.default';
 		}
 		return 'a3f3019f-2be9-41cc-a254-7bb347238e89/.default';
-	}
-
-	/**
-	 * Set environment variables from settings depending on customer type and currency.
-	 *
-	 * @param array $arguments The current customer args.
-	 *
-	 * @return void
-	 */
-	public function set_environment_variables( $arguments = array() ) {
-		$this->customer_type = $arguments['customer_type'] ?? 'b2c';
-		$this->currency      = $arguments['currency'] ?? get_woocommerce_currency();
-		switch ( $this->currency ) {
-			case 'SEK':
-				$country_code          = 'SE';
-				$this->store_id        = $this->settings[ "collector_merchant_id_se_{$this->customer_type}" ];
-				$this->delivery_module = $this->settings['collector_delivery_module_se'] ?? 'no';
-				break;
-			case 'NOK':
-				$country_code          = 'NO';
-				$this->store_id        = $this->settings[ "collector_merchant_id_no_{$this->customer_type}" ];
-				$this->delivery_module = $this->settings['collector_delivery_module_no'] ?? 'no';
-				break;
-			case 'DKK':
-				$country_code          = 'DK';
-				$this->store_id        = $this->settings[ "collector_merchant_id_dk_{$this->customer_type}" ];
-				$this->delivery_module = $this->settings['collector_delivery_module_dk'] ?? 'no';
-				break;
-			case 'EUR':
-				$order_id     = $arguments['order_id'] ?? $this->arguments['order_id'] ?? false;
-				$country_code = $this->get_customer_country( wc_get_order( $order_id ) );
-				if ( 'b2b' === $this->customer_type ) {
-					$this->store_id        = $this->settings[ "collector_merchant_id_fi_{$this->customer_type}" ];
-					$this->delivery_module = $this->settings['collector_delivery_module_fi'] ?? 'no';
-				} else {
-					$store_id = '';
-					// If the customer is from Finland, use the Finnish store ID.
-					if ( 'FI' === $country_code ) {
-						$store_id        = $this->settings[ "collector_merchant_id_fi_{$this->customer_type}" ];
-						$delivery_module = $this->settings['collector_delivery_module_fi'] ?? 'no';
-					}
-
-					if ( empty( $store_id ) ) {
-						// If the customer is from another country, use the EU store ID.
-						// Only B2C is supported in the EU store.
-						$country_code    = 'EU';
-						$store_id        = $this->settings['collector_merchant_id_eu_b2c'] ?? '';
-						$delivery_module = $this->settings['collector_delivery_module_eu'] ?? 'no';
-					}
-
-					$this->store_id        = $store_id;
-					$this->delivery_module = $delivery_module;
-				}
-				break;
-			default:
-				$country_code          = 'SE';
-				$this->store_id        = $this->settings[ "collector_merchant_id_se_{$this->customer_type}" ];
-				$this->delivery_module = $this->settings['collector_delivery_module_se'] ?? 'no';
-				break;
-		}
-		$this->country_code = $country_code;
-		$this->terms_page   = esc_url( get_permalink( wc_get_page_id( 'terms' ) ) );
 	}
 
 	/**

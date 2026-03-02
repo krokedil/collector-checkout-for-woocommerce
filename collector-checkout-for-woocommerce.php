@@ -8,14 +8,14 @@
  * Plugin Name:     Walley Checkout for WooCommerce
  * Plugin URI:      https://krokedil.se/produkt/walley-checkout/
  * Description:     Extends WooCommerce. Provides a <a href="https://www.walley.se/foretag/checkout/" target="_blank">Walley Checkout</a> checkout for WooCommerce.
- * Version:         4.4.1
+ * Version:         4.5.0
  * Author:          Krokedil
  * Author URI:      https://krokedil.se/
  * Text Domain:     collector-checkout-for-woocommerce
  * Domain Path:     /languages
  *
  * WC requires at least: 6.0.0
- * WC tested up to: 10.5.1
+ * WC tested up to: 10.5.2
  *
  * Copyright:       © 2017-2026 Krokedil.
  * License:         GNU General Public License v3.0
@@ -28,7 +28,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 define( 'COLLECTOR_BANK_PLUGIN_DIR', untrailingslashit( plugin_dir_path( __FILE__ ) ) );
 define( 'COLLECTOR_BANK_PLUGIN_URL', untrailingslashit( plugin_dir_url( __FILE__ ) ) );
-define( 'COLLECTOR_BANK_VERSION', '4.4.1' );
+define( 'COLLECTOR_BANK_VERSION', '4.5.0' );
 define( 'COLLECTOR_DB_VERSION', '1' );
 
 if ( ! class_exists( 'Collector_Checkout' ) ) {
@@ -101,6 +101,13 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 		public $order_fees;
 
 		/**
+		 * The Subscriptions class instance.
+		 *
+		 * @var Walley_Subscription
+		 */
+		public $subscriptions;
+
+		/**
 		 * Returns the *Singleton* instance of this class.
 		 *
 		 * @return self::$instance The *Singleton* instance.
@@ -157,6 +164,8 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 			add_action( 'before_woocommerce_init', array( $this, 'declare_wc_compatibility' ) );
 
 			add_filter( 'woocommerce_checkout_fields', array( $this, 'add_hidden_public_token_field' ), 30 );
+
+			add_action( 'init', Walley_Checkout_Settings::class . '::maybe_migrate_old_delivery_module_setting' );
 		}
 
 		/**
@@ -194,6 +203,8 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-walley-checkout.php';
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-walley-checkout-confirmation.php';
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-walley-checkout-session.php';
+			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-walley-checkout-subscription.php';
+			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-walley-checkout-settings.php';
 
 			// Order management. SOAP will be deprecated.
 			if ( ! empty( $this->walley_api_client_id ) && ! empty( $this->walley_api_secret ) ) {
@@ -208,6 +219,11 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/class-walley-checkout-request-get.php';
 				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/class-walley-checkout-request-put.php';
 				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/class-walley-checkout-request-post.php';
+				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/class-walley-checkout-request-delete.php';
+
+				// Subscriptions.
+				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/subscription/delete/class-walley-checkout-request-cancel-customer-token.php';
+				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/subscription/post/class-walley-checkout-request-authorize.php';
 
 				// New Checkout request class files.
 				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/checkouts/get/class-walley-checkout-request-get-checkout.php';
@@ -284,8 +300,9 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/helpers/class-walley-checkout-requests-fees-helper.php';
 
 			// Set variables for shorthand access to classes.
-			$this->order_items = new Collector_Checkout_Requests_Helper_Order();
-			$this->order_fees  = new Collector_Checkout_Requests_Helper_Order_Fees();
+			$this->order_items   = new Collector_Checkout_Requests_Helper_Order();
+			$this->order_fees    = new Collector_Checkout_Requests_Helper_Order_Fees();
+			$this->subscriptions = new Walley_Subscription();
 
 			// Definitions.
 			define( 'COLLECTOR_BANK_REST_LIVE', 'https://checkout-api.collector.se' );

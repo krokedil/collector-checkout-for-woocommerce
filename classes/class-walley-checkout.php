@@ -230,8 +230,8 @@ class Walley_Checkout {
 
 		self::maybe_update_cart( $private_id, $customer_type );
 
-		// If cart doesn't need payment anymore - reload the checkout page.
-		if ( ! WC()->cart->needs_payment() ) {
+		// If cart doesn't need payment anymore - reload the checkout page except if the cart contain a subscription (e.g., free trial).
+		if ( ! Walley_Subscription::cart_has_subscription() && ! WC()->cart->needs_payment() ) {
 			WC()->session->reload_checkout = true;
 		}
 	}
@@ -402,14 +402,19 @@ class Walley_Checkout {
 	 * @return bool Whether the session has been cleared.
 	 */
 	public function maybe_clear_session_on_country_change( $country_from_checkout ) {
+		$currency             = get_woocommerce_currency();
+		$customer_type        = WC()->session->get( 'collector_customer_type' );
+		$session_profile      = WC()->session->get( 'collector_profile' );
 		$country_from_session = WC()->session->get( 'collector_billing_country' );
-		if ( $country_from_session === $country_from_checkout ) {
+		$walley_country       = Walley_Checkout_Settings::get_country_code( $currency, $customer_type );
+		$profile              = Walley_Checkout_Settings::get_checkout_profile( $walley_country );
+
+		// If both the country and profile are the same, no need to clear session.
+		if ( $country_from_session === $country_from_checkout && $profile === $session_profile ) {
 			return false;
 		}
 
-		$settings      = get_option( 'woocommerce_collector_checkout_settings' );
-		$customer_type = WC()->session->get( 'collector_customer_type' );
-		$currency      = get_woocommerce_currency();
+		$settings = get_option( 'woocommerce_collector_checkout_settings' );
 
 		$clear_session = false;
 		switch ( $currency ) {
@@ -428,6 +433,11 @@ class Walley_Checkout {
 				break;
 			default:
 				break;
+		}
+
+		// If the profile has changed, we always need to clear the session.
+		if ( $profile !== $session_profile ) {
+			$clear_session = true;
 		}
 
 		if ( $clear_session ) {
