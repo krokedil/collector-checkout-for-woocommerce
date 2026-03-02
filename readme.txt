@@ -2,11 +2,11 @@
 Contributors: collectorbank, krokedil, NiklasHogefjord
 Tags: ecommerce, e-commerce, woocommerce, collector, checkout, walley
 Requires at least: 5.0
-Tested up to: 6.9.1
+Tested up to: 6.9
 Requires PHP: 7.3
-Stable tag: 4.4.1
+Stable tag: 4.5.0
 WC requires at least: 6.0.0
-WC tested up to: 10.5.1
+WC tested up to: 10.5.2
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -39,6 +39,9 @@ For help setting up and configuring Walley Checkout for WooCommerce please refer
 
 
 == CHANGELOG ==
+= 2026.03.02    - version 4.5.0 =
+* Feature       - Added support for WooCommerce Subscriptions, enabling recurring payments with Walley Checkout.
+
 = 2026.02.11    - version 4.4.1 =
 * Fix           - Fixed deprecation warnings related to dynamic properties.
 * Fix           - Fixed reference to internal metadata for shipping phone.
