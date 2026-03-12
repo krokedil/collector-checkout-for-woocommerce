@@ -84,6 +84,9 @@ class Walley_Checkout_Order_Management {
 			return;
 		}
 
+		$walley_order_id = $order->get_meta( '_collector_order_id', true );
+		$order_status    = '';
+
 		// Part activate or activate the entire order.
 		if ( 'yes' === $this->activate_individual_order_lines || apply_filters( 'wpd_delivery_order_type', 'shop_order_delivery', $order ) === $order->get_type() ) {
 			$response = CCO_WC()->api->part_capture_walley_order( $order_id );
@@ -104,11 +107,16 @@ class Walley_Checkout_Order_Management {
 			$order->update_meta_data( '_collector_order_activated', time() );
 			$order->save();
 
+			$walley_order = CCO_WC()->api->get_walley_order( $walley_order_id );
+			if ( ! is_wp_error( $walley_order ) ) {
+				$order_status = $walley_order['data']['status'] ?? '';
+			}
+
 			// Save received data to WP transient.
 			walley_save_order_data_to_transient(
 				array(
 					'order_id'     => $order_id,
-					'status'       => 'PartActivated',
+					'status'       => $order_status,
 					'total_amount' => $order->get_total(),
 					'currency'     => $order->get_currency(),
 				)
@@ -133,11 +141,16 @@ class Walley_Checkout_Order_Management {
 			$order->update_meta_data( '_collector_order_activated', time() );
 			$order->save();
 
+			$walley_order = CCO_WC()->api->get_walley_order( $walley_order_id );
+			if ( ! is_wp_error( $walley_order ) ) {
+				$order_status = $walley_order['data']['status'] ?? '';
+			}
+
 			// Save received data to WP transient.
 			walley_save_order_data_to_transient(
 				array(
 					'order_id'     => $order_id,
-					'status'       => 'Activated',
+					'status'       => $order_status,
 					'total_amount' => $order->get_total(),
 					'currency'     => $order->get_currency(),
 				)
@@ -201,11 +214,19 @@ class Walley_Checkout_Order_Management {
 		$order->update_meta_data( '_collector_order_cancelled', time() );
 		$order->save();
 
+		$walley_order_id = $order->get_meta( '_collector_order_id', true );
+		$order_status    = '';
+
+		$walley_order = CCO_WC()->api->get_walley_order( $walley_order_id );
+		if ( ! is_wp_error( $walley_order ) ) {
+			$order_status = $walley_order['data']['status'] ?? '';
+		}
+
 		// Save received data to WP transient.
 		walley_save_order_data_to_transient(
 			array(
 				'order_id'     => $order_id,
-				'status'       => 'Cancelled',
+				'status'       => $order_status,
 				'total_amount' => $order->get_total(),
 				'currency'     => $order->get_currency(),
 			)
@@ -271,11 +292,19 @@ class Walley_Checkout_Order_Management {
 			return $response;
 		}
 
+		$walley_order_id = $order->get_meta( '_collector_order_id', true );
+		$order_status    = '';
+
+		$walley_order = CCO_WC()->api->get_walley_order( $walley_order_id );
+		if ( ! is_wp_error( $walley_order ) ) {
+			$order_status = $walley_order['data']['status'] ?? '';
+		}
+
 		// Save received data to WP transient.
 		walley_save_order_data_to_transient(
 			array(
 				'order_id'     => $order_id,
-				'status'       => 'Refunded',
+				'status'       => $order_status,
 				'total_amount' => $order->get_total(),
 				'currency'     => $order->get_currency(),
 			)
