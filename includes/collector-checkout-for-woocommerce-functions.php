@@ -44,6 +44,12 @@ function collector_wc_show_snippet() {
 	$private_id         = WC()->session->get( 'collector_private_id' );
 	$session_profile    = WC()->session->get( 'collector_profile' );
 
+	if ( method_exists( WC()->session, '__unset' ) ) {
+		if ( WC()->session->get( 'collector_error_no_reload_needed' ) ) {
+			WC()->session->__unset( 'collector_error_no_reload_needed' );
+		}
+	}
+
 	// If we don't have a public token or private id, or if the currency or profile has changed since the last request, we need to initialize a new checkout.
 	if ( empty( $public_token ) || empty( $private_id ) || get_woocommerce_currency() !== $collector_currency || $profile !== $session_profile ) {
 		// Get a new public token from Collector.
@@ -56,6 +62,7 @@ function collector_wc_show_snippet() {
 
 		if ( is_wp_error( $collector_order ) ) {
 			$return = '<ul class="woocommerce-error"><li>' . sprintf( '%s <a href="%s" class="button wc-forward">%s</a>', __( 'Could not connect to Walley. Error message: ', 'collector-checkout-for-woocommerce' ) . $collector_order->get_error_message(), wc_get_checkout_url(), __( 'Try again', 'collector-checkout-for-woocommerce' ) ) . '</li></ul>';
+			WC()->session->set( 'collector_error_no_reload_needed', true );
 		} else {
 			WC()->session->set( 'collector_public_token', $collector_order['data']['publicToken'] );
 			WC()->session->set( 'collector_private_id', $collector_order['data']['privateId'] );
@@ -1247,9 +1254,9 @@ function walley_is_delivery_enabled( $country, $settings = null ) {
  * @return string 'fi' or 'eu'.
  */
 function walley_get_eur_country( $default_to_store = true ) {
-	$order = false;
+	$order         = false;
 	$customer_type = 'b2c';
-	$location = '';
+	$location      = '';
 	if ( isset( WC()->session ) && method_exists( WC()->session, 'get' ) ) {
 		$customer_type = WC()->session->get( 'collector_customer_type' );
 	} else {
