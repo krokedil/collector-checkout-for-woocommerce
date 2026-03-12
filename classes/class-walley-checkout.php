@@ -442,7 +442,9 @@ class Walley_Checkout {
 
 		if ( $clear_session ) {
 			wc_collector_unset_sessions();
-			WC()->session->reload_checkout = true;
+			if ( ! WC()->session->get( 'collector_error_no_reload_needed' ) ) {
+				WC()->session->reload_checkout = true;
+			}
 		}
 
 		return $clear_session;
