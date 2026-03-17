@@ -154,7 +154,6 @@ class Walley_Checkout {
 			return;
 		}
 
-		// Abort update if we don't have any Walley session identifiers yet.
 		$public_token = WC()->session->get( 'collector_public_token' );
 		$private_id   = WC()->session->get( 'collector_private_id' );
 		if ( empty( $public_token ) && empty( $private_id ) ) {
