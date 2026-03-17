@@ -154,6 +154,17 @@ class Walley_Checkout {
 			return;
 		}
 
+		// Abort update if we don't have any Walley session identifiers yet.
+		$public_token = WC()->session->get( 'collector_public_token' );
+		$private_id   = WC()->session->get( 'collector_private_id' );
+		if ( empty( $public_token ) && empty( $private_id ) ) {
+			$notice = __( 'Unable to update checkout right now. Please try again in a moment.', 'collector-checkout-for-woocommerce' );
+			if ( ! wc_has_notice( $notice, 'error' ) ) {
+				wc_add_notice( $notice, 'error' );
+			}
+			return;
+		}
+
 		// If we need to reload the checkout, do it now.
 		if ( $this->reload_checkout ) {
 			// Unset sessions and reload checkout has already been set in maybe_clear_session_on_country_change.
@@ -442,9 +453,7 @@ class Walley_Checkout {
 
 		if ( $clear_session ) {
 			wc_collector_unset_sessions();
-			if ( ! WC()->session->get( 'collector_error_no_reload_needed' ) ) {
-				WC()->session->reload_checkout = true;
-			}
+			WC()->session->reload_checkout = true;
 		}
 
 		return $clear_session;

@@ -44,12 +44,6 @@ function collector_wc_show_snippet() {
 	$private_id         = WC()->session->get( 'collector_private_id' );
 	$session_profile    = WC()->session->get( 'collector_profile' );
 
-	if ( method_exists( WC()->session, '__unset' ) ) {
-		if ( WC()->session->get( 'collector_error_no_reload_needed' ) ) {
-			WC()->session->__unset( 'collector_error_no_reload_needed' );
-		}
-	}
-
 	// If we don't have a public token or private id, or if the currency or profile has changed since the last request, we need to initialize a new checkout.
 	if ( empty( $public_token ) || empty( $private_id ) || get_woocommerce_currency() !== $collector_currency || $profile !== $session_profile ) {
 		// Get a new public token from Collector.
