@@ -56,7 +56,6 @@ function collector_wc_show_snippet() {
 
 		if ( is_wp_error( $collector_order ) ) {
 			$return = '<ul class="woocommerce-error"><li>' . sprintf( '%s <a href="%s" class="button wc-forward">%s</a>', __( 'Could not connect to Walley. Error message: ', 'collector-checkout-for-woocommerce' ) . $collector_order->get_error_message(), wc_get_checkout_url(), __( 'Try again', 'collector-checkout-for-woocommerce' ) ) . '</li></ul>';
-			WC()->session->set( 'collector_error_no_reload_needed', true );
 		} else {
 			WC()->session->set( 'collector_public_token', $collector_order['data']['publicToken'] );
 			WC()->session->set( 'collector_private_id', $collector_order['data']['privateId'] );
