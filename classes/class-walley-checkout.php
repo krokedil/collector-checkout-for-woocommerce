@@ -156,6 +156,8 @@ class Walley_Checkout {
 
 		$public_token = WC()->session->get( 'collector_public_token' );
 		$private_id   = WC()->session->get( 'collector_private_id' );
+
+		// If we don't have a public token or private id, show an error message and bail.
 		if ( empty( $public_token ) && empty( $private_id ) ) {
 			$notice = __( 'Unable to update checkout right now. Please try again in a moment.', 'collector-checkout-for-woocommerce' );
 			if ( ! wc_has_notice( $notice, 'error' ) ) {
@@ -193,7 +195,6 @@ class Walley_Checkout {
 			return;
 		}
 
-		$private_id = WC()->session->get( 'collector_private_id' );
 		if ( empty( $private_id ) ) {
 			CCO_WC()->logger::log( 'Walley private id is missing in update Walley order function.' );
 			return walley_print_error_message( new WP_Error( 'error', __( 'Missing Walley private id. Possible API error', 'collector-checkout-for-woocommerce' ) ) );
