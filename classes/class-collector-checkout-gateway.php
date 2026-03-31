@@ -301,7 +301,7 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 	/**
 	 * Process the payment and return the result.
 	 *
-	 * @throws \Exception If something goes wrong during payment processing.
+	 * @throws Exception If something goes wrong during payment processing.
 	 *
 	 * @param int  $order_id WooCommerce order ID.
 	 * @param bool $retry The retry.
