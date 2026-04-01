@@ -196,7 +196,7 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 	 * @return void
 	 */
 	public function init_form_fields() {
-		$settings = include COLLECTOR_BANK_PLUGIN_DIR . '/includes/collector-checkout-settings.php';
+		$settings          = include COLLECTOR_BANK_PLUGIN_DIR . '/includes/collector-checkout-settings.php';
 		$this->form_fields = Walley_Checkout_Settings::add_country_form_fields( $settings );
 	}
 
@@ -301,10 +301,12 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 	/**
 	 * Process the payment and return the result.
 	 *
+	 * @throws Exception If something goes wrong during payment processing.
+	 *
 	 * @param int  $order_id WooCommerce order ID.
 	 * @param bool $retry The retry.
 	 *
-	 * @return array
+	 * @return array{result: string}
 	 */
 	public function process_payment( $order_id, $retry = false ) {
 
@@ -321,10 +323,7 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 		// Check that update reference request was ok.
 		if ( false === $walley_reference ) {
 			$message = __( 'There was a problem updating the reference number in Walley.', 'collector-checkout-for-woocommerce' );
-			wc_add_notice( $message, 'error' );
-			return array(
-				'result' => 'error',
-			);
+			throw new Exception( esc_html( $message ) );
 		}
 
 		$walley_order = $this->get_walley_order( $order_id, $customer_type, $private_id );
@@ -332,10 +331,7 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 		// Check that get order request was ok.
 		if ( is_wp_error( $walley_order ) ) {
 			$message = __( 'There was a problem retrieving the Walley order.', 'collector-checkout-for-woocommerce' );
-			wc_add_notice( $message, 'error' );
-			return array(
-				'result' => 'error',
-			);
+			throw new Exception( esc_html( $message ) );
 		}
 
 		// $shipping_cost                 = $walley_order['data']['fees']['shipping']['unitPrice'] ?? 0; // Shipping.
@@ -347,10 +343,7 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 		if ( abs( $total_amount - $order->get_total() ) > 3 ) {
 			CCO_WC()->logger::log( 'Order total mismatch in process_payment. Woo order total: ' . $order->get_total() . '. Walley order total: ' . $total_amount . ' (cart:' . $cart_cost . ', shipping: ' . $shipping_cost . ').' );
 			$message = __( 'It seems like the WooCommerce and Walley total amount differs. Please, try again.', 'collector-checkout-for-woocommerce' );
-			wc_add_notice( $message, 'error' );
-			return array(
-				'result' => 'error',
-			);
+			throw new Exception( esc_html( $message ) );
 		}
 
 		// Flag as zero amount to prevent OM from processing the order.
