@@ -13,6 +13,13 @@ defined( 'ABSPATH' ) || exit;
 class Walley_Checkout_Request_Get_Order extends Walley_Checkout_Request_Get {
 
 	/**
+	 * The order ID.
+	 *
+	 * @var string
+	 */
+	protected $order_id;
+
+	/**
 	 * Class constructor.
 	 *
 	 * @param array $arguments The request arguments.
