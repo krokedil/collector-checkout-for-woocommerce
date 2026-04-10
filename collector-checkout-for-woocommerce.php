@@ -126,7 +126,7 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 		 * @return void
 		 */
 		public function __clone() {
-			wc_doing_it_wrong( __FUNCTION__, __( 'Nope' ), '1.0' );
+			wc_doing_it_wrong( __FUNCTION__, __( 'Nope', 'collector-checkout-for-woocommerce' ), '1.0' );
 		}
 
 		/**
@@ -136,7 +136,7 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 		 * @return void
 		 */
 		public function __wakeup() {
-			wc_doing_it_wrong( __FUNCTION__, __( 'Nope' ), '1.0' );
+			wc_doing_it_wrong( __FUNCTION__, __( 'Nope', 'collector-checkout-for-woocommerce' ), '1.0' );
 		}
 
 		/**
@@ -151,13 +151,6 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 			// Initiate the gateway.
 			add_action( 'plugins_loaded', array( $this, 'init' ) );
 
-			// Maybe create Collector db table.
-			// @todo - will be removed in next version.
-			// add_action( 'init', array( $this, 'collector_maybe_create_db_table' ) );
-
-			// Maybe schedule action.
-			// @todo - will be removed in next version.
-			// add_action( 'init', array( $this, 'collector_maybe_schedule_action' ) );
 			// Clean Collector db.
 			add_action( 'collector_clean_db', array( $this, 'collector_clean_db_callback' ) );
 
@@ -229,9 +222,6 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/checkouts/get/class-walley-checkout-request-get-checkout.php';
 				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/checkouts/post/class-walley-checkout-request-initialize-checkout.php';
 				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/checkouts/put/class-walley-checkout-request-update-checkout.php';
-				// include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/checkouts/put/class-walley-checkout-request-update-cart.php';
-				// include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/checkouts/put/class-walley-checkout-request-update-fees.php';
-				// include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/checkouts/put/class-walley-checkout-request-update-metadata.php';
 				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/checkouts/put/class-walley-checkout-request-set-order-reference.php';
 
 				// New OM request class files.
@@ -461,6 +451,6 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
  *
  * @return Collector_Checkout
  */
-function CCO_WC() { // phpcs:ignore WordPress.NamingConventions.ValidFunctionName
+function CCO_WC() { // phpcs:ignore
 	return Collector_Checkout::get_instance();
 }
