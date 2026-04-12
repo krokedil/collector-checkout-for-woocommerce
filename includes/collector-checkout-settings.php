@@ -149,7 +149,7 @@ $settings = array(
 			__( 'Save debug messages from the plugin to the WooCommerce logs. Existing plugin logs can be found %s.', 'collector-checkout-for-woocommerce' ),
 			'<a target="_blank" href="' . esc_url( admin_url( 'admin.php?page=wc-status&tab=logs&source=walley_checkout&paged=1' ) ) . '">' . __( 'here', 'collector-checkout-for-woocommerce' ) . '</a>'
 		),
-		'default'     => 'no',
+		'default'     => 'yes',
 		'desc_tip'    => false,
 	),
 );
