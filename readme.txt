@@ -4,7 +4,7 @@ Tags: ecommerce, e-commerce, woocommerce, collector, checkout, walley
 Requires at least: 5.0
 Tested up to: 6.9
 Requires PHP: 7.3
-Stable tag: 4.5.2
+Stable tag: 4.6.0
 WC requires at least: 6.0.0
 WC tested up to: 10.6.2
 License: GPLv3
@@ -38,7 +38,7 @@ For help setting up and configuring Walley Checkout for WooCommerce please refer
 
 
 
-== CHANGELOG ==
+== Changelog ==
 = 2026.04.07    - version 4.5.2 =
 * Fix           - Restored display of detailed error messages during payment processing, replacing the generic WooCommerce error message shown after recent WC changes.
 
@@ -58,7 +58,7 @@ For help setting up and configuring Walley Checkout for WooCommerce please refer
 * Tweak         - Adjusted logging to inform about payment ID missing.
 
 = 2025.10.06    - version 4.4.0 =
-* Feature       - Added support for EU countries. 
+* Feature       - Added support for EU countries.
 
 = 2025.09.23    - version 4.3.0 =
 * Feature       - Added support for the 'care of' field.
@@ -97,7 +97,7 @@ For help setting up and configuring Walley Checkout for WooCommerce please refer
 * Tweak         - Bumped supported WC version.
 
 = 2024.09.17    - version 4.2.2 =
-* Fix           - Fixed an issue where additional post-purchase order processing would not be triggered when the customer is redirected to the confirmation page. 
+* Fix           - Fixed an issue where additional post-purchase order processing would not be triggered when the customer is redirected to the confirmation page.
 * Fix           - Fixed an undefined variable warning.
 * Tweak         - Added additional logging related to order creation.
 
