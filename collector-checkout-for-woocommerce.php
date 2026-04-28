@@ -13,6 +13,7 @@
  * Author URI: https://krokedil.se/
  * Text Domain: collector-checkout-for-woocommerce
  * Domain Path: /languages
+ * Requires Plugins: woocommerce
  *
  * WC requires at least: 6.0.0
  * WC tested up to: 10.6.2
