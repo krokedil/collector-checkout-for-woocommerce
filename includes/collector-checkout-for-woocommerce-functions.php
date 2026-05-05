@@ -232,8 +232,8 @@ function wc_collector_get_order_by_private_id( $private_id = null ) {
 	}
 
 	$args = array(
-		'meta_key'     => '_collector_private_id',
-		'meta_value'   => $private_id,
+		'meta_key'     => '_collector_private_id', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Required to locate order by specific metadata key.
+		'meta_value'   => $private_id, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value -- Required to locate order by specific metadata value.
 		'meta_compare' => '=',
 		'order'        => 'DESC',
 		'orderby'      => 'date',
@@ -626,8 +626,8 @@ function walley_get_order_id_by_public_token( $public_token ) {
 function walley_get_order_by_key( $key, $value ) {
 	$orders = wc_get_orders(
 		array(
-			'meta_key'   => $key,
-			'meta_value' => $value,
+			'meta_key'   => $key, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Required to locate order by specific metadata key.
+			'meta_value' => $value, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value -- Required to locate order by specific metadata value.
 			'limit'      => 1,
 			'orderby'    => 'date',
 			'order'      => 'DESC',
@@ -1137,6 +1137,8 @@ function walley_is_order_page() {
  * @param WC_Order $order The WooCommerce order.
  * @param string   $payment_status The payment status.
  * @param string   $payment_id The payment ID.
+ * @param bool     $save_order Whether to save the order after setting the status. Default is true.
+ * @param bool     $is_callback Whether the status update is triggered from a callback. Default is false.
  *
  * @return void
  */

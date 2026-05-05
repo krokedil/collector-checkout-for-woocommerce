@@ -276,12 +276,12 @@ class Walley_Checkout_Order_Management {
 				return true;
 			} else {
 				// Translators: Walley payment status.
-				$order->add_order_note( sprintf( __( 'Cancel Walley order request will not be triggered. Order have status <i>%s</i> in Walley Merchant Hub.', 'dibs-easy-for-woocommerce' ), $response['data']['status'] ) );
+				$order->add_order_note( sprintf( __( 'Cancel Walley order request will not be triggered. Order have status <i>%s</i> in Walley Merchant Hub.', 'collector-checkout-for-woocommerce' ), $response['data']['status'] ) );
 				return false;
 			}
 		}
 		// Translators: Request error message.
-		$order->add_order_note( sprintf( __( 'Unable to get the Walley order. Error message: <i>%s</i>.', 'dibs-easy-for-woocommerce' ), $response->get_error_message() ) );
+		$order->add_order_note( sprintf( __( 'Unable to get the Walley order. Error message: <i>%s</i>.', 'collector-checkout-for-woocommerce' ), $response->get_error_message() ) );
 		return false;
 	}
 
