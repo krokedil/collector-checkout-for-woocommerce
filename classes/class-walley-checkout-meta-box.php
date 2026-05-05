@@ -67,8 +67,9 @@ class Walley_Checkout_Meta_Box {
 			$walley_order_status   = $walley_order['data']['status'] ?? 'unknown';
 			$walley_order_total    = $walley_order['data']['totalAmount'] ?? '';
 			$walley_order_currency = $walley_order['data']['currency'] ?? '';
+			$wc_order_total        = Collector_Checkout_Requests_Helper_Order_Om::get_order_lines_total_amount( $order_id );
 			// Translators: Woo order total & Walley order total.
-			$order_total_mismatch = floatval( Collector_Checkout_Requests_Helper_Order_Om::get_order_lines_total_amount( $order_id ) ) !== floatval( $walley_order_total ) ? sprintf( '<i>%s</i>', sprintf( __( 'Order total differs between systems (WooCommerce: %1$s, Walley: %2$s)', 'collector-checkout-for-woocommerce' ), Collector_Checkout_Requests_Helper_Order_Om::get_order_lines_total_amount( $order_id ), $walley_order_total ) ) : '';
+			$order_total_mismatch = floatval( $wc_order_total ) !== floatval( $walley_order_total ) ? sprintf( '<i>%s</i>', sprintf( __( 'Order total differs between systems (WooCommerce: %1$s, Walley: %2$s)', 'collector-checkout-for-woocommerce' ), $wc_order_total, $walley_order_total ) ) : '';
 		}
 
 		$keys_for_meta_box = array(
