@@ -74,6 +74,11 @@ class Walley_Checkout_Order_Management {
 			return;
 		}
 
+		if ( ! empty( $order->get_meta( Walley_Subscription::ZERO_AMOUNT_ORDER ) ) ) {
+			$order->add_order_note( __( 'Walley order activation skipped. This is a zero amount order.', 'collector-checkout-for-woocommerce' ) );
+			return;
+		}
+
 		if ( $order->get_meta( '_collector_order_activated', true ) ) {
 			$order->add_order_note( __( 'Could not activate Walley reservation, Walley reservation is already activated.', 'collector-checkout-for-woocommerce' ) );
 			return;
@@ -84,22 +89,23 @@ class Walley_Checkout_Order_Management {
 			return;
 		}
 
-		$walley_order_id = $order->get_meta( '_collector_order_id', true );
-		$order_status    = '';
-
 		// Part activate or activate the entire order.
 		if ( 'yes' === $this->activate_individual_order_lines || apply_filters( 'wpd_delivery_order_type', 'shop_order_delivery', $order ) === $order->get_type() ) {
 			$response = CCO_WC()->api->part_capture_walley_order( $order_id );
 
 			if ( is_wp_error( $response ) ) {
 				// If error save error message.
-				$code          = $response->get_error_code();
-				$message       = $response->get_error_message();
-				$text          = __( 'Part activate Walley Checkout order error: ', 'collector-checkout-for-woocommerce' ) . '%s %s';
-				$formated_text = sprintf( $text, $code, $message );
-				$order->add_order_note( $formated_text );
-				$order->update_status( 'on-hold' );
-				return;
+				$code    = $response->get_error_code();
+				$message = $response->get_error_message();
+
+				$set_order_on_hold = $this->maybe_set_order_on_hold( $message, $code );
+				if ( $set_order_on_hold ) {
+					$text          = __( 'Part activate Walley Checkout order error: ', 'collector-checkout-for-woocommerce' ) . '%s %s';
+					$formated_text = sprintf( $text, $code, $message );
+					$order->add_order_note( $formated_text );
+					$order->update_status( 'on-hold' );
+					return;
+				}
 			}
 
 			// Translators: Activated amount.
@@ -107,16 +113,10 @@ class Walley_Checkout_Order_Management {
 			$order->update_meta_data( '_collector_order_activated', time() );
 			$order->save();
 
-			$walley_order = CCO_WC()->api->get_walley_order( $walley_order_id );
-			if ( ! is_wp_error( $walley_order ) ) {
-				$order_status = $walley_order['data']['status'] ?? '';
-			}
-
 			// Save received data to WP transient.
 			walley_save_order_data_to_transient(
 				array(
 					'order_id'     => $order_id,
-					'status'       => $order_status,
 					'total_amount' => $order->get_total(),
 					'currency'     => $order->get_currency(),
 				)
@@ -127,13 +127,17 @@ class Walley_Checkout_Order_Management {
 
 			if ( is_wp_error( $response ) ) {
 				// If error save error message.
-				$code          = $response->get_error_code();
-				$message       = $response->get_error_message();
-				$text          = __( 'Activate Walley Checkout order error: ', 'collector-checkout-for-woocommerce' ) . '%s %s';
-				$formated_text = sprintf( $text, $code, $message );
-				$order->add_order_note( $formated_text );
-				$order->update_status( 'on-hold' );
-				return;
+				$code    = $response->get_error_code();
+				$message = $response->get_error_message();
+
+				$set_order_on_hold = $this->maybe_set_order_on_hold( $message, $code );
+				if ( $set_order_on_hold ) {
+					$text          = __( 'Activate Walley Checkout order error: ', 'collector-checkout-for-woocommerce' ) . '%s %s';
+					$formated_text = sprintf( $text, $code, $message );
+					$order->add_order_note( $formated_text );
+					$order->update_status( 'on-hold' );
+					return;
+				}
 			}
 
 			$note = __( 'Walley Checkout order activated.', 'collector-checkout-for-woocommerce' );
@@ -141,16 +145,10 @@ class Walley_Checkout_Order_Management {
 			$order->update_meta_data( '_collector_order_activated', time() );
 			$order->save();
 
-			$walley_order = CCO_WC()->api->get_walley_order( $walley_order_id );
-			if ( ! is_wp_error( $walley_order ) ) {
-				$order_status = $walley_order['data']['status'] ?? '';
-			}
-
 			// Save received data to WP transient.
 			walley_save_order_data_to_transient(
 				array(
 					'order_id'     => $order_id,
-					'status'       => $order_status,
 					'total_amount' => $order->get_total(),
 					'currency'     => $order->get_currency(),
 				)
@@ -214,19 +212,10 @@ class Walley_Checkout_Order_Management {
 		$order->update_meta_data( '_collector_order_cancelled', time() );
 		$order->save();
 
-		$walley_order_id = $order->get_meta( '_collector_order_id', true );
-		$order_status    = '';
-
-		$walley_order = CCO_WC()->api->get_walley_order( $walley_order_id );
-		if ( ! is_wp_error( $walley_order ) ) {
-			$order_status = $walley_order['data']['status'] ?? '';
-		}
-
 		// Save received data to WP transient.
 		walley_save_order_data_to_transient(
 			array(
 				'order_id'     => $order_id,
-				'status'       => $order_status,
 				'total_amount' => $order->get_total(),
 				'currency'     => $order->get_currency(),
 			)
@@ -292,21 +281,11 @@ class Walley_Checkout_Order_Management {
 			return $response;
 		}
 
-		$walley_order_id = $order->get_meta( '_collector_order_id', true );
-		$order_status    = '';
-
-		$walley_order = CCO_WC()->api->get_walley_order( $walley_order_id );
-		if ( ! is_wp_error( $walley_order ) ) {
-			$order_status = $walley_order['data']['status'] ?? '';
-		}
-
 		// Save received data to WP transient.
 		walley_save_order_data_to_transient(
 			array(
-				'order_id'     => $order_id,
-				'status'       => $order_status,
-				'total_amount' => $order->get_total(),
-				'currency'     => $order->get_currency(),
+				'order_id' => $order_id,
+				'currency' => $order->get_currency(),
 			)
 		);
 
@@ -445,5 +424,21 @@ class Walley_Checkout_Order_Management {
 			}
 		}
 		return $order_number;
+	}
+
+	/**
+	 * Maybe set order on hold based on error code and message.
+	 *
+	 * @param string $message The error message.
+	 * @param string $code The error code.
+	 */
+	private function maybe_set_order_on_hold( $message, $code ) {
+
+		// If the order is simply already captured there's no need to set on-hold.
+		if ( 422 === (int) $code && strpos( $message, 'CAPTURE_ORDER_ALREADY_CAPTURED' ) !== false ) {
+			return false;
+		}
+
+		return true;
 	}
 }
