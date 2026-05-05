@@ -372,7 +372,7 @@ class Walley_Checkout_Order_Management {
 			}
 
 			$current_screen = get_current_screen();
-			if ( isset( $current_screen ) && in_array( $current_screen->id, array( 'woocommerce_page_wc-orders', 'edit-shop_order' ) ) ) {
+			if ( isset( $current_screen ) && in_array( $current_screen->id, array( 'woocommerce_page_wc-orders', 'edit-shop_order' ), true ) ) {
 				$collector_payment_id = $order->get_meta( '_collector_payment_id' );
 				if ( ! empty( $collector_payment_id ) ) {
 					$order_number .= ' (' . $collector_payment_id . ')';
