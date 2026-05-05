@@ -69,15 +69,6 @@ class Walley_Checkout_Meta_Box {
 			$walley_order_currency = $walley_order['data']['currency'] ?? '';
 			// Translators: Woo order total & Walley order total.
 			$order_total_mismatch = floatval( Collector_Checkout_Requests_Helper_Order_Om::get_order_lines_total_amount( $order_id ) ) !== floatval( $walley_order_total ) ? sprintf( '<i>%s</i>', sprintf( __( 'Order total differs between systems (WooCommerce: %1$s, Walley: %2$s)', 'collector-checkout-for-woocommerce' ), Collector_Checkout_Requests_Helper_Order_Om::get_order_lines_total_amount( $order_id ), $walley_order_total ) ) : '';
-			// Save received data to WP transient.
-			walley_save_order_data_to_transient(
-				array(
-					'order_id'     => $order_id,
-					'status'       => $walley_order_status,
-					'total_amount' => $walley_order_total,
-					'currency'     => $walley_order_currency,
-				)
-			);
 		}
 
 		$keys_for_meta_box = array(
