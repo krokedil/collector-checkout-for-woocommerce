@@ -1,0 +1,4 @@
+Type: Fix
+Needs Documentation: no
+
+Fixed an issue where the "Walley order status" in the order metabox was sometimes left blank when the WooCommerce order status was updated.
