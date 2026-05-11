@@ -4,7 +4,7 @@ Tags: ecommerce, e-commerce, woocommerce, collector, checkout, walley
 Requires at least: 5.0
 Tested up to: 6.9
 Requires PHP: 7.3
-Stable tag: 4.6.0
+Stable tag: 4.5.3
 WC requires at least: 6.0.0
 WC tested up to: 10.7.0
 License: GPLv3
