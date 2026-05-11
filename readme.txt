@@ -38,7 +38,7 @@ For help setting up and configuring Walley Checkout for WooCommerce please refer
 
 
 
-== Changelog ==
+== CHANGELOG ==
 = 2026-05-11    - version 4.5.3 =
 * Enhancement   - Added a direct link in the plugin's settings page to the Walley plugin logs.
 * Fix           - Fixed an issue where the "Walley order status" in the order metabox was sometimes left blank when the WooCommerce order status was updated.
