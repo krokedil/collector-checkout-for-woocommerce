@@ -6,7 +6,7 @@ Tested up to: 6.9
 Requires PHP: 7.3
 Stable tag: 4.6.0
 WC requires at least: 6.0.0
-WC tested up to: 10.6.2
+WC tested up to: 10.7.0
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -39,6 +39,10 @@ For help setting up and configuring Walley Checkout for WooCommerce please refer
 
 
 == Changelog ==
+= 2026-05-11    - version 4.5.3 =
+* Enhancement   - Added a direct link in the plugin's settings page to the Walley plugin logs.
+* Fix           - Fixed an issue where the "Walley order status" in the order metabox was sometimes left blank when the WooCommerce order status was updated.
+
 = 2026.04.07    - version 4.5.2 =
 * Fix           - Restored display of detailed error messages during payment processing, replacing the generic WooCommerce error message shown after recent WC changes.
 
