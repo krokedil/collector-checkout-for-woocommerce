@@ -112,15 +112,6 @@ class Walley_Checkout_Order_Management {
 			$order->add_order_note( sprintf( __( 'Order part activated with Walley Checkout. Activated amount %s', 'collector-checkout-for-woocommerce' ), wc_price( $order->get_total(), array( 'currency' => $order->get_currency() ) ) ) );
 			$order->update_meta_data( '_collector_order_activated', time() );
 			$order->save();
-
-			// Save received data to WP transient.
-			walley_save_order_data_to_transient(
-				array(
-					'order_id'     => $order_id,
-					'total_amount' => $order->get_total(),
-					'currency'     => $order->get_currency(),
-				)
-			);
 			return;
 		} else {
 			$response = CCO_WC()->api->capture_walley_order( $order_id );
@@ -144,15 +135,6 @@ class Walley_Checkout_Order_Management {
 			$order->add_order_note( $note );
 			$order->update_meta_data( '_collector_order_activated', time() );
 			$order->save();
-
-			// Save received data to WP transient.
-			walley_save_order_data_to_transient(
-				array(
-					'order_id'     => $order_id,
-					'total_amount' => $order->get_total(),
-					'currency'     => $order->get_currency(),
-				)
-			);
 			return;
 		}
 	}
@@ -211,15 +193,6 @@ class Walley_Checkout_Order_Management {
 		$order->add_order_note( $note );
 		$order->update_meta_data( '_collector_order_cancelled', time() );
 		$order->save();
-
-		// Save received data to WP transient.
-		walley_save_order_data_to_transient(
-			array(
-				'order_id'     => $order_id,
-				'total_amount' => $order->get_total(),
-				'currency'     => $order->get_currency(),
-			)
-		);
 	}
 
 	/**
@@ -260,16 +233,7 @@ class Walley_Checkout_Order_Management {
 			return new WP_Error( 'error', __( 'Could not refund Walley reservation, Walley order ID is missing.', 'collector-checkout-for-woocommerce' ) );
 		}
 
-		// Currently we always need to do a refund by amount since rounding fee in refund can differ from original order and Walley does not accept that.
-		/*
-		if ( $this->order_contain_goodwill_refund( $order_id ) ) {
-			$response = CCO_WC()->api->refund_walley_order_by_amount( $order_id, $amount, $reason );
-		} else {
-			$response = CCO_WC()->api->refund_walley_order( $order_id, $amount, $reason );
-		}
-		*/
 		$response = CCO_WC()->api->refund_walley_order_by_amount( $order_id, $amount, $reason );
-
 		if ( is_wp_error( $response ) ) {
 			// If error save error message.
 			$code          = $response->get_error_code();
@@ -280,14 +244,6 @@ class Walley_Checkout_Order_Management {
 
 			return $response;
 		}
-
-		// Save received data to WP transient.
-		walley_save_order_data_to_transient(
-			array(
-				'order_id' => $order_id,
-				'currency' => $order->get_currency(),
-			)
-		);
 
 		// Translators: Refunded amount.
 		$order->add_order_note( sprintf( __( 'Walley Checkout order refunded with %s.', 'collector-checkout-for-woocommerce' ), wc_price( $amount ) ) );
@@ -311,12 +267,12 @@ class Walley_Checkout_Order_Management {
 				return true;
 			} else {
 				// Translators: Walley payment status.
-				$order->add_order_note( sprintf( __( 'Cancel Walley order request will not be triggered. Order have status <i>%s</i> in Walley Merchant Hub.', 'dibs-easy-for-woocommerce' ), $response['data']['status'] ) );
+				$order->add_order_note( sprintf( __( 'Cancel Walley order request will not be triggered. Order have status <i>%s</i> in Walley Merchant Hub.', 'collector-checkout-for-woocommerce' ), $response['data']['status'] ) );
 				return false;
 			}
 		}
 		// Translators: Request error message.
-		$order->add_order_note( sprintf( __( 'Unable to get the Walley order. Error message: <i>%s</i>.', 'dibs-easy-for-woocommerce' ), $response->get_error_message() ) );
+		$order->add_order_note( sprintf( __( 'Unable to get the Walley order. Error message: <i>%s</i>.', 'collector-checkout-for-woocommerce' ), $response->get_error_message() ) );
 		return false;
 	}
 
@@ -416,7 +372,7 @@ class Walley_Checkout_Order_Management {
 			}
 
 			$current_screen = get_current_screen();
-			if ( isset( $current_screen ) && in_array( $current_screen->id, array( 'woocommerce_page_wc-orders', 'edit-shop_order' ) ) ) {
+			if ( isset( $current_screen ) && in_array( $current_screen->id, array( 'woocommerce_page_wc-orders', 'edit-shop_order' ), true ) ) {
 				$collector_payment_id = $order->get_meta( '_collector_payment_id' );
 				if ( ! empty( $collector_payment_id ) ) {
 					$order_number .= ' (' . $collector_payment_id . ')';

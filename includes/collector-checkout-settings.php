@@ -141,10 +141,16 @@ $settings = array(
 		'default' => 'no',
 	),
 	'debug_mode'                      => array(
-		'title'   => __( 'Debug', 'collector-checkout-for-woocommerce' ),
-		'type'    => 'checkbox',
-		'label'   => __( 'Enable logging.', 'collector-checkout-for-woocommerce' ),
-		'default' => 'no',
+		'title'       => __( 'Debug', 'collector-checkout-for-woocommerce' ),
+		'label'       => __( 'Log debug messages', 'collector-checkout-for-woocommerce' ),
+		'type'        => 'checkbox',
+		'description' => sprintf(
+			// translators: %s is the link to the WooCommerce logs.
+			__( 'Save debug messages from the plugin to the WooCommerce logs. Existing plugin logs can be found %s.', 'collector-checkout-for-woocommerce' ),
+			'<a target="_blank" href="' . esc_url( admin_url( 'admin.php?page=wc-status&tab=logs&source=walley_checkout&paged=1' ) ) . '">' . __( 'here', 'collector-checkout-for-woocommerce' ) . '</a>'
+		),
+		'default'     => 'yes',
+		'desc_tip'    => false,
 	),
 );
 

@@ -5,21 +5,22 @@
  * @package Collector_Checkout
  *
  * @wordpress-plugin
- * Plugin Name:     Walley Checkout for WooCommerce
- * Plugin URI:      https://krokedil.se/produkt/walley-checkout/
- * Description:     Extends WooCommerce. Provides a <a href="https://www.walley.se/foretag/checkout/" target="_blank">Walley Checkout</a> checkout for WooCommerce.
- * Version:         4.5.2
- * Author:          Krokedil
- * Author URI:      https://krokedil.se/
- * Text Domain:     collector-checkout-for-woocommerce
- * Domain Path:     /languages
+ * Plugin Name: Walley Checkout for WooCommerce
+ * Plugin URI: https://krokedil.se/produkt/walley-checkout/
+ * Description: Extends WooCommerce. Provides a <a href="https://www.walley.se/foretag/checkout/" target="_blank">Walley Checkout</a> checkout for WooCommerce.
+ * Version: 4.5.3
+ * Author: Krokedil
+ * Author URI: https://krokedil.se/
+ * Text Domain: collector-checkout-for-woocommerce
+ * Domain Path: /languages
+ * Requires Plugins: woocommerce
  *
  * WC requires at least: 6.0.0
- * WC tested up to: 10.6.2
+ * WC tested up to: 10.7.0
  *
- * Copyright:       © 2017-2026 Krokedil.
- * License:         GNU General Public License v3.0
- * License URI:     http://www.gnu.org/licenses/gpl-3.0.html
+ * Copyright: © 2017-2026 Krokedil.
+ * License: GNU General Public License v3.0
+ * License URI: http://www.gnu.org/licenses/gpl-3.0.html
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -28,7 +29,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 define( 'COLLECTOR_BANK_PLUGIN_DIR', untrailingslashit( plugin_dir_path( __FILE__ ) ) );
 define( 'COLLECTOR_BANK_PLUGIN_URL', untrailingslashit( plugin_dir_url( __FILE__ ) ) );
-define( 'COLLECTOR_BANK_VERSION', '4.5.2' );
+define( 'COLLECTOR_BANK_VERSION', '4.5.3' );
 define( 'COLLECTOR_DB_VERSION', '1' );
 
 if ( ! class_exists( 'Collector_Checkout' ) ) {
@@ -126,7 +127,7 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 		 * @return void
 		 */
 		public function __clone() {
-			wc_doing_it_wrong( __FUNCTION__, __( 'Nope' ), '1.0' );
+			wc_doing_it_wrong( __FUNCTION__, __( 'Nope', 'collector-checkout-for-woocommerce' ), '1.0' );
 		}
 
 		/**
@@ -136,7 +137,7 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 		 * @return void
 		 */
 		public function __wakeup() {
-			wc_doing_it_wrong( __FUNCTION__, __( 'Nope' ), '1.0' );
+			wc_doing_it_wrong( __FUNCTION__, __( 'Nope', 'collector-checkout-for-woocommerce' ), '1.0' );
 		}
 
 		/**
@@ -151,13 +152,6 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 			// Initiate the gateway.
 			add_action( 'plugins_loaded', array( $this, 'init' ) );
 
-			// Maybe create Collector db table.
-			// @todo - will be removed in next version.
-			// add_action( 'init', array( $this, 'collector_maybe_create_db_table' ) );
-
-			// Maybe schedule action.
-			// @todo - will be removed in next version.
-			// add_action( 'init', array( $this, 'collector_maybe_schedule_action' ) );
 			// Clean Collector db.
 			add_action( 'collector_clean_db', array( $this, 'collector_clean_db_callback' ) );
 
@@ -229,9 +223,6 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/checkouts/get/class-walley-checkout-request-get-checkout.php';
 				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/checkouts/post/class-walley-checkout-request-initialize-checkout.php';
 				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/checkouts/put/class-walley-checkout-request-update-checkout.php';
-				// include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/checkouts/put/class-walley-checkout-request-update-cart.php';
-				// include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/checkouts/put/class-walley-checkout-request-update-fees.php';
-				// include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/checkouts/put/class-walley-checkout-request-update-metadata.php';
 				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/checkouts/put/class-walley-checkout-request-set-order-reference.php';
 
 				// New OM request class files.
@@ -461,6 +452,6 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
  *
  * @return Collector_Checkout
  */
-function CCO_WC() { // phpcs:ignore WordPress.NamingConventions.ValidFunctionName
+function CCO_WC() { // phpcs:ignore
 	return Collector_Checkout::get_instance();
 }
