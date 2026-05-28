@@ -1,4 +1,0 @@
-Type: Fix
-Needs Documentation: no
-
-Resolved a checkout validation error that could occur after upgrading to WooCommerce 10.8.0, where an empty shipping phone number caused the order to fail. The shipping phone field is now correctly populated with the value from Walley, or the billing phone number if no shipping phone is provided.

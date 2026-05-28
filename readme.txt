@@ -4,7 +4,7 @@ Tags: ecommerce, e-commerce, woocommerce, collector, checkout, walley
 Requires at least: 5.0
 Tested up to: 6.9
 Requires PHP: 7.3
-Stable tag: 4.5.3
+Stable tag: 4.5.4
 WC requires at least: 6.0.0
 WC tested up to: 10.7.0
 License: GPLv3
@@ -39,6 +39,9 @@ For help setting up and configuring Walley Checkout for WooCommerce please refer
 
 
 == CHANGELOG ==
+= 2026-05-28    - version 4.5.4 =
+* Fix           - Resolved a checkout validation error that could occur after upgrading to WooCommerce 10.8.0, where an empty shipping phone number caused the order to fail. The shipping phone field is now correctly populated with the value from Walley, or the billing phone number if no shipping phone is provided.
+
 = 2026-05-11    - version 4.5.3 =
 * Enhancement   - Added a direct link in the plugin's settings page to the Walley plugin logs.
 * Fix           - Fixed an issue where the "Walley order status" in the order metabox was sometimes left blank when the WooCommerce order status was updated.
