@@ -45,8 +45,6 @@ class Walley_Checkout_Assets {
 		// Register widget scripts.
 		add_action( 'init', array( $this, 'register_widget_assets' ) );
 
-		// Load scripts.
-		// add_action( 'wp_enqueue_scripts', array( $this, 'register_checkout_scripts' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'localize_and_enqueue_checkout_script' ) );
 
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_checkout_css' ) );
@@ -189,7 +187,7 @@ class Walley_Checkout_Assets {
 				'get_customer_data_url'       => WC_AJAX::get_endpoint( 'get_customer_data' ),
 				'customer_adress_updated_url' => WC_AJAX::get_endpoint( 'customer_adress_updated' ),
 				'process_order_text'          => __( 'Please wait while we process your order.', 'collector-checkout-for-woocommerce' ),
-				'no_shipping_message'         => apply_filters( 'woocommerce_no_shipping_available_html', __( 'There are no shipping options available. Please ensure that your address has been entered correctly, or contact us if you need any help.', 'woocommerce' ) ),
+				'no_shipping_message'         => apply_filters( 'woocommerce_no_shipping_available_html', __( 'There are no shipping options available. Please ensure that your address has been entered correctly, or contact us if you need any help.', 'woocommerce' ) ), // phpcs:ignore WordPress.WP.I18n.TextDomainMismatch
 			)
 		);
 		wp_enqueue_script( 'walley_checkout' );
@@ -246,10 +244,8 @@ class Walley_Checkout_Assets {
 
 	/**
 	 * Enqueues admin page scripts.
-	 *
-	 * @param string $hook The current hook/settings page.
 	 */
-	public function enqueue_admin_metabox_scripts( $hook ) {
+	public function enqueue_admin_metabox_scripts() {
 		if ( ! walley_is_order_page() ) {
 			return;
 		}
@@ -282,7 +278,7 @@ class Walley_Checkout_Assets {
 		$base_src = 'yes' === $this->test_mode ? 'https://api.uat.walleydev.com' : 'https://api.walleypay.com';
 		$src      = "{$base_src}/walley-checkout-loader.js";
 
-		wp_register_script( 'walley-checkout-loader', $src, array(), null, true );
+		wp_register_script( 'walley-checkout-loader', $src, array(), COLLECTOR_BANK_VERSION, true );
 		wp_register_script( 'walley-part-payment-widget', COLLECTOR_BANK_PLUGIN_URL . '/assets/js/walley-part-payment-widget.js', array( 'walley-checkout-loader' ), COLLECTOR_BANK_VERSION, true );
 		wp_register_style( 'walley-part-payment-widget', COLLECTOR_BANK_PLUGIN_URL . '/assets/css/walley-part-payment-widget.css', array(), COLLECTOR_BANK_VERSION, false );
 	}
