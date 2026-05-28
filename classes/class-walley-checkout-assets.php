@@ -154,6 +154,8 @@ class Walley_Checkout_Assets {
 			'shipping_city',
 			'shipping_state',
 			'shipping_country',
+			'shipping_phone',
+			'shipping_email',
 			'shipping_company',
 			'terms',
 			'terms-field',
