@@ -278,7 +278,7 @@ class Walley_Checkout_Assets {
 		$base_src = 'yes' === $this->test_mode ? 'https://api.uat.walleydev.com' : 'https://api.walleypay.com';
 		$src      = "{$base_src}/walley-checkout-loader.js";
 
-		wp_register_script( 'walley-checkout-loader', $src, array(), COLLECTOR_BANK_VERSION, true );
+		wp_register_script( 'walley-checkout-loader', $src, array(), null, true ); // phpcs:ignore WordPress.WP.EnqueuedResourceParameters.MissingVersion -- external script.
 		wp_register_script( 'walley-part-payment-widget', COLLECTOR_BANK_PLUGIN_URL . '/assets/js/walley-part-payment-widget.js', array( 'walley-checkout-loader' ), COLLECTOR_BANK_VERSION, true );
 		wp_register_style( 'walley-part-payment-widget', COLLECTOR_BANK_PLUGIN_URL . '/assets/css/walley-part-payment-widget.css', array(), COLLECTOR_BANK_VERSION, false );
 	}
