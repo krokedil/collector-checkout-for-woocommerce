@@ -452,7 +452,17 @@ jQuery( function( $ ) {
 			);
 			$('#shipping_city').val(addressData.shipping_city);
 			$('#shipping_postcode').val(addressData.shipping_postcode);
-			$('#shipping_phone').val(addressData.shipping_phone);
+
+			const $shippingPhone = $('#shipping_phone');
+			if ($shippingPhone.length) {
+				$shippingPhone.val(addressData.shipping_phone || addressData.billing_phone);
+			}
+
+			const $shippingEmail = $('#shipping_email');
+			if ($shippingEmail.length) {
+				$shippingEmail.val(addressData.shipping_email || addressData.billing_email);
+			}
+
 			$('#shipping_country').val(addressData.shipping_country);
 		},
 
