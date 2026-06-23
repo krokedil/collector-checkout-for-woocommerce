@@ -67,7 +67,7 @@ jQuery( function( $ ) {
 					} catch (error) {
 						clearTimeout(timeout);
 						let message = ''
-						$(error.message.replace(/(\t|\n)/gm, "")).find('li').filter(e => e !== undefined).each((i, e) => {
+						$($.parseHTML(error.message.replace(/(\t|\n)/gm, "")) || []).find('li').each((i, e) => {
 							message += `<li>${e.textContent.replace(/<\/?[^>]+(>|$)/g, "")}</li>`
 						})
 
