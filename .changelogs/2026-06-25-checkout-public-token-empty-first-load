@@ -1,0 +1,4 @@
+Type: Fix
+Needs Documentation: no
+
+Fixed an issue where a customer could in some cases be unable to complete their purchase the first time they reached the Walley checkout, due to a missing public token on the initial page load.
