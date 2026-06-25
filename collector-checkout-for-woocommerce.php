@@ -434,12 +434,10 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 		 */
 		public function add_hidden_public_token_field( $fields ) {
 
-			/**
-			* Note: the value is intentionally not set here via 'default'. The
-			* woocommerce_checkout_fields filter is evaluated (and cached) once,
-			* so an eager 'default' would freeze to an empty string.
-			* The value is resolved lazily at render time instead, see get_hidden_public_token_value().
-			*/
+			// Note: the value is intentionally not set here via 'default'. The
+			// woocommerce_checkout_fields filter is evaluated (and cached) once,
+			// so an eager 'default' would freeze to an empty string. The value is
+			// resolved lazily at render time instead, see get_hidden_public_token_value().
 			$fields['billing']['collector_public_token'] = array(
 				'type' => 'hidden',
 			);
@@ -455,7 +453,7 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 		 * @return mixed
 		 */
 		public function get_hidden_public_token_value( $value, $input ) {
-			if ( 'collector_public_token' === $input ) {
+			if ( 'collector_public_token' === $input && empty( $value ) && WC()->session ) {
 				return WC()->session->get( 'collector_public_token' ) ?? '';
 			}
 
