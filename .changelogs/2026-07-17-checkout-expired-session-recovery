@@ -1,0 +1,4 @@
+Type: Fix
+Needs Documentation: no
+
+Fixed an issue where the Walley Checkout could fail to load if their checkout session had expired. The checkout now recovers automatically.
