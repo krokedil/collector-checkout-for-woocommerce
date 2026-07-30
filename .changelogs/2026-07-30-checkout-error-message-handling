@@ -1,0 +1,4 @@
+Type: Fix
+Needs Documentation: no
+
+The reason an order could not be created in WooCommerce is now always shown in the checkout. Previously some failures resulted in an empty error message, or in a technical one such as "parsererror".

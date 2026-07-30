@@ -66,53 +66,66 @@ jQuery( function( $ ) {
 						walleyCheckoutWc.logToFile('Successfully placed order.');
 					} catch (error) {
 						clearTimeout(timeout);
-						let message = ''
-						$($.parseHTML(error.message.replace(/(\t|\n)/gm, "")) || []).find('li').each((i, e) => {
-							message += `<li>${e.textContent.replace(/<\/?[^>]+(>|$)/g, "")}</li>`
-						})
+						const messages = walleyCheckoutWc.getErrorMessages(error);
 
-						// If we could not extract any HTML from the error, use the original error message.
-						if (!message) {
-							message = error.message.replace(/<\/?[^>]+(>|$)/g, "").replace(/(\t|\n)/gm, "") ?? 'Something went wrong.'
+						// WooCommerce prints its own notices after the reload it asked for, so do not add one here.
+						if (!(error && error.reload)) {
+							walleyCheckoutWc.failOrder(null, messages);
 						}
 
-						let title = ''
-						if (error.title) {
-							title = error.title.replace(/<\/?[^>]+(>|$)/g, "").replace(/(\t|\n)/gm, "") ?? '';
-						}
-
-						// Do not modify the original message as it will be sent separately to Walley.
-						const message_to_customer = (title) ? `${message}: ${title}` : message;
-						walleyCheckoutWc.failOrder( null, message_to_customer );
-						
 						// Log the error to the Walley log in WooCommerce.
-						let logMessage = message.replace( /<li>/g, "" ).replace( /<\/li>/g, ", " ).replace( /, $/, "" );
-						walleyCheckoutWc.logToFile( 'Before payment error | ' + logMessage );
+						walleyCheckoutWc.logToFile( 'Before payment error | ' + messages.join(', ') );
 
-						return Promise.reject({title: title, message: message});
+						return Promise.reject({title: (error && error.title) || '', message: messages.join(' ')});
 					}
 				});
 			}
 		},
 
+		/**
+		 * Turns whatever the order placement threw into messages that can be shown to the customer.
+		 *
+		 * WooCommerce returns its notices as an HTML list, but it does not always return one: a failure can
+		 * arrive without any message at all. The customer must still be told something.
+		 *
+		 * @param {*} error The rejected value from the order placement.
+		 * @return {string[]} Plain text messages, never empty.
+		 */
+		getErrorMessages: function( error ) {
+			const raw = walleyCheckoutWc.extractErrorMessage( error );
+			const messages = [];
+
+			$( $.parseHTML( raw ) || [] ).find( 'li' ).each( ( i, e ) => {
+				messages.push( e.textContent.replace( /\s+/g, ' ' ).trim() );
+			} );
+
+			// Not a list of notices: use the message as it is, without any markup.
+			if ( ! messages.length ) {
+				messages.push( raw.replace( /<\/?[^>]+(>|$)/g, '' ).replace( /\s+/g, ' ' ).trim() );
+			}
+
+			const found = messages.filter( Boolean );
+
+			// WooCommerce does not always say why the order failed, but the customer still needs to be told something.
+			return found.length ? found : [ walleyParams.generic_error_message ];
+		},
+
 		extractErrorMessage: function(error) {
 			// Check if error is a jqXHR object
-			if (error && error.responseText) {
+			if (error && typeof error.responseText === 'string') {
+				// Anything printed before the response, e.g. a PHP notice, makes it unparsable, but the JSON is still in there.
+				const json = error.responseText.slice(error.responseText.indexOf('{'), error.responseText.lastIndexOf('}') + 1);
 				try {
-					// Attempt to parse JSON response
-					let jsonResponse = JSON.parse(error.responseText);
-					return jsonResponse.message || jsonResponse.error || 'Unknown AJAX error';
+					const jsonResponse = JSON.parse(json);
+					return String(jsonResponse.messages || jsonResponse.data || '');
 				} catch {
-					// Fallback for non-JSON response
-					return error.statusText || 'Unknown AJAX error';
+					// Not JSON at all. The status text ("parsererror") means nothing to the customer.
+					return '';
 				}
-			} else if (error instanceof Error) {
-				// Standard Error object
-				return error.message;
-			} else {
-				// Fallback for other types of errors
-				return 'Unknown error';
 			}
+
+			// An Error, or the plain object the timeout rejects with.
+			return (error && typeof error.message === 'string') ? error.message : '';
 		},
 
 		placeWalleyOrder: async function() {
@@ -124,21 +137,24 @@ jQuery( function( $ ) {
 				}
 			});
 
-			try {
-				const walleyOrderResponse = await this.getWalleyOrder();
-				if (!walleyOrderResponse.success) {
-					throw new Error('Failed to get the Walley order.');
-				}
-				walleyCheckoutWc.setAddressData(walleyOrderResponse.data);
+			const walleyOrderResponse = await this.getWalleyOrder();
+			if (!walleyOrderResponse.success) {
+				// The AJAX handler puts the reason in data. It says more than a generic message does.
+				throw new Error(walleyOrderResponse.data || 'Failed to get the Walley order.');
+			}
+			walleyCheckoutWc.setAddressData(walleyOrderResponse.data);
 
-				const submitOrderResponse = await this.submitOrder();
-				if (submitOrderResponse.result !== 'success') {
-					throw new Error(submitOrderResponse.messages);
+			const submitOrderResponse = await this.submitOrder();
+			if (submitOrderResponse.result !== 'success') {
+				const error = new Error(submitOrderResponse.messages);
+
+				// WooCommerce keeps its notices in the session and prints them after the reload it is asking for.
+				if (true === submitOrderResponse.reload) {
+					error.reload = true;
+					window.location.reload();
 				}
-			} catch (error) {
-				// Extract and log the error message
-				let errorMessage = this.extractErrorMessage(error);
-				throw new Error(errorMessage);
+
+				throw error;
 			}
 		},
 
@@ -466,12 +482,13 @@ jQuery( function( $ ) {
 			$('#shipping_country').val(addressData.shipping_country);
 		},
 
-		failOrder: async function( event, errorMessage ) {
-			console.log('failOrder', errorMessage);
-			walleyCheckoutWc.logToFile( 'Checkout error | Error message: ' + errorMessage );
+		failOrder: async function( event, messages ) {
+			console.log('failOrder', messages);
+			walleyCheckoutWc.logToFile( 'Checkout error | Error message: ' + messages.join( ', ' ) );
 
 			const errorClasses = 'woocommerce-NoticeGroup woocommerce-NoticeGroup-checkout';
-			const errorWrapper = `<div class="${ errorClasses }"><ul class="woocommerce-error" role="alert"><li>${ errorMessage }</li></ul></div>`;
+			const errorItems   = messages.map( ( message ) => `<li>${ message }</li>` ).join( '' );
+			const errorWrapper = `<div class="${ errorClasses }"><ul class="woocommerce-error" role="alert">${ errorItems }</ul></div>`;
 			// Re-enable the form.
 			$( 'body' ).trigger( 'updated_checkout' );
 
@@ -490,7 +507,7 @@ jQuery( function( $ ) {
 				.find( '.input-text, select, input:checkbox' )
 				.trigger( 'validate' )
 				.blur();
-			$( document.body ).trigger( 'checkout_error', [ errorMessage ] );
+			$( document.body ).trigger( 'checkout_error', [ messages.join( ' ' ) ] );
 			$( 'html, body' ).animate(
 				{
 					scrollTop:
