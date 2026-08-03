@@ -692,7 +692,7 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 
 		if ( $delivery_module ) {
 			/* If the delivery module is configured by Walley (displayed in iframe), its shipping data will be available in the session. We need to check if there is a corresponding WC shipping option. */
-			$delivery_module_data = WC()->session->get( 'collector_delivery_module_data', array() )[0] ?? '';
+			$delivery_module_data = WC()->session->get( 'collector_delivery_module_data', array() );
 			$chosen_shipping      = WC()->session->get( 'chosen_shipping_methods', array() )[0] ?? '';
 			if ( ! empty( $chosen_shipping ) && ( false !== strpos( $chosen_shipping, 'collector_delivery_module' ) || ( isset( $delivery_module_data['shipping_id'] ) && $delivery_module_data['shipping_id'] === $chosen_shipping ) ) ) {
 				return true;
