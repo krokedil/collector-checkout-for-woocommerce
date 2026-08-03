@@ -104,13 +104,6 @@ class Walley_Checkout {
 
 		if ( isset( $this->collector_order['data']['shipping'] ) ) {
 
-			/*
-			@todo:
-			Dont forget thios part of the ld code:
-			if ( ! isset( $shipping_data['label'] ) ) {
-				$shipping_data = $shipping_data[0];
-			}
-			*/
 			$shipping_data           = coc_get_shipping_data( $this->collector_order );
 			$chosen_shipping_methods = array( 'collector_delivery_module' );
 			WC()->session->set( 'collector_delivery_module_data', $shipping_data );

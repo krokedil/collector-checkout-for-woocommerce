@@ -129,8 +129,6 @@ if ( class_exists( 'WC_Shipping_Method' ) ) {
 		 * @return void
 		 */
 		public function calculate_shipping( $package = array() ) {
-			$cost = 0;
-
 			if ( ! is_checkout() ) {
 				return;
 			}
@@ -150,9 +148,10 @@ if ( class_exists( 'WC_Shipping_Method' ) ) {
 				return;
 			}
 
-			if ( $shipping_data['shipping_vat'] > 0 ) {
-				$cost = $shipping_data['cost'] / ( ( $shipping_data['shipping_vat'] / 100 ) + 1 );
-			}
+			// Walley reports the fee including VAT. Without a tax rate there is nothing to deduct.
+			$shipping_vat = $shipping_data['shipping_vat'] ?? 0;
+			$cost         = $shipping_vat > 0 ? $shipping_data['cost'] / ( ( $shipping_vat / 100 ) + 1 ) : $shipping_data['cost'];
+
 			$args = array(
 				'id'      => $this->get_rate_id(),
 				'label'   => $shipping_data['label'],
