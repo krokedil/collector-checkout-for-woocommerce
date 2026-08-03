@@ -190,6 +190,20 @@ function remove_collector_db_row_data( $private_id ) {
 }
 
 /**
+ * Registers the Walley Shipping Module shipping method.
+ *
+ * Hooked onto woocommerce_shipping_methods in classes/class-collector-checkout-shipping-method.php,
+ * where the shipping method class itself is defined.
+ *
+ * @param array $methods WooCommerce shipping methods.
+ * @return array
+ */
+function add_collector_shipping_method( $methods ) {
+	$methods['collector_delivery_module'] = 'Collector_Delivery_Module_Shipping_Method';
+	return $methods;
+}
+
+/**
  * Checking if Collector Delivery Module is active.
  *
  * @param string $currency selected currency.

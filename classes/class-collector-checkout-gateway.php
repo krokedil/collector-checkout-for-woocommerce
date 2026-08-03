@@ -334,7 +334,6 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 			throw new Exception( esc_html( $message ) );
 		}
 
-		// $shipping_cost                 = $walley_order['data']['fees']['shipping']['unitPrice'] ?? 0; // Shipping.
 		$shipping_cost = $walley_order['data']['fees']['shipping']['unitPrice'] ?? $walley_order['data']['shipping']['shippingFee'] ?? 0;
 		$cart_cost     = $walley_order['data']['cart']['totalAmount']; // Cart.
 		$total_amount  = $shipping_cost + $cart_cost;
@@ -361,6 +360,14 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 		);
 	}
 
+	/**
+	 * Set the WooCommerce order number as the reference on the Walley order.
+	 *
+	 * @param int    $order_id The WooCommerce order id.
+	 * @param string $customer_type The Walley customer type.
+	 * @param string $private_id The Walley private id.
+	 * @return bool TRUE if the reference was updated, otherwise FALSE.
+	 */
 	public function update_walley_reference( $order_id, $customer_type, $private_id ) {
 		// Update the Collector Order with the Order number.
 		if ( ! empty( $private_id ) && ! empty( $customer_type ) ) {
@@ -391,6 +398,14 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 		return false;
 	}
 
+	/**
+	 * Retrieve the Walley checkout for an order.
+	 *
+	 * @param int    $order_id The WooCommerce order id.
+	 * @param string $customer_type The Walley customer type.
+	 * @param string $private_id The Walley private id.
+	 * @return array|WP_Error The Walley checkout, or a WP_Error if the request failed.
+	 */
 	public function get_walley_order( $order_id, $customer_type, $private_id ) {
 		// Use new or old API.
 		if ( walley_use_new_api() ) {
@@ -407,6 +422,13 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 		return $walley_order;
 	}
 
+	/**
+	 * Save the purchase and shipping details from the Walley checkout to the order.
+	 *
+	 * @param int   $order_id The WooCommerce order id.
+	 * @param array $walley_order The Walley checkout.
+	 * @return void
+	 */
 	public function save_walley_purchase_and_shipping_data( $order_id, $walley_order ) {
 		$order               = wc_get_order( $order_id );
 		$payment_method      = $walley_order['data']['purchase']['paymentName'] ?? '';
@@ -506,19 +528,19 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 	/**
 	 * Add collector-b2c/b2b body class.
 	 *
-	 * @param array $class Css class.
+	 * @param array $classes Css classes.
 	 *
 	 * @return array
 	 */
-	public function add_body_class( $class ) {
+	public function add_body_class( $classes ) {
 		if ( is_checkout() ) {
 
 			// Don't display Collector body classes if we have a cart that doesn't needs payment.
 			if ( method_exists( WC()->cart, 'needs_payment' ) && ! WC()->cart->needs_payment() ) {
-				return $class;
+				return $classes;
 			}
 
-			$class[] = wc_collector_get_available_customer_types();
+			$classes[] = wc_collector_get_available_customer_types();
 
 			$first_gateway = '';
 			if ( WC()->session->get( 'chosen_payment_method' ) ) {
@@ -530,14 +552,14 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 			}
 
 			if ( 'collector_checkout' === $first_gateway ) {
-				$class[] = 'collector-checkout-selected';
+				$classes[] = 'collector-checkout-selected';
 				// Add class if Collector delivery module is used.
 				if ( $this->delivery_module ) {
-					$class[] = 'collector-delivery-module';
+					$classes[] = 'collector-delivery-module';
 				}
 			}
 		}
-		return $class;
+		return $classes;
 	}
 
 	/**

@@ -96,13 +96,13 @@ if ( class_exists( 'WC_Shipping_Method' ) ) {
 					'description' => __( 'There are currently no settings for Walley Shipping Module since this is controlled by the TMS-provider. If other plugins adds settings, these are shown below.', 'collector-checkout-for-woocommerce' ),
 				),
 				'tax_status' => array(
-					'title'   => __( 'Tax status', 'woocommerce' ),
+					'title'   => __( 'Tax status', 'woocommerce' ), // phpcs:ignore WordPress.WP.I18n.TextDomainMismatch -- Reuses WooCommerce's translation of its own setting.
 					'type'    => 'select',
 					'class'   => 'wc-enhanced-select',
 					'default' => 'taxable',
 					'options' => array(
-						'taxable' => __( 'Taxable', 'woocommerce' ),
-						// 'none'    => _x( 'None', 'Tax status', 'woocommerce' ), @todo Implement logic for this.
+						'taxable' => __( 'Taxable', 'woocommerce' ), // phpcs:ignore WordPress.WP.I18n.TextDomainMismatch -- Reuses WooCommerce's translation of its own setting.
+						// @todo Offer a 'none' tax status once the logic for it is implemented.
 					),
 				),
 			);
@@ -163,15 +163,6 @@ if ( class_exists( 'WC_Shipping_Method' ) ) {
 		}
 	}
 
+	// add_collector_shipping_method() is declared in includes/collector-checkout-for-woocommerce-functions.php.
 	add_filter( 'woocommerce_shipping_methods', 'add_collector_shipping_method' );
-	/**
-	 * Registers the shipping method.
-	 *
-	 * @param array $methods WooCommerce shipping methods.
-	 * @return array
-	 */
-	function add_collector_shipping_method( $methods ) {
-		$methods['collector_delivery_module'] = 'Collector_Delivery_Module_Shipping_Method';
-		return $methods;
-	}
 }
