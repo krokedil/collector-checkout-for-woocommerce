@@ -1,4 +1,4 @@
 Type: Feature
 Needs Documentation: no
 
-Added support for Walley's new standardized shipping format.
+Added support for Walley's new standardized shipping format. The shipping cost is read as VAT inclusive, and the tax rate is taken from the store's own shipping tax rates whenever Walley does not state one, so the shipping line matches the amount Walley charges.

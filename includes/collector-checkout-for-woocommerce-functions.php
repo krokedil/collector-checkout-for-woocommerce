@@ -556,6 +556,8 @@ function walley_get_shipments( $shipping ) {
 				'pickup_point' => $shipping['servicePointName'] ?? '',
 				'shipment_id'  => $shipping['pendingShipment']['id'] ?? '',
 				'fee_item_id'  => $shipping['shippingFeeId'] ?? '',
+				// The flat format states the tax rate on data.fees.shipping instead.
+				'vat'          => null,
 			),
 		);
 	}
@@ -571,6 +573,9 @@ function walley_get_shipments( $shipping ) {
 			'pickup_point' => $choice['destination']['name'] ?? '',
 			'shipment_id'  => $shipment['externalShipmentId'] ?? '',
 			'fee_item_id'  => $shipment['feeItemId'] ?? '',
+			// The merchant fallback states the tax rate on the choice, the Walley Custom
+			// Delivery Adapter puts it in its metadata, and nShift states none at all.
+			'vat'          => $choice['vat'] ?? $choice['metadata']['tax_rate'] ?? null,
 		);
 	}
 
@@ -594,8 +599,8 @@ function coc_get_shipping_data( $collector_order ) {
 		'label'        => implode( ', ', array_filter( wp_list_pluck( $shipments, 'label' ) ) ),
 		'shipping_id'  => $shipments[0]['shipping_id'] ?? '',
 		'cost'         => $shipping['shippingFee'] ?? 0,
-		// The Walley Custom Delivery Adapter reports its own tax rate.
-		'shipping_vat' => $shipping['shipments'][0]['shippingChoice']['metadata']['tax_rate'] ?? $collector_order['data']['fees']['shipping']['vat'] ?? null,
+		// NULL when Walley states no tax rate at all, which the shipping method has to handle.
+		'shipping_vat' => $shipments[0]['vat'] ?? $collector_order['data']['fees']['shipping']['vat'] ?? null,
 	);
 }
 

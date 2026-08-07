@@ -148,9 +148,20 @@ if ( class_exists( 'WC_Shipping_Method' ) ) {
 				return;
 			}
 
-			// Walley reports the fee including VAT. Without a tax rate there is nothing to deduct.
+			/*
+			Walley reports the fee including VAT, while WooCommerce expects the rate excluding it
+			and adds the tax back on top. The standardized shipments[] format does not always
+			carry a tax rate, so fall back to the rates the store would apply to the rate anyway -
+			otherwise the VAT already in the fee is charged a second time.
+			*/
 			$shipping_vat = $shipping_data['shipping_vat'] ?? 0;
-			$cost         = $shipping_vat > 0 ? $shipping_data['cost'] / ( ( $shipping_vat / 100 ) + 1 ) : $shipping_data['cost'];
+			$cost         = $shipping_data['cost'];
+
+			if ( $shipping_vat > 0 ) {
+				$cost = $cost / ( ( $shipping_vat / 100 ) + 1 );
+			} elseif ( $this->is_taxable() ) {
+				$cost -= array_sum( WC_Tax::calc_inclusive_tax( $cost, WC_Tax::get_shipping_tax_rates() ) );
+			}
 
 			$args = array(
 				'id'      => $this->get_rate_id(),
