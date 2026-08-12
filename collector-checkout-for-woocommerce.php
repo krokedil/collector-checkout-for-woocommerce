@@ -16,7 +16,7 @@
  * Requires Plugins: woocommerce
  *
  * WC requires at least: 6.0.0
- * WC tested up to: 10.9.0
+ * WC tested up to: 11.0.1
  *
  * Copyright: © 2017-2026 Krokedil.
  * License: GNU General Public License v3.0
