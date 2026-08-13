@@ -51,7 +51,7 @@ function collector_wc_show_snippet() {
 	if ( ! $initialize_checkout ) {
 
 		// Check if purchase was completed, if it was redirect customer to thankyou page.
-		// Use new or old API. We buffer the output since a failed GET prints an error notice to the customer, which we want to suppress when we can recover by initializing a new checkout below.
+		// Use new or old API. A failed GET prints an error notice through walley_print_error_message(), which we do not want to show when we can recover by initializing a new checkout below, so the output is buffered and discarded here and printed again further down if the error turns out to be unrecoverable. Note that only notices printed with wc_print_notice are caught this way. On AJAX the notice is queued with wc_add_notice instead, which this does not capture.
 		ob_start();
 		if ( walley_use_new_api() ) {
 			$collector_order = CCO_WC()->api->get_walley_checkout(
@@ -64,18 +64,40 @@ function collector_wc_show_snippet() {
 			$collector_order = new Collector_Checkout_Requests_Get_Checkout_Information( $private_id, $customer_type );
 			$collector_order = $collector_order->request();
 		}
-		$get_notices = ob_get_clean();
+		ob_end_clean();
 
 		if ( is_wp_error( $collector_order ) ) {
 			// A 404 (Checkout_Not_Found) means the stored session no longer exists at Walley (e.g. it has expired). Clear the stale session and initialize a new checkout below so the customer isn't stuck with a broken checkout.
 			if ( 404 === $collector_order->get_error_code() ) {
-				CCO_WC()->logger::log( "The stored Walley session $private_id could not be found (404 Checkout_Not_Found). Clearing the stale session and initializing a new checkout." );
+				$order = wc_collector_get_order_by_private_id( $private_id );
+
+				// The session is dead, so we cannot ask Walley whether it was paid for. If an order for the session has already been placed, we must send the customer to that order rather than hand them a new checkout session, or they could pay for the same order twice.
+				// The statuses below are the ones WooCommerce itself treats as "no payment went through" in wc_clear_cart_after_payment(): an order in any of them is either resumed or replaced on the customer's next attempt, so it is safe to leave behind. The date paid check covers an order that was paid but has been moved to one of them afterwards, e.g. cancelled by an admin.
+				$order_is_placed = ! empty( $order ) && ( ! empty( $order->get_date_paid() ) || ! $order->has_status( array( 'pending', 'failed', 'cancelled' ) ) );
+
+				if ( $order_is_placed ) {
+					CCO_WC()->logger::log( "Trying to display checkout but the stored Walley session could not be found (404 Checkout_Not_Found). Private id $private_id, exist in order id {$order->get_id()} with order status {$order->get_status()}. Redirecting customer to the order received page." );
+
+					// Not the walley_confirm redirect used further down: that flow needs a live session, and it would move an order that does not need processing to on-hold.
+					// The session is deliberately cleared after the redirect is issued rather than before it, so that a redirect that does not go through leaves the customer protected by this check on the next request instead of dropping them into a new checkout. The thankyou page clears the session anyway, on woocommerce_thankyou.
+					wp_safe_redirect( $order->get_checkout_order_received_url() );
+					wc_collector_unset_sessions();
+					// Important! Do not use wp_die(), use exit. Refer to the note on the identical redirect further down.
+					exit;
+				}
+
+				if ( empty( $order ) ) {
+					CCO_WC()->logger::log( "Trying to display checkout but the stored Walley session could not be found (404 Checkout_Not_Found). Private id $private_id. No correlating order id can be found. Clearing the stale session and initializing a new checkout." );
+				} else {
+					// The order was created before the customer paid, and it is still awaiting payment. That means either the customer never completed the purchase, or they did and the order was never confirmed in WooCommerce. Since the session is gone we cannot tell which, so log it and initialize a new checkout as before.
+					CCO_WC()->logger::log( "Trying to display checkout but the stored Walley session could not be found (404 Checkout_Not_Found). Private id $private_id, exist in order id {$order->get_id()} which is still awaiting payment (order status {$order->get_status()}). Clearing the stale session and initializing a new checkout." );
+				}
+
 				wc_collector_unset_sessions();
 				$initialize_checkout = true;
 			} else {
-				// Any other error (e.g. a temporary API error) is left for the customer to retry.
-				// The GET already built and printed the error notice, but we captured it in the output buffer above, so we echo it back out here to surface it to the customer. It is already escaped WooCommerce notice markup, so we must not escape it again (that would double-escape and show raw HTML tags).
-				echo $get_notices; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Already escaped WooCommerce notice markup.
+				// Any other error (e.g. a temporary API error) is left for the customer to retry, so we keep the session as it is. The notice the GET printed was discarded with the buffer above, so print it again here to surface it to the customer.
+				walley_print_error_message( $collector_order );
 				return;
 			}
 		} else {
