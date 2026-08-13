@@ -1,4 +1,4 @@
 Type: Fix
 Needs Documentation: no
 
-Fixed an issue where the Walley Checkout could fail to load if the customer's checkout session had expired. The checkout now recovers automatically, and a customer who had already placed an order is taken to the order confirmation page instead of being handed a new checkout session.
+Fixed an issue where the Walley Checkout could fail to load or update if the customer's checkout session had expired. The checkout now recovers automatically, and a customer who had already placed an order is taken to the order confirmation page instead of being handed a new checkout session. If Walley cannot be reached for any other reason, the customer is now always shown the error message instead of an empty checkout.

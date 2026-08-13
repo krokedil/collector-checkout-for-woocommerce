@@ -96,6 +96,13 @@ class Walley_Checkout {
 		}
 
 		if ( is_wp_error( $this->collector_order ) ) {
+			// A 404 (Checkout_Not_Found) means the session no longer exists at Walley, so nothing can be updated on it and the customer would be left with a checkout that never recovers. Reload the checkout and let collector_wc_show_snippet() decide what to do with the session: it either sends the customer to an order that has already been placed for it, or clears it and initializes a new checkout. The session is deliberately not cleared here, since clearing it would skip that check on the reload.
+			if ( 404 === $this->collector_order->get_error_code() ) {
+				CCO_WC()->logger::log( "Walley GET order request failed in update shipping method function. Private id $private_id could not be found (404 Checkout_Not_Found). Reloading the checkout." );
+				WC()->session->reload_checkout = true;
+				$this->reload_checkout         = true;
+			}
+
 			return;
 		}
 
@@ -224,6 +231,13 @@ class Walley_Checkout {
 
 		if ( is_wp_error( $this->collector_order ) ) {
 			CCO_WC()->logger::log( 'Walley GET order request failed in update Walley order function.' );
+
+			// See the note in update_shipping_method(): on a 404 the session is gone, so reload and let collector_wc_show_snippet() recover instead of returning silently and leaving the customer with a checkout that cannot be updated.
+			if ( 404 === $this->collector_order->get_error_code() ) {
+				CCO_WC()->logger::log( "Private id $private_id could not be found (404 Checkout_Not_Found). Reloading the checkout." );
+				WC()->session->reload_checkout = true;
+			}
+
 			return;
 		}
 
