@@ -104,7 +104,8 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 	 */
 	public static function walley_get_order() {
 		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( sanitize_key( $_POST['nonce'] ), 'walley_get_order' ) ) {
-			wp_send_json_error( 'bad_nonce' );
+			// The customer is shown what this call returns, so it cannot be the bare error code the other handlers use.
+			wp_send_json_error( __( 'Your session has expired. Please reload the page and try again.', 'collector-checkout-for-woocommerce' ) );
 			exit;
 		}
 

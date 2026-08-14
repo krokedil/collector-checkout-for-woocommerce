@@ -487,8 +487,13 @@ jQuery( function( $ ) {
 			walleyCheckoutWc.logToFile( 'Checkout error | Error message: ' + messages.join( ', ' ) );
 
 			const errorClasses = 'woocommerce-NoticeGroup woocommerce-NoticeGroup-checkout';
-			const errorItems   = messages.map( ( message ) => `<li>${ message }</li>` ).join( '' );
-			const errorWrapper = `<div class="${ errorClasses }"><ul class="woocommerce-error" role="alert">${ errorItems }</ul></div>`;
+
+			// The messages are plain text and must be inserted as text. WooCommerce escapes the values it puts
+			// in a notice, and reading them back out of it has turned that escaped markup into markup again.
+			const errorList = $( '<ul class="woocommerce-error" role="alert"></ul>' );
+			messages.forEach( ( message ) => errorList.append( $( '<li></li>' ).text( message ) ) );
+
+			const errorWrapper = $( '<div></div>' ).addClass( errorClasses ).append( errorList );
 			// Re-enable the form.
 			$( 'body' ).trigger( 'updated_checkout' );
 
