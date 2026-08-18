@@ -1,0 +1,4 @@
+Type: Fix
+Needs Documentation: no
+
+Previously, some checkout failures resulted in an empty error message, or in a technical error code. Customers are now told when their checkout session has expired, and error messages are always shown as plain text.

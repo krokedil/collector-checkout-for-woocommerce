@@ -187,6 +187,7 @@ class Walley_Checkout_Assets {
 				'get_customer_data_url'       => WC_AJAX::get_endpoint( 'get_customer_data' ),
 				'customer_adress_updated_url' => WC_AJAX::get_endpoint( 'customer_adress_updated' ),
 				'process_order_text'          => __( 'Please wait while we process your order.', 'collector-checkout-for-woocommerce' ),
+				'generic_error_message'       => __( 'Something went wrong when placing your order. Please try again, or contact us if the problem persists.', 'collector-checkout-for-woocommerce' ),
 				'no_shipping_message'         => apply_filters( 'woocommerce_no_shipping_available_html', __( 'There are no shipping options available. Please ensure that your address has been entered correctly, or contact us if you need any help.', 'woocommerce' ) ), // phpcs:ignore WordPress.WP.I18n.TextDomainMismatch
 			)
 		);
