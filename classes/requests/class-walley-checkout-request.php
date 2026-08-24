@@ -13,8 +13,7 @@ defined( 'ABSPATH' ) || exit;
 abstract class Walley_Checkout_Request {
 
 	/**
-	 * Base delay between retries, in milliseconds. Multiplied by the attempt
-	 * number to give a simple linear backoff (200ms, 400ms, ...).
+	 * Base delay between retries, in milliseconds. Doubled for every attempt (200ms, 400ms, 800ms, ...).
 	 *
 	 * @var int
 	 */
@@ -213,15 +212,14 @@ abstract class Walley_Checkout_Request {
 		 *
 		 * Retries are only triggered by an HTTP 423 (Resource_Locked) response.
 		 *
-		 * @param int $max_attempts The maximum number of attempts. Default 3.
+		 * @param int $max_attempts The maximum number of attempts. Default 5.
 		 */
-		$max_attempts = max( 1, absint( apply_filters( 'walley_checkout_request_max_attempts', 3 ) ) );
+		$max_attempts = max( 1, absint( apply_filters( 'walley_checkout_request_max_attempts', 5 ) ) );
 
 		/**
 		 * Filter the base backoff delay between retries, in milliseconds.
 		 *
-		 * The delay is multiplied by the attempt number for a linear backoff
-		 * (e.g. a 200ms base gives 200ms, then 400ms, ...).
+		 * The delay doubles for every attempt (a 200ms base gives 200ms, 400ms, 800ms, ...).
 		 *
 		 * @param int $backoff_ms The base backoff delay in milliseconds. Default 200.
 		 */
@@ -237,11 +235,14 @@ abstract class Walley_Checkout_Request {
 				return $response;
 			}
 
-			// Back off briefly to let the concurrent request release the lock, then try again.
 			if ( $attempt < $max_attempts ) {
-				Collector_Checkout_Logger::log( sprintf( '%1$s request to %2$s returned 423 Resource_Locked on attempt %3$d of %4$d. Retrying.', $this->method, $url, $attempt, $max_attempts ) );
-				// usleep() takes microseconds, we must multiply the $backoff_ms by 1000 to convert it into microseconds.
-				usleep( $attempt * $backoff_ms * 1000 );
+				// Jittered, so that requests locked out by the same writer do not retry in lockstep.
+				$delay = absint( $backoff_ms * pow( 2, $attempt - 1 ) );
+				$delay = max( 1, $delay - wp_rand( 0, absint( $delay / 2 ) ) );
+
+				Collector_Checkout_Logger::log( sprintf( '%1$s request to %2$s returned 423 Resource_Locked on attempt %3$d of %4$d. Retrying in %5$dms.', $this->method, $url, $attempt, $max_attempts, $delay ) );
+				// usleep() takes microseconds, we must multiply the delay by 1000 to convert it into microseconds.
+				usleep( $delay * 1000 );
 			}
 		} while ( $attempt < $max_attempts );
 

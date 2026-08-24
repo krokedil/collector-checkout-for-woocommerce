@@ -55,7 +55,8 @@ function collector_wc_show_snippet() {
 		}
 
 		if ( is_wp_error( $collector_order ) ) {
-			$return = '<ul class="woocommerce-error"><li>' . sprintf( '%s <a href="%s" class="button wc-forward">%s</a>', __( 'Could not connect to Walley. Error message: ', 'collector-checkout-for-woocommerce' ) . $collector_order->get_error_message(), wc_get_checkout_url(), __( 'Try again', 'collector-checkout-for-woocommerce' ) ) . '</li></ul>';
+			// The error message is Walley's raw response body, so show a readable one instead.
+			$return = '<ul class="woocommerce-error"><li>' . sprintf( '%s <a href="%s" class="button wc-forward">%s</a>', esc_html( walley_get_customer_error_message( $collector_order ) ), esc_url( wc_get_checkout_url() ), esc_html__( 'Try again', 'collector-checkout-for-woocommerce' ) ) . '</li></ul>';
 		} else {
 			WC()->session->set( 'collector_public_token', $collector_order['data']['publicToken'] );
 			WC()->session->set( 'collector_private_id', $collector_order['data']['privateId'] );
@@ -558,6 +559,22 @@ function coc_get_shipping_data( $collector_order ) {
 	}
 
 	return $shipping_data;
+}
+
+/**
+ * Get a message about a failed API request that is safe to show a customer.
+ *
+ * The request classes put Walley's raw response body in the WP_Error message, which belongs in the log, not the checkout.
+ *
+ * @param WP_Error $wp_error A WordPress error object from an API request.
+ * @return string
+ */
+function walley_get_customer_error_message( $wp_error ) {
+	if ( 423 === $wp_error->get_error_code() ) {
+		return __( 'The checkout is busy being updated. Please wait a moment and try again.', 'collector-checkout-for-woocommerce' );
+	}
+
+	return __( 'Something went wrong when we contacted Walley. Please try again.', 'collector-checkout-for-woocommerce' );
 }
 
 /**
