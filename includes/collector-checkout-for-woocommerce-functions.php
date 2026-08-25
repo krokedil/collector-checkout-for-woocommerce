@@ -54,7 +54,7 @@ function collector_wc_show_snippet() {
 			$collector_order = $init_checkout->request();
 		}
 
-		if ( is_wp_error( $collector_order ) ) {
+		if ( is_wp_error( $collector_order ) || empty( $collector_order ) ) {
 			// The error message is Walley's raw response body, so show a readable one instead.
 			$return = '<ul class="woocommerce-error"><li>' . sprintf( '%s <a href="%s" class="button wc-forward">%s</a>', esc_html( walley_get_customer_error_message( $collector_order ) ), esc_url( wc_get_checkout_url() ), esc_html__( 'Try again', 'collector-checkout-for-woocommerce' ) ) . '</li></ul>';
 		} else {
