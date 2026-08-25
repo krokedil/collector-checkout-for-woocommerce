@@ -566,11 +566,11 @@ function coc_get_shipping_data( $collector_order ) {
  *
  * The request classes put Walley's raw response body in the WP_Error message, which belongs in the log, not the checkout.
  *
- * @param WP_Error $wp_error A WordPress error object from an API request.
+ * @param WP_Error|mixed $wp_error A WordPress error object from an API request, or an empty response.
  * @return string
  */
 function walley_get_customer_error_message( $wp_error ) {
-	if ( 423 === $wp_error->get_error_code() ) {
+	if ( is_wp_error( $wp_error ) && 423 === $wp_error->get_error_code() ) {
 		return __( 'The checkout is busy being updated. Please wait a moment and try again.', 'collector-checkout-for-woocommerce' );
 	}
 

@@ -135,7 +135,7 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 		}
 
 		if ( is_wp_error( $collector_order ) ) {
-			$return = sprintf( __( 'Could not connect to Walley. Please reload the page and try again.', 'collector-checkout-for-woocommerce' ), $collector_order->get_error_message() );
+			$return = __( 'Could not connect to Walley. Please reload the page and try again.', 'collector-checkout-for-woocommerce' );
 			wp_send_json_error( $return );
 		}
 
@@ -174,7 +174,8 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 			}
 
 			if ( is_wp_error( $collector_order ) || empty( $collector_order ) ) {
-				$return = sprintf( '%s <a href="%s" class="button wc-forward">%s</a>', __( 'Could not connect to Walley. Error message: ', 'collector-checkout-for-woocommerce' ) . $collector_order->get_error_message(), wc_get_checkout_url(), __( 'Try again', 'collector-checkout-for-woocommerce' ) );
+				// The error message is Walley's raw response body, so send a readable one instead.
+				$return = sprintf( '%s <a href="%s" class="button wc-forward">%s</a>', esc_html( walley_get_customer_error_message( $collector_order ) ), esc_url( wc_get_checkout_url() ), esc_html__( 'Try again', 'collector-checkout-for-woocommerce' ) );
 				wp_send_json_error( $return );
 			} else {
 
