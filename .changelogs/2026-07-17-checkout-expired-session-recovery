@@ -1,0 +1,4 @@
+Type: Fix
+Needs Documentation: no
+
+Fixed an issue where the Walley Checkout could fail to load or update if the customer's checkout session had expired.
