@@ -49,23 +49,26 @@ class Collector_Delivery_Module {
 	public function admin_order_meta( $order ) {
 		$collector_delivery_data = json_decode( $order->get_meta( '_collector_delivery_module_data', true ), true );
 
-		if ( ! empty( $collector_delivery_data ) ) {
-			$pickup_service = isset( $collector_delivery_data['carrierName'] ) ? $collector_delivery_data['carrierName'] : '';
-			$pickup_name    = isset( $collector_delivery_data['servicePointName'] ) ? $collector_delivery_data['servicePointName'] : '';
-			$shipment_id    = $collector_delivery_data['pendingShipment']['id'];
-
-			$pickup_service_text = ! empty( $pickup_service ) ? sprintf( '<strong>%1$s</strong> %2$s<br>', __( 'Service:', 'krokedil-shipping-connector' ), wc_clean( $pickup_service ) ) : '';
-			$pickup_name_text    = ! empty( $pickup_name ) ? sprintf( '<strong>%1$s</strong> %2$s<br>', __( 'Pickup Point:', 'krokedil-shipping-connector' ), wc_clean( $pickup_name ) ) : '';
-			$shipment_id_text    = sprintf( '<strong>%1$s</strong> %2$s<br>', __( 'Shipment ID:', 'krokedil-shipping-connector' ), wc_clean( $shipment_id ) );
-
-			printf(
-				'<h3>%1$s</h3><div class="unifaun"><p>%2$s%3$s%4$s</p></div>',
-				esc_html__( 'Shipment information', 'krokedil-shipping-connector' ),
-				wp_kses_post( $pickup_service_text ),
-				wp_kses_post( $pickup_name_text ),
-				wp_kses_post( $shipment_id_text )
-			);
+		if ( empty( $collector_delivery_data ) ) {
+			return;
 		}
+
+		$shipment_text = '';
+		foreach ( walley_get_shipments( $collector_delivery_data ) as $shipment ) {
+			$shipment_text .= ! empty( $shipment['label'] ) ? sprintf( '<strong>%1$s</strong> %2$s<br>', __( 'Service:', 'collector-checkout-for-woocommerce' ), wc_clean( $shipment['label'] ) ) : '';
+			$shipment_text .= ! empty( $shipment['pickup_point'] ) ? sprintf( '<strong>%1$s</strong> %2$s<br>', __( 'Pickup Point:', 'collector-checkout-for-woocommerce' ), wc_clean( $shipment['pickup_point'] ) ) : '';
+			$shipment_text .= ! empty( $shipment['shipment_id'] ) ? sprintf( '<strong>%1$s</strong> %2$s<br>', __( 'Shipment ID:', 'collector-checkout-for-woocommerce' ), wc_clean( $shipment['shipment_id'] ) ) : '';
+		}
+
+		if ( empty( $shipment_text ) ) {
+			return;
+		}
+
+		printf(
+			'<h3>%1$s</h3><div class="unifaun"><p>%2$s</p></div>',
+			esc_html__( 'Shipment information', 'collector-checkout-for-woocommerce' ),
+			wp_kses_post( $shipment_text )
+		);
 	}
 
 	/**

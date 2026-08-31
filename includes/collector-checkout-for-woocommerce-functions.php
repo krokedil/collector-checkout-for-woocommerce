@@ -225,6 +225,20 @@ function remove_collector_db_row_data( $private_id ) {
 }
 
 /**
+ * Registers the Walley Shipping Module shipping method.
+ *
+ * Hooked onto woocommerce_shipping_methods in classes/class-collector-checkout-shipping-method.php,
+ * where the shipping method class itself is defined.
+ *
+ * @param array $methods WooCommerce shipping methods.
+ * @return array
+ */
+function add_collector_shipping_method( $methods ) {
+	$methods['collector_delivery_module'] = 'Collector_Delivery_Module_Shipping_Method';
+	return $methods;
+}
+
+/**
  * Checking if Collector Delivery Module is active.
  *
  * @param string $currency selected currency.
@@ -557,42 +571,72 @@ function cco_check_order_totals( $order, $collector_order ) {
 
 
 /**
+ * Get the shipments from a Walley shipping object, regardless of the format it is delivered in.
+ *
+ * Walley is replacing the Unifaun/nShift specific flat format, where the carrier, service point
+ * and shipment reference sit at the top level of data.shipping, with the standardized
+ * shipments[] format. Which one a merchant receives depends on their Walley profile, so both
+ * have to be read.
+ *
+ * @param array $shipping The data.shipping object from a Walley checkout.
+ * @return array List of shipments.
+ */
+function walley_get_shipments( $shipping ) {
+	// The legacy flat format only ever describes a single shipment.
+	if ( ! isset( $shipping['shipments'] ) ) {
+		return array(
+			array(
+				'label'        => $shipping['carrierName'] ?? '',
+				'shipping_id'  => $shipping['carrierId'] ?? '',
+				'pickup_point' => $shipping['servicePointName'] ?? '',
+				'shipment_id'  => $shipping['pendingShipment']['id'] ?? '',
+				'fee_item_id'  => $shipping['shippingFeeId'] ?? '',
+				// The flat format states the tax rate on data.fees.shipping instead.
+				'vat'          => null,
+			),
+		);
+	}
+
+	$shipments = array();
+	foreach ( $shipping['shipments'] as $shipment ) {
+		$choice = $shipment['shippingChoice'] ?? array();
+
+		$shipments[] = array(
+			// A shipment that offers no choice of its own is named on the shipment instead.
+			'label'        => $choice['name'] ?? $shipment['name'] ?? '',
+			'shipping_id'  => $choice['id'] ?? '',
+			'pickup_point' => $choice['destination']['name'] ?? '',
+			'shipment_id'  => $shipment['externalShipmentId'] ?? '',
+			'fee_item_id'  => $shipment['feeItemId'] ?? '',
+			// The merchant fallback states the tax rate on the choice, the Walley Custom
+			// Delivery Adapter puts it in its metadata, and nShift states none at all.
+			'vat'          => $choice['vat'] ?? $choice['metadata']['tax_rate'] ?? null,
+		);
+	}
+
+	return $shipments;
+}
+
+/**
  * Get shipping data from a collector order when using shipping in iframe.
+ *
+ * The Walley Shipping Module is a single WooCommerce shipping rate, so several shipments are
+ * presented as one.
  *
  * @param array $collector_order The collector order array.
  * @return array
  */
 function coc_get_shipping_data( $collector_order ) {
-	$shipping_data = array();
-	$shipping      = $collector_order['data']['shipping'];
-	if ( isset( $shipping['shipments'] ) ) {
-		// Handle Walley Custom Delivery Adapter.
-		foreach ( $shipping['shipments'] as $shipment ) {
-			$cost = $shipment['shippingChoice']['fee'];
+	$shipping  = $collector_order['data']['shipping'];
+	$shipments = walley_get_shipments( $shipping );
 
-			$shipment_options = $shipment['shippingChoice']['options'] ?? array();
-			foreach ( $shipment_options as $option ) {
-				$cost += $option['fee'] ?? 0;
-			}
-
-			$shipping_data[] = array(
-				'label'        => $shipment['shippingChoice']['name'],
-				'shipping_id'  => $shipment['shippingChoice']['id'],
-				'cost'         => $cost,
-				'shipping_vat' => $shipment['shippingChoice']['metadata']['tax_rate'] ?? null,
-			);
-		}
-	} else {
-		// Default handling of the Walley Shipping Module.
-		$shipping_data = array(
-			'label'        => $shipping['carrierName'],
-			'shipping_id'  => $shipping['carrierId'],
-			'cost'         => $shipping['shippingFee'],
-			'shipping_vat' => $collector_order['data']['fees']['shipping']['vat'],
-		);
-	}
-
-	return $shipping_data;
+	return array(
+		'label'        => implode( ', ', array_filter( wp_list_pluck( $shipments, 'label' ) ) ),
+		'shipping_id'  => $shipments[0]['shipping_id'] ?? '',
+		'cost'         => $shipping['shippingFee'] ?? 0,
+		// NULL when Walley states no tax rate at all, which the shipping method has to handle.
+		'shipping_vat' => $shipments[0]['vat'] ?? $collector_order['data']['fees']['shipping']['vat'] ?? null,
+	);
 }
 
 /**
@@ -776,8 +820,9 @@ function walley_confirm_order( $order, $private_id = null ) {
 
 	// Save shipping data.
 	if ( isset( $collector_order['data']['shipping'] ) ) {
+		$shipments = walley_get_shipments( $collector_order['data']['shipping'] );
 		$order->update_meta_data( '_collector_delivery_module_data', wp_json_encode( $collector_order['data']['shipping'], JSON_UNESCAPED_UNICODE ) );
-		$order->update_meta_data( '_collector_delivery_module_reference', $collector_order['data']['shipping']['pendingShipment']['id'] );
+		$order->update_meta_data( '_collector_delivery_module_reference', $shipments[0]['shipment_id'] ?? '' );
 	}
 
 	walley_set_order_status( $order, $payment_status, $payment_id, false );
@@ -834,8 +879,12 @@ function walley_add_rounding_order_line() {
 function walley_get_shipping_reference_from_delivery_module_data( $order_id ) {
 	$order                   = wc_get_order( $order_id );
 	$collector_delivery_data = json_decode( $order->get_meta( '_collector_delivery_module_data', true ), true ) ?? array();
-	$shipping_reference      = $collector_delivery_data['shippingFeeId'] ?? '';
-	return $shipping_reference;
+	if ( empty( $collector_delivery_data ) ) {
+		return '';
+	}
+
+	$shipments = walley_get_shipments( $collector_delivery_data );
+	return $shipments[0]['fee_item_id'] ?? '';
 }
 
 /**
