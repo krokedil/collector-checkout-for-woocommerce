@@ -1,4 +1,0 @@
-Type: Fix
-Needs Documentation: no
-
-Fixed a bug where customers saw a "syntax error" at checkout instead of the actual reason their order couldn't be completed.

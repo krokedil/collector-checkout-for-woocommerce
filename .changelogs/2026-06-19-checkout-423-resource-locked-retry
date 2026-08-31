@@ -1,4 +1,0 @@
-Type: Fix
-Needs Documentation: no
-
-Fixed an intermittent issue where customers could be unable to complete checkout when a Walley order update was temporarily locked by a simultaneous request (HTTP 423 Resource_Locked). The request is now retried automatically after a short delay.

@@ -2,9 +2,9 @@
 Contributors: collectorbank, krokedil, NiklasHogefjord
 Tags: ecommerce, e-commerce, woocommerce, collector, checkout, walley
 Requires at least: 5.0
-Tested up to: 7.0
+Tested up to: 7.1
 Requires PHP: 7.3
-Stable tag: 4.5.4
+Stable tag: 4.5.5
 WC requires at least: 6.0.0
 WC tested up to: 11.0.1
 License: GPLv3
@@ -39,6 +39,13 @@ For help setting up and configuring Walley Checkout for WooCommerce please refer
 
 
 == CHANGELOG ==
+= 2026-08-31    - version 4.5.5 =
+* Fix           - Fixed an intermittent issue where customers could be unable to complete checkout when a Walley order update was temporarily locked by a simultaneous request (HTTP 423 Resource_Locked). The request is now retried automatically after a short delay.
+* Fix           - Fixed a bug where customers saw a "syntax error" at checkout instead of the actual reason their order couldn't be completed.
+* Fix           - Fixed an issue where a customer could in some cases be unable to complete their purchase the first time they reached the Walley checkout, due to a missing public token on the initial page load.
+* Fix           - Fixed an issue where the Walley Checkout could fail to load or update if the customer's checkout session had expired.
+* Fix           - Previously, some checkout failures resulted in an empty error message, or in a technical error code. Customers are now told when their checkout session has expired, and error messages are always shown as plain text.
+
 = 2026-05-28    - version 4.5.4 =
 * Fix           - Resolved a checkout validation error that could occur after upgrading to WooCommerce 10.8.0, where an empty shipping phone number caused the order to fail. The shipping phone field is now correctly populated with the value from Walley, or the billing phone number if no shipping phone is provided.
 
