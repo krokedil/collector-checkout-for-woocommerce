@@ -8,7 +8,7 @@
  * Plugin Name: Walley Checkout for WooCommerce
  * Plugin URI: https://krokedil.se/produkt/walley-checkout/
  * Description: Extends WooCommerce. Provides a <a href="https://www.walley.se/foretag/checkout/" target="_blank">Walley Checkout</a> checkout for WooCommerce.
- * Version: 4.5.4
+ * Version: 4.5.5
  * Author: Krokedil
  * Author URI: https://krokedil.se/
  * Text Domain: collector-checkout-for-woocommerce
@@ -16,7 +16,7 @@
  * Requires Plugins: woocommerce
  *
  * WC requires at least: 6.0.0
- * WC tested up to: 10.8.1
+ * WC tested up to: 11.0.1
  *
  * Copyright: © 2017-2026 Krokedil.
  * License: GNU General Public License v3.0
@@ -29,7 +29,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 define( 'COLLECTOR_BANK_PLUGIN_DIR', untrailingslashit( plugin_dir_path( __FILE__ ) ) );
 define( 'COLLECTOR_BANK_PLUGIN_URL', untrailingslashit( plugin_dir_url( __FILE__ ) ) );
-define( 'COLLECTOR_BANK_VERSION', '4.5.4' );
+define( 'COLLECTOR_BANK_VERSION', '4.5.5' );
 define( 'COLLECTOR_DB_VERSION', '1' );
 
 if ( ! class_exists( 'Collector_Checkout' ) ) {
@@ -158,6 +158,7 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 			add_action( 'before_woocommerce_init', array( $this, 'declare_wc_compatibility' ) );
 
 			add_filter( 'woocommerce_checkout_fields', array( $this, 'add_hidden_public_token_field' ), 30 );
+			add_filter( 'woocommerce_checkout_get_value', array( $this, 'get_hidden_public_token_value' ), 10, 2 );
 
 			add_action( 'init', Walley_Checkout_Settings::class . '::maybe_migrate_old_delivery_module_setting' );
 		}
@@ -433,12 +434,30 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 		 */
 		public function add_hidden_public_token_field( $fields ) {
 
+			// Note: the value is intentionally not set here via 'default'. The
+			// woocommerce_checkout_fields filter is evaluated (and cached) once,
+			// so an eager 'default' would freeze to an empty string. The value is
+			// resolved lazily at render time instead, see get_hidden_public_token_value().
 			$fields['billing']['collector_public_token'] = array(
-				'type'    => 'hidden',
-				'default' => WC()->session->get( 'collector_public_token' ) ?? '',
+				'type' => 'hidden',
 			);
 
 			return $fields;
+		}
+
+		/**
+		 * Resolves the collector_public_token field value at render time.
+		 *
+		 * @param mixed  $value The current value.
+		 * @param string $input The field key being resolved.
+		 * @return mixed
+		 */
+		public function get_hidden_public_token_value( $value, $input ) {
+			if ( 'collector_public_token' === $input && empty( $value ) && WC()->session ) {
+				return WC()->session->get( 'collector_public_token' ) ?? '';
+			}
+
+			return $value;
 		}
 	}
 

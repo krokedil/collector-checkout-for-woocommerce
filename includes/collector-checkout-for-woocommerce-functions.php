@@ -45,7 +45,94 @@ function collector_wc_show_snippet() {
 	$session_profile    = WC()->session->get( 'collector_profile' );
 
 	// If we don't have a public token or private id, or if the currency or profile has changed since the last request, we need to initialize a new checkout.
-	if ( empty( $public_token ) || empty( $private_id ) || get_woocommerce_currency() !== $collector_currency || $profile !== $session_profile ) {
+	$initialize_checkout = empty( $public_token ) || empty( $private_id ) || get_woocommerce_currency() !== $collector_currency || $profile !== $session_profile;
+
+	// If we already have a session, try to reuse it.
+	if ( ! $initialize_checkout ) {
+
+		// Check if purchase was completed, if it was redirect customer to thankyou page.
+		// Use new or old API. The GET prints its own error notice, which we buffer away here since we may be able to recover below.
+		ob_start();
+		if ( walley_use_new_api() ) {
+			$collector_order = CCO_WC()->api->get_walley_checkout(
+				array(
+					'private_id'    => $private_id,
+					'customer_type' => $customer_type,
+				)
+			);
+		} else {
+			$collector_order = new Collector_Checkout_Requests_Get_Checkout_Information( $private_id, $customer_type );
+			$collector_order = $collector_order->request();
+		}
+		ob_end_clean();
+
+		if ( is_wp_error( $collector_order ) ) {
+			// A 404 (Checkout_Not_Found) means the session no longer exists at Walley.
+			if ( 404 === $collector_order->get_error_code() ) {
+				$order = wc_collector_get_order_by_private_id( $private_id );
+
+				// The session is dead, so we cannot ask Walley if it was paid. Send the customer to an order that has already been placed instead of a new checkout, or they could pay twice. The statuses are the ones WooCommerce itself replaces in wc_clear_cart_after_payment().
+				$order_is_placed = ! empty( $order ) && ( ! empty( $order->get_date_paid() ) || ! $order->has_status( array( 'pending', 'failed', 'cancelled' ) ) );
+
+				if ( $order_is_placed ) {
+					CCO_WC()->logger::log( "Trying to display checkout but the stored Walley session could not be found (404 Checkout_Not_Found). Private id $private_id, exist in order id {$order->get_id()} with order status {$order->get_status()}. Redirecting customer to the order received page." );
+
+					// Not the walley_confirm redirect below, that one needs a live session. The session is cleared after the redirect so a failed redirect still hits this check on the next request.
+					wp_safe_redirect( $order->get_checkout_order_received_url() );
+					wc_collector_unset_sessions();
+					exit;
+				}
+
+				if ( empty( $order ) ) {
+					CCO_WC()->logger::log( "Trying to display checkout but the stored Walley session could not be found (404 Checkout_Not_Found). Private id $private_id. No correlating order id can be found. Clearing the stale session and initializing a new checkout." );
+				} else {
+					CCO_WC()->logger::log( "Trying to display checkout but the stored Walley session could not be found (404 Checkout_Not_Found). Private id $private_id, exist in order id {$order->get_id()} which is still awaiting payment (order status {$order->get_status()}). Clearing the stale session and initializing a new checkout." );
+				}
+
+				wc_collector_unset_sessions();
+				$initialize_checkout = true;
+			} else {
+				// Any other error is left for the customer to retry, so print the notice we discarded above.
+				walley_print_error_message( $collector_order );
+				return;
+			}
+		} else {
+			$status = wc_get_var( $collector_order['data']['status'] );
+			if ( 'PurchaseCompleted' === $status ) {
+				$order = wc_collector_get_order_by_private_id( $private_id );
+
+				if ( ! empty( $order ) ) {
+					CCO_WC()->logger::log( "Trying to display checkout but status is PurchaseCompleted. Private id $private_id, exist in order id {$order->get_id()}. Redirecting customer to thankyou page." );
+
+					// Trigger the confirm_order function by redirecting with these specific parameters.
+					wp_safe_redirect(
+						add_query_arg(
+							array(
+								'walley_confirm' => '1',
+								'public-token'   => $public_token,
+							),
+							wc_get_checkout_url() // We can redirect to any safe URL.
+						)
+					);
+					// Do not use wp_die(), it overwrites the 302 and the redirect never happens.
+					exit;
+				}
+
+				CCO_WC()->logger::log( "Trying to display checkout but status is PurchaseCompleted. Private id $private_id. No correlating order id can be found." );
+			}
+
+			$output = array(
+				'publicToken'   => $public_token,
+				'test_mode'     => $test_mode,
+				'customer_type' => $customer_type,
+			);
+			echo( "<script>console.log('Collector: " . wp_json_encode( $output ) . "');</script>" );
+			$return = '<div id="collector-container"><script src="' . $url . '" data-lang="' . $locale . '" data-token="' . $public_token . '" data-variant="' . $customer_type . '"' . $data_action_color_button . ' ></script></div>'; // phpcs:ignore
+		}
+	}
+
+	// Initialize a new checkout when we have no reusable session, or when the stored session could not be found above.
+	if ( $initialize_checkout ) {
 		// Get a new public token from Collector.
 		if ( walley_use_new_api() ) {
 			$collector_order = CCO_WC()->api->initialize_walley_checkout( array( 'customer_type' => $customer_type ) );
@@ -73,58 +160,6 @@ function collector_wc_show_snippet() {
 			echo( "<script>console.log('Collector: " . wp_json_encode( $output ) . "');</script>" );
 			$return = '<div id="collector-container"><script src="' . $url . '" data-lang="' . $locale . '" data-token="' . $public_token . '" data-variant="' . $customer_type . '"' . $data_action_color_button . ' ></script></div>'; // phpcs:ignore
 		}
-	} else {
-
-		// Check if purchase was completed, if it was redirect customer to thankyou page.
-		// Use new or old API.
-		if ( walley_use_new_api() ) {
-			$collector_order = CCO_WC()->api->get_walley_checkout(
-				array(
-					'private_id'    => $private_id,
-					'customer_type' => $customer_type,
-				)
-			);
-		} else {
-			$collector_order = new Collector_Checkout_Requests_Get_Checkout_Information( $private_id, $customer_type );
-			$collector_order = $collector_order->request();
-		}
-
-		// If the update results in a Purchase_Completed response, let's try to redirect the customer to thank you page.
-		if ( is_wp_error( $collector_order ) ) {
-			return;
-		}
-
-		$status = wc_get_var( $collector_order['data']['status'] );
-		if ( 'PurchaseCompleted' === $status ) {
-			$order = wc_collector_get_order_by_private_id( $private_id );
-
-			if ( ! empty( $order ) ) {
-				CCO_WC()->logger::log( "Trying to display checkout but status is PurchaseCompleted. Private id $private_id, exist in order id {$order->get_id()}. Redirecting customer to thankyou page." );
-
-				// Trigger the confirm_order function by redirecting with these specific parameters.
-				wp_safe_redirect(
-					add_query_arg(
-						array(
-							'walley_confirm' => '1',
-							'public-token'   => $public_token,
-						),
-						wc_get_checkout_url() // We can redirect to any safe URL.
-					)
-				);
-				// Important! Do not use wp_die(), use exit. A wp_die() will overwrite the HTTP code (302 for redirect) since it needs to display an error message in HTML to the user, setting the HTTP code to 500 (or 200), preventing a redirect. Refer to wp_die() docs.
-				exit;
-			}
-
-			CCO_WC()->logger::log( "Trying to display checkout but status is PurchaseCompleted. Private id $private_id. No correlating order id can be found." );
-		}
-
-		$output = array(
-			'publicToken'   => $public_token,
-			'test_mode'     => $test_mode,
-			'customer_type' => $customer_type,
-		);
-		echo( "<script>console.log('Collector: " . wp_json_encode( $output ) . "');</script>" );
-		$return = '<div id="collector-container"><script src="' . $url . '" data-lang="' . $locale . '" data-token="' . $public_token . '" data-variant="' . $customer_type . '"' . $data_action_color_button . ' ></script></div>'; // phpcs:ignore
 	}
 
 	echo wp_kses( $return, wc_collector_allowed_tags() );

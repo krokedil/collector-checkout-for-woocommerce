@@ -13,6 +13,14 @@ defined( 'ABSPATH' ) || exit;
 abstract class Walley_Checkout_Request {
 
 	/**
+	 * Base delay between retries, in milliseconds. Multiplied by the attempt
+	 * number to give a simple linear backoff (200ms, 400ms, ...).
+	 *
+	 * @var int
+	 */
+	private const RETRY_BACKOFF_MS = 200;
+
+	/**
 	 * The request method.
 	 *
 	 * @var string
@@ -197,10 +205,47 @@ abstract class Walley_Checkout_Request {
 	 * @return array|WP_Error
 	 */
 	public function request() {
-		$url      = $this->get_request_url();
-		$args     = $this->get_request_args();
-		$response = wp_remote_request( $url, $args );
-		return $this->process_response( $response, $args, $url );
+		$url  = $this->get_request_url();
+		$args = $this->get_request_args();
+
+		/**
+		 * Filter the maximum number of attempts per request (the initial attempt plus retries).
+		 *
+		 * Retries are only triggered by an HTTP 423 (Resource_Locked) response.
+		 *
+		 * @param int $max_attempts The maximum number of attempts. Default 3.
+		 */
+		$max_attempts = max( 1, absint( apply_filters( 'walley_checkout_request_max_attempts', 3 ) ) );
+
+		/**
+		 * Filter the base backoff delay between retries, in milliseconds.
+		 *
+		 * The delay is multiplied by the attempt number for a linear backoff
+		 * (e.g. a 200ms base gives 200ms, then 400ms, ...).
+		 *
+		 * @param int $backoff_ms The base backoff delay in milliseconds. Default 200.
+		 */
+		$backoff_ms = absint( apply_filters( 'walley_checkout_request_backoff_ms', self::RETRY_BACKOFF_MS ) );
+
+		$attempt = 0;
+		do {
+			++$attempt;
+			$response = $this->process_response( wp_remote_request( $url, $args ), $args, $url );
+
+			// Only HTTP 423 (Resource_Locked) is retryable. Success or any other error returns immediately.
+			if ( ! is_wp_error( $response ) || 423 !== $response->get_error_code() ) {
+				return $response;
+			}
+
+			// Back off briefly to let the concurrent request release the lock, then try again.
+			if ( $attempt < $max_attempts ) {
+				Collector_Checkout_Logger::log( sprintf( '%1$s request to %2$s returned 423 Resource_Locked on attempt %3$d of %4$d. Retrying.', $this->method, $url, $attempt, $max_attempts ) );
+				// usleep() takes microseconds, we must multiply the $backoff_ms by 1000 to convert it into microseconds.
+				usleep( $attempt * $backoff_ms * 1000 );
+			}
+		} while ( $attempt < $max_attempts );
+
+		return $response;
 	}
 
 	/**

@@ -96,6 +96,13 @@ class Walley_Checkout {
 		}
 
 		if ( is_wp_error( $this->collector_order ) ) {
+			// On a 404 the session is gone, so nothing can be updated on it. Reload and let collector_wc_show_snippet() recover the session. It is deliberately not cleared here, since that would skip its order check.
+			if ( 404 === $this->collector_order->get_error_code() ) {
+				CCO_WC()->logger::log( "Walley GET order request failed in update shipping method function. Private id $private_id could not be found (404 Checkout_Not_Found). Reloading the checkout." );
+				WC()->session->reload_checkout = true;
+				$this->reload_checkout         = true;
+			}
+
 			return;
 		}
 
@@ -103,14 +110,6 @@ class Walley_Checkout {
 		$this->update_customer_in_woo( $this->collector_order );
 
 		if ( isset( $this->collector_order['data']['shipping'] ) ) {
-
-			/*
-			@todo:
-			Dont forget thios part of the ld code:
-			if ( ! isset( $shipping_data['label'] ) ) {
-				$shipping_data = $shipping_data[0];
-			}
-			*/
 			$shipping_data           = coc_get_shipping_data( $this->collector_order );
 			$chosen_shipping_methods = array( 'collector_delivery_module' );
 			WC()->session->set( 'collector_delivery_module_data', $shipping_data );
@@ -224,6 +223,13 @@ class Walley_Checkout {
 
 		if ( is_wp_error( $this->collector_order ) ) {
 			CCO_WC()->logger::log( 'Walley GET order request failed in update Walley order function.' );
+
+			// See update_shipping_method().
+			if ( 404 === $this->collector_order->get_error_code() ) {
+				CCO_WC()->logger::log( "Private id $private_id could not be found (404 Checkout_Not_Found). Reloading the checkout." );
+				WC()->session->reload_checkout = true;
+			}
+
 			return;
 		}
 
