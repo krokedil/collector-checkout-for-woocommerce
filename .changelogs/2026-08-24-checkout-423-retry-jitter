@@ -1,0 +1,4 @@
+Type: Fix
+Needs Documentation: no
+
+Fixed customers being unable to complete checkout when Walley order updates locked each other out (HTTP 423 Resource_Locked).
