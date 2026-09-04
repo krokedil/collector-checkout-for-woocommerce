@@ -1,0 +1,4 @@
+Type: Feature
+Needs Documentation: yes
+
+Added backup order creation. If a purchase is completed in Walley but the checkout did not create the WooCommerce order, the order is now created from the Walley order instead of the purchase being lost — on the confirmation page, when the customer returns to the checkout, and from the callback Walley sends. Recovered orders are marked with an order note and are put on hold if their total does not match the amount the customer was charged.

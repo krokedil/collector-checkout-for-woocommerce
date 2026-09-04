@@ -32,53 +32,140 @@ jQuery( function( $ ) {
             document.addEventListener( 'walleyCheckoutLocked', function (event) { walleyCheckoutWc.blockForm() } );
             document.addEventListener( 'walleyCheckoutUnlocked', function (event) { walleyCheckoutWc.unblockForm() } );
             document.addEventListener( 'walleyCheckoutShippingUpdated', function (event) { walleyCheckoutWc.shippingMethodChanged() } );
+            document.addEventListener( 'walleyCheckoutPurchaseCompleted', function (event) { walleyCheckoutWc.checkOrderWasPlaced() } );
 
-			if( window.walley ) {
-				window.walley.checkout.api.onBeforePayment(async function() {
-					walleyCheckoutWc.logToFile( 'onBeforePayment from Walley triggered' );
+			walleyCheckoutWc.registerOnBeforePayment();
+		},
 
-					// Setup a timeout that will be used if the onBeforePaymentHandler takes too long to return a rejected promise.
-					const timeout = new Promise((resolve, reject) => {
-					setTimeout(() => {
-						reject({
-							title: "Place WooCommerce order issue.",
-							message: "Timeout",
-						});
-						}, 29000); // 29 seconds
-					});
+		/**
+		 * Whether the WooCommerce order was placed from the onBeforePayment handler.
+		 */
+		orderPlaced: false,
 
-					try {
-						// Setup a handler that will be used to place the order.
-						const handler = new Promise(async (resolve, reject) => {
-							try {
-							await walleyCheckoutWc.placeWalleyOrder();
-							} catch (error) {
-								reject(error);
-							}
-							clearTimeout(timeout);
-							resolve();
-						});
+		/**
+		 * Records the case where Walley took the payment but no WooCommerce order was placed.
+		 *
+		 * The order is created from the onBeforePayment handler, so reaching a completed purchase
+		 * without having placed one means the handler never ran. Nothing can be done about it from
+		 * here — the point is to get it into the log, against the private id, at the moment it
+		 * happens, so it does not have to be reconstructed from Walley's logs afterwards. Recovery
+		 * is the server's job, in the notification callback.
+		 */
+		checkOrderWasPlaced: function() {
+			if ( walleyCheckoutWc.orderPlaced ) {
+				return;
+			}
 
-						// Race the timeout against the onBeforePaymentHandler.
-						await Promise.race([handler, timeout])
+			walleyCheckoutWc.logToFile( 'Walley reported PurchaseCompleted but no WooCommerce order was placed from onBeforePayment (handler registered: ' + walleyCheckoutWc.onBeforePaymentRegistered + '). The order has to be created by the notification callback.' );
+		},
 
-						// If we get here, the order was placed successfully. If the timeout wins, an error is thrown and caught below.
-						walleyCheckoutWc.logToFile('Successfully placed order.');
-					} catch (error) {
-						clearTimeout(timeout);
-						const messages = walleyCheckoutWc.getErrorMessages(error);
+		/**
+		 * Whether the handler has been handed to Walley.
+		 *
+		 * The loader stores it as window.walley.checkout._state.onBeforePayment, and re-injecting the
+		 * loader keeps the existing _state, so a registration survives the iframe being re-created.
+		 * Registering again is a plain re-assignment and cannot result in two orders.
+		 */
+		onBeforePaymentRegistered: false,
+		onBeforePaymentWarningLogged: false,
+		onBeforePaymentWaited: 0,
+		onBeforePaymentPollInterval: 250,
+		onBeforePaymentWarnAfter: 15000,
+		onBeforePaymentGiveUpAfter: 300000,
 
-						// WooCommerce prints its own notices after the reload it asked for, so do not add one here.
-						if (!(error && error.reload)) {
-							walleyCheckoutWc.failOrder(null, messages);
-						}
+		/**
+		 * Registers the onBeforePayment handler with Walley.
+		 *
+		 * The WooCommerce order is created only from inside that handler. If the registration does not
+		 * happen, Walley finds no callback to invoke, returns success to the iframe and completes the
+		 * purchase anyway — the customer is charged and no order is ever created.
+		 *
+		 * window.walley is defined by the loader script printed in the body, which is not guaranteed to
+		 * have run by the time this script does, so keep looking for it instead of checking once.
+		 */
+		registerOnBeforePayment: function() {
+			if ( walleyCheckoutWc.onBeforePaymentRegistered ) {
+				return;
+			}
 
-						// Log the error to the Walley log in WooCommerce.
-						walleyCheckoutWc.logToFile( 'Before payment error | ' + messages.join(', ') );
+			const api = window.walley && window.walley.checkout ? window.walley.checkout.api : null;
 
-						return Promise.reject({title: (error && error.title) || '', message: messages.join(' ')});
+			if ( api && typeof api.onBeforePayment === 'function' ) {
+				try {
+					api.onBeforePayment( walleyCheckoutWc.onBeforePaymentHandler );
+					walleyCheckoutWc.onBeforePaymentRegistered = true;
+
+					if ( walleyCheckoutWc.onBeforePaymentWaited > 0 ) {
+						walleyCheckoutWc.logToFile( 'onBeforePayment registered after waiting ' + walleyCheckoutWc.onBeforePaymentWaited + 'ms for window.walley.' );
 					}
-				});
+
+					walleyCheckoutWc.onBeforePaymentWaited = 0;
+					return;
+				} catch ( error ) {
+					// Do not keep retrying a call that throws, but make sure it is not lost silently.
+					walleyCheckoutWc.logToFile( 'onBeforePayment registration threw an error | ' + ( ( error && error.message ) || error ) );
+					return;
+				}
+			}
+
+			if ( walleyCheckoutWc.onBeforePaymentWaited >= walleyCheckoutWc.onBeforePaymentGiveUpAfter ) {
+				return;
+			}
+
+			// Log once, but keep waiting: the loader can still turn up, and registering late is far
+			// better than letting the customer reach the pay button with no handler attached.
+			if ( ! walleyCheckoutWc.onBeforePaymentWarningLogged && walleyCheckoutWc.onBeforePaymentWaited >= walleyCheckoutWc.onBeforePaymentWarnAfter ) {
+				walleyCheckoutWc.onBeforePaymentWarningLogged = true;
+				walleyCheckoutWc.logToFile( 'onBeforePayment NOT registered - window.walley still unavailable after ' + walleyCheckoutWc.onBeforePaymentWaited + 'ms. If the customer completes a purchase now, no WooCommerce order will be created.' );
+			}
+
+			walleyCheckoutWc.onBeforePaymentWaited += walleyCheckoutWc.onBeforePaymentPollInterval;
+			setTimeout( walleyCheckoutWc.registerOnBeforePayment, walleyCheckoutWc.onBeforePaymentPollInterval );
+		},
+
+		/**
+		 * Places the WooCommerce order before Walley completes the payment.
+		 *
+		 * Rejecting aborts the payment, so every failure path here must reject rather than swallow.
+		 *
+		 * @return {Promise}
+		 */
+		onBeforePaymentHandler: async function() {
+			walleyCheckoutWc.logToFile( 'onBeforePayment from Walley triggered' );
+
+			// Give up if placing the order takes too long, so the customer gets an error instead of a
+			// checkout that never resolves.
+			let timeoutId;
+			const timeout = new Promise( ( resolve, reject ) => {
+				timeoutId = setTimeout( () => {
+					reject( {
+						title: "Place WooCommerce order issue.",
+						message: "Timeout",
+					} );
+				}, 29000 ); // 29 seconds.
+			} );
+
+			try {
+				// Race the order placement against the timeout.
+				await Promise.race( [ walleyCheckoutWc.placeWalleyOrder(), timeout ] );
+
+				// If we get here, the order was placed successfully. If the timeout wins, an error is thrown and caught below.
+				walleyCheckoutWc.orderPlaced = true;
+				walleyCheckoutWc.logToFile( 'Successfully placed order.' );
+			} catch ( error ) {
+				const messages = walleyCheckoutWc.getErrorMessages( error );
+
+				// WooCommerce prints its own notices after the reload it asked for, so do not add one here.
+				if ( ! ( error && error.reload ) ) {
+					walleyCheckoutWc.failOrder( null, messages );
+				}
+
+				// Log the error to the Walley log in WooCommerce.
+				walleyCheckoutWc.logToFile( 'Before payment error | ' + messages.join( ', ' ) );
+
+				return Promise.reject( { title: ( error && error.title ) || '', message: messages.join( ' ' ) } );
+			} finally {
+				clearTimeout( timeoutId );
 			}
 		},
 
@@ -214,14 +301,16 @@ jQuery( function( $ ) {
 
 		suspendWalleyCheckout: function() {
 			console.log('suspendWalleyCheckout');
-			if(window.walley !== undefined) {
-				window.collector.checkout.api.suspend()
+			// These run on update_checkout, which is bound before WooCommerce's own handler. Throwing
+			// here would stop the rest of the checkout from updating, so make sure the API is there.
+			if ( window.walley && window.walley.checkout && window.walley.checkout.api ) {
+				window.walley.checkout.api.suspend();
 			}
 		},
 		resumeWalleyCheckout: function() {
 			console.log('resumeWalleyCheckout');
-			if(window.walley !== undefined) {
-				window.collector.checkout.api.resume()
+			if ( window.walley && window.walley.checkout && window.walley.checkout.api ) {
+				window.walley.checkout.api.resume();
 			}
 		},
         blockForm: function() {
@@ -574,6 +663,11 @@ jQuery( function( $ ) {
 						$('#collector-container').append('<script src="https://checkout.collector.se/collector-checkout-loader.js" data-lang="' + walleyParams.locale + '" data-token="' + publicToken + '" data-variant="' + customer + '"' + walleyParams.data_action_color_button + ' >');
 					}
 					checkout_initiated = 'yes';
+
+					// An existing registration is kept by the re-injected loader, so this only matters when
+					// the first attempt never got hold of window.walley. Now that a loader is definitely
+					// on its way, give it another chance rather than leaving the checkout unprotected.
+					walleyCheckoutWc.registerOnBeforePayment();
 				} else {
 					$('#collector-container').empty();
 					$('#collector-container').append('<ul class="woocommerce-error"><li>' + data.data + '</li></ul>');

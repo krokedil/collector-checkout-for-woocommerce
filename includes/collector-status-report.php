@@ -40,7 +40,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 				foreach ( $orders as $order_id ) {
 
 					$order = wc_get_order($order_id);
-					if ( 'collector_checkout_api' === $order->get_meta( '_created_via', true ) ) {
+					// created_via is a column under HPOS and post meta without it, so read it through the getter.
+					if ( 'collector_checkout_api' === $order->get_created_via() ) {
 						$amount_of_api_callback_orders++;
 					}
 				}
