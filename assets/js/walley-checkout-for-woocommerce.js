@@ -57,10 +57,7 @@ jQuery( function( $ ) {
 
 		/**
 		 * Whether the handler has been handed to Walley.
-		 *
-		 * The loader stores it as window.walley.checkout._state.onBeforePayment, and re-injecting the
-		 * loader keeps the existing _state, so a registration survives the iframe being re-created.
-		 * Registering again is a plain re-assignment and cannot result in two orders.
+		 * 
 		 */
 		onBeforePaymentRegistered: false,
 		onBeforePaymentWarningLogged: false,
@@ -75,7 +72,7 @@ jQuery( function( $ ) {
 		 *
 		 */
 		watchForWalley: function() {
-			
+
 			if ( walleyCheckoutWc.walleyWatchInstalled || typeof window.walley !== 'undefined' ) {
 				return;
 			}
@@ -138,8 +135,6 @@ jQuery( function( $ ) {
 				return;
 			}
 
-			// Log once, but keep waiting: the loader can still turn up, and registering late is far
-			// better than letting the customer reach the pay button with no handler attached.
 			if ( ! walleyCheckoutWc.onBeforePaymentWarningLogged && waited >= walleyCheckoutWc.onBeforePaymentWarnAfter ) {
 				walleyCheckoutWc.onBeforePaymentWarningLogged = true;
 				walleyCheckoutWc.logToFile( 'onBeforePayment NOT registered - window.walley still unavailable after ' + waited + 'ms. Walley completes a purchase without asking us when no callback is registered, so an order could be paid for without one being created.' );
@@ -158,8 +153,7 @@ jQuery( function( $ ) {
 		onBeforePaymentHandler: async function() {
 			walleyCheckoutWc.logToFile( 'onBeforePayment from Walley triggered' );
 
-			// Give up if placing the order takes too long, so the customer gets an error instead of a
-			// checkout that never resolves.
+			// Give up if placing the order takes too long, so the customer gets an error instead of a checkout that never resolves.
 			let timeoutId;
 			const timeout = new Promise( ( resolve, reject ) => {
 				timeoutId = setTimeout( () => {
@@ -326,8 +320,6 @@ jQuery( function( $ ) {
 
 		suspendWalleyCheckout: function() {
 			console.log('suspendWalleyCheckout');
-			// These run on update_checkout, which is bound before WooCommerce's own handler. Throwing
-			// here would stop the rest of the checkout from updating, so make sure the API is there.
 			if ( window.walley && window.walley.checkout && window.walley.checkout.api ) {
 				window.walley.checkout.api.suspend();
 			}
@@ -689,9 +681,6 @@ jQuery( function( $ ) {
 					}
 					checkout_initiated = 'yes';
 
-					// An existing registration is kept by the re-injected loader, so this only matters when
-					// the first attempt never got hold of window.walley. Now that a loader is definitely
-					// on its way, give it another chance rather than leaving the checkout unprotected.
 					walleyCheckoutWc.registerOnBeforePayment();
 				} else {
 					$('#collector-container').empty();
