@@ -34,6 +34,7 @@ jQuery( function( $ ) {
             document.addEventListener( 'walleyCheckoutShippingUpdated', function (event) { walleyCheckoutWc.shippingMethodChanged() } );
             document.addEventListener( 'walleyCheckoutPurchaseCompleted', function (event) { walleyCheckoutWc.checkOrderWasPlaced() } );
 
+			walleyCheckoutWc.watchForWalley();
 			walleyCheckoutWc.registerOnBeforePayment();
 		},
 
@@ -44,19 +45,14 @@ jQuery( function( $ ) {
 
 		/**
 		 * Records the case where Walley took the payment but no WooCommerce order was placed.
-		 *
-		 * The order is created from the onBeforePayment handler, so reaching a completed purchase
-		 * without having placed one means the handler never ran. Nothing can be done about it from
-		 * here — the point is to get it into the log, against the private id, at the moment it
-		 * happens, so it does not have to be reconstructed from Walley's logs afterwards. Recovery
-		 * is the server's job, in the notification callback.
+		 * This indicates a serious issue that needs to be investigated.
 		 */
 		checkOrderWasPlaced: function() {
 			if ( walleyCheckoutWc.orderPlaced ) {
 				return;
 			}
 
-			walleyCheckoutWc.logToFile( 'Walley reported PurchaseCompleted but no WooCommerce order was placed from onBeforePayment (handler registered: ' + walleyCheckoutWc.onBeforePaymentRegistered + '). The order has to be created by the notification callback.' );
+			walleyCheckoutWc.logToFile( 'Walley reported PurchaseCompleted but no WooCommerce order was placed from onBeforePayment (handler registered: ' + walleyCheckoutWc.onBeforePaymentRegistered + '). The customer has been charged without an order being created.' );
 		},
 
 		/**
@@ -68,26 +64,57 @@ jQuery( function( $ ) {
 		 */
 		onBeforePaymentRegistered: false,
 		onBeforePaymentWarningLogged: false,
-		onBeforePaymentWaited: 0,
-		onBeforePaymentPollInterval: 250,
+		walleyWatchInstalled: false,
+		onBeforePaymentStartedAt: 0,
+		onBeforePaymentPollInterval: 100,
 		onBeforePaymentWarnAfter: 15000,
 		onBeforePaymentGiveUpAfter: 300000,
 
 		/**
+		 * Registers the handler the moment Walley's loader defines window.walley.
+		 *
+		 */
+		watchForWalley: function() {
+			
+			if ( walleyCheckoutWc.walleyWatchInstalled || typeof window.walley !== 'undefined' ) {
+				return;
+			}
+
+			try {
+				let walley;
+
+				Object.defineProperty( window, 'walley', {
+					configurable: true,
+					get: function() {
+						return walley;
+					},
+					set: function( value ) {
+						walley = value;
+						walleyCheckoutWc.registerOnBeforePayment();
+					},
+				} );
+
+				walleyCheckoutWc.walleyWatchInstalled = true;
+			} catch ( error ) {
+				// Not fatal, the poll in registerOnBeforePayment still picks the loader up.
+				walleyCheckoutWc.logToFile( 'Could not watch for window.walley, falling back to polling | ' + ( ( error && error.message ) || error ) );
+			}
+		},
+
+		/**
 		 * Registers the onBeforePayment handler with Walley.
 		 *
-		 * The WooCommerce order is created only from inside that handler. If the registration does not
-		 * happen, Walley finds no callback to invoke, returns success to the iframe and completes the
-		 * purchase anyway — the customer is charged and no order is ever created.
-		 *
-		 * window.walley is defined by the loader script printed in the body, which is not guaranteed to
-		 * have run by the time this script does, so keep looking for it instead of checking once.
 		 */
 		registerOnBeforePayment: function() {
 			if ( walleyCheckoutWc.onBeforePaymentRegistered ) {
 				return;
 			}
 
+			if ( 0 === walleyCheckoutWc.onBeforePaymentStartedAt ) {
+				walleyCheckoutWc.onBeforePaymentStartedAt = Date.now();
+			}
+
+			const waited = Date.now() - walleyCheckoutWc.onBeforePaymentStartedAt;
 			const api = window.walley && window.walley.checkout ? window.walley.checkout.api : null;
 
 			if ( api && typeof api.onBeforePayment === 'function' ) {
@@ -95,11 +122,10 @@ jQuery( function( $ ) {
 					api.onBeforePayment( walleyCheckoutWc.onBeforePaymentHandler );
 					walleyCheckoutWc.onBeforePaymentRegistered = true;
 
-					if ( walleyCheckoutWc.onBeforePaymentWaited > 0 ) {
-						walleyCheckoutWc.logToFile( 'onBeforePayment registered after waiting ' + walleyCheckoutWc.onBeforePaymentWaited + 'ms for window.walley.' );
+					if ( waited >= walleyCheckoutWc.onBeforePaymentPollInterval ) {
+						walleyCheckoutWc.logToFile( 'onBeforePayment registered after waiting ' + waited + 'ms for window.walley.' );
 					}
 
-					walleyCheckoutWc.onBeforePaymentWaited = 0;
 					return;
 				} catch ( error ) {
 					// Do not keep retrying a call that throws, but make sure it is not lost silently.
@@ -108,18 +134,17 @@ jQuery( function( $ ) {
 				}
 			}
 
-			if ( walleyCheckoutWc.onBeforePaymentWaited >= walleyCheckoutWc.onBeforePaymentGiveUpAfter ) {
+			if ( waited >= walleyCheckoutWc.onBeforePaymentGiveUpAfter ) {
 				return;
 			}
 
 			// Log once, but keep waiting: the loader can still turn up, and registering late is far
 			// better than letting the customer reach the pay button with no handler attached.
-			if ( ! walleyCheckoutWc.onBeforePaymentWarningLogged && walleyCheckoutWc.onBeforePaymentWaited >= walleyCheckoutWc.onBeforePaymentWarnAfter ) {
+			if ( ! walleyCheckoutWc.onBeforePaymentWarningLogged && waited >= walleyCheckoutWc.onBeforePaymentWarnAfter ) {
 				walleyCheckoutWc.onBeforePaymentWarningLogged = true;
-				walleyCheckoutWc.logToFile( 'onBeforePayment NOT registered - window.walley still unavailable after ' + walleyCheckoutWc.onBeforePaymentWaited + 'ms. If the customer completes a purchase now, no WooCommerce order will be created.' );
+				walleyCheckoutWc.logToFile( 'onBeforePayment NOT registered - window.walley still unavailable after ' + waited + 'ms. Walley completes a purchase without asking us when no callback is registered, so an order could be paid for without one being created.' );
 			}
 
-			walleyCheckoutWc.onBeforePaymentWaited += walleyCheckoutWc.onBeforePaymentPollInterval;
 			setTimeout( walleyCheckoutWc.registerOnBeforePayment, walleyCheckoutWc.onBeforePaymentPollInterval );
 		},
 

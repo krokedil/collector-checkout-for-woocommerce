@@ -15,11 +15,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 
 	/**
-	 * How long to wait after a notification before checking that the checkout created the order.
-	 */
-	private const CHECK_FOR_ORDER_DELAY = 120; // In seconds.
-
-	/**
 	 * The id of the gateway.
 	 *
 	 * @var string
@@ -173,9 +168,7 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 		CCO_WC()->logger::log( 'Notification Listener hit. Private id: ' . wp_json_encode( $private_id ) . '. Public token: ' . $public_token . '. Customer type: ' . $customer_type );
 
 		if ( empty( $private_id ) || empty( $public_token ) || empty( $customer_type ) ) {
-			CCO_WC()->logger::log( 'Notification Listener called without all of private-id, public-token and customer-type. Ignoring the request.' );
-			status_header( 400 );
-			die();
+			return;
 		}
 
 		$scheduled_actions = as_get_scheduled_actions(
@@ -188,24 +181,12 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 		);
 
 		if ( empty( $scheduled_actions ) ) {
-			/**
-			 * How long to wait before checking whether the checkout created the order.
-			 *
-			 * The check must not overtake the browser: placing the order can take the best part of half
-			 * a minute on a busy store, and an order that is still inside process_checkout() cannot be
-			 * found by a query, which would make this look like a missing order and create a second one.
-			 *
-			 * @param int $delay Delay in seconds.
-			 */
-			$delay = apply_filters( 'walley_check_for_order_delay', self::CHECK_FOR_ORDER_DELAY );
-			as_schedule_single_action( time() + $delay, 'collector_check_for_order', array( $private_id, $public_token, $customer_type ), '', true );
+			as_schedule_single_action( time() + 30, 'collector_check_for_order', array( $private_id, $public_token, $customer_type ) );
+			header( 'HTTP/1.1 200 OK' );
 		} else {
 			CCO_WC()->logger::log( 'collector_check_for_order callback already scheduled. ' . wp_json_encode( $scheduled_actions ) ); // Input var okay.
+			header( 'HTTP/1.1 400 Bad Request' );
 		}
-
-		// A duplicate notification is not a failure: the check is scheduled either way. Answering
-		// anything but a 2xx makes Walley treat the delivery as failed and retry it.
-		status_header( 200 );
 		die();
 	}
 

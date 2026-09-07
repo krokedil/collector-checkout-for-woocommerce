@@ -1,4 +1,4 @@
 Type: Fix
 Needs Documentation: no
 
-Fixed an issue where a purchase could be completed in Walley without an order being created in WooCommerce. The checkout registers the callback that places the order as soon as Walley's script is available on the page, instead of only once when the page loads, and reports it in the log if the registration does not succeed.
+Fixed an issue where a purchase could be completed in Walley without an order being created in WooCommerce, and without anything being written to the log. The callback that places the order is now handed to Walley as soon as their checkout script is available on the page, instead of only once when the page has loaded, and a failure to register it is written to the Walley log.

@@ -118,18 +118,7 @@ function collector_wc_show_snippet() {
 					exit;
 				}
 
-				CCO_WC()->logger::log( "Trying to display checkout but status is PurchaseCompleted. Private id $private_id. No correlating order id can be found. Attempting backup order creation." );
-
-				// The customer is looking at a checkout for a purchase they have already paid for. Build
-				// the order from the Walley order so they get a receipt instead of a chance to pay twice.
-				Collector_Api_Callbacks::get_instance()->backup_order_creation( $private_id, $public_token, $customer_type );
-
-				$order = wc_collector_get_order_by_private_id( $private_id );
-				if ( ! empty( $order ) ) {
-					wc_collector_unset_sessions();
-					wp_safe_redirect( $order->get_checkout_order_received_url() );
-					exit;
-				}
+				CCO_WC()->logger::log( "Trying to display checkout but status is PurchaseCompleted. Private id $private_id. No correlating order id can be found." );
 			}
 
 			$output = array(
@@ -693,9 +682,8 @@ function walley_get_order_by_key( $key, $value ) {
  *
  * @param WC_Order|int $order The WooCommerce order or order id.
  * @param string       $private_id Collector session id saved as _collector_private_id ID in WC order.
- * @param array|null   $collector_order The Walley order, if the caller already retrieved it.
  */
-function walley_confirm_order( $order, $private_id = null, $collector_order = null ) {
+function walley_confirm_order( $order, $private_id = null ) {
 	// Get the Woo order if the order is passed as an int.
 	if ( ! $order instanceof WC_Order ) {
 		$order = wc_get_order( $order );
@@ -715,20 +703,17 @@ function walley_confirm_order( $order, $private_id = null, $collector_order = nu
 		$customer_type = 'b2c';
 	}
 
-	// Only fetch the Walley order if the caller did not already have it.
-	if ( empty( $collector_order ) ) {
-		// Use new or old API.
-		if ( walley_use_new_api() ) {
-			$collector_order = CCO_WC()->api->get_walley_checkout(
-				array(
-					'private_id'    => $private_id,
-					'customer_type' => $customer_type,
-				)
-			);
-		} else {
-			$response        = new Collector_Checkout_Requests_Get_Checkout_Information( $private_id, $customer_type, $order->get_currency() );
-			$collector_order = $response->request();
-		}
+	// Use new or old API.
+	if ( walley_use_new_api() ) {
+		$collector_order = CCO_WC()->api->get_walley_checkout(
+			array(
+				'private_id'    => $private_id,
+				'customer_type' => $customer_type,
+			)
+		);
+	} else {
+		$response        = new Collector_Checkout_Requests_Get_Checkout_Information( $private_id, $customer_type, $order->get_currency() );
+		$collector_order = $response->request();
 	}
 
 	if ( is_wp_error( $collector_order ) ) {
