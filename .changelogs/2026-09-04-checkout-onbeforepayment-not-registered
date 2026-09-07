@@ -1,0 +1,4 @@
+Type: Fix
+Needs Documentation: no
+
+Fixed an issue where a purchase could be completed in Walley without an order being created in WooCommerce.

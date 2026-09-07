@@ -32,53 +32,159 @@ jQuery( function( $ ) {
             document.addEventListener( 'walleyCheckoutLocked', function (event) { walleyCheckoutWc.blockForm() } );
             document.addEventListener( 'walleyCheckoutUnlocked', function (event) { walleyCheckoutWc.unblockForm() } );
             document.addEventListener( 'walleyCheckoutShippingUpdated', function (event) { walleyCheckoutWc.shippingMethodChanged() } );
+            document.addEventListener( 'walleyCheckoutPurchaseCompleted', function (event) { walleyCheckoutWc.checkOrderWasPlaced() } );
 
-			if( window.walley ) {
-				window.walley.checkout.api.onBeforePayment(async function() {
-					walleyCheckoutWc.logToFile( 'onBeforePayment from Walley triggered' );
+			walleyCheckoutWc.watchForWalley();
+			walleyCheckoutWc.registerOnBeforePayment();
+		},
 
-					// Setup a timeout that will be used if the onBeforePaymentHandler takes too long to return a rejected promise.
-					const timeout = new Promise((resolve, reject) => {
-					setTimeout(() => {
-						reject({
-							title: "Place WooCommerce order issue.",
-							message: "Timeout",
-						});
-						}, 29000); // 29 seconds
-					});
+		/**
+		 * Whether the WooCommerce order was placed from the onBeforePayment handler.
+		 */
+		orderPlaced: false,
 
-					try {
-						// Setup a handler that will be used to place the order.
-						const handler = new Promise(async (resolve, reject) => {
-							try {
-							await walleyCheckoutWc.placeWalleyOrder();
-							} catch (error) {
-								reject(error);
-							}
-							clearTimeout(timeout);
-							resolve();
-						});
+		/**
+		 * Records the case where Walley took the payment but no WooCommerce order was placed.
+		 * This indicates a serious issue that needs to be investigated.
+		 */
+		checkOrderWasPlaced: function() {
+			if ( walleyCheckoutWc.orderPlaced ) {
+				return;
+			}
 
-						// Race the timeout against the onBeforePaymentHandler.
-						await Promise.race([handler, timeout])
+			walleyCheckoutWc.logToFile( 'Walley reported PurchaseCompleted but no WooCommerce order was placed from onBeforePayment (handler registered: ' + walleyCheckoutWc.onBeforePaymentRegistered + '). The customer has been charged without an order being created.' );
+		},
 
-						// If we get here, the order was placed successfully. If the timeout wins, an error is thrown and caught below.
-						walleyCheckoutWc.logToFile('Successfully placed order.');
-					} catch (error) {
-						clearTimeout(timeout);
-						const messages = walleyCheckoutWc.getErrorMessages(error);
+		/**
+		 * Whether the handler has been handed to Walley.
+		 * 
+		 */
+		onBeforePaymentRegistered: false,
+		onBeforePaymentWarningLogged: false,
+		walleyWatchInstalled: false,
+		onBeforePaymentStartedAt: 0,
+		onBeforePaymentPollInterval: 100,
+		onBeforePaymentWarnAfter: 15000,
+		onBeforePaymentGiveUpAfter: 300000,
 
-						// WooCommerce prints its own notices after the reload it asked for, so do not add one here.
-						if (!(error && error.reload)) {
-							walleyCheckoutWc.failOrder(null, messages);
-						}
+		/**
+		 * Registers the handler the moment Walley's loader defines window.walley.
+		 *
+		 */
+		watchForWalley: function() {
 
-						// Log the error to the Walley log in WooCommerce.
-						walleyCheckoutWc.logToFile( 'Before payment error | ' + messages.join(', ') );
+			if ( walleyCheckoutWc.walleyWatchInstalled || typeof window.walley !== 'undefined' ) {
+				return;
+			}
 
-						return Promise.reject({title: (error && error.title) || '', message: messages.join(' ')});
+			try {
+				let walley;
+
+				Object.defineProperty( window, 'walley', {
+					configurable: true,
+					get: function() {
+						return walley;
+					},
+					set: function( value ) {
+						walley = value;
+						walleyCheckoutWc.registerOnBeforePayment();
+					},
+				} );
+
+				walleyCheckoutWc.walleyWatchInstalled = true;
+			} catch ( error ) {
+				// Not fatal, the poll in registerOnBeforePayment still picks the loader up.
+				walleyCheckoutWc.logToFile( 'Could not watch for window.walley, falling back to polling | ' + ( ( error && error.message ) || error ) );
+			}
+		},
+
+		/**
+		 * Registers the onBeforePayment handler with Walley.
+		 *
+		 */
+		registerOnBeforePayment: function() {
+			if ( walleyCheckoutWc.onBeforePaymentRegistered ) {
+				return;
+			}
+
+			if ( 0 === walleyCheckoutWc.onBeforePaymentStartedAt ) {
+				walleyCheckoutWc.onBeforePaymentStartedAt = Date.now();
+			}
+
+			const waited = Date.now() - walleyCheckoutWc.onBeforePaymentStartedAt;
+			const api = window.walley && window.walley.checkout ? window.walley.checkout.api : null;
+
+			if ( api && typeof api.onBeforePayment === 'function' ) {
+				try {
+					api.onBeforePayment( walleyCheckoutWc.onBeforePaymentHandler );
+					walleyCheckoutWc.onBeforePaymentRegistered = true;
+
+					if ( waited >= walleyCheckoutWc.onBeforePaymentPollInterval ) {
+						walleyCheckoutWc.logToFile( 'onBeforePayment registered after waiting ' + waited + 'ms for window.walley.' );
 					}
-				});
+
+					return;
+				} catch ( error ) {
+					// Do not keep retrying a call that throws, but make sure it is not lost silently.
+					walleyCheckoutWc.logToFile( 'onBeforePayment registration threw an error | ' + ( ( error && error.message ) || error ) );
+					return;
+				}
+			}
+
+			if ( waited >= walleyCheckoutWc.onBeforePaymentGiveUpAfter ) {
+				return;
+			}
+
+			if ( ! walleyCheckoutWc.onBeforePaymentWarningLogged && waited >= walleyCheckoutWc.onBeforePaymentWarnAfter ) {
+				walleyCheckoutWc.onBeforePaymentWarningLogged = true;
+				walleyCheckoutWc.logToFile( 'onBeforePayment NOT registered - window.walley still unavailable after ' + waited + 'ms. Walley completes a purchase without asking us when no callback is registered, so an order could be paid for without one being created.' );
+			}
+
+			setTimeout( walleyCheckoutWc.registerOnBeforePayment, walleyCheckoutWc.onBeforePaymentPollInterval );
+		},
+
+		/**
+		 * Places the WooCommerce order before Walley completes the payment.
+		 *
+		 * Rejecting aborts the payment, so every failure path here must reject rather than swallow.
+		 *
+		 * @return {Promise}
+		 */
+		onBeforePaymentHandler: async function() {
+			walleyCheckoutWc.logToFile( 'onBeforePayment from Walley triggered' );
+
+			// Give up if placing the order takes too long, so the customer gets an error instead of a checkout that never resolves.
+			let timeoutId;
+			const timeout = new Promise( ( resolve, reject ) => {
+				timeoutId = setTimeout( () => {
+					reject( {
+						title: "Place WooCommerce order issue.",
+						message: "Timeout",
+					} );
+				}, 29000 ); // 29 seconds.
+			} );
+
+			try {
+				// Race the order placement against the timeout.
+				await Promise.race( [ walleyCheckoutWc.placeWalleyOrder(), timeout ] );
+
+				// If we get here, the order was placed successfully. If the timeout wins, an error is thrown and caught below.
+				walleyCheckoutWc.orderPlaced = true;
+				walleyCheckoutWc.logToFile( 'Successfully placed order.' );
+			} catch ( error ) {
+				const messages = walleyCheckoutWc.getErrorMessages( error );
+
+				// WooCommerce prints its own notices after the reload it asked for, so do not add one here.
+				if ( ! ( error && error.reload ) ) {
+					walleyCheckoutWc.failOrder( null, messages );
+				}
+
+				// Log the error to the Walley log in WooCommerce.
+				walleyCheckoutWc.logToFile( 'Before payment error | ' + messages.join( ', ' ) );
+
+				return Promise.reject( { title: ( error && error.title ) || '', message: messages.join( ' ' ) } );
+			} finally {
+				clearTimeout( timeoutId );
 			}
 		},
 
@@ -214,14 +320,14 @@ jQuery( function( $ ) {
 
 		suspendWalleyCheckout: function() {
 			console.log('suspendWalleyCheckout');
-			if(window.walley !== undefined) {
-				window.collector.checkout.api.suspend()
+			if ( window.walley && window.walley.checkout && window.walley.checkout.api ) {
+				window.walley.checkout.api.suspend();
 			}
 		},
 		resumeWalleyCheckout: function() {
 			console.log('resumeWalleyCheckout');
-			if(window.walley !== undefined) {
-				window.collector.checkout.api.resume()
+			if ( window.walley && window.walley.checkout && window.walley.checkout.api ) {
+				window.walley.checkout.api.resume();
 			}
 		},
         blockForm: function() {
@@ -574,6 +680,8 @@ jQuery( function( $ ) {
 						$('#collector-container').append('<script src="https://checkout.collector.se/collector-checkout-loader.js" data-lang="' + walleyParams.locale + '" data-token="' + publicToken + '" data-variant="' + customer + '"' + walleyParams.data_action_color_button + ' >');
 					}
 					checkout_initiated = 'yes';
+
+					walleyCheckoutWc.registerOnBeforePayment();
 				} else {
 					$('#collector-container').empty();
 					$('#collector-container').append('<ul class="woocommerce-error"><li>' + data.data + '</li></ul>');
