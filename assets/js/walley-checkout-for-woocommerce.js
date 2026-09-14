@@ -52,14 +52,13 @@ jQuery( function( $ ) {
 				return;
 			}
 
-			walleyCheckoutWc.logToFile( 'Walley reported PurchaseCompleted but no WooCommerce order was placed from onBeforePayment (handler registered: ' + walleyCheckoutWc.onBeforePaymentRegistered + '). The customer has been charged without an order being created.' );
+			walleyCheckoutWc.logToFile( 'Walley reported PurchaseCompleted but no WooCommerce order was placed from onBeforePayment (handler registered: ' + ( null !== walleyCheckoutWc.registeredApi ) + '). The customer has been charged without an order being created.' );
 		},
 
 		/**
-		 * Whether the handler has been handed to Walley.
-		 * 
+		 * The Walley checkout api the handler has been handed to.
 		 */
-		onBeforePaymentRegistered: false,
+		registeredApi: null,
 		onBeforePaymentWarningLogged: false,
 		walleyWatchInstalled: false,
 		onBeforePaymentStartedAt: 0,
@@ -87,7 +86,7 @@ jQuery( function( $ ) {
 					},
 					set: function( value ) {
 						walley = value;
-						walleyCheckoutWc.registerOnBeforePayment();
+						walleyCheckoutWc.startRegistration();
 					},
 				} );
 
@@ -99,14 +98,19 @@ jQuery( function( $ ) {
 		},
 
 		/**
+		 * Starts a registration attempt from scratch.
+		 */
+		startRegistration: function() {
+			walleyCheckoutWc.onBeforePaymentStartedAt = 0;
+			walleyCheckoutWc.onBeforePaymentWarningLogged = false;
+			walleyCheckoutWc.registerOnBeforePayment();
+		},
+
+		/**
 		 * Registers the onBeforePayment handler with Walley.
 		 *
 		 */
 		registerOnBeforePayment: function() {
-			if ( walleyCheckoutWc.onBeforePaymentRegistered ) {
-				return;
-			}
-
 			if ( 0 === walleyCheckoutWc.onBeforePaymentStartedAt ) {
 				walleyCheckoutWc.onBeforePaymentStartedAt = Date.now();
 			}
@@ -115,9 +119,13 @@ jQuery( function( $ ) {
 			const api = window.walley && window.walley.checkout ? window.walley.checkout.api : null;
 
 			if ( api && typeof api.onBeforePayment === 'function' ) {
+				if ( walleyCheckoutWc.registeredApi === api ) {
+					return;
+				}
+
 				try {
 					api.onBeforePayment( walleyCheckoutWc.onBeforePaymentHandler );
-					walleyCheckoutWc.onBeforePaymentRegistered = true;
+					walleyCheckoutWc.registeredApi = api;
 
 					if ( waited >= walleyCheckoutWc.onBeforePaymentPollInterval ) {
 						walleyCheckoutWc.logToFile( 'onBeforePayment registered after waiting ' + waited + 'ms for window.walley.' );
@@ -681,7 +689,7 @@ jQuery( function( $ ) {
 					}
 					checkout_initiated = 'yes';
 
-					walleyCheckoutWc.registerOnBeforePayment();
+					walleyCheckoutWc.startRegistration();
 				} else {
 					$('#collector-container').empty();
 					$('#collector-container').append('<ul class="woocommerce-error"><li>' + data.data + '</li></ul>');
