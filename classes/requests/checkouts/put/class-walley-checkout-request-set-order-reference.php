@@ -18,7 +18,7 @@ class Walley_Checkout_Request_Set_Order_Reference extends Walley_Checkout_Reques
 	 */
 	public function __construct( $arguments ) {
 		parent::__construct( $arguments );
-		$this->log_title  = 'Set order reference';
+		$this->log_title = 'Set order reference';
 	}
 
 	/**
