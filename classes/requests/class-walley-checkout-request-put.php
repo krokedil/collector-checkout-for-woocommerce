@@ -14,20 +14,6 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 abstract class Walley_Checkout_Request_Put extends Walley_Checkout_Request {
 	/**
-	 * The WC order ID.
-	 *
-	 * @var string
-	 */
-	protected $order_id;
-
-	/**
-	 * The private ID of the checkout.
-	 *
-	 * @var string
-	 */
-	protected $private_id;
-
-	/**
 	 * Walley_Checkout_Request_Put constructor.
 	 *
 	 * @param  array $arguments  The request arguments.

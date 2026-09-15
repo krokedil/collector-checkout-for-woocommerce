@@ -41,6 +41,7 @@ For help setting up and configuring Walley Checkout for WooCommerce please refer
 == CHANGELOG ==
 = 2026-09-15    - version 4.5.6 =
 * Fix           - Fixed an issue where a purchase could be completed in Walley without an order being created in WooCommerce.
+* Fix           - Fixed deprecation warnings related to dynamic properties.
 
 = 2026-08-31    - version 4.5.5 =
 * Fix           - Fixed an intermittent issue where customers could be unable to complete checkout when a Walley order update was temporarily locked by a simultaneous request (HTTP 423 Resource_Locked). The request is now retried automatically after a short delay.
