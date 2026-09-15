@@ -42,6 +42,20 @@ abstract class Walley_Checkout_Request {
 	protected $walley_order_id;
 
 	/**
+	 * The WC order ID.
+	 *
+	 * @var string
+	 */
+	protected $order_id;
+
+	/**
+	 * The private ID of the checkout.
+	 *
+	 * @var string
+	 */
+	protected $private_id;
+
+	/**
 	 * The request arguments.
 	 *
 	 * @var array
