@@ -1,0 +1,4 @@
+Type: Fix
+Needs Documentation: no
+
+Fixed the checkout showing customers a technical "API Error" message when a request to Walley failed.

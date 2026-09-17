@@ -274,7 +274,7 @@ class Walley_Checkout_API {
 	/**
 	 * Authorizes a subscription for a renewal.
 	 *
-	 * @param WC_Order $order The renewal order.
+	 * @param WC_Order $renewal_order The renewal order.
 	 * @param string   $token The customer token to charge.
 	 * @return array|WP_Error
 	 */
@@ -297,7 +297,8 @@ class Walley_Checkout_API {
 	private function check_for_api_error( $response ) {
 		if ( is_wp_error( $response ) ) {
 			if ( ! is_admin() ) {
-				walley_print_error_message( $response );
+				// The error message is Walley's raw response body, so print a readable one instead.
+				walley_print_error_message( new WP_Error( $response->get_error_code(), walley_get_customer_error_message( $response ) ) );
 			}
 		}
 		return $response;
