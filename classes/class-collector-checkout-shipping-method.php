@@ -96,13 +96,13 @@ if ( class_exists( 'WC_Shipping_Method' ) ) {
 					'description' => __( 'There are currently no settings for Walley Shipping Module since this is controlled by the TMS-provider. If other plugins adds settings, these are shown below.', 'collector-checkout-for-woocommerce' ),
 				),
 				'tax_status' => array(
-					'title'   => __( 'Tax status', 'woocommerce' ),
+					'title'   => __( 'Tax status', 'woocommerce' ), // phpcs:ignore WordPress.WP.I18n.TextDomainMismatch -- Reuses WooCommerce's translation of its own setting.
 					'type'    => 'select',
 					'class'   => 'wc-enhanced-select',
 					'default' => 'taxable',
 					'options' => array(
-						'taxable' => __( 'Taxable', 'woocommerce' ),
-						// 'none'    => _x( 'None', 'Tax status', 'woocommerce' ), @todo Implement logic for this.
+						'taxable' => __( 'Taxable', 'woocommerce' ), // phpcs:ignore WordPress.WP.I18n.TextDomainMismatch -- Reuses WooCommerce's translation of its own setting.
+						// @todo Offer a 'none' tax status once the logic for it is implemented.
 					),
 				),
 			);
@@ -129,8 +129,6 @@ if ( class_exists( 'WC_Shipping_Method' ) ) {
 		 * @return void
 		 */
 		public function calculate_shipping( $package = array() ) {
-			$cost = 0;
-
 			if ( ! is_checkout() ) {
 				return;
 			}
@@ -150,9 +148,21 @@ if ( class_exists( 'WC_Shipping_Method' ) ) {
 				return;
 			}
 
-			if ( $shipping_data['shipping_vat'] > 0 ) {
-				$cost = $shipping_data['cost'] / ( ( $shipping_data['shipping_vat'] / 100 ) + 1 );
+			/*
+			Walley reports the fee including VAT, while WooCommerce expects the rate excluding it
+			and adds the tax back on top. The standardized shipments[] format does not always
+			carry a tax rate, so fall back to the rates the store would apply to the rate anyway -
+			otherwise the VAT already in the fee is charged a second time.
+			*/
+			$shipping_vat = $shipping_data['shipping_vat'] ?? 0;
+			$cost         = $shipping_data['cost'];
+
+			if ( $shipping_vat > 0 ) {
+				$cost = $cost / ( ( $shipping_vat / 100 ) + 1 );
+			} elseif ( $this->is_taxable() ) {
+				$cost -= array_sum( WC_Tax::calc_inclusive_tax( $cost, WC_Tax::get_shipping_tax_rates() ) );
 			}
+
 			$args = array(
 				'id'      => $this->get_rate_id(),
 				'label'   => $shipping_data['label'],
@@ -164,15 +174,6 @@ if ( class_exists( 'WC_Shipping_Method' ) ) {
 		}
 	}
 
+	// add_collector_shipping_method() is declared in includes/collector-checkout-for-woocommerce-functions.php.
 	add_filter( 'woocommerce_shipping_methods', 'add_collector_shipping_method' );
-	/**
-	 * Registers the shipping method.
-	 *
-	 * @param array $methods WooCommerce shipping methods.
-	 * @return array
-	 */
-	function add_collector_shipping_method( $methods ) {
-		$methods['collector_delivery_module'] = 'Collector_Delivery_Module_Shipping_Method';
-		return $methods;
-	}
 }

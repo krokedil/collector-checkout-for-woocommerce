@@ -1,0 +1,4 @@
+Type: Feature
+Needs Documentation: no
+
+Added support for Walley's new standardized shipping format, so the shipping line matches the amount Walley charges.
