@@ -123,11 +123,6 @@ class Collector_Checkout_Requests_Helper_Order_Om {
 
 		$unit_price = self::format_number( ( $order_item->get_total() + $order_item->get_total_tax() ) / $order_item->get_quantity() );
 
-		// If price is 0 - return.
-		if ( empty( floatval( $unit_price ) ) ) {
-			return false;
-		}
-
 		return array(
 			'id'          => self::get_article_number( $order_item ),
 			'Description' => substr( $order_item->get_name(), 0, 50 ),
@@ -150,11 +145,6 @@ class Collector_Checkout_Requests_Helper_Order_Om {
 		$sku      = 'fee|' . $fee_name;
 
 		$unit_price = self::format_number( ( $order_fee->get_total() + $order_fee->get_total_tax() ) / $order_fee->get_quantity() );
-
-		// If price is 0 - return.
-		if ( empty( floatval( $unit_price ) ) ) {
-			return false;
-		}
 
 		return array(
 			'id'          => $sku,
@@ -258,7 +248,7 @@ class Collector_Checkout_Requests_Helper_Order_Om {
 	 */
 	public static function get_tax_rate( $order_item, $order ) {
 		// If we don't have any tax, return 0.
-		if ( '0' === $order_item->get_total_tax() ) {
+		if ( empty( floatval( $order_item->get_total_tax() ) ) ) {
 			return 0;
 		}
 

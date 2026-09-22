@@ -247,15 +247,6 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 			return false;
 		}
 
-		if ( is_checkout() ) {
-			$cart_item_total = Collector_Checkout_Requests_Cart::cart();
-
-			// Update checkout and annul payment method if the total cart item amount is 0.
-			if ( empty( $cart_item_total['items'] ) ) {
-				return false;
-			}
-		}
-
 		if ( ! is_admin() ) {
 			$currency = get_woocommerce_currency();
 			// Currency check.
@@ -347,7 +338,7 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 		}
 
 		// Flag as zero amount to prevent OM from processing the order.
-		if ( Walley_Subscription::order_has_subscription( $order ) && 0.0 === floatval( $order->get_total() ) ) {
+		if ( 0.0 === floatval( $order->get_total() ) ) {
 			$order->update_meta_data( Walley_Subscription::ZERO_AMOUNT_ORDER, true );
 			$order->save_meta_data();
 		}
@@ -512,12 +503,6 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 	 */
 	public function add_body_class( $class ) {
 		if ( is_checkout() ) {
-
-			// Don't display Collector body classes if we have a cart that doesn't needs payment.
-			if ( method_exists( WC()->cart, 'needs_payment' ) && ! WC()->cart->needs_payment() ) {
-				return $class;
-			}
-
 			$class[] = wc_collector_get_available_customer_types();
 
 			$first_gateway = '';

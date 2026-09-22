@@ -27,9 +27,6 @@ class Walley_Subscription {
 	public function __construct() {
 		add_action( 'woocommerce_scheduled_subscription_payment_' . self::GATEWAY_ID, array( $this, 'process_scheduled_payment' ), 10, 2 );
 
-		// Whether the gateway should be available when handling subscriptions.
-		add_filter( 'walley_is_available', array( $this, 'is_available' ) );
-
 		// On successful payment method change, the customer is redirected back to the subscription view page. We need to handle the redirect and create a recurring token.
 		add_action( 'woocommerce_account_view-subscription_endpoint', array( $this, 'handle_redirect_from_change_payment_method' ) );
 
@@ -459,26 +456,6 @@ class Walley_Subscription {
 		}
 
 		return null;
-	}
-
-	/**
-	 * Whether the gateway should be available if it contains a subscriptions.
-	 *
-	 * @param bool $is_available Whether the gateway is available.
-	 * @return bool
-	 */
-	public function is_available( $is_available ) {
-		// If no subscription is found, we don't need to do anything.
-		if ( ! self::cart_has_subscription() ) {
-			return $is_available;
-		}
-
-		// Allow free orders when changing subscription payment method.
-		if ( self::is_change_payment_method() ) {
-			return true;
-		}
-
-		return true;
 	}
 
 	/**

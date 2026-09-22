@@ -70,12 +70,6 @@ class Collector_Checkout_Templates {
 	 */
 	public function override_template( $template, $template_name ) {
 		if ( is_checkout() ) {
-
-			// Don't display Collector Checkout template if we have a cart that doesn't needs payment.
-			if ( ! WC()->cart->needs_payment() ) {
-				return $template;
-			}
-
 			if ( 'checkout/form-checkout.php' === $template_name ) {
 				$available_payment_gateways = WC()->payment_gateways->get_available_payment_gateways();
 
@@ -144,11 +138,6 @@ class Collector_Checkout_Templates {
 	 */
 	public function add_body_class( $class ) {
 		if ( is_checkout() && ! is_wc_endpoint_url( 'order-received' ) ) {
-			// Don't display Collector body classes if we have a cart that doesn't needs payment.
-			if ( method_exists( WC()->cart, 'needs_payment' ) && ! WC()->cart->needs_payment() ) {
-				return $class;
-			}
-
 			$first_gateway = '';
 			if ( WC()->session->get( 'chosen_payment_method' ) ) {
 				$first_gateway = WC()->session->get( 'chosen_payment_method' );
