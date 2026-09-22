@@ -53,42 +53,6 @@ class Walley_Checkout_API {
 	}
 
 	/**
-	 * Update Walley checkout cart.
-	 *
-	 * @param array $args Data passed to init request.
-	 * @return array|WP_Error
-	 */
-	public function update_walley_cart( $args ) {
-		$request  = new Walley_Checkout_Request_Update_Cart( $args );
-		$response = $request->request();
-		return $this->check_for_api_error( $response );
-	}
-
-	/**
-	 * Update Walley checkout fees.
-	 *
-	 * @param array $args Data passed to init request.
-	 * @return array|WP_Error
-	 */
-	public function update_walley_fees( $args ) {
-		$request  = new Walley_Checkout_Request_Update_Fees( $args );
-		$response = $request->request();
-		return $this->check_for_api_error( $response );
-	}
-
-	/**
-	 * Update Walley checkout metadata.
-	 *
-	 * @param array $args Data passed to init request.
-	 * @return array|WP_Error
-	 */
-	public function update_walley_metadata( $args ) {
-		$request  = new Walley_Checkout_Request_Update_Metadata( $args );
-		$response = $request->request();
-		return $this->check_for_api_error( $response );
-	}
-
-	/**
 	 * Get Walley checkout session.
 	 *
 	 * @param array $args Data passed to init request.
@@ -178,29 +142,6 @@ class Walley_Checkout_API {
 	public function cancel_walley_order( $order_id ) {
 		$args     = array( 'order_id' => $order_id );
 		$request  = new Walley_Checkout_Request_Cancel_Order( $args );
-		$response = $request->request();
-		return $response;
-	}
-
-	/**
-	 * Refund Walley order.
-	 *
-	 * @param int    $order_id The WooCommerce order id.
-	 * @param string $amount The refund amount.
-	 * @param string $reason The refund reason.
-	 * @return array|WP_Error
-	 */
-	public function refund_walley_order( $order_id, $amount = null, $reason = '' ) {
-		$order        = wc_get_order( $order_id );
-		$refund_order = $order->get_refunds()[0];
-
-		$args     = array(
-			'order_id'        => $order_id,
-			'refund_order_id' => $refund_order->get_id(),
-			'amount'          => $amount,
-			'reason'          => $reason,
-		);
-		$request  = new Walley_Checkout_Request_Refund_Order( $args );
 		$response = $request->request();
 		return $response;
 	}

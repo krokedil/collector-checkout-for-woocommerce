@@ -194,16 +194,6 @@ class Walley_Checkout_Settings {
 	}
 
 	/**
-	 * Get the settings form fields array for the WooCommerce settings API.
-	 *
-	 * @return array
-	 */
-	public static function get_setting_fields() {
-		$form_fields = include COLLECTOR_BANK_PLUGIN_DIR . '/includes/collector-checkout-settings.php';
-		return Walley_Checkout_Settings::add_country_form_fields( $form_fields );
-	}
-
-	/**
 	 * Get a list of available walley countries and the settings that are available for them.
 	 *
 	 * @return array<string, array>{

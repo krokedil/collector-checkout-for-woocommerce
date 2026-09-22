@@ -136,35 +136,6 @@ class Collector_Checkout_Requests_Helper_Order {
 	}
 
 	/**
-	 * Checks to make sure that all ids are unique.
-	 *
-	 * @param array $items List of order line items.
-	 * @return array
-	 */
-	public static function maybe_make_ids_unique( $items ) {
-		$ids = array();
-		foreach ( $items as $item ) {
-			$ids[] = $item['id'];
-		}
-		// List all ids as 'id_name' => number_of_apperances_in_array.
-		$ids = array_count_values( $ids );
-
-		foreach ( $ids as $id_name => $appearances ) {
-			if ( $appearances > 1 ) {
-				$i = 0;
-				// Loop trough all ids that appeare more than 1 time.
-				foreach ( $items as $key => $item ) {
-					if ( $id_name === $item['id'] ) {
-						$items[ $key ]['id'] = $item['id'] . '_' . $i;
-						$i++;
-					}
-				}
-			}
-		}
-		return $items;
-	}
-
-	/**
 	 * Gets the order line tax rate.
 	 *
 	 * @param WC_Order $order The WooCommerce order.
