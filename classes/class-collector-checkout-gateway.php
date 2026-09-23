@@ -137,6 +137,8 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 			)
 		);
 
+		add_action( 'woocommerce_checkout_order_processed', array( $this, 'maybe_process_order_without_payment' ) );
+
 		// Function to handle the thankyou page.
 		add_filter( 'woocommerce_thankyou_order_received_text', array( $this, 'collector_thankyou_order_received_text' ), 10, 2 );
 		add_action( 'woocommerce_thankyou', array( $this, 'maybe_delete_collector_sessions' ), 100, 1 );
@@ -350,6 +352,21 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 		return array(
 			'result' => 'success',
 		);
+	}
+
+	/**
+	 * Process a Walley order that does not need payment.
+	 *
+	 * @param int $order_id WooCommerce order id.
+	 * @return void
+	 */
+	public function maybe_process_order_without_payment( $order_id ) {
+		$order = wc_get_order( $order_id );
+		if ( ! $order || $this->id !== $order->get_payment_method() || ! isset( WC()->cart ) || WC()->cart->needs_payment() ) {
+			return;
+		}
+
+		$this->process_payment( $order_id );
 	}
 
 	/**

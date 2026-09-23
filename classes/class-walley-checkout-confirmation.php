@@ -63,6 +63,12 @@ class Walley_Checkout_Confirmation {
 
 		$order = wc_get_order( $order_id );
 
+		// The order has already been paid (e.g., a zero amount order completed by WooCommerce), there is nothing left to confirm.
+		if ( ! empty( $order->get_date_paid() ) ) {
+			wp_safe_redirect( $order->get_checkout_order_received_url() );
+			exit;
+		}
+
 		// If the order does not need processing, set the status to on-hold, and redirect.
 		// This is to prevent an error from attempting to complete an order before it has been moved to the order management api in Walley.
 		if ( ! $order->needs_processing() ) {
