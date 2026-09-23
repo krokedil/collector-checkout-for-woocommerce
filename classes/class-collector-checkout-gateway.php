@@ -327,7 +327,6 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 			throw new Exception( esc_html( $message ) );
 		}
 
-		// $shipping_cost                 = $walley_order['data']['fees']['shipping']['unitPrice'] ?? 0; // Shipping.
 		$shipping_cost = $walley_order['data']['fees']['shipping']['unitPrice'] ?? $walley_order['data']['shipping']['shippingFee'] ?? 0;
 		$cart_cost     = $walley_order['data']['cart']['totalAmount']; // Cart.
 		$total_amount  = $shipping_cost + $cart_cost;
@@ -537,13 +536,13 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 	/**
 	 * Add collector-b2c/b2b body class.
 	 *
-	 * @param array $class Css class.
+	 * @param array $classes CSS classes.
 	 *
 	 * @return array
 	 */
-	public function add_body_class( $class ) {
+	public function add_body_class( $classes ) {
 		if ( is_checkout() ) {
-			$class[] = wc_collector_get_available_customer_types();
+			$classes[] = wc_collector_get_available_customer_types();
 
 			$first_gateway = '';
 			if ( WC()->session->get( 'chosen_payment_method' ) ) {
@@ -555,14 +554,14 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 			}
 
 			if ( 'collector_checkout' === $first_gateway ) {
-				$class[] = 'collector-checkout-selected';
+				$classes[] = 'collector-checkout-selected';
 				// Add class if Collector delivery module is used.
 				if ( $this->delivery_module ) {
-					$class[] = 'collector-delivery-module';
+					$classes[] = 'collector-delivery-module';
 				}
 			}
 		}
-		return $class;
+		return $classes;
 	}
 
 	/**

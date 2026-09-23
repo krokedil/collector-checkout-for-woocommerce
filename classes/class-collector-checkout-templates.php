@@ -132,11 +132,11 @@ class Collector_Checkout_Templates {
 	/**
 	 * Add cco-two-column-checkout body class.
 	 *
-	 * @param array $class CSS classes used in body tag.
+	 * @param array $classes CSS classes used in body tag.
 	 *
 	 * @return array
 	 */
-	public function add_body_class( $class ) {
+	public function add_body_class( $classes ) {
 		if ( is_checkout() && ! is_wc_endpoint_url( 'order-received' ) ) {
 			$first_gateway = '';
 			if ( WC()->session->get( 'chosen_payment_method' ) ) {
@@ -148,17 +148,17 @@ class Collector_Checkout_Templates {
 			}
 
 			if ( 'collector_checkout' === $first_gateway && 'two_column_left' === $this->checkout_layout ) {
-				$class[] = 'cco-two-column-left';
+				$classes[] = 'cco-two-column-left';
 			}
 			if ( 'collector_checkout' === $first_gateway && 'two_column_left_sf' === $this->checkout_layout ) {
-				$class[] = 'cco-two-column-left-sf';
+				$classes[] = 'cco-two-column-left-sf';
 			}
 
 			if ( 'collector_checkout' === $first_gateway && 'two_column_right' === $this->checkout_layout ) {
-				$class[] = 'cco-two-column-right';
+				$classes[] = 'cco-two-column-right';
 			}
 		}
-		return $class;
+		return $classes;
 	}
 }
 

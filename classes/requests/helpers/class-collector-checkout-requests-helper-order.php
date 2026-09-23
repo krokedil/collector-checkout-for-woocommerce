@@ -156,7 +156,7 @@ class Collector_Checkout_Requests_Helper_Order {
 				foreach ( $items as $key => $item ) {
 					if ( $id_name === $item['id'] ) {
 						$items[ $key ]['id'] = $item['id'] . '_' . $i;
-						$i++;
+						++$i;
 					}
 				}
 			}
