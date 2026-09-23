@@ -352,6 +352,14 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 		);
 	}
 
+	/**
+	 * Set the WooCommerce order number as the order reference in Walley.
+	 *
+	 * @param int    $order_id WooCommerce order id.
+	 * @param string $customer_type Walley customer type.
+	 * @param string $private_id Walley private id.
+	 * @return bool True if the reference was updated, otherwise false.
+	 */
 	public function update_walley_reference( $order_id, $customer_type, $private_id ) {
 		// Update the Collector Order with the Order number.
 		if ( ! empty( $private_id ) && ! empty( $customer_type ) ) {
@@ -382,6 +390,14 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 		return false;
 	}
 
+	/**
+	 * Get the Walley checkout for the order.
+	 *
+	 * @param int    $order_id WooCommerce order id.
+	 * @param string $customer_type Walley customer type.
+	 * @param string $private_id Walley private id.
+	 * @return array|WP_Error The Walley checkout, or WP_Error on failure.
+	 */
 	public function get_walley_order( $order_id, $customer_type, $private_id ) {
 		// Use new or old API.
 		if ( walley_use_new_api() ) {
@@ -398,6 +414,13 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 		return $walley_order;
 	}
 
+	/**
+	 * Save the Walley purchase, customer and shipping data to the WooCommerce order.
+	 *
+	 * @param int   $order_id WooCommerce order id.
+	 * @param array $walley_order The Walley checkout.
+	 * @return void
+	 */
 	public function save_walley_purchase_and_shipping_data( $order_id, $walley_order ) {
 		$order               = wc_get_order( $order_id );
 		$payment_method      = $walley_order['data']['purchase']['paymentName'] ?? '';
