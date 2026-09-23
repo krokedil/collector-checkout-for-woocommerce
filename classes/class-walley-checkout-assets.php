@@ -56,22 +56,6 @@ class Walley_Checkout_Assets {
 	}
 
 	/**
-	 * Load scripts.
-	 */
-	public function register_checkout_scripts() {
-
-		if ( 'yes' !== $this->enabled ) {
-			return;
-		}
-
-		if ( ! is_checkout() ) {
-			return;
-		}
-
-		wp_register_script( 'walley_checkout', COLLECTOR_BANK_PLUGIN_URL . '/assets/js/walley-checkout-for-woocommerce.js', array( 'jquery' ), COLLECTOR_BANK_VERSION, false );
-	}
-
-	/**
 	 * Load Walley Checkout JS
 	 **/
 	public function localize_and_enqueue_checkout_script() {

@@ -1,0 +1,4 @@
+Type: Tweak
+Needs Documentation: no
+
+Removed unused internal code that was no longer reachable.
