@@ -102,23 +102,14 @@ class Collector_Checkout_Requests_Fees {
 				foreach ( $package['rates'] as $method ) {
 					if ( $chosen_shipping === $method->id ) {
 						WC()->session->set( 'collector_chosen_shipping', $method->id );
-						if ( $method->cost > 0 ) {
-							$shipping_item = array(
-								'id'          => 'shipping|' . substr( $method->id, 0, 50 ),
-								'description' => substr( $method->label, 0, 50 ),
-								'unitPrice'   => round( $method->cost + array_sum( $method->taxes ), 2 ),
-								'vat'         => round( array_sum( $method->taxes ) / $method->cost, 2 ) * 100,
-							);
-							return $shipping_item;
-						} else {
-							$shipping_item = array(
-								'id'          => 'shipping|' . $method->id,
-								'description' => substr( $method->label, 0, 50 ),
-								'unitPrice'   => 0,
-								'vat'         => 0,
-							);
-							return $shipping_item;
-						}
+
+						$shipping_item = array(
+							'id'          => 'shipping|' . substr( $method->id, 0, 50 ),
+							'description' => substr( $method->label, 0, 50 ),
+							'unitPrice'   => round( $method->cost + array_sum( $method->taxes ), 2 ),
+							'vat'         => ( $method->cost > 0 ) ? round( array_sum( $method->taxes ) / $method->cost, 2 ) * 100 : 0,
+						);
+						return $shipping_item;
 					}
 				}
 			}

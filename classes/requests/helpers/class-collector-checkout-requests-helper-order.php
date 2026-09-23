@@ -84,7 +84,7 @@ class Collector_Checkout_Requests_Helper_Order {
 			'id'          => self::get_article_number( $order_item ),
 			'description' => substr( $order_item->get_name(), 0, 50 ),
 			'quantity'    => $order_item->get_quantity(),
-			'vat'         => intval( round( ( $order_item->get_total_tax() / $order_item->get_total() ), 2 ) * 100 ),
+			'vat'         => ( ! empty( floatval( $order_item->get_total() ) ) ) ? intval( round( ( $order_item->get_total_tax() / $order_item->get_total() ), 2 ) * 100 ) : 0,
 			'unitPrice'   => round( ( ( $order_item->get_total() + $order_item->get_total_tax() ) / $order_item->get_quantity() ), 2 ),
 		);
 	}
@@ -156,7 +156,7 @@ class Collector_Checkout_Requests_Helper_Order {
 				foreach ( $items as $key => $item ) {
 					if ( $id_name === $item['id'] ) {
 						$items[ $key ]['id'] = $item['id'] . '_' . $i;
-						$i++;
+						++$i;
 					}
 				}
 			}

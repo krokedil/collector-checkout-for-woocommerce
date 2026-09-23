@@ -1,0 +1,4 @@
+Type: Enhancement
+Needs Documentation: yes
+
+Added support for orders, products, shipping and fees with a value of 0, for example free products, free shipping or a 100% discount coupon.

@@ -50,24 +50,15 @@ class Collector_Checkout_Requests_Helper_Order_Fees {
 			return;
 		}
 
-		if ( $order->get_shipping_total() > 0 ) {
-			$shipping_items     = $order->get_items( 'shipping' );
-			$shipping_method_id = reset( $shipping_items )->get_method_id();
-			return array(
-				'id'          => 'shipping|' . substr( $shipping_method_id, 0, 50 ),
-				'description' => substr( $order->get_shipping_method(), 0, 50 ),
-				'unitPrice'   => $order->get_shipping_total() + $order->get_shipping_tax(), // Float.
-				'vat'         => ( ! empty( floatval( $order->get_shipping_tax() ) ) ) ? $this->get_product_tax_rate( $order, current( $order->get_items( 'shipping' ) ) ) : 0, // Float.
-			);
-		} else {
-			// todo $shipping_method_id is here probably undefined.
-			return array(
-				'id'          => 'shipping|' . substr( $shipping_method_id, 0, 50 ),
-				'description' => substr( $order->get_shipping_method(), 0, 50 ),
-				'unitPrice'   => 0, // Float.
-				'vat'         => 0, // Float.
-			);
-		}
+		$shipping_items     = $order->get_items( 'shipping' );
+		$shipping_method_id = reset( $shipping_items )->get_method_id();
+
+		return array(
+			'id'          => 'shipping|' . substr( $shipping_method_id, 0, 50 ),
+			'description' => substr( $order->get_shipping_method(), 0, 50 ),
+			'unitPrice'   => $order->get_shipping_total() + $order->get_shipping_tax(), // Float.
+			'vat'         => ( ! empty( floatval( $order->get_shipping_tax() ) ) ) ? $this->get_product_tax_rate( $order, current( $order->get_items( 'shipping' ) ) ) : 0, // Float.
+		);
 	}
 
 	/**
