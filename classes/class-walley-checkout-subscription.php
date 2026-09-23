@@ -171,8 +171,8 @@ class Walley_Subscription {
 	public static function get_renewal_order_by_auth_id( $auth_id ) {
 		$orders = wc_get_orders(
 			array(
-				'meta_key'     => self::AUTHORIZATION_ID,
-				'meta_value'   => $auth_id,
+				'meta_key'     => self::AUTHORIZATION_ID, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
+				'meta_value'   => $auth_id, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
 				'limit'        => 1,
 				'orderby'      => 'date',
 				'order'        => 'DESC',

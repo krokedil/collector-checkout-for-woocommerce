@@ -215,8 +215,8 @@ class Walley_Checkout_API {
 	/**
 	 * Authorizes a subscription for a renewal.
 	 *
-	 * @param WC_Order $order The renewal order.
-	 * @param string   $token The customer token to charge.
+	 * @param WC_Order $renewal_order The renewal order.
+	 * @param string   $token         The customer token to charge.
 	 * @return array|WP_Error
 	 */
 	public function renew_subscription( $renewal_order, $token ) {
