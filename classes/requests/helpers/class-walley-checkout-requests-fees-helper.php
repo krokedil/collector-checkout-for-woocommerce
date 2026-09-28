@@ -98,11 +98,13 @@ class Walley_Checkout_Requests_Fees_Helper {
 				foreach ( $package['rates'] as $method ) {
 					if ( $chosen_shipping === $method->id ) {
 						WC()->session->set( 'collector_chosen_shipping', $method->id );
+						$taxes = is_array( $method->taxes ) ? $method->taxes : array();
+
 						$shipping_item = array(
 							'id'          => 'shipping|' . substr( $method->id, 0, 50 ),
 							'description' => substr( $method->label, 0, 50 ),
-							'unitPrice'   => round( $method->cost + array_sum( $method->taxes ), 2 ),
-							'vat'         => ( $method->cost > 0 ) ? round( array_sum( $method->taxes ) / $method->cost, 2 ) * 100 : 0,
+							'unitPrice'   => round( $method->cost + array_sum( $taxes ), 2 ),
+							'vat'         => ( $method->cost > 0 ) ? round( array_sum( $taxes ) / $method->cost, 2 ) * 100 : 0,
 						);
 						return $shipping_item;
 					}
