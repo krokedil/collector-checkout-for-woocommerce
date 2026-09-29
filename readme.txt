@@ -40,7 +40,7 @@ For help setting up and configuring Walley Checkout for WooCommerce please refer
 
 == CHANGELOG ==
 = 2026-09-29    - version 5.0.0 =
-* Breaking      - Removed unused internal code that was no longer reachable.
+* Breaking      - Removed unused classes, functions and filters (e.g. walley_update_cart_args, walley_update_fees_args, walley_update_metadata_args, coc_order_refund_args, cco_customer_country). Custom code relying on these must be updated.
 * Enhancement   - Added support for orders, products, shipping and fees with a value of 0, for example free products, free shipping or a 100% discount coupon.
 
 = 2026-09-15    - version 4.5.6 =
