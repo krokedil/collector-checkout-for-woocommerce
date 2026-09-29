@@ -4,7 +4,7 @@ Tags: ecommerce, e-commerce, woocommerce, collector, checkout, walley
 Requires at least: 5.0
 Tested up to: 7.1
 Requires PHP: 7.3
-Stable tag: 4.5.6
+Stable tag: 5.0.0
 WC requires at least: 6.0.0
 WC tested up to: 11.1.0
 License: GPLv3
@@ -39,6 +39,10 @@ For help setting up and configuring Walley Checkout for WooCommerce please refer
 
 
 == CHANGELOG ==
+= 2026-09-29    - version 5.0.0 =
+* Breaking      - Removed unused internal code that was no longer reachable.
+* Enhancement   - Added support for orders, products, shipping and fees with a value of 0, for example free products, free shipping or a 100% discount coupon.
+
 = 2026-09-15    - version 4.5.6 =
 * Fix           - Fixed an issue where a purchase could be completed in Walley without an order being created in WooCommerce.
 * Fix           - Fixed deprecation warnings related to dynamic properties.
