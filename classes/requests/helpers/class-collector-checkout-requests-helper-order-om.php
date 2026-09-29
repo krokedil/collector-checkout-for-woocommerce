@@ -54,29 +54,6 @@ class Collector_Checkout_Requests_Helper_Order_Om {
 	}
 
 	/**
-	 * Formats the order lines for a refund request.
-	 *
-	 * @param int $order_id The WooCommerce Order ID.
-	 * @return array
-	 */
-	public static function get_refund_items( $order_id ) {
-		$order_lines  = self::get_order_lines( $order_id );
-		$return_lines = array();
-
-		foreach ( $order_lines as $order_line ) {
-			$unit_price     = 'rounding-fee' === $order_line['id'] ? $order_line['UnitPrice'] : abs( $order_line['UnitPrice'] );
-			$return_lines[] = array(
-				'id'          => $order_line['id'],
-				'Description' => substr( $order_line['Description'], 0, 50 ),
-				'Quantity'    => abs( $order_line['Quantity'] ),
-				'UnitPrice'   => self::format_number( $unit_price ),
-			);
-		}
-
-		return $return_lines;
-	}
-
-	/**
 	 * Compare and fix rounded total amounts in WooCommerce and Collector.
 	 *
 	 * @param array    $order_lines The cart order line items array.

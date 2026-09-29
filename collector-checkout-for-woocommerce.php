@@ -30,7 +30,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 define( 'COLLECTOR_BANK_PLUGIN_DIR', untrailingslashit( plugin_dir_path( __FILE__ ) ) );
 define( 'COLLECTOR_BANK_PLUGIN_URL', untrailingslashit( plugin_dir_url( __FILE__ ) ) );
 define( 'COLLECTOR_BANK_VERSION', '4.5.6' );
-define( 'COLLECTOR_DB_VERSION', '1' );
 
 if ( ! class_exists( 'Collector_Checkout' ) ) {
 	/**
@@ -152,9 +151,6 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 			// Initiate the gateway.
 			add_action( 'plugins_loaded', array( $this, 'init' ) );
 
-			// Clean Collector db.
-			add_action( 'collector_clean_db', array( $this, 'collector_clean_db_callback' ) );
-
 			add_action( 'before_woocommerce_init', array( $this, 'declare_wc_compatibility' ) );
 
 			add_filter( 'woocommerce_checkout_fields', array( $this, 'add_hidden_public_token_field' ), 30 );
@@ -189,7 +185,6 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-templates.php';
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-gdpr.php';
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-pay-for-order-confirmation.php';
-			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-db.php';
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-shipping-method.php';
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-delivery-module.php';
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-product-fields.php';
@@ -233,7 +228,6 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/manage-orders/post/class-walley-checkout-request-capture-order.php';
 				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/manage-orders/post/class-walley-checkout-request-part-capture-order.php';
 				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/manage-orders/post/class-walley-checkout-request-cancel-order.php';
-				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/manage-orders/post/class-walley-checkout-request-refund-order.php';
 				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/manage-orders/post/class-walley-checkout-request-refund-order-by-amount.php';
 				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/requests/oauth2/class-walley-checkout-request-access-token.php';
 				include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-walley-part-payment-widget.php';
@@ -331,39 +325,6 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 			$settings_link = '<a href="admin.php?page=wc-settings&tab=checkout&section=collector_checkout">Settings</a>';
 			array_unshift( $links, $settings_link );
 			return $links;
-		}
-
-		/**
-		 * Maybe create collector database table.
-		 *
-		 * @return void
-		 */
-		public function collector_maybe_create_db_table() {
-			$current_db_version = get_option( 'collector_db_version' );
-			if ( $current_db_version < COLLECTOR_DB_VERSION ) {
-				Collector_Checkout_DB::setup_table();
-			}
-		}
-
-		/**
-		 * Maybe schedule action.
-		 *
-		 * @return void
-		 */
-		public function collector_maybe_schedule_action() {
-			if ( false === as_next_scheduled_action( 'collector_clean_db' ) ) {
-				as_schedule_recurring_action( strtotime( 'midnight tonight' ), DAY_IN_SECONDS, 'collector_clean_db' );
-			}
-		}
-
-		/**
-		 * Clean database of one week old data entries.
-		 *
-		 * @return void
-		 */
-		public function collector_clean_db_callback() {
-			$current_date = date( 'Y-m-d H:i:s', time() ); // phpcs:ignore
-			Collector_Checkout_DB::delete_old_data_entry( $current_date );
 		}
 
 		/**
