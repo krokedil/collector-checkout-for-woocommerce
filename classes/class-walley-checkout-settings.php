@@ -93,7 +93,8 @@ class Walley_Checkout_Settings {
 	/**
 	 * Get the merchant id for the country code and customer type.
 	 *
-	 * @param string $country_code The country code.
+	 * @param string $country_code  The country code.
+	 * @param string $customer_type The customer type (b2c or b2b).
 	 *
 	 * @return string
 	 */
@@ -194,16 +195,6 @@ class Walley_Checkout_Settings {
 	}
 
 	/**
-	 * Get the settings form fields array for the WooCommerce settings API.
-	 *
-	 * @return array
-	 */
-	public static function get_setting_fields() {
-		$form_fields = include COLLECTOR_BANK_PLUGIN_DIR . '/includes/collector-checkout-settings.php';
-		return Walley_Checkout_Settings::add_country_form_fields( $form_fields );
-	}
-
-	/**
 	 * Get a list of available walley countries and the settings that are available for them.
 	 *
 	 * @return array<string, array>{
@@ -272,10 +263,10 @@ class Walley_Checkout_Settings {
 		$position = 0;
 		foreach ( $settings as $key => $setting ) {
 			if ( 'display_privacy_policy_text' === $key ) {
-				$position++;
+				++$position;
 				break;
 			}
-			$position++;
+			++$position;
 		}
 
 		return array_merge(
@@ -290,6 +281,8 @@ class Walley_Checkout_Settings {
 	 *
 	 * @param string $country_code The country code.
 	 * @param array  $params       {
+	 *   The country settings.
+	 *
 	 *   @type string $name            The country name.
 	 *   @type bool   $b2c             Whether B2C is enabled.
 	 *   @type bool   $b2b             Whether B2B is enabled.
@@ -336,7 +329,7 @@ class Walley_Checkout_Settings {
 	 * @return void
 	 */
 	private static function add_country_section_form_field( $country_code, $country_name, &$country_settings ) {
-		$title_key = "{$country_code}_settings_title";
+		$title_key                      = "{$country_code}_settings_title";
 		$country_settings[ $title_key ] = array(
 			'title' => $country_name,
 			'type'  => 'title',
@@ -366,7 +359,7 @@ class Walley_Checkout_Settings {
 			$country_name,
 			strtoupper( $type )
 		);
-		$setting_key = "collector_merchant_id_{$country_code}_{$type}";
+		$setting_key                      = "collector_merchant_id_{$country_code}_{$type}";
 		$country_settings[ $setting_key ] = array(
 			'title'       => $label,
 			'type'        => 'text',
@@ -419,12 +412,12 @@ class Walley_Checkout_Settings {
 		);
 
 		$modules = array(
-			''                  => __( 'None', 'collector-checkout-for-woocommerce' ),
+			''         => __( 'None', 'collector-checkout-for-woocommerce' ),
 			'shipping' => 'nShift Delivery',
 			'Redlight' => 'Redlight shipping',
 		);
 
-		$setting_key = "collector_delivery_module_{$country_code}";
+		$setting_key                      = "collector_delivery_module_{$country_code}";
 		$country_settings[ $setting_key ] = array(
 			'title'    => $label,
 			'type'     => 'select',
@@ -447,7 +440,7 @@ class Walley_Checkout_Settings {
 
 		foreach ( self::get_walley_countries() as $country_code => $params ) {
 			$delivery_module_key = "collector_delivery_module_{$country_code}";
-			$old_value = $old_settings[ $delivery_module_key ] ?? null;
+			$old_value           = $old_settings[ $delivery_module_key ] ?? null;
 
 			// If the setting is not set, or it was updated to something other than 'yes' or 'no', we can skip it since the migration only applies to settings that were previously set using the checkbox.
 			if ( null === $old_value || ! in_array( $old_value, array( 'yes', 'no' ), true ) ) {

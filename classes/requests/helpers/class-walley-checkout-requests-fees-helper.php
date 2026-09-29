@@ -120,16 +120,4 @@ class Walley_Checkout_Requests_Fees_Helper {
 			}
 		}
 	}
-
-	/**
-	 * Gets the product SKU.
-	 *
-	 * @param WC_Product $product WooCommerce product.
-	 * @param int        $product_id WooCommerce product ID.
-	 * @return string
-	 */
-	public static function get_sku( $product, $product_id = 0 ) {
-		$part_number = ! empty( $product->get_sku() ) ? $product->get_sku() : $product->get_id();
-		return substr( $part_number, 0, 32 );
-	}
 }

@@ -171,8 +171,8 @@ class Walley_Subscription {
 	public static function get_renewal_order_by_auth_id( $auth_id ) {
 		$orders = wc_get_orders(
 			array(
-				'meta_key'     => self::AUTHORIZATION_ID,
-				'meta_value'   => $auth_id,
+				'meta_key'     => self::AUTHORIZATION_ID, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
+				'meta_value'   => $auth_id, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
 				'limit'        => 1,
 				'orderby'      => 'date',
 				'order'        => 'DESC',
@@ -482,24 +482,6 @@ class Walley_Subscription {
 	}
 
 	/**
-	 * TODO: Set the session URLs for change payment method request.
-	 *
-	 * Used for changing payment method.
-	 *
-	 * @param array $url_data The URL data.
-	 * @param Order $helper The Order helper.
-	 */
-	public function set_subscription_order_redirect_urls( $url_data, $helper ) {
-		if ( ! self::is_change_payment_method() ) {
-			return $url_data;
-		}
-
-		$subscription = self::get_subscription( $helper->get_order() );
-		$url          = add_query_arg( 'walley_redirect', 'subscription', $subscription->get_view_order_url() );
-		return $url_data;
-	}
-
-	/**
 	 * Handle the redirect from the change payment method page.
 	 *
 	 * @param int $subscription_id The subscription ID.
@@ -596,21 +578,6 @@ class Walley_Subscription {
 		( function_exists( 'wcs_cart_contains_resubscribe' ) && wcs_cart_contains_resubscribe() ) ||
 		( function_exists( 'wcs_cart_contains_early_renewal' ) && wcs_cart_contains_early_renewal() ) ||
 		( function_exists( 'wcs_cart_contains_switches' ) && wcs_cart_contains_switches() );
-	}
-
-	/**
-	 * Whether the cart contains only free trial subscriptions.
-	 *
-	 * If invoked from anywhere but the checkout page, this will return FALSE.
-	 *
-	 * @return boolean
-	 */
-	public static function cart_has_only_free_trial() {
-		if ( ! is_checkout() ) {
-			return false;
-		}
-
-		return ( class_exists( 'WC_Subscriptions_Cart' ) ) ? \WC_Subscriptions_Cart::all_cart_items_have_free_trial() : false;
 	}
 
 	/**
