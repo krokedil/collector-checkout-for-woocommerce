@@ -70,12 +70,6 @@ class Collector_Checkout_Templates {
 	 */
 	public function override_template( $template, $template_name ) {
 		if ( is_checkout() ) {
-
-			// Don't display Collector Checkout template if we have a cart that doesn't needs payment.
-			if ( ! WC()->cart->needs_payment() ) {
-				return $template;
-			}
-
 			if ( 'checkout/form-checkout.php' === $template_name ) {
 				$available_payment_gateways = WC()->payment_gateways->get_available_payment_gateways();
 
@@ -138,17 +132,12 @@ class Collector_Checkout_Templates {
 	/**
 	 * Add cco-two-column-checkout body class.
 	 *
-	 * @param array $class CSS classes used in body tag.
+	 * @param array $classes CSS classes used in body tag.
 	 *
 	 * @return array
 	 */
-	public function add_body_class( $class ) {
+	public function add_body_class( $classes ) {
 		if ( is_checkout() && ! is_wc_endpoint_url( 'order-received' ) ) {
-			// Don't display Collector body classes if we have a cart that doesn't needs payment.
-			if ( method_exists( WC()->cart, 'needs_payment' ) && ! WC()->cart->needs_payment() ) {
-				return $class;
-			}
-
 			$first_gateway = '';
 			if ( WC()->session->get( 'chosen_payment_method' ) ) {
 				$first_gateway = WC()->session->get( 'chosen_payment_method' );
@@ -159,17 +148,17 @@ class Collector_Checkout_Templates {
 			}
 
 			if ( 'collector_checkout' === $first_gateway && 'two_column_left' === $this->checkout_layout ) {
-				$class[] = 'cco-two-column-left';
+				$classes[] = 'cco-two-column-left';
 			}
 			if ( 'collector_checkout' === $first_gateway && 'two_column_left_sf' === $this->checkout_layout ) {
-				$class[] = 'cco-two-column-left-sf';
+				$classes[] = 'cco-two-column-left-sf';
 			}
 
 			if ( 'collector_checkout' === $first_gateway && 'two_column_right' === $this->checkout_layout ) {
-				$class[] = 'cco-two-column-right';
+				$classes[] = 'cco-two-column-right';
 			}
 		}
-		return $class;
+		return $classes;
 	}
 }
 

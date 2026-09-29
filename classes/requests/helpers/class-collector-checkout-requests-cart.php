@@ -9,8 +9,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
-use Krokedil\WooCommerce\Subscription;
-
 /**
  * Class for cart processing.
  */
@@ -29,10 +27,6 @@ class Collector_Checkout_Requests_Cart {
 		$items = array();
 		// Loop through cart items and make an item line for each.
 		foreach ( $wc_cart as $item ) {
-			// Don't send items with a price of 0 (except for subscription).
-			if ( ! Subscription::is_subscription_item( $item ) && empty( floatval( $item['line_total'] ) ) ) {
-				continue;
-			}
 			if ( $item['variation_id'] ) {
 				$product    = wc_get_product( $item['variation_id'] );
 				$product_id = $item['variation_id'];
@@ -156,7 +150,7 @@ class Collector_Checkout_Requests_Cart {
 	 * @param int        $product_id WooCommerce product ID.
 	 * @return string
 	 */
-	public static function get_sku( $product, $product_id = 0 ) {
+	public static function get_sku( $product, $product_id = 0 ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- Kept for backwards compatibility.
 		$part_number = ! empty( $product->get_sku() ) ? $product->get_sku() : $product->get_id();
 		return substr( $part_number, 0, 32 );
 	}

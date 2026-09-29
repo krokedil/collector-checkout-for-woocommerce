@@ -180,8 +180,7 @@ class Walley_Checkout {
 		// Save the country in session so we can check for changes.
 		WC()->session->set( 'collector_billing_country', $country_from_checkout );
 
-		// The cart has been updated. Check if it is empty.
-		// A cart is considered "empty" if the total amount is 0 even if it has items (e.g., 100% discount).
+		// The cart has been updated. Check if it is empty. Zero amount lines (e.g., free products or a 100% discount) are still sent to Walley, so they do not count as empty.
 		$cart_item_total = Collector_Checkout_Requests_Cart::cart();
 		if ( empty( $cart_item_total['items'] ) ) {
 			WC()->session->reload_checkout = true;
@@ -246,11 +245,6 @@ class Walley_Checkout {
 		self::maybe_update_fees( $private_id, $customer_type );
 
 		self::maybe_update_cart( $private_id, $customer_type );
-
-		// If cart doesn't need payment anymore - reload the checkout page except if the cart contain a subscription (e.g., free trial).
-		if ( ! Walley_Subscription::cart_has_subscription() && ! WC()->cart->needs_payment() ) {
-			WC()->session->reload_checkout = true;
-		}
 	}
 
 	/**
@@ -319,7 +313,7 @@ class Walley_Checkout {
 		if ( is_checkout() ) {
 			$cart_item_total = Collector_Checkout_Requests_Cart::cart();
 
-			// Update checkout and annul payment method if the total cart item amount is 0.
+			// Reload the checkout if the cart no longer has any lines to send. Zero amount lines are still sent, so they do not count as empty.
 			if ( empty( $cart_item_total['items'] ) ) {
 				WC()->session->reload_checkout = true;
 			}
