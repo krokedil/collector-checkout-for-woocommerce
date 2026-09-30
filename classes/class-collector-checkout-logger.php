@@ -9,6 +9,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
+use KrokedilWalleyDeps\Krokedil\WpApi\KeyMasker;
+
 /**
  * Logger class.
  */
@@ -23,27 +25,34 @@ class Collector_Checkout_Logger {
 	/**
 	 * Logs an event.
 	 *
-	 * @param string $data The data string.
+	 * @param array|string $data The data to log.
 	 */
 	public static function log( $data ) {
 		$collector_settings = get_option( 'woocommerce_collector_checkout_settings' );
-		if ( 'yes' === $collector_settings['debug_mode'] ) {
-			$message = self::format_data( $data );
-			if ( empty( self::$log ) ) {
-				self::$log = new WC_Logger();
-			}
-			self::$log->add( 'walley_checkout', wp_json_encode( $message, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) );
+		if ( 'yes' !== $collector_settings['debug_mode'] ) {
+			return;
 		}
+
+		try {
+			$message = KeyMasker::mask( self::format_data( $data ) );
+		} catch ( \Throwable $e ) {
+			$message = array( 'error' => KeyMasker::FAILED );
+		}
+
+		if ( empty( self::$log ) ) {
+			self::$log = new WC_Logger();
+		}
+		self::$log->add( 'walley_checkout', wp_json_encode( $message, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) );
 	}
 
 	/**
 	 * Formats the log data to prevent json error.
 	 *
-	 * @param string $data Json string of data.
-	 * @return array
+	 * @param array|string $data The data to log.
+	 * @return array|string
 	 */
 	public static function format_data( $data ) {
-		if ( isset( $data['request']['body'] ) ) {
+		if ( isset( $data['request']['body'] ) && is_string( $data['request']['body'] ) ) {
 			$request_body            = json_decode( $data['request']['body'], true );
 			$data['request']['body'] = ( ! empty( $request_body ) ) ? $request_body : $data['request']['body'];
 		}
@@ -64,12 +73,6 @@ class Collector_Checkout_Logger {
 	 * @return array
 	 */
 	public static function format_log( $checkout_id, $method, $title, $request_args, $request_url, $response, $code ) {
-		// Unset the snippet to prevent issues in the response.
-		// Add logic to remove any HTML snippets from the response.
-
-		// Unset the snippet to prevent issues in the request body.
-		// Add logic to remove any HTML snippets from the request body.
-
 		// If the response contains a body, try to decode it from JSON.
 		if ( is_array( $response ) && isset( $response['body'] ) ) {
 			$decoded_response = json_decode( $response['body'], true );
@@ -82,10 +85,10 @@ class Collector_Checkout_Logger {
 			'id'             => $checkout_id,
 			'type'           => $method,
 			'title'          => $title,
-			'request_url'    => $request_url,
-			'request'        => $request_args,
+			'request_url'    => Walley_Log_Masking::mask_url( $request_url ),
+			'request'        => Walley_Log_Masking::mask_request( $request_args ),
 			'response'       => array(
-				'body' => $response,
+				'body' => Walley_Log_Masking::mask_response( $response ),
 				'code' => $code,
 			),
 			'timestamp'      => date( 'Y-m-d H:i:s' ), // phpcs:ignore WordPress.DateTime.RestrictedFunctions -- Date is not used for display.

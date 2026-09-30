@@ -199,7 +199,7 @@ class Collector_Api_Callbacks {
 	 * @throws Exception When WC_Data_Store validation fails.
 	 */
 	public function collector_check_for_order_callback( $private_id, $public_token, $customer_type = 'b2c' ) {
-		CCO_WC()->logger::log( 'Check for order in API-callback. Private id: ' . $private_id . '. Public token: ' . $public_token );
+		CCO_WC()->logger::log( 'Check for order in API-callback. Private id: ' . $private_id );
 
 		$order = wc_collector_get_order_by_private_id( $private_id );
 
@@ -228,7 +228,7 @@ class Collector_Api_Callbacks {
 			}
 		} else {
 			// No order found.
-			CCO_WC()->logger::log( 'API-callback executed. We could NOT find Private id ' . $private_id . '(with public token ' . $public_token . ' & customer type ' . $customer_type . '). Aborting process.' );
+			CCO_WC()->logger::log( 'API-callback executed. We could NOT find Private id ' . $private_id . ' (customer type ' . $customer_type . '). Aborting process.' );
 		}
 	}
 }

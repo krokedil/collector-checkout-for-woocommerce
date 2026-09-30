@@ -253,7 +253,7 @@ abstract class Walley_Checkout_Request {
 
 			// Back off briefly to let the concurrent request release the lock, then try again.
 			if ( $attempt < $max_attempts ) {
-				Collector_Checkout_Logger::log( sprintf( '%1$s request to %2$s returned 423 Resource_Locked on attempt %3$d of %4$d. Retrying.', $this->method, $url, $attempt, $max_attempts ) );
+				Collector_Checkout_Logger::log( sprintf( '%1$s request to %2$s returned 423 Resource_Locked on attempt %3$d of %4$d. Retrying.', $this->method, Walley_Log_Masking::mask_url( $url ), $attempt, $max_attempts ) );
 				// usleep() takes microseconds, we must multiply the $backoff_ms by 1000 to convert it into microseconds.
 				usleep( $attempt * $backoff_ms * 1000 );
 			}
@@ -277,7 +277,8 @@ abstract class Walley_Checkout_Request {
 
 		$response_code = wp_remote_retrieve_response_code( $response );
 		if ( $response_code < 200 || $response_code > 299 ) {
-			$data          = 'URL: ' . $request_url . ' - ' . wp_json_encode( $request_args );
+			// The error data can reach other plugins and their logs, so it gets the same masking as ours.
+			$data          = 'URL: ' . Walley_Log_Masking::mask_url( $request_url ) . ' - ' . wp_json_encode( Walley_Log_Masking::mask_request( $request_args ) );
 			$error_message = '';
 			// Get the error messages.
 			$errors = json_decode( $response ['body'], true );
@@ -310,9 +311,10 @@ abstract class Walley_Checkout_Request {
 		$method = $this->method;
 		$title  = $this->log_title;
 		$code   = wp_remote_retrieve_response_code( $response );
+		$body   = is_wp_error( $response ) ? array() : json_decode( wp_remote_retrieve_body( $response ), true );
 
 		$order_id = $this->private_id ?? $this->order_id ?? null;
-		$log      = Collector_Checkout_Logger::format_log( $order_id, $method, $title, $request_args, $request_url, $response, $code );
+		$log      = Collector_Checkout_Logger::format_log( $order_id, $method, $title, $request_args, $request_url, $body, $code );
 		Collector_Checkout_Logger::log( $log );
 	}
 
