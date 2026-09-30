@@ -41,3 +41,7 @@ Footer
 .changelogs/backup-*
 
 SyncToy_fd3c94d9-f910-42eb-9cc1-68d6bcc566d8.dat
+
+# Scoped dependencies
+dependencies/*
+!dependencies/.gitkeep

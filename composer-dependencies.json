@@ -1,0 +1,19 @@
+{
+    "require": {
+        "php": ">=7.4",
+        "krokedil/wp-api": "dev-develop"
+    },
+    "config": {
+        "platform": {
+            "php": "7.4"
+        }
+    },
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "git@github.com:krokedil/wp-api.git"
+        }
+    ],
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
