@@ -20,7 +20,7 @@ class Walley_Log_Masking {
 	/**
 	 * The address fields kept readable.
 	 */
-	const ADDRESS_KEPT = array( 'postalCode', 'city', 'countryCode' );
+	const ADDRESS_KEPT = array( 'postalCode', 'city', 'country', 'countryCode' );
 
 	/**
 	 * Key names masked wherever they appear, on top of the package defaults.
