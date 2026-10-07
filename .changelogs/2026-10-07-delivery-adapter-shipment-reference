@@ -1,4 +1,4 @@
 Type: Fix
 Needs Documentation: no
 
-The shipment ID, pickup point and shipping fee reference are now saved and shown for orders placed with the Walley Custom Delivery Adapter (nShift).
+The shipment ID, pickup point and shipping fee reference are now saved and shown for orders placed with the Walley Custom Delivery Adapter (nShift). An order note is added when Walley returns no shipment ID.

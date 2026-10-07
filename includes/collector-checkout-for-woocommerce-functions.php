@@ -774,6 +774,10 @@ function walley_confirm_order( $order, $private_id = null ) {
 		$shipments = walley_get_shipments( $collector_order['data']['shipping'] );
 		$order->update_meta_data( '_collector_delivery_module_data', wp_json_encode( $collector_order['data']['shipping'], JSON_UNESCAPED_UNICODE ) );
 		$order->update_meta_data( '_collector_delivery_module_reference', $shipments[0]['shipment_id'] ?? '' );
+
+		if ( empty( $shipments[0]['shipment_id'] ) ) {
+			$order->add_order_note( __( 'Walley did not return a shipment ID for this order. The shipment may not have been booked yet.', 'collector-checkout-for-woocommerce' ) );
+		}
 	}
 
 	walley_set_order_status( $order, $payment_status, $payment_id, false );
