@@ -515,6 +515,41 @@ function wc_collector_allowed_tags() {
 	return apply_filters( 'coc_allowed_tags', $allowed_tags );
 }
 
+/**
+ * Get the shipments from a Walley shipping object, in either the legacy flat or the shipments[] format.
+ *
+ * The Walley Custom Delivery Adapter sends shipments[], the older Walley Shipping Module the flat format.
+ *
+ * @param array $shipping The data.shipping object from a Walley checkout.
+ * @return array List of shipments.
+ */
+function walley_get_shipments( $shipping ) {
+	if ( ! isset( $shipping['shipments'] ) ) {
+		return array(
+			array(
+				'label'        => $shipping['carrierName'] ?? '',
+				'pickup_point' => $shipping['servicePointName'] ?? '',
+				'shipment_id'  => $shipping['pendingShipment']['id'] ?? '',
+				'fee_item_id'  => $shipping['shippingFeeId'] ?? '',
+			),
+		);
+	}
+
+	$shipments = array();
+	foreach ( $shipping['shipments'] as $shipment ) {
+		$choice = $shipment['shippingChoice'] ?? array();
+
+		$shipments[] = array(
+			'label'        => $choice['name'] ?? '',
+			'pickup_point' => $choice['destination']['name'] ?? '',
+			// shipments[].id is the carrier, not the shipment. Both ids are null until nShift has booked it.
+			'shipment_id'  => $shipment['bookedShipmentId'] ?? $shipment['externalShipmentId'] ?? '',
+			'fee_item_id'  => $shipment['feeItemId'] ?? '',
+		);
+	}
+
+	return $shipments;
+}
 
 /**
  * Get shipping data from a collector order when using shipping in iframe.
@@ -736,8 +771,9 @@ function walley_confirm_order( $order, $private_id = null ) {
 
 	// Save shipping data.
 	if ( isset( $collector_order['data']['shipping'] ) ) {
+		$shipments = walley_get_shipments( $collector_order['data']['shipping'] );
 		$order->update_meta_data( '_collector_delivery_module_data', wp_json_encode( $collector_order['data']['shipping'], JSON_UNESCAPED_UNICODE ) );
-		$order->update_meta_data( '_collector_delivery_module_reference', $collector_order['data']['shipping']['pendingShipment']['id'] );
+		$order->update_meta_data( '_collector_delivery_module_reference', $shipments[0]['shipment_id'] ?? '' );
 	}
 
 	walley_set_order_status( $order, $payment_status, $payment_id, false );
@@ -794,8 +830,12 @@ function walley_add_rounding_order_line() {
 function walley_get_shipping_reference_from_delivery_module_data( $order_id ) {
 	$order                   = wc_get_order( $order_id );
 	$collector_delivery_data = json_decode( $order->get_meta( '_collector_delivery_module_data', true ), true ) ?? array();
-	$shipping_reference      = $collector_delivery_data['shippingFeeId'] ?? '';
-	return $shipping_reference;
+	if ( empty( $collector_delivery_data ) ) {
+		return '';
+	}
+
+	$shipments = walley_get_shipments( $collector_delivery_data );
+	return $shipments[0]['fee_item_id'] ?? '';
 }
 
 /**
