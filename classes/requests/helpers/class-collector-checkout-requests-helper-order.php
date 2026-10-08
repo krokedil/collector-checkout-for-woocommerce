@@ -84,7 +84,7 @@ class Collector_Checkout_Requests_Helper_Order {
 			'id'          => self::get_article_number( $order_item ),
 			'description' => substr( $order_item->get_name(), 0, 50 ),
 			'quantity'    => $order_item->get_quantity(),
-			'vat'         => intval( round( ( $order_item->get_total_tax() / $order_item->get_total() ), 2 ) * 100 ),
+			'vat'         => ( ! empty( floatval( $order_item->get_total() ) ) ) ? intval( round( ( $order_item->get_total_tax() / $order_item->get_total() ), 2 ) * 100 ) : 0,
 			'unitPrice'   => round( ( ( $order_item->get_total() + $order_item->get_total_tax() ) / $order_item->get_quantity() ), 2 ),
 		);
 	}
@@ -133,35 +133,6 @@ class Collector_Checkout_Requests_Helper_Order {
 			}
 		}
 		return substr( apply_filters( 'collector_checkout_sku', $article_number, $order_item ), 0, 32 );
-	}
-
-	/**
-	 * Checks to make sure that all ids are unique.
-	 *
-	 * @param array $items List of order line items.
-	 * @return array
-	 */
-	public static function maybe_make_ids_unique( $items ) {
-		$ids = array();
-		foreach ( $items as $item ) {
-			$ids[] = $item['id'];
-		}
-		// List all ids as 'id_name' => number_of_apperances_in_array.
-		$ids = array_count_values( $ids );
-
-		foreach ( $ids as $id_name => $appearances ) {
-			if ( $appearances > 1 ) {
-				$i = 0;
-				// Loop trough all ids that appeare more than 1 time.
-				foreach ( $items as $key => $item ) {
-					if ( $id_name === $item['id'] ) {
-						$items[ $key ]['id'] = $item['id'] . '_' . $i;
-						$i++;
-					}
-				}
-			}
-		}
-		return $items;
 	}
 
 	/**

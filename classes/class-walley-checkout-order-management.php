@@ -277,50 +277,6 @@ class Walley_Checkout_Order_Management {
 	}
 
 	/**
-	 * Check if refund order contains a goodwill refund (a partially refunded orderline).
-	 *
-	 * @param int $order_id The WooCommerce order id.
-	 *
-	 * @return bool
-	 */
-	public function order_contain_goodwill_refund( $order_id ) {
-		$original_order  = wc_get_order( $order_id );
-		$refund_order_id = Collector_Checkout_Create_Refund_Data::get_refunded_order_id( $order_id );
-
-		// Get refund order data.
-		$refund_order   = wc_get_order( $refund_order_id );
-		$refunded_items = $refund_order->get_items( array( 'line_item', 'shipping', 'fee' ) );
-
-		if ( $refunded_items ) {
-			foreach ( $refunded_items as $refunded_item ) {
-
-				$parent_order_item_id = $refunded_item->get_meta( '_refunded_item_id' );
-
-				switch ( $refunded_item->get_type() ) {
-					case 'line_item':
-						$parent_order_item = new WC_Order_Item_Product( $parent_order_item_id );
-						break;
-					case 'shipping':
-						$parent_order_item = new WC_Order_Item_Shipping( $parent_order_item_id );
-						break;
-					case 'fee':
-						$parent_order_item = new WC_Order_Item_Fee( $parent_order_item_id );
-						break;
-					default:
-						$parent_order_item = new WC_Order_Item_Product( $parent_order_item_id );
-
-				}
-
-				if ( abs( $refunded_item->get_total() ) / abs( $refunded_item->get_quantity() ) !== $parent_order_item->get_total() / $parent_order_item->get_quantity() ) {
-					return true;
-				}
-			}
-		}
-
-		return false;
-	}
-
-	/**
 	 * Check for Collector Invoice Status Change (anti fraud system)
 	 **/
 	public function check_callback() {

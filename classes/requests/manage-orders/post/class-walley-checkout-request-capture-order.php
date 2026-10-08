@@ -13,13 +13,6 @@ defined( 'ABSPATH' ) || exit;
 class Walley_Checkout_Request_Capture_Order extends Walley_Checkout_Request_Post {
 
 	/**
-	 * The Woo order ID.
-	 *
-	 * @var int
-	 */
-	private $order_id;
-
-	/**
 	 * Class constructor.
 	 *
 	 * @param array $arguments The request arguments.

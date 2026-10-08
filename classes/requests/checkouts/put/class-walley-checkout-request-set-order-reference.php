@@ -12,27 +12,13 @@ defined( 'ABSPATH' ) || exit;
  */
 class Walley_Checkout_Request_Set_Order_Reference extends Walley_Checkout_Request_Put {
 	/**
-	 * The order ID.
-	 *
-	 * @var string
-	 */
-	protected $order_id;
-
-	/**
-	 * The private ID.
-	 *
-	 * @var string
-	 */
-	protected $private_id;
-
-	/**
 	 * Class constructor.
 	 *
 	 * @param array $arguments The request arguments.
 	 */
 	public function __construct( $arguments ) {
 		parent::__construct( $arguments );
-		$this->log_title  = 'Set order reference';
+		$this->log_title = 'Set order reference';
 	}
 
 	/**

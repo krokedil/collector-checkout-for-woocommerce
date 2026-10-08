@@ -143,19 +143,6 @@ class Collector_Checkout_Create_Refund_Data {
 		return $order->get_refunds()[0];
 	}
 	/**
-	 * Calculates tax.
-	 *
-	 * @param string $refund_order_id The refund order id.
-	 * @return int
-	 */
-	private static function calculate_tax( $refund_order_id ) {
-		$refund_order     = wc_get_order( $refund_order_id );
-		$refund_tax_total = $refund_order->get_total_tax() * -1;
-		$refund_total     = ( $refund_order->get_total() * -1 ) - $refund_tax_total;
-		return intval( ( $refund_tax_total / $refund_total ) * 100 );
-	}
-
-	/**
 	 * Gets a partial refund item object
 	 *
 	 * @param int    $modified_item_prices Total remaining amount to be refunded.

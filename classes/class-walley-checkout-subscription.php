@@ -27,9 +27,6 @@ class Walley_Subscription {
 	public function __construct() {
 		add_action( 'woocommerce_scheduled_subscription_payment_' . self::GATEWAY_ID, array( $this, 'process_scheduled_payment' ), 10, 2 );
 
-		// Whether the gateway should be available when handling subscriptions.
-		add_filter( 'walley_is_available', array( $this, 'is_available' ) );
-
 		// On successful payment method change, the customer is redirected back to the subscription view page. We need to handle the redirect and create a recurring token.
 		add_action( 'woocommerce_account_view-subscription_endpoint', array( $this, 'handle_redirect_from_change_payment_method' ) );
 
@@ -171,8 +168,8 @@ class Walley_Subscription {
 	public static function get_renewal_order_by_auth_id( $auth_id ) {
 		$orders = wc_get_orders(
 			array(
-				'meta_key'     => self::AUTHORIZATION_ID,
-				'meta_value'   => $auth_id,
+				'meta_key'     => self::AUTHORIZATION_ID, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Required to locate the renewal order by the authorization ID.
+				'meta_value'   => $auth_id, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value -- Required to locate the renewal order by the authorization ID.
 				'limit'        => 1,
 				'orderby'      => 'date',
 				'order'        => 'DESC',
@@ -462,44 +459,6 @@ class Walley_Subscription {
 	}
 
 	/**
-	 * Whether the gateway should be available if it contains a subscriptions.
-	 *
-	 * @param bool $is_available Whether the gateway is available.
-	 * @return bool
-	 */
-	public function is_available( $is_available ) {
-		// If no subscription is found, we don't need to do anything.
-		if ( ! self::cart_has_subscription() ) {
-			return $is_available;
-		}
-
-		// Allow free orders when changing subscription payment method.
-		if ( self::is_change_payment_method() ) {
-			return true;
-		}
-
-		return true;
-	}
-
-	/**
-	 * TODO: Set the session URLs for change payment method request.
-	 *
-	 * Used for changing payment method.
-	 *
-	 * @param array $url_data The URL data.
-	 * @param Order $helper The Order helper.
-	 */
-	public function set_subscription_order_redirect_urls( $url_data, $helper ) {
-		if ( ! self::is_change_payment_method() ) {
-			return $url_data;
-		}
-
-		$subscription = self::get_subscription( $helper->get_order() );
-		$url          = add_query_arg( 'walley_redirect', 'subscription', $subscription->get_view_order_url() );
-		return $url_data;
-	}
-
-	/**
 	 * Handle the redirect from the change payment method page.
 	 *
 	 * @param int $subscription_id The subscription ID.
@@ -596,21 +555,6 @@ class Walley_Subscription {
 		( function_exists( 'wcs_cart_contains_resubscribe' ) && wcs_cart_contains_resubscribe() ) ||
 		( function_exists( 'wcs_cart_contains_early_renewal' ) && wcs_cart_contains_early_renewal() ) ||
 		( function_exists( 'wcs_cart_contains_switches' ) && wcs_cart_contains_switches() );
-	}
-
-	/**
-	 * Whether the cart contains only free trial subscriptions.
-	 *
-	 * If invoked from anywhere but the checkout page, this will return FALSE.
-	 *
-	 * @return boolean
-	 */
-	public static function cart_has_only_free_trial() {
-		if ( ! is_checkout() ) {
-			return false;
-		}
-
-		return ( class_exists( 'WC_Subscriptions_Cart' ) ) ? \WC_Subscriptions_Cart::all_cart_items_have_free_trial() : false;
 	}
 
 	/**
