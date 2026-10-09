@@ -191,10 +191,12 @@ class Walley_Checkout_API {
 	/**
 	 * Create a widget token.
 	 *
+	 * @param string|null $customer_type The customer type, or null for the selected one.
+	 *
 	 * @return array|WP_Error
 	 */
-	public function create_widget_token() {
-		$request  = new Walley_Create_Widget_Token( array() );
+	public function create_widget_token( $customer_type = null ) {
+		$request  = new Walley_Create_Widget_Token( null === $customer_type ? array() : array( 'customer_type' => $customer_type ) );
 		$response = $request->request();
 		return $response;
 	}

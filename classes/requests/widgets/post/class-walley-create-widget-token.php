@@ -18,11 +18,11 @@ class Walley_Create_Widget_Token extends Walley_Checkout_Request_Post {
 	 * @param  array $arguments  The request arguments.
 	 */
 	public function __construct( $arguments = array() ) {
+		// The parent resolves the store id from the customer type, so it must be set before.
+		$arguments['customer_type'] = $arguments['customer_type'] ?? wc_collector_get_selected_customer_type();
 		parent::__construct( $arguments );
-		$customer_type = wc_collector_get_selected_customer_type();
 
 		$this->log_title = 'Create Widget Token';
-		$this->customer_type = $customer_type;
 	}
 
 	/**

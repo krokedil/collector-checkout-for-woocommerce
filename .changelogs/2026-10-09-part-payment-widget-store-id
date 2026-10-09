@@ -1,0 +1,4 @@
+Type: Fix
+Needs Documentation: no
+
+Fixed the part payment widget sending an empty store id, and getting a 400 error from Walley, when the store only has B2B credentials.
