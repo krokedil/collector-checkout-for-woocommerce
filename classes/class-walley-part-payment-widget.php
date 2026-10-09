@@ -157,12 +157,13 @@ class Walley_Part_Payment_Widget {
 
 		// No store id for this currency and customer type, so Walley would reject the request.
 		$country_code = Walley_Checkout_Settings::get_country_code( $currency, $customer_type );
-		if ( empty( Walley_Checkout_Settings::get_merchant_id( $country_code, $customer_type ) ) ) {
+		$store_id     = Walley_Checkout_Settings::get_merchant_id( $country_code, $customer_type );
+		if ( empty( $store_id ) ) {
 			return '';
 		}
 
-		// The token is tied to the store id, so cache it per currency and customer type.
-		$transient_key = strtolower( "walley_part_payment_token_{$currency}_{$customer_type}" );
+		// The token is tied to the store id, and EUR can resolve to FI or EU per customer.
+		$transient_key = "walley_part_payment_token_{$store_id}";
 		$token         = get_transient( $transient_key );
 
 		if ( false === $token ) {
