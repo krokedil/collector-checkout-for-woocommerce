@@ -1,7 +1,7 @@
 {
     "require": {
         "php": ">=7.4",
-        "krokedil/wp-api": "dev-develop"
+        "krokedil/wp-api": "1.2.0"
     },
     "config": {
         "platform": {

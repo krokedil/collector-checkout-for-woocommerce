@@ -9,6 +9,7 @@ defined( 'ABSPATH' ) || exit;
 
 use KrokedilWalleyDeps\Krokedil\WpApi\FieldMasker;
 use KrokedilWalleyDeps\Krokedil\WpApi\KeyMasker;
+use KrokedilWalleyDeps\Krokedil\WpApi\Masking;
 
 /**
  * What the plugin masks out of its logs, shared by the Walley API and the legacy request layers.
@@ -17,6 +18,11 @@ use KrokedilWalleyDeps\Krokedil\WpApi\KeyMasker;
  * safety net for everything else that reaches a log entry.
  */
 class Walley_Log_Masking {
+	/**
+	 * The slug passed to the krokedil_wp_api_mask_log_data filter.
+	 */
+	const SLUG = 'collector-checkout-for-woocommerce';
+
 	/**
 	 * The address fields kept readable.
 	 */
@@ -89,12 +95,25 @@ class Walley_Log_Masking {
 	}
 
 	/**
+	 * Whether the logs are masked, see the krokedil_wp_api_mask_log_data filter.
+	 *
+	 * @return bool
+	 */
+	public static function is_enabled() {
+		return Masking::is_enabled( self::SLUG );
+	}
+
+	/**
 	 * Mask a set of request args.
 	 *
 	 * @param array|mixed $request_args The request args.
 	 * @return array|string The masked args, or the failure marker.
 	 */
 	public static function mask_request( $request_args ) {
+		if ( ! self::is_enabled() ) {
+			return $request_args;
+		}
+
 		try {
 			// Decode the body that was really sent, so the rules can reach into it.
 			if ( isset( $request_args['body'] ) && is_string( $request_args['body'] ) ) {
@@ -114,7 +133,7 @@ class Walley_Log_Masking {
 	 * @return array|string The masked body, or the failure marker.
 	 */
 	public static function mask_response( $body ) {
-		if ( empty( $body ) ) {
+		if ( empty( $body ) || ! self::is_enabled() ) {
 			return $body;
 		}
 
@@ -132,6 +151,10 @@ class Walley_Log_Masking {
 	 * @return string
 	 */
 	public static function mask_url( $request_url ) {
+		if ( ! self::is_enabled() ) {
+			return $request_url;
+		}
+
 		try {
 			$masked = preg_replace( '#/customer-tokens/[^/?]+#', '/customer-tokens/' . KeyMasker::REDACTED, (string) $request_url );
 			return null === $masked ? KeyMasker::FAILED : $masked;

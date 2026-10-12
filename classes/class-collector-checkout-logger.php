@@ -33,10 +33,13 @@ class Collector_Checkout_Logger {
 			return;
 		}
 
-		try {
-			$message = KeyMasker::mask( self::format_data( $data ) );
-		} catch ( \Throwable $e ) {
-			$message = array( 'error' => KeyMasker::FAILED );
+		$message = self::format_data( $data );
+		if ( Walley_Log_Masking::is_enabled() ) {
+			try {
+				$message = KeyMasker::mask( $message );
+			} catch ( \Throwable $e ) {
+				$message = array( 'error' => KeyMasker::FAILED );
+			}
 		}
 
 		if ( empty( self::$log ) ) {
