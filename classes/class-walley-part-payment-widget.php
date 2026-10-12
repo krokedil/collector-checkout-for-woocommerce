@@ -152,8 +152,19 @@ class Walley_Part_Payment_Widget {
 	 * @return string
 	 */
 	public function get_cart_token() {
-		// Check if we have a transient for the token already.
-		$token = get_transient( 'walley_part_payment_token' );
+		$currency      = get_woocommerce_currency();
+		$customer_type = wc_collector_get_selected_customer_type();
+
+		// No store id for this currency and customer type, so Walley would reject the request.
+		$country_code = Walley_Checkout_Settings::get_country_code( $currency, $customer_type );
+		$store_id     = Walley_Checkout_Settings::get_merchant_id( $country_code, $customer_type );
+		if ( empty( $store_id ) ) {
+			return '';
+		}
+
+		// The token is tied to the store id, and EUR can resolve to FI or EU per customer.
+		$transient_key = "walley_part_payment_token_{$store_id}";
+		$token         = get_transient( $transient_key );
 
 		if ( false === $token ) {
 			// If not, get a new token.
@@ -161,9 +172,11 @@ class Walley_Part_Payment_Widget {
 				return '';
 			}
 
-			$response = CCO_WC()->api->create_widget_token();
+			$response = CCO_WC()->api->create_widget_token( $customer_type );
 
 			if ( is_wp_error( $response ) ) {
+				// Cache the failure briefly so a failing request is not repeated on every page view.
+				set_transient( $transient_key, '', 5 * MINUTE_IN_SECONDS );
 				return '';
 			}
 
@@ -171,7 +184,7 @@ class Walley_Part_Payment_Widget {
 			$expires = strtotime( $response['data']['expiresAt'] );
 
 			// Set the transient for the token.
-			set_transient( 'walley_part_payment_token', $token, $expires - time() );
+			set_transient( $transient_key, $token, $expires - time() );
 		}
 
 		return $token;
