@@ -566,7 +566,8 @@ function walley_get_shipments( $shipping ) {
 			'label'        => $choice['name'] ?? $shipment['name'] ?? '',
 			'shipping_id'  => $choice['id'] ?? '',
 			'pickup_point' => $choice['destination']['name'] ?? '',
-			'shipment_id'  => $shipment['externalShipmentId'] ?? '',
+			// Walley's docs name the booked nShift ID bookedShipmentId or externalShipmentId, depending on version.
+			'shipment_id'  => $shipment['bookedShipmentId'] ?? $shipment['externalShipmentId'] ?? '',
 			'fee_item_id'  => $shipment['feeItemId'] ?? '',
 			// The merchant fallback states the tax rate on the choice, the Walley Custom
 			// Delivery Adapter puts it in its metadata, and nShift states none at all.
