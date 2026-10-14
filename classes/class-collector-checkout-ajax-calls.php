@@ -334,9 +334,10 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 
 		if ( floatval( $order->get_total() ) > floatval( $order->get_meta( '_collector_original_order_total', true ) ) ) {
 				// Translators: Original order amount.
-			$message = sprintf( __( 'Updated total amount sent to Walley can not be higher than the original order amount (%1$s).', 'collector-checkout-for-woocommerce' ), $order->get_meta( '_collector_original_order_total', true ) );
+			$message = sprintf( __( 'Updated total amount sent to Walley can not be higher than the original order amount (%1$s).', 'collector-checkout-for-woocommerce' ), wc_price( $order->get_meta( '_collector_original_order_total', true ), array( 'currency' => $order->get_currency() ) ) );
 			$order->add_order_note( $message );
-			wp_send_json_error( $message );
+			// The meta box also shows this in an alert(), which would print the price markup as-is.
+			wp_send_json_error( html_entity_decode( wp_strip_all_tags( $message ) ) );
 			wp_die();
 		}
 

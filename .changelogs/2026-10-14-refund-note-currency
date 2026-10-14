@@ -1,4 +1,4 @@
 Type: Fix
 Needs Documentation: no
 
-The refund order note now shows the amount in the order's currency rather than the store's default currency.
+Order notes now show amounts in the order's currency.
