@@ -1,0 +1,4 @@
+Type: Fix
+Needs Documentation: no
+
+The shipment ID is now saved and shown for Walley Custom Delivery Adapter (nShift) orders where Walley returns it as bookedShipmentId. An order note is added when Walley returns no shipment ID for a delivery shipment.

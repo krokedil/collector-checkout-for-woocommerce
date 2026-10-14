@@ -550,6 +550,7 @@ function walley_get_shipments( $shipping ) {
 				'shipping_id'  => $shipping['carrierId'] ?? '',
 				'pickup_point' => $shipping['servicePointName'] ?? '',
 				'shipment_id'  => $shipping['pendingShipment']['id'] ?? '',
+				'has_shipment' => isset( $shipping['pendingShipment'] ),
 				'fee_item_id'  => $shipping['shippingFeeId'] ?? '',
 				// The flat format states the tax rate on data.fees.shipping instead.
 				'vat'          => null,
@@ -568,6 +569,7 @@ function walley_get_shipments( $shipping ) {
 			'pickup_point' => $choice['destination']['name'] ?? '',
 			// Walley's docs name the booked nShift ID bookedShipmentId or externalShipmentId, depending on version.
 			'shipment_id'  => $shipment['bookedShipmentId'] ?? $shipment['externalShipmentId'] ?? '',
+			'has_shipment' => true,
 			'fee_item_id'  => $shipment['feeItemId'] ?? '',
 			// The merchant fallback states the tax rate on the choice, the Walley Custom
 			// Delivery Adapter puts it in its metadata, and nShift states none at all.
@@ -782,8 +784,15 @@ function walley_confirm_order( $order, $private_id = null ) {
 	// Save shipping data.
 	if ( isset( $collector_order['data']['shipping'] ) ) {
 		$shipments = walley_get_shipments( $collector_order['data']['shipping'] );
+		// Signing and OnHold orders are confirmed again by the callback, so the note is only added on the first pass.
+		$is_first_confirm = ! $order->meta_exists( '_collector_delivery_module_reference' );
+
 		$order->update_meta_data( '_collector_delivery_module_data', wp_json_encode( $collector_order['data']['shipping'], JSON_UNESCAPED_UNICODE ) );
 		$order->update_meta_data( '_collector_delivery_module_reference', $shipments[0]['shipment_id'] ?? '' );
+
+		if ( $is_first_confirm && ! empty( $shipments[0]['has_shipment'] ) && empty( $shipments[0]['shipment_id'] ) ) {
+			$order->add_order_note( __( 'Walley did not return a shipment ID for this order. The shipment may not have been booked yet.', 'collector-checkout-for-woocommerce' ) );
+		}
 	}
 
 	walley_set_order_status( $order, $payment_status, $payment_id, false );
