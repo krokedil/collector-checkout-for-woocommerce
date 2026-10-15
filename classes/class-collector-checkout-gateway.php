@@ -167,7 +167,7 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 		$public_token  = filter_input( INPUT_GET, 'public-token', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 		$customer_type = filter_input( INPUT_GET, 'customer-type', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 
-		CCO_WC()->logger::log( 'Notification Listener hit. Private id: ' . wp_json_encode( $private_id ) . '. Public token: ' . $public_token . '. Customer type: ' . $customer_type );
+		CCO_WC()->logger::log( 'Notification Listener hit. Private id: ' . wp_json_encode( $private_id ) . '. Customer type: ' . $customer_type );
 
 		if ( empty( $private_id ) || empty( $public_token ) || empty( $customer_type ) ) {
 			return;

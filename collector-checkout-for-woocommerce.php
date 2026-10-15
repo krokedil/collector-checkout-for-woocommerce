@@ -177,6 +177,10 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 
 			// Include the Classes.
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-logger.php';
+			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-walley-log-masking.php';
+
+			Walley_Log_Masking::register();
+
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-ajax-calls.php';
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-admin-notices.php';
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-order-emails.php';
@@ -342,6 +346,16 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 
 			$autoloader_result = require $autoloader;
 			if ( ! $autoloader_result ) {
+				return false;
+			}
+
+			$dependencies_autoloader = COLLECTOR_BANK_PLUGIN_DIR . '/dependencies/autoload.php';
+			if ( ! is_readable( $dependencies_autoloader ) ) {
+				self::missing_autoloader();
+				return false;
+			}
+
+			if ( ! require $dependencies_autoloader ) {
 				return false;
 			}
 

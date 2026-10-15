@@ -329,7 +329,7 @@ class Walley_Subscription {
 		$response = CCO_WC()->api->cancel_customer_token( $token );
 
 		if ( ! is_wp_error( $response ) ) {
-			CCO_WC()->logger::log( "[CANCEL TOKEN]: Cancelled customer token: {$token} in subscription: {$subscription->get_order_number()}" );
+			CCO_WC()->logger::log( "[CANCEL TOKEN]: Cancelled the customer token in subscription: {$subscription->get_order_number()}" );
 			self::update_token_history( $subscription, $token );
 
 			$subscription->add_order_note(
@@ -338,7 +338,7 @@ class Walley_Subscription {
 			);
 
 		} else {
-			CCO_WC()->logger::log( "[CANCEL TOKEN] Failed to cancel customer token {$token} belonging to subscription #{$subscription->get_order_number()}. Error: {$response->get_error_message()}" );
+			CCO_WC()->logger::log( "[CANCEL TOKEN] Failed to cancel the customer token belonging to subscription #{$subscription->get_order_number()}. Error: {$response->get_error_message()}" );
 
 			$subscription->add_order_note(
 				// translators: 1: Subscription token, 2: Error message.
