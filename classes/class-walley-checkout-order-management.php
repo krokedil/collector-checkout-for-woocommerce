@@ -246,7 +246,7 @@ class Walley_Checkout_Order_Management {
 		}
 
 		// Translators: Refunded amount.
-		$order->add_order_note( sprintf( __( 'Walley Checkout order refunded with %s.', 'collector-checkout-for-woocommerce' ), wc_price( $amount ) ) );
+		$order->add_order_note( sprintf( __( 'Walley Checkout order refunded with %s.', 'collector-checkout-for-woocommerce' ), wc_price( $amount, array( 'currency' => $order->get_currency() ) ) ) );
 		return true;
 	}
 
