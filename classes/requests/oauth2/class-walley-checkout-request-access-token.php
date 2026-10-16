@@ -45,7 +45,7 @@ class Walley_Checkout_Request_Access_Token extends Walley_Checkout_Request_Post 
 	/**
 	 * Get the body for the request.
 	 *
-	 * @return array
+	 * @return string
 	 */
 	protected function get_body() {
 		$client_id     = rawurlencode( $this->get_client_id() );

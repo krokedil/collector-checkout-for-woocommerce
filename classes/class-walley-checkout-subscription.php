@@ -408,7 +408,7 @@ class Walley_Subscription {
 	 * Get the subscriptions associated with an order.
 	 *
 	 * @param WC_Order $order The WooCommerce order.
-	 * @return array<WC_Subscription>|array() Array of subscriptions, or empty array if no subscriptions found.
+	 * @return array<WC_Subscription> Array of subscriptions, or empty array if no subscriptions found.
 	 */
 	public static function get_subscriptions_for_order( $order ) {
 		if ( function_exists( 'wcs_get_subscriptions_for_order' ) ) {

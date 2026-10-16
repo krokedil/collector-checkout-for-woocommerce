@@ -24,7 +24,7 @@ class Collector_Checkout_Requests_Helper_Order_Fees {
 	/**
 	 * Gets order fees for the order.
 	 *
-	 * @param int $order_id The WooCommerce order id.
+	 * @param int|string $order_id The WooCommerce order id.
 	 *
 	 * @return array
 	 */

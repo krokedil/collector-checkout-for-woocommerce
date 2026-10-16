@@ -17,7 +17,7 @@ class Collector_Checkout_Requests {
 	/**
 	 * Static log variable.
 	 *
-	 * @var WC_Logger
+	 * @var WC_Logger|null
 	 */
 	protected static $log = null;
 
@@ -62,7 +62,7 @@ class Collector_Checkout_Requests {
 	/**
 	 * Get the request headers.
 	 *
-	 * @param array  $body The request body.
+	 * @param string $body The request body.
 	 * @param string $path The endpoint.
 	 *
 	 * @return array
