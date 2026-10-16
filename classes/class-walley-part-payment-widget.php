@@ -193,7 +193,7 @@ class Walley_Part_Payment_Widget {
 	/**
 	 * Get the amount to display in the widget.
 	 *
-	 * @return int
+	 * @return float|int
 	 */
 	public function get_amount() {
 		// If we are on the cart page, get the cart total.
@@ -222,7 +222,7 @@ class Walley_Part_Payment_Widget {
 	/**
 	 * Get the amount for the product page.
 	 *
-	 * @return int
+	 * @return float
 	 */
 	public function get_product_amount() {
 		// Get the product that we are currently on.

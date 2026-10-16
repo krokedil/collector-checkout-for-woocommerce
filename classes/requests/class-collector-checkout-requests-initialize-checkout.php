@@ -111,7 +111,7 @@ class Collector_Checkout_Requests_Initialize_Checkout extends Collector_Checkout
 	/**
 	 * Get the request args.
 	 *
-	 * @param int $order_id The WooCommerce order id.
+	 * @param int|null $order_id The WooCommerce order id, or null for a cart checkout.
 	 *
 	 * @return array
 	 */
@@ -128,7 +128,7 @@ class Collector_Checkout_Requests_Initialize_Checkout extends Collector_Checkout
 	/**
 	 * Make the request.
 	 *
-	 * @param int $order_id The WooCommerce order id.
+	 * @param int|null $order_id The WooCommerce order id, or null for a cart checkout.
 	 *
 	 * @return array|object|void|WP_Error
 	 */
@@ -150,7 +150,7 @@ class Collector_Checkout_Requests_Initialize_Checkout extends Collector_Checkout
 	/**
 	 * Get the request body.
 	 *
-	 * @param int $order_id The WooCommerce order id.
+	 * @param int|null $order_id The WooCommerce order id, or null for a cart checkout.
 	 *
 	 * @return false|string
 	 */
@@ -213,7 +213,7 @@ class Collector_Checkout_Requests_Initialize_Checkout extends Collector_Checkout
 		}
 
 		if ( ! wp_json_encode( $formatted_request_body ) ) {
-			$log = CCO_WC()->logger::format_log( 'null', 'POST', 'CCO initialize payment JSON FAILED', 'FAILED', 'null', print_r( $formatted_request_body, true ), 200 );
+			$log = CCO_WC()->logger::format_log( 'null', 'POST', 'CCO initialize payment JSON FAILED', 'FAILED', 'null', print_r( $formatted_request_body, true ), 200 ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_print_r -- Logs the body that failed to encode.
 			CCO_WC()->logger::log( $log );
 		}
 

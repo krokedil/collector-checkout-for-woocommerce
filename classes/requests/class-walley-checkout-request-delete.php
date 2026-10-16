@@ -41,7 +41,7 @@ abstract class Walley_Checkout_Request_Delete extends Walley_Checkout_Request {
 	/**
 	 * Builds the request URL for a DELETE request.
 	 *
-	 * @return array
+	 * @return string
 	 */
 	abstract protected function get_request_url();
 }

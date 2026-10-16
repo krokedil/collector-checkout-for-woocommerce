@@ -44,14 +44,14 @@ abstract class Walley_Checkout_Request {
 	/**
 	 * The WC order ID.
 	 *
-	 * @var string
+	 * @var string|null
 	 */
 	protected $order_id;
 
 	/**
 	 * The private ID of the checkout.
 	 *
-	 * @var string
+	 * @var string|null
 	 */
 	protected $private_id;
 
@@ -93,7 +93,7 @@ abstract class Walley_Checkout_Request {
 	/**
 	 * Delivery module.
 	 *
-	 * @var string
+	 * @var bool
 	 */
 	protected $delivery_module;
 

@@ -17,6 +17,9 @@ DOCKER_ENV
 docker_tag
 output.log
 phpcs.xml
+phpstan.neon
+phpstan-baseline.neon
+phpstan-bootstrap.php
 composer-dependencies.json
 composer-dependencies.lock
 scoper.custom.php

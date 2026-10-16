@@ -197,12 +197,7 @@ class Walley_Checkout_Settings {
 	/**
 	 * Get a list of available walley countries and the settings that are available for them.
 	 *
-	 * @return array<string, array>{
-	 *   @type string $name     The localized country name.
-	 *   @type bool   $b2c      Whether B2C is enabled.
-	 *   @type bool   $b2b      Whether B2B is enabled.
-	 *   @type bool   $profile  Whether profiles are enabled.
-	 * }
+	 * @return array<string, array{name: string, b2c: bool, b2b: bool, profile: bool, delivery_module: bool}> Keyed by country code.
 	 */
 	public static function get_walley_countries() {
 		return array(

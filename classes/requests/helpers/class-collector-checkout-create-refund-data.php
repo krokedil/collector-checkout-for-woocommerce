@@ -21,10 +21,10 @@ class Collector_Checkout_Create_Refund_Data {
 	/**
 	 * Creates refund data
 	 *
-	 * @param int    $order_id The WooCommerce order id.
-	 * @param int    $refund_order_id The Refund order id.
-	 * @param float  $amount Refund amount.
-	 * @param string $reason Refund reason.
+	 * @param int             $order_id The WooCommerce order id.
+	 * @param int|string|null $refund_order_id The Refund order id.
+	 * @param float           $amount Refund amount.
+	 * @param string          $reason Refund reason.
 	 * @return array
 	 */
 	public static function create_refund_data( $order_id, $refund_order_id, $amount, $reason ) {
@@ -256,7 +256,7 @@ class Collector_Checkout_Create_Refund_Data {
 	 * Returns the id of the refunded order.
 	 *
 	 * @param int $order_id The WooCommerce order id.
-	 * @return string
+	 * @return int
 	 */
 	public static function get_refunded_order_id( $order_id ) {
 		$order = wc_get_order( $order_id );

@@ -231,7 +231,7 @@ function add_collector_shipping_method( $methods ) {
 /**
  * Checking if Collector Delivery Module is active.
  *
- * @param string $currency selected currency.
+ * @param string|false $currency selected currency.
  *
  * @return bool
  */
@@ -1141,7 +1141,7 @@ function walley_get_post_type( $post = null ) {
  * Retrieves the post type of the current post or of a given post.
  *
  * @param int|WP_Post|WC_Order|null $post Order ID, post object or order object.
- * @return true if order type, otherwise false.
+ * @return bool True if order type, otherwise false.
  */
 function walley_is_order_type( $post = null ) {
 	return in_array( walley_get_post_type( $post ), array( 'woocommerce_page_wc-orders', 'shop_order' ), true );
