@@ -122,7 +122,7 @@ class Collector_Checkout_Requests {
 	 * @param string $request_url The request URL.
 	 * @return object|array
 	 */
-	public function process_response( $response, $request_args = array(), $request_url = '' ) {
+	public function process_response( $response, $request_args = array(), $request_url = '' ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- Kept for the public signature.
 		// Check if response is a WP_Error, and return it back if it is.
 		if ( is_wp_error( $response ) ) {
 			return $response;
