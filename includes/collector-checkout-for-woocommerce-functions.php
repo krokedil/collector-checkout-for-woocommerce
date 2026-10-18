@@ -650,7 +650,7 @@ function walley_use_new_api() {
  * @return string
  */
 function walley_get_validation_uri() {
-	return add_query_arg( array( 'private-id' => '{checkout.id}' ), get_home_url() . '/wc-api/Walley_Checkout_Validation/' );
+	return add_query_arg( array( 'private-id' => '{checkout.id}' ), WC()->api_request_url( 'Walley_Checkout_Validation' ) );
 }
 
 /**
