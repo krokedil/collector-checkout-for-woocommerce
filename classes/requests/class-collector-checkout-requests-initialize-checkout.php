@@ -182,6 +182,8 @@ class Collector_Checkout_Requests_Initialize_Checkout extends Collector_Checkout
 				$formatted_request_body['profileName'] = $profile;
 			}
 
+			$formatted_request_body['validationUri'] = walley_get_validation_uri();
+
 			$formatted_request_body['redirectPageUri'] = add_query_arg(
 				array(
 					'walley_confirm' => '1',

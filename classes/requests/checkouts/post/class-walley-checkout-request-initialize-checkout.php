@@ -64,6 +64,8 @@ class Walley_Checkout_Request_Initialize_Checkout extends Walley_Checkout_Reques
 				$body['profileName'] = $profile;
 			}
 
+			$body['validationUri'] = walley_get_validation_uri();
+
 			$body['redirectPageUri'] = add_query_arg(
 				array(
 					'walley_confirm' => '1',
