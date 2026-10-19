@@ -1,0 +1,4 @@
+Type: Fix
+Needs Documentation: yes
+
+Walley now asks the store to validate every checkout purchase before completing it, and stops the purchase if no WooCommerce order has been created for it. Purchases could previously complete in Walley without an order when the checkout script did not run on the page.

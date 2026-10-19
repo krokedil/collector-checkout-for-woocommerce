@@ -648,6 +648,15 @@ function walley_use_new_api() {
 }
 
 /**
+ * Get the URL Walley calls to validate a purchase before completing it.
+ *
+ * @return string
+ */
+function walley_get_validation_uri() {
+	return add_query_arg( array( 'private-id' => '{checkout.id}' ), WC()->api_request_url( 'Walley_Checkout_Validation' ) );
+}
+
+/**
  * Finds an Order ID based on a Walley public token.
  *
  * @param string $public_token Walley public token.
