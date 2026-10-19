@@ -215,7 +215,7 @@ class Collector_Checkout_Requests_Initialize_Checkout extends Collector_Checkout
 		}
 
 		if ( ! wp_json_encode( $formatted_request_body ) ) {
-			$log = CCO_WC()->logger::format_log( 'null', 'POST', 'CCO initialize payment JSON FAILED', 'FAILED', 'null', print_r( $formatted_request_body, true ), 200 );
+			$log = CCO_WC()->logger::format_log( 'null', 'POST', 'CCO initialize payment JSON FAILED', 'FAILED', 'null', $formatted_request_body, 200 );
 			CCO_WC()->logger::log( $log );
 		}
 
