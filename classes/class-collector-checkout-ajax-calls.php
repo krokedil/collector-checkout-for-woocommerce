@@ -116,8 +116,8 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 		$public_token         = filter_input( INPUT_POST, 'collector_public_token', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 
 		if ( $public_token_session !== $public_token ) {
-			// Log the error, public token mismatch. Include the public token from the session and the one used in checkout.
-			CCO_WC()->logger::log( sprintf( 'Public token in session (%1$s) does not match the one used in checkout (%2$s).', $public_token_session, $public_token ) );
+			// Log the error, public token mismatch. The tokens themselves are left out, since they grant access to the checkout.
+			CCO_WC()->logger::log( sprintf( 'Public token in session does not match the one used in checkout. Private id: %s.', $private_id ) );
 			wp_send_json_error( sprintf( __( 'Failed to get the Walley order data. Public token does not match the session.', 'collector-checkout-for-woocommerce' ) ) );
 		}
 
@@ -332,11 +332,15 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 			wp_die();
 		}
 
-		if ( floatval( $order->get_total() ) > floatval( $order->get_meta( '_collector_original_order_total', true ) ) ) {
+		$original_total = $order->get_meta( '_collector_original_order_total', true );
+		if ( floatval( $order->get_total() ) > floatval( $original_total ) ) {
+			// Only orders placed through the Walley checkout have an original total, so don't present a missing one as 0.
+			$original_total_text = '' === $original_total ? '' : wc_price( $original_total, array( 'currency' => $order->get_currency() ) );
 				// Translators: Original order amount.
-			$message = sprintf( __( 'Updated total amount sent to Walley can not be higher than the original order amount (%1$s).', 'collector-checkout-for-woocommerce' ), $order->get_meta( '_collector_original_order_total', true ) );
+			$message = sprintf( __( 'Updated total amount sent to Walley can not be higher than the original order amount (%1$s).', 'collector-checkout-for-woocommerce' ), $original_total_text );
 			$order->add_order_note( $message );
-			wp_send_json_error( $message );
+			// The meta box also shows this in an alert(), which would print the price markup as-is.
+			wp_send_json_error( html_entity_decode( wp_strip_all_tags( $message ) ) );
 			wp_die();
 		}
 

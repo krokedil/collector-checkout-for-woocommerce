@@ -151,6 +151,7 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 
 		// Notification listener.
 		add_action( 'woocommerce_api_collector_checkout_gateway', array( $this, 'notification_listener' ) );
+		add_action( 'woocommerce_api_walley_checkout_validation', array( $this, 'validation_listener' ) );
 
 		// Wait for the delivery module to load before calculating shipping.
 		add_filter( 'woocommerce_cart_ready_to_calc_shipping', array( $this, 'show_shipping' ) );
@@ -167,7 +168,7 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 		$public_token  = filter_input( INPUT_GET, 'public-token', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 		$customer_type = filter_input( INPUT_GET, 'customer-type', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 
-		CCO_WC()->logger::log( 'Notification Listener hit. Private id: ' . wp_json_encode( $private_id ) . '. Public token: ' . $public_token . '. Customer type: ' . $customer_type );
+		CCO_WC()->logger::log( 'Notification Listener hit. Private id: ' . wp_json_encode( $private_id ) . '. Customer type: ' . $customer_type );
 
 		if ( empty( $private_id ) || empty( $public_token ) || empty( $customer_type ) ) {
 			return;
@@ -190,6 +191,31 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 			header( 'HTTP/1.1 400 Bad Request' );
 		}
 		die();
+	}
+
+	/**
+	 * Refuse a purchase in Walley when no WooCommerce order has been created for it.
+	 *
+	 * Walley completes the purchase without asking us if the onBeforePayment JS never registered,
+	 * but it always calls this before completing, and stops on a non-2xx response or after 10 seconds.
+	 */
+	public function validation_listener() {
+		$private_id = sanitize_text_field( wp_unslash( $_GET['private-id'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Server-to-server call from Walley.
+		$order      = wc_collector_get_order_by_private_id( $private_id );
+
+		if ( $order ) {
+			CCO_WC()->logger::log( 'Validation callback: order ' . $order->get_order_number() . ' found for private id ' . $private_id . '. Letting Walley complete the purchase.' );
+			wp_send_json( array(), 200 );
+		}
+
+		CCO_WC()->logger::log( 'Validation callback: no WooCommerce order found for private id ' . $private_id . '. Refusing the purchase in Walley.' );
+		wp_send_json(
+			array(
+				'title'   => __( 'Your order could not be created', 'collector-checkout-for-woocommerce' ),
+				'message' => __( 'You have not been charged. Please reload the page and try again.', 'collector-checkout-for-woocommerce' ),
+			),
+			400
+		);
 	}
 
 	/**
@@ -716,7 +742,7 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 
 		if ( $delivery_module ) {
 			/* If the delivery module is configured by Walley (displayed in iframe), its shipping data will be available in the session. We need to check if there is a corresponding WC shipping option. */
-			$delivery_module_data = WC()->session->get( 'collector_delivery_module_data', array() )[0] ?? '';
+			$delivery_module_data = WC()->session->get( 'collector_delivery_module_data', array() );
 			$chosen_shipping      = WC()->session->get( 'chosen_shipping_methods', array() )[0] ?? '';
 			if ( ! empty( $chosen_shipping ) && ( false !== strpos( $chosen_shipping, 'collector_delivery_module' ) || ( isset( $delivery_module_data['shipping_id'] ) && $delivery_module_data['shipping_id'] === $chosen_shipping ) ) ) {
 				return true;

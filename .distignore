@@ -17,3 +17,6 @@ DOCKER_ENV
 docker_tag
 output.log
 phpcs.xml
+composer-dependencies.json
+composer-dependencies.lock
+scoper.custom.php

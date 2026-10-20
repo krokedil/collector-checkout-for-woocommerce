@@ -8,7 +8,7 @@
  * Plugin Name: Walley Checkout for WooCommerce
  * Plugin URI: https://krokedil.se/produkt/walley-checkout/
  * Description: Extends WooCommerce. Provides a <a href="https://www.walley.se/foretag/checkout/" target="_blank">Walley Checkout</a> checkout for WooCommerce.
- * Version: 5.0.0
+ * Version: 5.1.0
  * Author: Krokedil
  * Author URI: https://krokedil.se/
  * Text Domain: collector-checkout-for-woocommerce
@@ -16,7 +16,7 @@
  * Requires Plugins: woocommerce
  *
  * WC requires at least: 6.0.0
- * WC tested up to: 11.1.2
+ * WC tested up to: 11.2.1
  *
  * Copyright: © 2017-2026 Krokedil.
  * License: GNU General Public License v3.0
@@ -29,7 +29,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 define( 'COLLECTOR_BANK_PLUGIN_DIR', untrailingslashit( plugin_dir_path( __FILE__ ) ) );
 define( 'COLLECTOR_BANK_PLUGIN_URL', untrailingslashit( plugin_dir_url( __FILE__ ) ) );
-define( 'COLLECTOR_BANK_VERSION', '5.0.0' );
+define( 'COLLECTOR_BANK_VERSION', '5.1.0' );
 
 if ( ! class_exists( 'Collector_Checkout' ) ) {
 	/**
@@ -177,6 +177,10 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 
 			// Include the Classes.
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-logger.php';
+			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-walley-log-masking.php';
+
+			Walley_Log_Masking::register();
+
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-ajax-calls.php';
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-admin-notices.php';
 			include_once COLLECTOR_BANK_PLUGIN_DIR . '/classes/class-collector-checkout-order-emails.php';
@@ -342,6 +346,16 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 
 			$autoloader_result = require $autoloader;
 			if ( ! $autoloader_result ) {
+				return false;
+			}
+
+			$dependencies_autoloader = COLLECTOR_BANK_PLUGIN_DIR . '/dependencies/autoload.php';
+			if ( ! is_readable( $dependencies_autoloader ) ) {
+				self::missing_autoloader();
+				return false;
+			}
+
+			if ( ! require $dependencies_autoloader ) {
 				return false;
 			}
 
