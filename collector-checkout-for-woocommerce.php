@@ -54,7 +54,7 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 		/**
 		 * The reference the *Singleton* instance of this class.
 		 *
-		 * @var $instance
+		 * @var Collector_Checkout $instance
 		 */
 		protected static $instance;
 
@@ -82,7 +82,7 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 		/**
 		 * The Order Management class.
 		 *
-		 * @var Walley_Checkout_Order_Management
+		 * @var Walley_Checkout_Order_Management|Collector_Checkout_Post_Checkout
 		 */
 		public $order_management;
 
@@ -110,7 +110,7 @@ if ( ! class_exists( 'Collector_Checkout' ) ) {
 		/**
 		 * Returns the *Singleton* instance of this class.
 		 *
-		 * @return self::$instance The *Singleton* instance.
+		 * @return self The *Singleton* instance.
 		 */
 		public static function get_instance() {
 			if ( null === self::$instance ) {

@@ -1,0 +1,37 @@
+includes:
+  - phpstan-baseline.neon
+
+parameters:
+  level: 5
+  phpVersion: 70400
+  treatPhpDocTypesAsCertain: false
+
+  paths:
+    - collector-checkout-for-woocommerce.php
+    - classes
+    - includes
+    - templates
+
+  excludePaths:
+    - node_modules (?)
+    - assets
+
+  scanDirectories:
+    - vendor/php-stubs
+    - dependencies
+
+  bootstrapFiles:
+    - phpstan-bootstrap.php
+    - vendor/php-stubs/wordpress-stubs/wordpress-stubs.php
+    - vendor/php-stubs/woocommerce-stubs/woocommerce-stubs.php
+    - vendor/php-stubs/woocommerce-stubs/woocommerce-packages-stubs.php
+    - vendor/php-stubs/woocommerce-subscriptions-stubs/woocommerce-subscriptions-stubs.php
+
+  dynamicConstantNames:
+    - COLLECTOR_BANK_PLUGIN_DIR
+    - COLLECTOR_BANK_PLUGIN_URL
+    - COLLECTOR_BANK_VERSION
+    - COLLECTOR_BANK_REST_LIVE
+    - COLLECTOR_BANK_REST_TEST
+    - COLLECTOR_BANK_SOAP_LIVE
+    - COLLECTOR_BANK_SOAP_TEST

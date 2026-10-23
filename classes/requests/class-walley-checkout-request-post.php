@@ -47,9 +47,9 @@ abstract class Walley_Checkout_Request_Post extends Walley_Checkout_Request {
 	}
 
 	/**
-	 * Builds the request args for a POST request.
+	 * Builds the request body for a POST request.
 	 *
-	 * @return array
+	 * @return array|string An array to be JSON encoded, or a string sent as is.
 	 */
 	abstract protected function get_body();
 }

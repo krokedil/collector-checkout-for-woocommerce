@@ -97,7 +97,7 @@ class Walley_Checkout_API {
 	/**
 	 * Reauthorize Walley order.
 	 *
-	 * @param int $order_id The WooCommerce order id.
+	 * @param int|string $order_id The WooCommerce order id.
 	 * @return array|WP_Error
 	 */
 	public function reauthorize_walley_order( $order_id ) {
@@ -149,9 +149,9 @@ class Walley_Checkout_API {
 	/**
 	 * Refund Walley order by amount.
 	 *
-	 * @param int    $order_id The WooCommerce order id.
-	 * @param string $amount The refund amount.
-	 * @param string $reason The refund reason.
+	 * @param int        $order_id The WooCommerce order id.
+	 * @param float|null $amount The refund amount.
+	 * @param string     $reason The refund reason.
 	 * @return array|WP_Error
 	 */
 	public function refund_walley_order_by_amount( $order_id, $amount = null, $reason = '' ) {
@@ -234,7 +234,7 @@ class Walley_Checkout_API {
 	/**
 	 * Checks for WP Errors and returns either the response as array.
 	 *
-	 * @param array $response The response from the request.
+	 * @param array|WP_Error $response The response from the request.
 	 * @return array|WP_Error
 	 */
 	private function check_for_api_error( $response ) {

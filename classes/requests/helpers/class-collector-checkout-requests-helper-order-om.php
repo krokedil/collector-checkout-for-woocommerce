@@ -18,7 +18,7 @@ class Collector_Checkout_Requests_Helper_Order_Om {
 	/**
 	 * Gets the order lines for the order.
 	 *
-	 * @param int $order_id The WooCommerce order id.
+	 * @param int|string $order_id The WooCommerce order id.
 	 * @return array
 	 */
 	public static function get_order_lines( $order_id ) {
@@ -135,8 +135,8 @@ class Collector_Checkout_Requests_Helper_Order_Om {
 	/**
 	 * Process order item shipping and return it formatted for the request.
 	 *
-	 * @param WC_Order_Item_Product $order_item The WooCommerce order line item.
-	 * @param object                $order The WooCommerce order.
+	 * @param WC_Order_Item_Shipping $order_item The WooCommerce order line item.
+	 * @param object                 $order The WooCommerce order.
 	 * @return array
 	 */
 	public static function get_order_line_shipping( $order_item, $order ) {
@@ -221,7 +221,7 @@ class Collector_Checkout_Requests_Helper_Order_Om {
 	 *
 	 * @param WC_Order_Item_Product|WC_Order_Item_Shipping|WC_Order_Item_Fee $order_item The WooCommerce order item.
 	 * @param WC_Order                                                       $order The WooCommerce order.
-	 * @return int
+	 * @return int|string
 	 */
 	public static function get_tax_rate( $order_item, $order ) {
 		// If we don't have any tax, return 0.
@@ -247,8 +247,8 @@ class Collector_Checkout_Requests_Helper_Order_Om {
 	/**
 	 * Gets the order lines for the order.
 	 *
-	 * @param int $order_id The WooCommerce order id.
-	 * @return array
+	 * @param int|string $order_id The WooCommerce order id.
+	 * @return string
 	 */
 	public static function get_order_lines_total_amount( $order_id ) {
 		$total_amount = 0;

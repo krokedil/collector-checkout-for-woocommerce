@@ -73,7 +73,7 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 	/**
 	 * The delivery module setting.
 	 *
-	 * @var string
+	 * @var bool
 	 */
 	public $delivery_module;
 
@@ -840,7 +840,7 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 	 * @param int    $order_id The WooCommerce order id.
 	 * @param string $location The location header from the reauthorize request.
 	 *
-	 * @return bool
+	 * @return string|false The final status, or false if there is none yet.
 	 */
 	private function get_reauthorize_result( $order_id, $location ) {
 		$response = CCO_WC()->api->get_reauthorize_result( $order_id, $location );

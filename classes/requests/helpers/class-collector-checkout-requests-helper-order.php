@@ -17,7 +17,7 @@ class Collector_Checkout_Requests_Helper_Order {
 	/**
 	 * Gets the order lines for the order.
 	 *
-	 * @param int $order_id The WooCommerce order id.
+	 * @param int|string $order_id The WooCommerce order id.
 	 * @return array
 	 */
 	public static function get_order_lines( $order_id ) {
@@ -140,7 +140,7 @@ class Collector_Checkout_Requests_Helper_Order {
 	 *
 	 * @param WC_Order $order The WooCommerce order.
 	 * @param mixed    $order_item If not false the WooCommerce order item WC_Order_Item.
-	 * @return int
+	 * @return float|int
 	 */
 	public static function get_order_line_tax_rate( $order, $order_item = false ) {
 		$tax_items = $order->get_items( 'tax' );
