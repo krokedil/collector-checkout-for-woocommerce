@@ -1,4 +1,0 @@
-Type: Fix
-Needs Documentation: no
-
-Walley now stops a purchase if the WooCommerce order for the checkout has been cancelled, for example when the hold stock time has run out. The cancelled order was previously reopened as processing and stock was reduced again without a stock check.
