@@ -194,7 +194,7 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 	}
 
 	/**
-	 * Refuse a purchase in Walley when no WooCommerce order has been created for it.
+	 * Refuse a purchase in Walley when no WooCommerce order has been created for it, or the order is cancelled.
 	 *
 	 * Walley completes the purchase without asking us if the onBeforePayment JS never registered,
 	 * but it always calls this before completing, and stops on a non-2xx response or after 10 seconds.
@@ -202,6 +202,18 @@ class Collector_Checkout_Gateway extends WC_Payment_Gateway {
 	public function validation_listener() {
 		$private_id = sanitize_text_field( wp_unslash( $_GET['private-id'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Server-to-server call from Walley.
 		$order      = wc_collector_get_order_by_private_id( $private_id );
+
+		// WooCommerce cancels unpaid orders when the hold stock time runs out. Completing the purchase would reopen the order without a stock check.
+		if ( $order && $order->has_status( 'cancelled' ) ) {
+			CCO_WC()->logger::log( 'Validation callback: order ' . $order->get_order_number() . ' for private id ' . $private_id . ' is cancelled. Refusing the purchase in Walley.' );
+			wp_send_json(
+				array(
+					'title'   => __( 'Your order has been cancelled', 'collector-checkout-for-woocommerce' ),
+					'message' => __( 'You have not been charged. Please reload the page and try again.', 'collector-checkout-for-woocommerce' ),
+				),
+				400
+			);
+		}
 
 		if ( $order ) {
 			CCO_WC()->logger::log( 'Validation callback: order ' . $order->get_order_number() . ' found for private id ' . $private_id . '. Letting Walley complete the purchase.' );
