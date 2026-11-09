@@ -82,13 +82,6 @@ class Walley_Checkout {
 			return;
 		}
 
-		if ( walley_session_is_from_another_version() ) {
-			CCO_WC()->logger::log( "Walley session $private_id was created by another plugin version. Reloading the checkout." );
-			WC()->session->set( 'reload_checkout', true );
-			$this->reload_checkout = true;
-			return;
-		}
-
 		// Use new or old API.
 		if ( walley_use_new_api() ) {
 			$this->collector_order = CCO_WC()->api->get_walley_checkout(
@@ -110,6 +103,13 @@ class Walley_Checkout {
 				$this->reload_checkout         = true;
 			}
 
+			return;
+		}
+
+		if ( walley_session_is_from_another_version() && in_array( get_walley_purchase_status( $this->collector_order ), walley_payment_status_approved_for_update_request(), true ) ) {
+			CCO_WC()->logger::log( "Walley session $private_id was created by another plugin version. Reloading the checkout." );
+			WC()->session->set( 'reload_checkout', true );
+			$this->reload_checkout = true;
 			return;
 		}
 

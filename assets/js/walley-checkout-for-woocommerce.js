@@ -711,7 +711,7 @@ jQuery( function( $ ) {
 			}).fail(function (jqXHR) {
 				// Not JSON, e.g. maintenance mode or a PHP error. Tell the customer instead of leaving an empty checkout.
 				$('#collector-container').empty().append(
-					$('<ul class="woocommerce-error" role="alert"></ul>').append( $('<li></li>').text( walleyParams.generic_error_message ) )
+					$('<ul class="woocommerce-error" role="alert"></ul>').append( $('<li></li>').text( walleyParams.checkout_load_error_message ) )
 				);
 				walleyCheckoutWc.logToFile( 'Could not get a new Walley checkout when changing customer type | HTTP status ' + jqXHR.status );
 			});
