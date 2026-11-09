@@ -121,13 +121,21 @@ function collector_wc_show_snippet() {
 				CCO_WC()->logger::log( "Trying to display checkout but status is PurchaseCompleted. Private id $private_id. No correlating order id can be found." );
 			}
 
-			$output = array(
-				'publicToken'   => $public_token,
-				'test_mode'     => $test_mode,
-				'customer_type' => $customer_type,
-			);
-			echo( "<script>console.log('Collector: " . wp_json_encode( $output ) . "');</script>" );
-			$return = '<div id="collector-container"><script src="' . $url . '" data-lang="' . $locale . '" data-token="' . $public_token . '" data-variant="' . $customer_type . '"' . $data_action_color_button . ' ></script></div>'; // phpcs:ignore
+			if ( walley_session_is_from_another_version() && in_array( $status, walley_payment_status_approved_for_update_request(), true ) ) {
+				$session_version = WC()->session->get( 'collector_plugin_version' );
+				CCO_WC()->logger::log( sprintf( 'Walley session %s was created by plugin version %s, current version is %s. Initializing a new checkout.', $private_id, empty( $session_version ) ? '(unknown)' : $session_version, COLLECTOR_BANK_VERSION ) );
+
+				wc_collector_unset_sessions();
+				$initialize_checkout = true;
+			} else {
+				$output = array(
+					'publicToken'   => $public_token,
+					'test_mode'     => $test_mode,
+					'customer_type' => $customer_type,
+				);
+				echo( "<script>console.log('Collector: " . wp_json_encode( $output ) . "');</script>" );
+				$return = '<div id="collector-container"><script src="' . $url . '" data-lang="' . $locale . '" data-token="' . $public_token . '" data-variant="' . $customer_type . '"' . $data_action_color_button . ' ></script></div>'; // phpcs:ignore
+			}
 		}
 	}
 
@@ -149,6 +157,7 @@ function collector_wc_show_snippet() {
 			WC()->session->set( 'collector_currency', get_woocommerce_currency() );
 			WC()->session->set( 'collector_billing_country', WC()->customer->get_billing_country() );
 			WC()->session->set( 'collector_profile', $profile );
+			WC()->session->set( 'collector_plugin_version', COLLECTOR_BANK_VERSION );
 
 			$public_token = $collector_order['data']['publicToken'];
 			$output       = array(
@@ -184,7 +193,17 @@ function wc_collector_unset_sessions() {
 		}
 
 		WC()->session->__unset( 'collector_billing_country' );
+		WC()->session->__unset( 'collector_plugin_version' );
 	}
+}
+
+/**
+ * Whether the Walley session was created by another version of this plugin.
+ *
+ * @return bool
+ */
+function walley_session_is_from_another_version() {
+	return COLLECTOR_BANK_VERSION !== WC()->session->get( 'collector_plugin_version' );
 }
 
 /**

@@ -393,7 +393,7 @@ jQuery( function( $ ) {
 				success: function( data ) {},
 				error: function( data ) {},
 				complete: function( data ) {
-					window.location.href = data.responseJSON.data.redirect;
+					walleyCheckoutWc.redirectOrReload( data );
 				}
 			});
 		},
@@ -422,11 +422,23 @@ jQuery( function( $ ) {
 						success: function( data ) {},
 						error: function( data ) {},
 						complete: function( data ) {
-							console.log('maybeChangeToWalleyCheckout', data);
-							window.location.href = data.responseJSON.data.redirect;
+							walleyCheckoutWc.redirectOrReload( data );
 						}
 					});
 				}
+			}
+		},
+		/**
+		 * Follows the redirect from a payment method change, or reloads when there is none.
+		 *
+		 * @param {jqXHR} data
+		 */
+		redirectOrReload: function( data ) {
+			const redirect = data.responseJSON?.data?.redirect;
+			if ( redirect ) {
+				window.location.href = redirect;
+			} else {
+				window.location.reload();
 			}
 		},
 		/**
@@ -696,6 +708,12 @@ jQuery( function( $ ) {
 					console.log('error');
 					console.log(data.data);
 				}
+			}).fail(function (jqXHR) {
+				// Not JSON, e.g. maintenance mode or a PHP error. Tell the customer instead of leaving an empty checkout.
+				$('#collector-container').empty().append(
+					$('<ul class="woocommerce-error" role="alert"></ul>').append( $('<li></li>').text( walleyParams.generic_error_message ) )
+				);
+				walleyCheckoutWc.logToFile( 'Could not get a new Walley checkout when changing customer type | HTTP status ' + jqXHR.status );
 			});
 		},
 		/**
