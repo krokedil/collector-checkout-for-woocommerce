@@ -22,9 +22,9 @@ class Collector_Checkout_Ajax_Calls extends WC_AJAX {
 	public static $walley_use_new_api;
 
 	/**
-	 * Returns the *Singleton* instance of this class.
+	 * Whether the new Walley API is used.
 	 *
-	 * @return bool.
+	 * @return bool
 	 */
 	public static function use_new_api() {
 		if ( null === self::$walley_use_new_api ) {

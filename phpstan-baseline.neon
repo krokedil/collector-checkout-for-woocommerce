@@ -1,0 +1,469 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^Function wp_kses_post invoked with 2 parameters, 1 required\.$#'
+			identifier: arguments.count
+			count: 2
+			path: classes/class-collector-checkout-admin-notices.php
+
+		-
+			message: '#^If condition is always true\.$#'
+			identifier: if.alwaysTrue
+			count: 1
+			path: classes/class-collector-checkout-ajax-calls.php
+
+		-
+			message: '#^Unreachable statement \- code above always terminates\.$#'
+			identifier: deadCode.unreachable
+			count: 11
+			path: classes/class-collector-checkout-ajax-calls.php
+
+		-
+			message: '#^Access to an undefined property WooCommerce\:\:\$payment_gateways\.$#'
+			identifier: property.notFound
+			count: 1
+			path: classes/class-collector-checkout-gateway.php
+
+		-
+			message: '#^Call to function is_wp_error\(\) with Collector_Checkout_Requests_Update_Reference will always evaluate to false\.$#'
+			identifier: function.impossibleType
+			count: 1
+			path: classes/class-collector-checkout-gateway.php
+
+		-
+			message: '#^Negated boolean expression is always false\.$#'
+			identifier: booleanNot.alwaysFalse
+			count: 2
+			path: classes/class-collector-checkout-gateway.php
+
+		-
+			message: '#^Parameter \#2 \$value of method WC_Data\:\:update_meta_data\(\) expects array\|string, float given\.$#'
+			identifier: argument.type
+			count: 1
+			path: classes/class-collector-checkout-gateway.php
+
+		-
+			message: '#^Parameter \#2 \$value of method WC_Data\:\:update_meta_data\(\) expects array\|string, true given\.$#'
+			identifier: argument.type
+			count: 1
+			path: classes/class-collector-checkout-gateway.php
+
+		-
+			message: '#^Property WooCommerce\:\:\$cart \(WC_Cart\) in isset\(\) is not nullable\.$#'
+			identifier: isset.property
+			count: 1
+			path: classes/class-collector-checkout-gateway.php
+
+		-
+			message: '#^Property WooCommerce\:\:\$customer \(WC_Customer\) in isset\(\) is not nullable\.$#'
+			identifier: isset.property
+			count: 1
+			path: classes/class-collector-checkout-gateway.php
+
+		-
+			message: '#^Static method Collector_Checkout_Logger\:\:log\(\) invoked with 2 parameters, 1 required\.$#'
+			identifier: arguments.count
+			count: 1
+			path: classes/class-collector-checkout-gateway.php
+
+		-
+			message: '#^Result of function wc_checkout_privacy_policy_text \(void\) is used\.$#'
+			identifier: function.void
+			count: 1
+			path: classes/class-collector-checkout-gdpr.php
+
+		-
+			message: '#^Property Collector_Checkout_Post_Checkout\:\:\$display_invoice_no is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: classes/class-collector-checkout-post-checkout.php
+
+		-
+			message: '#^Access to an undefined property WooCommerce\:\:\$payment_gateways\.$#'
+			identifier: property.notFound
+			count: 2
+			path: classes/class-collector-checkout-templates.php
+
+		-
+			message: '#^Parameter \#3 \$deps of function wp_register_script expects array\<string\>, true given\.$#'
+			identifier: argument.type
+			count: 1
+			path: classes/class-walley-checkout-assets.php
+
+		-
+			message: '#^Parameter \#3 \$deps of function wp_register_style expects array\<string\>, false given\.$#'
+			identifier: argument.type
+			count: 2
+			path: classes/class-walley-checkout-assets.php
+
+		-
+			message: '#^Parameter \#5 \$media of function wp_register_style expects string, false given\.$#'
+			identifier: argument.type
+			count: 1
+			path: classes/class-walley-checkout-assets.php
+
+		-
+			message: '#^Property Walley_Checkout_Order_Actions\:\:\$activate_individual_order_lines is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: classes/class-walley-checkout-order-actions.php
+
+		-
+			message: '#^Property Walley_Checkout_Order_Actions\:\:\$display_invoice_no is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: classes/class-walley-checkout-order-actions.php
+
+		-
+			message: '#^Property Walley_Checkout_Order_Actions\:\:\$manage_orders is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: classes/class-walley-checkout-order-actions.php
+
+		-
+			message: '#^Parameter \#2 \$value of method WC_Data\:\:update_meta_data\(\) expects array\|string, int\<1, max\> given\.$#'
+			identifier: argument.type
+			count: 3
+			path: classes/class-walley-checkout-order-management.php
+
+		-
+			message: '#^Property Walley_Checkout_Order_Management\:\:\$display_invoice_no is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: classes/class-walley-checkout-order-management.php
+
+		-
+			message: '#^Access to an undefined property WC_Session\:\:\$reload_checkout\.$#'
+			identifier: property.notFound
+			count: 16
+			path: classes/class-walley-checkout.php
+
+		-
+			message: '#^Method Walley_Checkout\:\:update_walley_order\(\) with return type void returns null but should not return anything\.$#'
+			identifier: return.void
+			count: 1
+			path: classes/class-walley-checkout.php
+
+		-
+			message: '#^Result of function walley_print_error_message \(void\) is used\.$#'
+			identifier: function.void
+			count: 1
+			path: classes/class-walley-checkout.php
+
+		-
+			message: '#^Access to an undefined property WC_Cart\:\:\$total\.$#'
+			identifier: property.notFound
+			count: 1
+			path: classes/class-walley-part-payment-widget.php
+
+		-
+			message: '#^Cannot call method get_variation_price\(\) on WC_Product\|false\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: classes/class-walley-part-payment-widget.php
+
+		-
+			message: '#^Access to an undefined property Collector_Checkout_Requests_Get_Checkout_Information\:\:\$private_id\.$#'
+			identifier: property.notFound
+			count: 2
+			path: classes/requests/class-collector-checkout-requests-get-checkout-information.php
+
+		-
+			message: '#^Access to an undefined property Collector_Checkout_Requests_Paylink\:\:\$private_id\.$#'
+			identifier: property.notFound
+			count: 2
+			path: classes/requests/class-collector-checkout-requests-paylink.php
+
+		-
+			message: '#^Access to an undefined property Collector_Checkout_Requests_Update_Cart\:\:\$private_id\.$#'
+			identifier: property.notFound
+			count: 2
+			path: classes/requests/class-collector-checkout-requests-update-cart.php
+
+		-
+			message: '#^Access to an undefined property Collector_Checkout_Requests_Update_Fees\:\:\$private_id\.$#'
+			identifier: property.notFound
+			count: 2
+			path: classes/requests/class-collector-checkout-requests-update-fees.php
+
+		-
+			message: '#^Access to an undefined property Collector_Checkout_Requests_Update_Metadata\:\:\$metadata\.$#'
+			identifier: property.notFound
+			count: 2
+			path: classes/requests/class-collector-checkout-requests-update-metadata.php
+
+		-
+			message: '#^Access to an undefined property Collector_Checkout_Requests_Update_Metadata\:\:\$private_id\.$#'
+			identifier: property.notFound
+			count: 2
+			path: classes/requests/class-collector-checkout-requests-update-metadata.php
+
+		-
+			message: '#^Access to an undefined property Collector_Checkout_Requests_Update_Reference\:\:\$private_id\.$#'
+			identifier: property.notFound
+			count: 2
+			path: classes/requests/class-collector-checkout-requests-update-reference.php
+
+		-
+			message: '#^Binary operation "/" between string and string results in an error\.$#'
+			identifier: binaryOp.invalid
+			count: 1
+			path: classes/requests/helpers/class-collector-checkout-create-refund-data.php
+
+		-
+			message: '#^Call to an undefined method WC_Order_Item\:\:get_product\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: classes/requests/helpers/class-collector-checkout-create-refund-data.php
+
+		-
+			message: '#^Call to an undefined method WC_Order_Item\:\:get_product_id\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: classes/requests/helpers/class-collector-checkout-create-refund-data.php
+
+		-
+			message: '#^Call to an undefined method WC_Order_Item\:\:get_total\(\)\.$#'
+			identifier: method.notFound
+			count: 10
+			path: classes/requests/helpers/class-collector-checkout-create-refund-data.php
+
+		-
+			message: '#^Call to an undefined method WC_Order_Item\:\:get_total_tax\(\)\.$#'
+			identifier: method.notFound
+			count: 3
+			path: classes/requests/helpers/class-collector-checkout-create-refund-data.php
+
+		-
+			message: '#^Parameter \#1 \$fee of static method Collector_Checkout_Create_Refund_Data\:\:get_full_refund_fee_data\(\) expects WC_Order_Item_Fee, WC_Order_Item given\.$#'
+			identifier: argument.type
+			count: 1
+			path: classes/requests/helpers/class-collector-checkout-create-refund-data.php
+
+		-
+			message: '#^Parameter \#1 \$shipping of static method Collector_Checkout_Create_Refund_Data\:\:get_full_refund_shipping_data\(\) expects WC_Order_Item_Shipping, WC_Order_Item given\.$#'
+			identifier: argument.type
+			count: 1
+			path: classes/requests/helpers/class-collector-checkout-create-refund-data.php
+
+		-
+			message: '#^Variable \$original_order_fee might not be defined\.$#'
+			identifier: variable.undefined
+			count: 2
+			path: classes/requests/helpers/class-collector-checkout-create-refund-data.php
+
+		-
+			message: '#^Variable \$original_order_item might not be defined\.$#'
+			identifier: variable.undefined
+			count: 2
+			path: classes/requests/helpers/class-collector-checkout-create-refund-data.php
+
+		-
+			message: '#^Variable \$original_order_shipping might not be defined\.$#'
+			identifier: variable.undefined
+			count: 2
+			path: classes/requests/helpers/class-collector-checkout-create-refund-data.php
+
+		-
+			message: '#^Parameter \#1 \$weight of function wc_get_weight expects float\|int, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: classes/requests/helpers/class-collector-checkout-requests-cart.php
+
+		-
+			message: '#^Access to an undefined property WooCommerce\:\:\$shipping\.$#'
+			identifier: property.notFound
+			count: 1
+			path: classes/requests/helpers/class-collector-checkout-requests-fees.php
+
+		-
+			message: '#^Binary operation "\+" between string and string results in an error\.$#'
+			identifier: binaryOp.invalid
+			count: 1
+			path: classes/requests/helpers/class-collector-checkout-requests-helper-order-fees.php
+
+		-
+			message: '#^Cannot call method get_method_id\(\) on WC_Order_Item\|false\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: classes/requests/helpers/class-collector-checkout-requests-helper-order-fees.php
+
+		-
+			message: '#^Method Collector_Checkout_Requests_Helper_Order_Fees\:\:get_product_tax_rate\(\) should return float but return statement is missing\.$#'
+			identifier: return.missing
+			count: 1
+			path: classes/requests/helpers/class-collector-checkout-requests-helper-order-fees.php
+
+		-
+			message: '#^Binary operation "\+" between string and string results in an error\.$#'
+			identifier: binaryOp.invalid
+			count: 3
+			path: classes/requests/helpers/class-collector-checkout-requests-helper-order-om.php
+
+		-
+			message: '#^Parameter \#1 \$order_item of static method Collector_Checkout_Requests_Helper_Order_Om\:\:get_order_line_items\(\) expects WC_Order_Item_Product, WC_Order_Item given\.$#'
+			identifier: argument.type
+			count: 1
+			path: classes/requests/helpers/class-collector-checkout-requests-helper-order-om.php
+
+		-
+			message: '#^Parameter \#1 \$order_item of static method Collector_Checkout_Requests_Helper_Order_Om\:\:get_order_line_shipping\(\) expects WC_Order_Item_Shipping, WC_Order_Item given\.$#'
+			identifier: argument.type
+			count: 1
+			path: classes/requests/helpers/class-collector-checkout-requests-helper-order-om.php
+
+		-
+			message: '#^Binary operation "\+" between string and string results in an error\.$#'
+			identifier: binaryOp.invalid
+			count: 2
+			path: classes/requests/helpers/class-collector-checkout-requests-helper-order.php
+
+		-
+			message: '#^Binary operation "/" between string and string results in an error\.$#'
+			identifier: binaryOp.invalid
+			count: 1
+			path: classes/requests/helpers/class-collector-checkout-requests-helper-order.php
+
+		-
+			message: '#^Call to an undefined method WC_Order_Item\:\:get_rate_id\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: classes/requests/helpers/class-collector-checkout-requests-helper-order.php
+
+		-
+			message: '#^Parameter \#1 \$order_item of static method Collector_Checkout_Requests_Helper_Order\:\:get_order_line_items\(\) expects WC_Order_Item_Product, WC_Order_Item given\.$#'
+			identifier: argument.type
+			count: 1
+			path: classes/requests/helpers/class-collector-checkout-requests-helper-order.php
+
+		-
+			message: '#^Access to an undefined property WooCommerce\:\:\$shipping\.$#'
+			identifier: property.notFound
+			count: 1
+			path: classes/requests/helpers/class-walley-checkout-requests-fees-helper.php
+
+		-
+			message: '#^Parameter \#2 \$value of method WC_Data\:\:update_meta_data\(\) expects array\|string, int\<1, max\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: classes/requests/soap/class-collector-checkout-soap-requests-activate-invoice.php
+
+		-
+			message: '#^Parameter \#2 \$value of method WC_Data\:\:update_meta_data\(\) expects array\|string, int\<1, max\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: classes/requests/soap/class-collector-checkout-soap-requests-cancel-invoice.php
+
+		-
+			message: '#^Parameter \#2 \$refund_order_id of static method Collector_Checkout_Create_Refund_Data\:\:create_refund_data\(\) expects int\|string\|null, float given\.$#'
+			identifier: argument.type
+			count: 1
+			path: classes/requests/soap/class-collector-checkout-soap-requests-credit-payment.php
+
+		-
+			message: '#^Parameter \#3 \$amount of static method Collector_Checkout_Create_Refund_Data\:\:create_refund_data\(\) expects float, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: classes/requests/soap/class-collector-checkout-soap-requests-credit-payment.php
+
+		-
+			message: '#^Variable \$e might not be defined\.$#'
+			identifier: variable.undefined
+			count: 1
+			path: classes/requests/soap/class-collector-checkout-soap-requests-credit-payment.php
+
+		-
+			message: '#^Parameter \#1 \$key of method WC_Data\:\:update_meta_data\(\) expects string, int given\.$#'
+			identifier: argument.type
+			count: 1
+			path: classes/requests/soap/class-collector-checkout-soap-requests-part-activate-invoice.php
+
+		-
+			message: '#^Property Walley_Checkout_Request_Create_Authorization\:\:\$subscription_id \(int\|string\) is never assigned int so it can be removed from the property type\.$#'
+			identifier: property.unusedType
+			count: 1
+			path: classes/requests/subscription/post/class-walley-checkout-request-authorize.php
+
+		-
+			message: '#^Property Walley_Checkout_Request_Create_Authorization\:\:\$subscription_id \(int\|string\) is never assigned string so it can be removed from the property type\.$#'
+			identifier: property.unusedType
+			count: 1
+			path: classes/requests/subscription/post/class-walley-checkout-request-authorize.php
+
+		-
+			message: '#^Property Walley_Checkout_Request_Create_Authorization\:\:\$subscription_id is never written, only read\.$#'
+			identifier: property.onlyRead
+			count: 1
+			path: classes/requests/subscription/post/class-walley-checkout-request-authorize.php
+
+		-
+			message: '#^Access to an undefined property WooCommerce\:\:\$payment_gateways\.$#'
+			identifier: property.notFound
+			count: 1
+			path: includes/collector-checkout-for-woocommerce-functions.php
+
+		-
+			message: '#^Negated boolean expression is always true\.$#'
+			identifier: booleanNot.alwaysTrue
+			count: 1
+			path: includes/collector-checkout-for-woocommerce-functions.php
+
+		-
+			message: '#^Property WooCommerce\:\:\$customer \(WC_Customer\) in isset\(\) is not nullable\.$#'
+			identifier: isset.property
+			count: 1
+			path: includes/collector-checkout-for-woocommerce-functions.php
+
+		-
+			message: '#^Property WooCommerce\:\:\$session \(WC_Session\) in isset\(\) is not nullable\.$#'
+			identifier: isset.property
+			count: 2
+			path: includes/collector-checkout-for-woocommerce-functions.php
+
+		-
+			message: '#^Right side of && is always true\.$#'
+			identifier: booleanAnd.rightAlwaysTrue
+			count: 1
+			path: includes/collector-checkout-settings.php
+
+		-
+			message: '#^Parameter \#1 \$text of function esc_html expects string, float\|int given\.$#'
+			identifier: argument.type
+			count: 1
+			path: includes/collector-status-report.php
+
+		-
+			message: '#^Parameter \#1 \$text of function esc_html expects string, int\<0, max\> given\.$#'
+			identifier: argument.type
+			count: 2
+			path: includes/collector-status-report.php
+
+		-
+			message: '#^Access to an undefined property WooCommerce\:\:\$shipping\.$#'
+			identifier: property.notFound
+			count: 1
+			path: templates/collector-cart-shipping.php
+
+		-
+			message: '#^Variable \$checkout might not be defined\.$#'
+			identifier: variable.undefined
+			count: 2
+			path: templates/collector-checkout.php
+
+		-
+			message: '#^Variable \$keys_for_meta_box might not be defined\.$#'
+			identifier: variable.undefined
+			count: 1
+			path: templates/walley-checkout-meta-box.php
+
+		-
+			message: '#^Variable \$order might not be defined\.$#'
+			identifier: variable.undefined
+			count: 1
+			path: templates/walley-checkout-meta-box.php
+
+		-
+			message: '#^Variable \$walley_order_status might not be defined\.$#'
+			identifier: variable.undefined
+			count: 1
+			path: templates/walley-checkout-meta-box.php

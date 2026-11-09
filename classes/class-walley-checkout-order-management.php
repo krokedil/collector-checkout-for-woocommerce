@@ -196,12 +196,12 @@ class Walley_Checkout_Order_Management {
 	}
 
 	/**
-	 * Refunds the Dintero order that the WooCommerce order corresponds to.
+	 * Refunds the Walley order that the WooCommerce order corresponds to.
 	 *
-	 * @param int    $order_id The WooCommerce order id.
-	 * @param string $amount The refund amount.
-	 * @param string $reason The reason for the refund.
-	 * @return boolean|null TRUE on success, FALSE on unrecoverable failure, and null if not relevant or valid.
+	 * @param int        $order_id The WooCommerce order id.
+	 * @param float|null $amount The refund amount.
+	 * @param string     $reason The reason for the refund.
+	 * @return bool|WP_Error|void True on success, WP_Error on failure, nothing if not relevant.
 	 */
 	public function refund_walley_order( $order_id, $amount = null, $reason = '' ) {
 		$order = wc_get_order( $order_id );

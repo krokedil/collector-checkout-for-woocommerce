@@ -24,7 +24,7 @@ class Collector_Checkout_Requests_Header {
 	/**
 	 * Class constructor.
 	 *
-	 * @param array  $body The request body.
+	 * @param string $body The request body.
 	 * @param string $path The endpoint.
 	 */
 	public function __construct( $body, $path ) {

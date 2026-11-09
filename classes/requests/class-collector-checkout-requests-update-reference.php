@@ -30,9 +30,9 @@ class Collector_Checkout_Requests_Update_Reference extends Collector_Checkout_Re
 	/**
 	 * Class constructor.
 	 *
-	 * @param int    $order_id The WooCommerce order id.
-	 * @param string $private_id The private id.
-	 * @param string $customer_type The customer type.
+	 * @param int|string $order_id The WooCommerce order id.
+	 * @param string     $private_id The private id.
+	 * @param string     $customer_type The customer type.
 	 */
 	public function __construct( $order_id, $private_id, $customer_type ) {
 		parent::__construct();

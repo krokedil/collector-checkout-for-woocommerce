@@ -41,7 +41,7 @@ class Collector_Checkout_Requests_Calculate_Auth {
 	/**
 	 * Calculates the basic auth.
 	 *
-	 * @param array  $body The request body.
+	 * @param string $body The request body.
 	 * @param string $path The endpoint.
 	 *
 	 * @return string

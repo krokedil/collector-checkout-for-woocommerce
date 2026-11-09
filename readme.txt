@@ -4,9 +4,9 @@ Tags: ecommerce, e-commerce, woocommerce, collector, checkout, walley
 Requires at least: 5.0
 Tested up to: 7.1
 Requires PHP: 7.3
-Stable tag: 5.1.0
+Stable tag: 5.1.1
 WC requires at least: 6.0.0
-WC tested up to: 11.2.1
+WC tested up to: 11.2.2
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -39,6 +39,9 @@ For help setting up and configuring Walley Checkout for WooCommerce please refer
 
 
 == CHANGELOG ==
+= 2026-11-09    - version 5.1.1 =
+* Fix           - Walley now stops a purchase if the WooCommerce order for the checkout has been cancelled, for example when the hold stock time has run out. The cancelled order was previously reopened as processing and stock was reduced again without a stock check.
+
 = 2026-10-20    - version 5.1.0 =
 * Feature       - Added support for Walley's new standardized shipping format, so the shipping line matches the amount Walley charges.
 * Enhancement   - Masked customer personal data, credentials and other sensitive data in the plugin log.

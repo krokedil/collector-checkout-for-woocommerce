@@ -16,9 +16,9 @@ use KrokedilWalleyDeps\Krokedil\WpApi\KeyMasker;
  */
 class Collector_Checkout_Logger {
 	/**
-	 * Log message string
+	 * The WooCommerce logger instance.
 	 *
-	 * @var $log
+	 * @var WC_Logger|null $log
 	 */
 	public static $log;
 
@@ -66,13 +66,13 @@ class Collector_Checkout_Logger {
 	/**
 	 * Formats the log data to be logged.
 	 *
-	 * @param string $checkout_id The gateway Checkout ID.
-	 * @param string $method The method.
-	 * @param string $title The title for the log.
-	 * @param array  $request_args The request args.
-	 * @param string $request_url The request url.
-	 * @param array  $response The response.
-	 * @param string $code The status code.
+	 * @param int|string|null $checkout_id The gateway Checkout ID.
+	 * @param string          $method The method.
+	 * @param string          $title The title for the log.
+	 * @param array|string    $request_args The request args.
+	 * @param string          $request_url The request url.
+	 * @param array|string    $response The response.
+	 * @param int|string      $code The status code.
 	 * @return array
 	 */
 	public static function format_log( $checkout_id, $method, $title, $request_args, $request_url, $response, $code ) {

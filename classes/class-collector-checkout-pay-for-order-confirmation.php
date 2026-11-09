@@ -18,14 +18,14 @@ class Collector_Checkout_Pay_For_Order_Confirmation {
 	/**
 	 * The reference the *Singleton* instance of this class.
 	 *
-	 * @var $instance
+	 * @var Collector_Checkout_Pay_For_Order_Confirmation $instance
 	 */
 	protected static $instance;
 
 	/**
 	 * Returns the *Singleton* instance of this class.
 	 *
-	 * @return self::$instance The *Singleton* instance.
+	 * @return self The *Singleton* instance.
 	 */
 	public static function get_instance() {
 		if ( null === self::$instance ) {
