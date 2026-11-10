@@ -1,0 +1,4 @@
+Type: Fix
+Needs Documentation: no
+
+Customers who had started a checkout before a plugin update now get a new Walley checkout instead of one that could not be completed. The checkout also no longer stays locked when switching payment method fails.

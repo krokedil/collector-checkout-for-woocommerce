@@ -106,6 +106,13 @@ class Walley_Checkout {
 			return;
 		}
 
+		if ( walley_session_is_from_another_version() && in_array( get_walley_purchase_status( $this->collector_order ), walley_payment_status_approved_for_update_request(), true ) ) {
+			CCO_WC()->logger::log( "Walley session $private_id was created by another plugin version. Reloading the checkout." );
+			WC()->session->set( 'reload_checkout', true );
+			$this->reload_checkout = true;
+			return;
+		}
+
 		// When the country is updated in the Walley payment form, it is not available in WC()->customer->get_billing_country() until the customer in woo is updated.
 		$this->update_customer_in_woo( $this->collector_order );
 
